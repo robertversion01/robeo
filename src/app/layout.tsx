@@ -15,15 +15,25 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "ROBEO | Másodkézkeskedés Magyarországon",
-  description: "Biztonságos és egyszerű másodkézkeskedés. Vásárolj és adj el használt cikkeket gyorsan, megbízhatóan.",
-  keywords: ["másodkéz", "használt", "vásárlás", "eladás", "piac", "robeo"],
+  title: "ROBEO - A te stílusod, a te közösséged",
+  description: "Másodkézkeskedés úgy, ahogyan az kellene. Vásárolj, adj el, cserélj és találj új barátokat a stílusos közösségben. 100% magyar platform.",
+  keywords: ["másodkéz", "használt ruházat", "cipő", "streetwear", "vásárlás", "eladás", "piac", "robeo", "közösség", "magyar"],
   authors: [{ name: "ROBEO" }],
   openGraph: {
-    title: "ROBEO | Másodkézkeskedés Magyarországon",
-    description: "Biztonságos és egyszerű másodkézkeskedés. Vásárolj és adj el használt cikkeket gyorsan, megbízhatóan.",
+    title: "ROBEO - A te stílusod, a te közösséged",
+    description: "Másodkézkeskedés úgy, ahogyan az kellene. Biztonságos, egyszerű és stílusos.",
     type: "website",
     locale: "hu_HU",
+    siteName: "ROBEO"
+  },
+  twitter: {
+    card: "summary_large_image",
+    title: "ROBEO - A te stílusod, a te közösséged",
+    description: "Másodkézkeskedés úgy, ahogyan az kellene."
+  },
+  robots: {
+    index: true,
+    follow: true
   }
 };
 

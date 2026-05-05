@@ -37,7 +37,24 @@ export default function AuthPage() {
         alert('✅ Sikeres regisztráció! Erősítsd meg az e-mail címedet.');
       }
     } catch (err: any) {
-      setError(err.message || 'Hiba történt');
+      let errorMessage = 'Hiba történt';
+      
+      const errorTranslations: Record<string, string> = {
+        'Email not confirmed': 'Kérjük, igazold vissza az e-mail címedet a bejelentkezés előtt!',
+        'Invalid login credentials': 'Hibás e-mail cím vagy jelszó!',
+        'Invalid email': 'Kérjük érvényes e-mail címet adj meg!',
+        'Password should be at least 6 characters': 'A jelszónak minimum 6 karakter hosszúnak kell lennie!',
+        'User already registered': 'Ez az e-mail cím már regisztrálva van!',
+        'Email rate limit exceeded': 'Túl sok kérés érkezett erről az címről. Kérjük próbáld újra később.'
+      };
+
+      if (err.message && errorTranslations[err.message]) {
+        errorMessage = errorTranslations[err.message];
+      } else if (err.message) {
+        errorMessage = err.message;
+      }
+
+      setError(errorMessage);
     } finally {
       setLoading(false);
     }

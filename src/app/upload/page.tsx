@@ -2,6 +2,7 @@
 
 import { useState } from 'react';
 import { supabase } from '@/lib/supabase';
+import { toast } from 'sonner';
 import CustomSelect from '@/components/CustomSelect';
 
 export default function UploadPage() {
@@ -87,11 +88,11 @@ export default function UploadPage() {
         image: null
       });
 
-      alert('✅ Termék sikeresen feltöltve a Supabase adatbázisba!');
+      toast.success('✅ Termék sikeresen feltöltve!');
 
     } catch (error) {
       console.error('Error uploading product:', error);
-      alert('❌ Hiba történt a feltöltés során! Kérlek próbáld újra.');
+      toast.error('❌ Hiba történt a feltöltés során! Kérlek próbáld újra.');
     } finally {
       setLoading(false);
     }

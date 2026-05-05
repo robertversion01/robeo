@@ -5,6 +5,7 @@ import { supabase } from '@/lib/supabase';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { Star } from 'lucide-react';
+import OffersList from '@/components/OffersList';
 
 interface Product {
   id: string;
@@ -132,6 +133,12 @@ export default function ProfilePage() {
         <div className="max-w-7xl mx-auto">
           <h1 className="text-4xl font-bold mb-2">Profilom</h1>
           <p className="text-white/60 mb-10">Saját feltöltött termékeim</p>
+
+          {/* Beérkező ajánlatok */}
+          <div className="mb-12">
+            <h2 className="text-2xl font-bold mb-6">📬 Beérkező ajánlataim</h2>
+            <OffersList />
+          </div>
 
           {/* Statistics Dashboard */}
           <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-12">
