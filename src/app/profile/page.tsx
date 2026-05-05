@@ -1,0 +1,212 @@
+'use client';
+
+import { useEffect, useState } from 'react';
+import { supabase } from '@/lib/supabase';
+import Link from 'next/link';
+import { useRouter } from 'next/navigation';
+import { Star } from 'lucide-react';
+
+interface Product {
+  id: string;
+  name: string;
+  price: number;
+  category: string;
+  image_url: string | null;
+  created_at: string;
+}
+
+export default function ProfilePage() {
+  const [products, setProducts] = useState<Product[]>([]);
+  const [stats, setStats] = useState({ totalSales: 0, salesCount: 0, avgRating: 0 });
+  const [loading, setLoading] = useState(true);
+  const [user, setUser] = useState<any>(null);
+  const router = useRouter();
+
+  useEffect(() => {
+    checkUser();
+  }, []);
+
+  const checkUser = async () => {
+    const { data: { user } } = await supabase.auth.getUser();
+    if (!user) {
+      router.push('/auth');
+      return;
+    }
+    setUser(user);
+    loadUserProducts(user.id);
+    loadStatistics(user.id);
+  };
+
+  const loadUserProducts = async (userId: string) => {
+    try {
+      const { data, error } = await supabase
+        .from('products')
+        .select('*')
+        .eq('user_id', userId)
+        .order('created_at', { ascending: false });
+
+      if (error) throw error;
+      setProducts(data || []);
+    } catch (error) {
+      console.error('Error fetching products:', error);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const loadStatistics = async (userId: string) => {
+    try {
+      // Calculate total sales
+      const { data: offers } = await supabase
+        .from('offers')
+        .select('amount')
+        .eq('seller_id', userId)
+        .eq('status', 'paid');
+
+      if (offers) {
+        const totalSales = offers.reduce((sum, o) => sum + o.amount, 0);
+        setStats(prev => ({
+          ...prev,
+          totalSales,
+          salesCount: offers.length
+        }));
+      }
+    } catch (error) {
+      console.error(error);
+    }
+  };
+
+  const deleteProduct = async (productId: string) => {
+    if (!confirm('Biztosan törölni szeretnéd ezt a terméket?')) return;
+
+    try {
+      const { error } = await supabase
+        .from('products')
+        .delete()
+        .eq('id', productId);
+
+      if (error) throw error;
+      setProducts(prev => prev.filter(p => p.id !== productId));
+    } catch (error) {
+      console.error('Error deleting product:', error);
+      alert('Hiba történt a törlés során');
+    }
+  };
+
+  if (loading) {
+    return (
+      <div className="min-h-screen bg-gradient-to-br from-indigo-950 to-black text-white flex items-center justify-center">
+        <div className="animate-spin h-12 w-12 border-4 border-accent border-t-transparent rounded-full"></div>
+      </div>
+    );
+  }
+
+  const categoryLabels: Record<string, string> = {
+    clothing: 'Ruházat',
+    shoes: 'Cipő',
+    accessories: 'Kiegészítők',
+    electronics: 'Elektronika',
+    other: 'Egyéb'
+  };
+
+  return (
+    <div className="min-h-screen bg-gradient-to-br from-indigo-950 to-black text-white">
+      {/* Navigation Bar */}
+      <nav className="fixed top-0 left-0 right-0 z-50 px-8 py-5 flex items-center justify-between bg-black/20 backdrop-blur-md border-b border-white/5">
+        <Link href="/" className="text-2xl font-bold tracking-wider hover:text-accent transition-colors">ROBEO</Link>
+        <div className="flex items-center gap-6">
+          <span className="text-white/70">{user?.email}</span>
+          <button
+            onClick={async () => {
+              await supabase.auth.signOut();
+              router.push('/');
+            }}
+            className="px-6 py-2 border border-white/30 rounded-full hover:bg-white hover:text-black transition-all duration-300"
+          >
+            Kijelentkezés
+          </button>
+        </div>
+      </nav>
+
+      <main className="pt-36 pb-20 px-4 md:px-8">
+        <div className="max-w-7xl mx-auto">
+          <h1 className="text-4xl font-bold mb-2">Profilom</h1>
+          <p className="text-white/60 mb-10">Saját feltöltött termékeim</p>
+
+          {/* Statistics Dashboard */}
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-12">
+            <div className="bg-white/5 backdrop-blur-md border border-white/10 rounded-2xl p-6">
+              <div className="text-accent text-sm uppercase tracking-wider mb-1">Összes bevétel</div>
+              <div className="text-3xl font-bold">{stats.totalSales.toLocaleString()} Ft</div>
+            </div>
+
+            <div className="bg-white/5 backdrop-blur-md border border-white/10 rounded-2xl p-6">
+              <div className="text-accent text-sm uppercase tracking-wider mb-1">Sikeres eladás</div>
+              <div className="text-3xl font-bold">{stats.salesCount} db</div>
+            </div>
+
+            <div className="bg-white/5 backdrop-blur-md border border-white/10 rounded-2xl p-6">
+              <div className="text-accent text-sm uppercase tracking-wider mb-1">Értékelés</div>
+              <div className="flex items-center gap-2">
+                <span className="text-3xl font-bold">{stats.avgRating.toFixed(1)}</span>
+                <div className="flex">
+                  {[1,2,3,4,5].map(i => (
+                    <Star key={i} size={20} className="fill-accent text-accent" />
+                  ))}
+                </div>
+              </div>
+            </div>
+          </div>
+
+          {products.length === 0 ? (
+            <div className="text-center py-20 text-white/50">
+              <p className="text-xl mb-4">Még nincs feltöltött terméked</p>
+              <Link href="/upload" className="text-accent hover:underline">Töltsd fel az első termékedet →</Link>
+            </div>
+          ) : (
+            <>
+              <p className="text-white/50 mb-6">{products.length} termék</p>
+              <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4 md:gap-6">
+                {products.map((product) => (
+                  <div 
+                    key={product.id} 
+                    className="group bg-white/5 backdrop-blur-sm border border-white/10 rounded-2xl overflow-hidden relative"
+                  >
+                    <Link href={`/products/${product.id}`} className="aspect-square overflow-hidden block">
+                      {product.image_url ? (
+                        <img 
+                          src={product.image_url} 
+                          alt={product.name}
+                          className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
+                        />
+                      ) : (
+                        <div className="w-full h-full bg-white/10 flex items-center justify-center text-white/30">
+                          📷
+                        </div>
+                      )}
+                    </Link>
+
+                    <button
+                      onClick={() => deleteProduct(product.id)}
+                      className="absolute top-3 right-3 bg-red-500/80 hover:bg-red-500 text-white px-3 py-1 rounded-lg text-sm transition-colors"
+                    >
+                      Törlés
+                    </button>
+
+                    <div className="p-4">
+                      <div className="text-xs text-accent mb-1 uppercase tracking-wider">
+                        {categoryLabels[product.category] || product.category}
+                      </div>
+                      <h3 className="font-semibold text-lg truncate mb-1">{product.name}</h3>
+                      <div className="text-accent font-bold text-xl">{product.price.toLocaleString()} Ft</div>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </>
+          )}
+        </div>
+      </main>
+    </div>
+  );
+}
