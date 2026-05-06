@@ -2,6 +2,7 @@
 
 import ProductCard from './ProductCard';
 import ProductGridSkeleton from './ProductGridSkeleton';
+import EmptyState from '@/components/ui/EmptyState';
 import type { Product } from '@/types';
 
 interface ProductGridProps {
@@ -18,10 +19,11 @@ export default function ProductGrid({ products, loading, favorites, onToggleFavo
 
   if (products.length === 0) {
     return (
-      <div className="text-center py-20 text-muted-foreground">
-        <p className="text-xl mb-4">Nincs találat a keresési feltételekre</p>
-        <p className="text-sm">Próbáld meg más kategóriát vagy keresőkifejezést!</p>
-      </div>
+      <EmptyState
+        icon="search"
+        title="Nincs találat"
+        description="Próbáld meg más kategóriát vagy keresőkifejezést!"
+      />
     );
   }
 
