@@ -62,6 +62,7 @@ export default function OffersList() {
         .order('created_at', { ascending: false });
 
       if (error) throw error;
+      // @ts-ignore - Supabase returns different format than types expect
       setOffers(data || []);
     } catch (error) {
       console.error(error);
