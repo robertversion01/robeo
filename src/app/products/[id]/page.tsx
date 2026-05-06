@@ -143,15 +143,15 @@ export default function ProductPage({ params }: { params: Promise<{ id: string }
         </div>
       )}
 
-      <main className="pt-24 pb-12 px-3 md:px-6">
-        <div className="max-w-5xl mx-auto">
-          <Link href="/" className="inline-flex items-center gap-2 text-white/60 hover:text-white mb-8 transition-colors">
-            ← Vissza a főoldalra
-          </Link>
+      <main className="pt-16 pb-24 px-0 md:px-6">
+        <Link href="/" className="inline-flex items-center gap-2 text-white/60 hover:text-white mb-4 transition-colors px-3 md:px-0 md:mb-8">
+          ← Vissza a főoldalra
+        </Link>
 
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-10 bg-white/5 backdrop-blur-sm border border-white/10 rounded-3xl p-6 md:p-10">
+        <div className="max-w-5xl mx-auto">
+          <div className="grid grid-cols-1 md:grid-cols-2 md:gap-10">
             {/* Product Image */}
-            <div className="aspect-square rounded-2xl overflow-hidden bg-white/5">
+            <div className="aspect-square md:rounded-2xl md:overflow-hidden bg-white/5">
               {product.image_url ? (
                 <img 
                   src={product.image_url} 
@@ -166,26 +166,26 @@ export default function ProductPage({ params }: { params: Promise<{ id: string }
             </div>
 
             {/* Product Details */}
-            <div className="flex flex-col">
-              <div className="text-accent text-sm uppercase tracking-wider mb-2">
+            <div className="flex flex-col p-3 md:p-0">
+              <div className="text-accent text-sm uppercase tracking-wider mb-1">
                 {categoryLabels[product.category] || product.category}
               </div>
               
-              <h1 className="text-4xl md:text-5xl font-bold mb-4">{product.name}</h1>
+              <h1 className="text-2xl md:text-4xl font-bold mb-2">{product.name}</h1>
               
-              <div className="text-accent font-bold text-3xl mb-8">{product.price.toLocaleString()} Ft</div>
+              <div className="text-accent font-bold text-3xl mb-4">{product.price.toLocaleString()} Ft</div>
               
-              <div className="text-white/70 leading-relaxed mb-10 whitespace-pre-line">
+              <div className="text-white/70 leading-relaxed mb-4 whitespace-pre-line">
                 {product.description}
               </div>
 
-              <div className="mt-auto space-y-4">
-                <button className="w-full py-4 bg-accent text-black font-semibold rounded-xl hover:bg-accent/90 transition-all duration-300 hover:scale-[1.02] shadow-lg shadow-accent/20">
+              <div className="fixed bottom-0 left-0 right-0 md:static mt-auto p-3 md:p-0 bg-background/80 backdrop-blur-md border-t border-white/10 md:border-t-0 md:bg-transparent md:backdrop-blur-none md:space-y-4 space-y-3">
+                <button className="w-full py-3 md:py-4 bg-accent text-black font-semibold rounded-xl hover:bg-accent/90 transition-all duration-300 hover:scale-[1.02] shadow-lg shadow-accent/20">
                   Vásárlás
                 </button>
                 <button 
                   onClick={() => setShowMessageModal(true)}
-                  className="w-full py-4 border-2 border-white font-semibold rounded-xl hover:bg-white hover:text-black transition-all duration-300"
+                  className="w-full py-3 md:py-4 border-2 border-white font-semibold rounded-xl hover:bg-white hover:text-black transition-all duration-300"
                 >
                   Üzenet az eladónak
                 </button>
