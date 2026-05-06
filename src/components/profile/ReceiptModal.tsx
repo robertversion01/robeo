@@ -1,6 +1,5 @@
 'use client';
 
-// TODO: Replace with native implementation once shadcn is installed
 import { formatPrice, formatDate } from '@/lib/utils';
 import { Printer, Download, X } from 'lucide-react';
 
@@ -19,15 +18,22 @@ interface ReceiptModalProps {
 }
 
 export default function ReceiptModal({ isOpen, onClose, receipt }: ReceiptModalProps) {
+  if (!isOpen) return null;
+
   return (
-    <Dialog open={isOpen} onOpenChange={onClose}>
-      <DialogContent className="max-w-md bg-card border-border">
-        <DialogHeader>
-          <DialogTitle className="text-2xl font-bold text-center">🧾 Vevői Nyugta</DialogTitle>
-          <DialogDescription className="text-center text-muted-foreground">
-            Sikeres vásárlás igazolása
-          </DialogDescription>
-        </DialogHeader>
+    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/70 backdrop-blur-sm" onClick={onClose}>
+      <div 
+        className="max-w-md w-full bg-card border border-border rounded-2xl p-6 shadow-2xl"
+        onClick={e => e.stopPropagation()}
+      >
+        <button onClick={onClose} className="absolute top-4 right-4 text-muted-foreground hover:text-white">
+          <X size={20} />
+        </button>
+
+        <div className="text-center mb-6">
+          <div className="text-2xl font-bold">🧾 Vevői Nyugta</div>
+          <div className="text-muted-foreground">Sikeres vásárlás igazolása</div>
+        </div>
 
         <div className="space-y-4">
           <div className="bg-accent/10 p-4 rounded-xl text-center">
@@ -73,7 +79,7 @@ export default function ReceiptModal({ isOpen, onClose, receipt }: ReceiptModalP
             </button>
           </div>
         </div>
-      </DialogContent>
-    </Dialog>
+      </div>
+    </div>
   );
 }
