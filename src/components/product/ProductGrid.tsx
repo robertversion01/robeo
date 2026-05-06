@@ -28,7 +28,7 @@ export default function ProductGrid({ products, loading, favorites, onToggleFavo
   }
 
   return (
-    <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-2 md:gap-3 lg:gap-4">
+    <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-2">
       {products.map((product) => (
         <ProductCard
           key={product.id}
