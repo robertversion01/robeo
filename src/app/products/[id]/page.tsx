@@ -179,17 +179,20 @@ export default function ProductPage({ params }: { params: Promise<{ id: string }
                 {product.description}
               </div>
 
-              <div className="fixed bottom-0 left-0 right-0 md:static mt-auto p-3 md:p-0 bg-background/80 backdrop-blur-md border-t border-white/10 md:border-t-0 md:bg-transparent md:backdrop-blur-none md:space-y-4 space-y-3">
-                <button className="w-full py-3 md:py-4 bg-accent text-black font-semibold rounded-xl hover:bg-accent/90 transition-all duration-300 hover:scale-[1.02] shadow-lg shadow-accent/20">
-                  Vásárlás
-                </button>
-                <button 
-                  onClick={() => setShowMessageModal(true)}
-                  className="w-full py-3 md:py-4 border-2 border-white font-semibold rounded-xl hover:bg-white hover:text-black transition-all duration-300"
-                >
-                  Üzenet az eladónak
-                </button>
-              </div>
+               <div className="fixed bottom-0 left-0 right-0 md:static mt-auto p-3 md:p-0 md:mt-4 bg-black/80 backdrop-blur-md border-t border-white/10 md:border-t-0 md:bg-transparent md:backdrop-blur-none md:space-y-3 space-y-2">
+                 <button 
+                   onClick={() => router.push(`/checkout?id=${id}`)}
+                   className="w-full py-3 md:py-4 bg-cyan-500 text-black font-semibold rounded-xl hover:bg-cyan-400 transition-all duration-300 hover:scale-[1.02] shadow-lg shadow-cyan-500/20 md:bg-accent md:hover:bg-accent/90 md:shadow-accent/20"
+                 >
+                   Vásárlás
+                 </button>
+                 <button 
+                   onClick={() => setShowMessageModal(true)}
+                   className="w-full py-3 md:py-4 border-2 border-white font-semibold rounded-xl hover:bg-white hover:text-black transition-all duration-300"
+                 >
+                   Üzenet az eladónak
+                 </button>
+               </div>
             </div>
           </div>
         </div>
