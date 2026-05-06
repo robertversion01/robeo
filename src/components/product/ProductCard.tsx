@@ -14,9 +14,9 @@ interface ProductCardProps {
 export default function ProductCard({ product, isFavorite, onToggleFavorite }: ProductCardProps) {
   return (
     <div 
-      className="group bg-card/50 backdrop-blur-sm border border-border hover:border-accent/30 rounded-2xl overflow-hidden hover:bg-card/70 transition-all duration-300 hover:-translate-y-1 hover:shadow-xl hover:shadow-accent/5 relative"
+      className="group bg-card/50 backdrop-blur-sm border border-border hover:border-accent/30 rounded-xl overflow-hidden hover:bg-card/70 transition-all duration-200 hover:-translate-y-0.5 hover:shadow-md hover:shadow-accent/5 relative"
     >
-      <Link href={`/products/${product.id}`} className="aspect-square overflow-hidden block">
+      <Link href={`/products/${product.id}`} className="aspect-[4/5] overflow-hidden block">
         {product.image_url ? (
           <img 
             src={product.image_url} 
@@ -47,12 +47,12 @@ export default function ProductCard({ product, isFavorite, onToggleFavorite }: P
         />
       </button>
 
-      <div className="p-4">
-        <div className="text-xs text-accent mb-1 uppercase tracking-wider">
+      <div className="p-3">
+        <div className="text-[10px] text-accent mb-0.5 uppercase tracking-wider">
           {product.category}
         </div>
-        <h3 className="font-semibold text-lg truncate mb-1">{product.name}</h3>
-        <div className="text-accent font-bold text-xl">{formatPrice(product.price)}</div>
+        <h3 className="font-medium text-sm truncate mb-1">{product.name}</h3>
+        <div className="text-accent font-bold text-lg">{formatPrice(product.price)}</div>
       </div>
     </div>
   );
