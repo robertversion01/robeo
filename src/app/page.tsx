@@ -22,13 +22,13 @@ export default function Home() {
     <div className="min-h-screen text-white">
       <Navbar />
 
-      <main className="pt-36 pb-20 px-4 md:px-8">
+      <main className="pt-24 pb-12 px-3 md:px-6">
         <div className="max-w-7xl mx-auto">
-          <div className="text-center mb-12">
-            <h1 className="text-5xl md:text-7xl font-black tracking-widest mb-4">
+          <div className="text-center mb-6">
+            <h1 className="text-3xl md:text-5xl font-black tracking-widest mb-2">
               ROBEO
             </h1>
-            <p className="text-xl md:text-2xl text-muted-foreground max-w-xl mx-auto">
+            <p className="text-base md:text-lg text-muted-foreground max-w-xl mx-auto">
               A te stílusod, a te közösséged.
             </p>
           </div>
