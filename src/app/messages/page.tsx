@@ -239,7 +239,7 @@ export default function MessagesPage() {
                         {conv.email?.charAt(0).toUpperCase() || '?'}
                       </div>
                       <div>
-                        <div className="font-medium mb-1">{conv.email}</div>
+                        <div className="font-medium mb-1 truncate">{conv.email}</div>
                         <div className="text-sm text-white/60 truncate">{conv.last_message}</div>
                       </div>
                     </div>
@@ -292,7 +292,7 @@ export default function MessagesPage() {
                     </div>
                   )}
 
-                  <form onSubmit={sendMessage} className="flex gap-3">
+                  <form onSubmit={sendMessage} className="flex gap-3 max-w-full box-border">
                     <input
                       type="text"
                       value={newMessage}
