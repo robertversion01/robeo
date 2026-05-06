@@ -58,3 +58,13 @@ export interface Favorite {
   product_id: string;
   created_at: string;
 }
+
+export interface Review {
+  id: string;
+  reviewer_id: string;
+  reviewed_id: string;
+  offer_id: string;
+  rating: number;
+  comment?: string;
+  created_at: string;
+}
