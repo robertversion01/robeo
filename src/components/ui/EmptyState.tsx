@@ -1,6 +1,5 @@
 import Link from 'next/link';
 import { Search, Heart, MessageSquare, Package, ShoppingBag } from 'lucide-react';
-import { Button } from '@/components/ui/button';
 
 interface EmptyStateProps {
   icon: 'search' | 'favorites' | 'messages' | 'products' | 'cart';
@@ -31,9 +30,12 @@ export default function EmptyState({ icon, title, description, actionLabel, acti
       <p className="text-muted-foreground mb-6 max-w-sm">{description}</p>
       
       {actionLabel && actionHref && (
-        <Button asChild>
-          <Link href={actionHref}>{actionLabel}</Link>
-        </Button>
+        <Link 
+          href={actionHref} 
+          className="px-6 py-2 bg-accent text-accent-foreground rounded-full font-medium hover:bg-accent/90 transition-colors"
+        >
+          {actionLabel}
+        </Link>
       )}
     </div>
   );
