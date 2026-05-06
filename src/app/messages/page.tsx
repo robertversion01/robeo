@@ -213,20 +213,11 @@ export default function MessagesPage() {
           </div>
         </div>
       )}
-      {/* Navigation Bar */}
-      <nav className="fixed top-0 left-0 right-0 z-50 px-8 py-5 flex items-center justify-between bg-black/20 backdrop-blur-md border-b border-white/5">
-        <Link href="/" className="text-2xl font-bold tracking-wider hover:text-accent transition-colors">ROBEO</Link>
-        <div className="flex items-center gap-6">
-          <Link href="/upload" className="hover:text-accent transition-colors font-medium">Termék feltöltése</Link>
-          <Link href="/profile" className="hover:text-accent transition-colors font-medium">Profil</Link>
-        </div>
-      </nav>
-
-      <main className="pt-24 pb-8 h-screen">
-        <div className="max-w-6xl mx-auto h-full flex">
+      <main className="pt-20 pb-8 h-screen max-w-full overflow-x-hidden">
+        <div className="max-w-6xl mx-auto h-full flex flex-col md:flex-row">
           
           {/* Conversations Sidebar */}
-          <div className="w-full md:w-80 border-r border-white/10 overflow-y-auto">
+          <div className="w-full md:w-80 border-b md:border-b-0 md:border-r border-white/10 overflow-y-auto max-h-[30vh] md:max-h-full">
             <h2 className="text-xl font-bold p-5 border-b border-white/10">Beszélgetések</h2>
             
             {conversations.length === 0 ? (
@@ -259,7 +250,7 @@ export default function MessagesPage() {
           </div>
 
           {/* Chat Area */}
-          <div className="flex-1 flex flex-col">
+          <div className="flex-1 flex flex-col min-h-[70vh] md:min-h-0">
             {!selectedConversation ? (
               <div className="flex-1 flex items-center justify-center text-white/50">
                 Válassz ki egy beszélgetést

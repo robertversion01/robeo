@@ -32,11 +32,13 @@ export default function Navbar() {
   };
 
   return (
-    <nav className="fixed top-0 left-0 right-0 z-50 px-8 py-5 flex items-center justify-between bg-black/20 backdrop-blur-md border-b border-white/5">
-      <Link href="/" className="text-2xl font-bold tracking-wider hover:text-accent transition-colors">ROBEO</Link>
+    <nav className="fixed top-0 left-0 right-0 z-50 px-4 py-3 flex items-center justify-between bg-black/20 backdrop-blur-md border-b border-white/5">
+      <Link href="/" className="text-xl font-bold tracking-wider hover:text-accent transition-colors">ROBEO</Link>
       
-      <div className="flex items-center gap-6">
-        {user ? (
+      <div className="flex items-center gap-3 md:gap-6">
+        {loading ? (
+          <div className="w-20 h-8 animate-pulse bg-white/10 rounded-full"></div>
+        ) : user ? (
           <>
             <Link href="/messages" className="hover:text-accent transition-colors font-medium">Üzenetek</Link>
             <Link href="/favorites" className="hover:text-accent transition-colors font-medium">Kedvencek</Link>
