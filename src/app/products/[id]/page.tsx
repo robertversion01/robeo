@@ -143,17 +143,7 @@ export default function ProductPage({ params }: { params: Promise<{ id: string }
         </div>
       )}
 
-      {/* Navigation Bar */}
-      <nav className="fixed top-0 left-0 right-0 z-50 px-8 py-5 flex items-center justify-between bg-black/20 backdrop-blur-md border-b border-white/5">
-        <Link href="/" className="text-2xl font-bold tracking-wider hover:text-accent transition-colors">ROBEO</Link>
-        <div className="flex items-center gap-6">
-          <Link href="/messages" className="hover:text-accent transition-colors font-medium">Üzenetek</Link>
-          <Link href="/upload" className="hover:text-accent transition-colors font-medium">Termék feltöltése</Link>
-          <Link href="/profile" className="hover:text-accent transition-colors font-medium">Profil</Link>
-        </div>
-      </nav>
-
-      <main className="pt-36 pb-20 px-4 md:px-8">
+      <main className="pt-24 pb-12 px-3 md:px-6">
         <div className="max-w-5xl mx-auto">
           <Link href="/" className="inline-flex items-center gap-2 text-white/60 hover:text-white mb-8 transition-colors">
             ← Vissza a főoldalra

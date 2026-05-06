@@ -238,7 +238,7 @@ export default function MessagesPage() {
                       <div className="w-10 h-10 rounded-full bg-accent/20 flex items-center justify-center text-accent font-bold">
                         {conv.email?.charAt(0).toUpperCase() || '?'}
                       </div>
-                      <div>
+                      <div className="flex-1 min-w-0">
                         <div className="font-medium mb-1 truncate">{conv.email}</div>
                         <div className="text-sm text-white/60 truncate">{conv.last_message}</div>
                       </div>
