@@ -11,15 +11,12 @@ interface Offer {
   message: string | null;
   status: string;
   created_at: string;
+  buyer_id: string;
   product: {
     id: string;
     name: string;
     price: number;
     image_url: string | null;
-  };
-  buyer: {
-    id: string;
-    email: string;
   };
 }
 
@@ -55,8 +52,8 @@ export default function OffersList() {
           message,
           status,
           created_at,
-          product:products(id, name, price, image_url),
-          buyer:buyer_id(email)
+          buyer_id,
+          product:products(id, name, price, image_url)
         `)
         .eq('seller_id', user.id)
         .order('created_at', { ascending: false });
