@@ -4,6 +4,7 @@ import { useEffect, useState, use } from 'react';
 import { supabase } from '@/lib/supabase';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
+import OfferModal from '@/components/product/OfferModal';
 
 interface Product {
   id: string;
@@ -21,8 +22,9 @@ export default function ProductPage({ params }: { params: Promise<{ id: string }
   const [product, setProduct] = useState<Product | null>(null);
   const [loading, setLoading] = useState(true);
   
-  // Message Modal State
+  // Modal States
   const [showMessageModal, setShowMessageModal] = useState(false);
+  const [showOfferModal, setShowOfferModal] = useState(false);
   const [messageText, setMessageText] = useState('');
   const [sendingMessage, setSendingMessage] = useState(false);
   const router = useRouter();
@@ -109,6 +111,16 @@ export default function ProductPage({ params }: { params: Promise<{ id: string }
   return (
     <div className="min-h-screen bg-gradient-to-br from-indigo-950 to-black text-white">
 
+      {/* Offer Modal */}
+      <OfferModal
+        isOpen={showOfferModal}
+        onClose={() => setShowOfferModal(false)}
+        productId={product?.id || ''}
+        sellerId={product?.user_id || ''}
+        productTitle={product?.name || ''}
+        originalPrice={product?.price || 0}
+      />
+
       {/* Message Modal */}
       {showMessageModal && (
         <div className="fixed inset-0 bg-black/70 backdrop-blur-sm z-[100] flex items-center justify-center p-4">
@@ -186,12 +198,18 @@ export default function ProductPage({ params }: { params: Promise<{ id: string }
                  >
                    Vásárlás
                  </button>
-                 <button 
-                   onClick={() => setShowMessageModal(true)}
-                   className="w-full py-3 md:py-4 border-2 border-white font-semibold rounded-xl hover:bg-white hover:text-black transition-all duration-300"
-                 >
-                   Üzenet az eladónak
-                 </button>
+                  <button 
+                    onClick={() => setShowOfferModal(true)}
+                    className="w-full py-3 md:py-4 bg-white/10 font-semibold rounded-xl hover:bg-white/20 transition-all duration-300"
+                  >
+                    Ajánlatot teszek
+                  </button>
+                  <button 
+                    onClick={() => setShowMessageModal(true)}
+                    className="w-full py-3 md:py-4 border-2 border-white font-semibold rounded-xl hover:bg-white hover:text-black transition-all duration-300"
+                  >
+                    Üzenet az eladónak
+                  </button>
                </div>
             </div>
           </div>

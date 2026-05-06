@@ -4,6 +4,7 @@ import { useEffect, useState, useRef } from 'react';
 import { supabase } from '@/lib/supabase';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
+import OffersList from '@/components/product/OffersList';
 
 interface Message {
   id: string;
@@ -216,8 +217,13 @@ export default function MessagesPage() {
       <main className="pt-20 pb-8 h-screen max-w-full overflow-x-hidden">
         <div className="max-w-6xl mx-auto h-full flex flex-col md:flex-row">
           
-          {/* Conversations Sidebar */}
-          <div className="w-full md:w-80 border-b md:border-b-0 md:border-r border-white/10 overflow-y-auto max-h-[30vh] md:max-h-full">
+          {/* Offers Section */}
+          <div className="w-full md:w-80 border-b md:border-b-0 md:border-r border-white/10 overflow-y-auto">
+            <div className="p-5 border-b border-white/10">
+              <h2 className="text-xl font-bold mb-4">Beérkező ajánlatok</h2>
+              <OffersList />
+            </div>
+
             <h2 className="text-xl font-bold p-5 border-b border-white/10">Beszélgetések</h2>
             
             {conversations.length === 0 ? (

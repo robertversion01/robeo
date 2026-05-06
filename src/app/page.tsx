@@ -20,13 +20,14 @@ export default function Home() {
 
   return (
     <div className="min-h-screen text-white">
-      <Navbar />
+      <Navbar 
+        searchQuery={searchQuery}
+        onSearchChange={setSearchQuery}
+      />
 
-      <main className="pt-24 pb-12 px-3 md:px-6">
+      <main className="pt-28 pb-12 px-3 md:px-6">
         <div className="max-w-7xl mx-auto">
           <Filters
-            searchQuery={searchQuery}
-            onSearchChange={setSearchQuery}
             categories={categories}
             selectedCategory={selectedCategory}
             onCategoryChange={setSelectedCategory}

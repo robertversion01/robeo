@@ -50,7 +50,7 @@ export default function OfferModal({ isOpen, onClose, productId, sellerId, produ
           product_id: productId,
           buyer_id: user.id,
           seller_id: sellerId,
-          price: price,
+          offered_price: price,
           message: message,
           status: 'pending'
         });
@@ -62,6 +62,21 @@ export default function OfferModal({ isOpen, onClose, productId, sellerId, produ
           throw error;
         }
       } else {
+        // Send automatic system message to chat
+        try {
+          await supabase
+            .from('messages')
+            .insert({
+              sender_id: user.id,
+              receiver_id: sellerId,
+              content: `🔔 Új ajánlat érkezett: ${price.toLocaleString('hu-HU')} Ft`,
+              product_id: productId,
+              is_system_message: true
+            });
+        } catch {
+          // Ignore duplicate/conflict error for system message
+        }
+
         toast.success('✅ Ajánlat sikeresen elküldve! Az eladó hamarosan válaszol.');
         onClose();
       }

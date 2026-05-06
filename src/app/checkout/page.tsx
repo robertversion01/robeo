@@ -54,7 +54,7 @@ function CheckoutContent() {
   };
 
   const shippingCost = SHIPPING_OPTIONS.find(s => s.value === shippingMethod)?.cost || 0;
-  const total = (offer?.amount || 0) + shippingCost;
+  const total = (offer?.offered_price || 0) + shippingCost;
 
   const processPayment = async () => {
     setProcessingPayment(true);
@@ -93,7 +93,7 @@ function CheckoutContent() {
     alert(`✅ VÁSÁRLÁSI BIZONYIT
 
 Termék: ${product.name}
-Összeg: ${offer.amount.toLocaleString()} Ft
+Összeg: ${offer.offered_price.toLocaleString()} Ft
 Szállítás: ${SHIPPING_OPTIONS.find(s => s.value === shippingMethod)?.label}
 Szállítási költség: ${shippingCost.toLocaleString()} Ft
 Végösszeg: ${total.toLocaleString()} Ft
@@ -128,7 +128,7 @@ Köszönjük a vásárlást! A rendelésed azonnal feldolgozásra kerül.`);
               </div>
               <div className="flex-1">
                 <h3 className="font-semibold text-lg">{product.name}</h3>
-                <div className="text-accent font-bold text-xl">{offer.amount.toLocaleString()} Ft</div>
+                <div className="text-accent font-bold text-xl">{offer.offered_price.toLocaleString()} Ft</div>
               </div>
             </div>
 
@@ -151,7 +151,7 @@ Köszönjük a vásárlást! A rendelésed azonnal feldolgozásra kerül.`);
               <div className="space-y-3 pt-4 border-t border-white/10">
                 <div className="flex justify-between text-white/70">
                   <span>Termék ára</span>
-                  <span>{offer.amount.toLocaleString()} Ft</span>
+                  <span>{offer.offered_price.toLocaleString()} Ft</span>
                 </div>
                 <div className="flex justify-between text-white/70">
                   <span>Szállítási költség</span>

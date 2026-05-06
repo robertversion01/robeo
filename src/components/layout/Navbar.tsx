@@ -6,7 +6,12 @@ import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { MessageCircle, Heart, User, Search, Plus } from 'lucide-react';
 
-export default function Navbar() {
+interface NavbarProps {
+  searchQuery?: string;
+  onSearchChange?: (value: string) => void;
+}
+
+export default function Navbar({ searchQuery, onSearchChange }: NavbarProps) {
   const [user, setUser] = useState<any>(null);
   const [loading, setLoading] = useState(true);
   const router = useRouter();
@@ -38,16 +43,20 @@ export default function Navbar() {
         ROBEO
       </Link>
 
-      <div className="flex-1 max-w-md min-w-0">
-        <div className="relative">
-          <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-white/40" size={18} />
-          <input 
-            type="text" 
-            placeholder="Keresés..." 
-            className="w-full pl-10 pr-4 py-2 bg-white/10 rounded-full text-sm border border-white/10 focus:outline-none focus:border-accent/50 transition-colors"
-          />
+      {onSearchChange ? (
+        <div className="flex-1 max-w-md min-w-0 w-full">
+          <div className="relative">
+            <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-white/40" size={18} />
+            <input 
+              type="text" 
+              placeholder="Keresés..." 
+              value={searchQuery || ''}
+              onChange={(e) => onSearchChange(e.target.value)}
+              className="w-full pl-10 pr-4 py-2 bg-white/10 rounded-full text-sm border border-white/10 focus:outline-none focus:border-accent/50 transition-colors"
+            />
+          </div>
         </div>
-      </div>
+      ) : null}
       
       <div className="flex items-center gap-1 md:gap-3">
         {loading ? (

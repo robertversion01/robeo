@@ -1,16 +1,14 @@
 'use client';
 
 interface FiltersProps {
-  searchQuery: string;
-  onSearchChange: (value: string) => void;
   categories: { id: string; label: string }[];
   selectedCategory: string;
   onCategoryChange: (id: string) => void;
 }
 
-export default function Filters({ searchQuery, onSearchChange, categories, selectedCategory, onCategoryChange }: FiltersProps) {
+export default function Filters({ categories, selectedCategory, onCategoryChange }: FiltersProps) {
   return (
-    <div className="sticky top-[72px] z-40 bg-background/95 backdrop-blur-md pt-4 pb-3 mb-6 border-b border-border/50 -mx-4 px-4 md:-mx-8 md:px-8">
+    <div className="sticky top-[64px] z-40 bg-background/95 backdrop-blur-md pt-4 pb-3 mb-6 border-b border-border/50 -mx-4 px-4 md:-mx-8 md:px-8">
       {/* Category tabs */}
       <div className="overflow-x-auto pb-4 scrollbar-hide">
         <div className="flex gap-2 min-w-max">

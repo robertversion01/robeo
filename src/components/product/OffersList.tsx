@@ -7,7 +7,7 @@ import { Check, X, Clock } from 'lucide-react';
 
 interface Offer {
   id: string;
-  price: number;
+  offered_price: number;
   message: string | null;
   status: string;
   created_at: string;
@@ -48,7 +48,7 @@ export default function OffersList() {
         .from('offers')
         .select(`
           id,
-          price,
+          offered_price,
           status,
           created_at,
           buyer_id,
@@ -128,7 +128,7 @@ export default function OffersList() {
             <div className="flex-1">
               <p className="font-semibold">{offer.product.name}</p>
               <div className="flex items-center gap-3 mt-1">
-                <span className="text-accent font-bold">{offer.price.toLocaleString('hu-HU')} Ft</span>
+                <span className="text-accent font-bold">{offer.offered_price.toLocaleString('hu-HU')} Ft</span>
                 <span className="text-white/40 text-sm">eredeti: {offer.product.price.toLocaleString('hu-HU')} Ft</span>
               </div>
               {offer.message && <p className="text-white/60 text-sm mt-1">{offer.message}</p>}
