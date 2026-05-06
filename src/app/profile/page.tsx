@@ -4,6 +4,7 @@ import { useEffect, useState } from 'react';
 import { supabase } from '@/lib/supabase';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
+import { toast } from 'sonner';
 import { useUserStats } from '@/hooks/useUserStats';
 import StarRating from '@/components/review/StarRating';
 import OffersList from '@/components/product/OffersList';
@@ -60,9 +61,10 @@ export default function ProfilePage() {
 
       if (error) throw error;
       setProducts(prev => prev.filter(p => p.id !== productId));
+      toast.success('✅ Termék sikeresen törölve!');
     } catch (error) {
       console.error('Error deleting product:', error);
-      alert('Hiba történt a törlés során');
+      toast.error('❌ Hiba történt a törlés során');
     }
   };
 
