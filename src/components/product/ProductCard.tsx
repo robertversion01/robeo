@@ -48,11 +48,11 @@ export default function ProductCard({ product, isFavorite, onToggleFavorite }: P
       </button>
 
       <div className="p-2">
-        <div className="text-[10px] text-accent mb-0.5 uppercase tracking-wider">
+        <div className="text-accent font-bold text-xl">{formatPrice(product.price)}</div>
+        <h3 className="font-medium text-sm truncate mt-0.5">{product.name}</h3>
+        <div className="text-[10px] text-muted-foreground mt-0.5 uppercase tracking-wider">
           {product.category}
         </div>
-        <h3 className="font-medium text-sm truncate mb-0.5">{product.name}</h3>
-        <div className="text-accent font-bold text-xl">{formatPrice(product.price)}</div>
       </div>
     </div>
   );
