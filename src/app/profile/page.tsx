@@ -4,24 +4,19 @@ import { useEffect, useState } from 'react';
 import { supabase } from '@/lib/supabase';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
-import { Star } from 'lucide-react';
-import OffersList from '@/components/OffersList';
-
-interface Product {
-  id: string;
-  name: string;
-  price: number;
-  category: string;
-  image_url: string | null;
-  created_at: string;
-}
+import { useUserStats } from '@/hooks/useUserStats';
+import StarRating from '@/components/review/StarRating';
+import OffersList from '@/components/product/OffersList';
+import { formatPrice } from '@/lib/utils';
+import type { Product } from '@/types';
 
 export default function ProfilePage() {
   const [products, setProducts] = useState<Product[]>([]);
-  const [stats, setStats] = useState({ totalSales: 0, salesCount: 0, avgRating: 0 });
   const [loading, setLoading] = useState(true);
   const [user, setUser] = useState<any>(null);
   const router = useRouter();
+  
+  const { stats, loading: statsLoading } = useUserStats(user?.id);
 
   useEffect(() => {
     checkUser();
@@ -35,7 +30,6 @@ export default function ProfilePage() {
     }
     setUser(user);
     loadUserProducts(user.id);
-    loadStatistics(user.id);
   };
 
   const loadUserProducts = async (userId: string) => {
@@ -52,28 +46,6 @@ export default function ProfilePage() {
       console.error('Error fetching products:', error);
     } finally {
       setLoading(false);
-    }
-  };
-
-  const loadStatistics = async (userId: string) => {
-    try {
-      // Calculate total sales
-      const { data: offers } = await supabase
-        .from('offers')
-        .select('amount')
-        .eq('seller_id', userId)
-        .eq('status', 'paid');
-
-      if (offers) {
-        const totalSales = offers.reduce((sum, o) => sum + o.amount, 0);
-        setStats(prev => ({
-          ...prev,
-          totalSales,
-          salesCount: offers.length
-        }));
-      }
-    } catch (error) {
-      console.error(error);
     }
   };
 
@@ -141,28 +113,35 @@ export default function ProfilePage() {
           </div>
 
           {/* Statistics Dashboard */}
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-12">
+          <div className="grid grid-cols-1 md:grid-cols-4 gap-6 mb-12">
             <div className="bg-white/5 backdrop-blur-md border border-white/10 rounded-2xl p-6">
               <div className="text-accent text-sm uppercase tracking-wider mb-1">Összes bevétel</div>
-              <div className="text-3xl font-bold">{stats.totalSales.toLocaleString()} Ft</div>
+              <div className="text-3xl font-bold">{formatPrice(stats.totalRevenue)}</div>
             </div>
 
             <div className="bg-white/5 backdrop-blur-md border border-white/10 rounded-2xl p-6">
               <div className="text-accent text-sm uppercase tracking-wider mb-1">Sikeres eladás</div>
-              <div className="text-3xl font-bold">{stats.salesCount} db</div>
+              <div className="text-3xl font-bold">{stats.soldProducts} db</div>
+            </div>
+
+            <div className="bg-white/5 backdrop-blur-md border border-white/10 rounded-2xl p-6">
+              <div className="text-accent text-sm uppercase tracking-wider mb-1">Feltöltött hirdetések</div>
+              <div className="text-3xl font-bold">{stats.totalProducts} db</div>
             </div>
 
             <div className="bg-white/5 backdrop-blur-md border border-white/10 rounded-2xl p-6">
               <div className="text-accent text-sm uppercase tracking-wider mb-1">Értékelés</div>
-              <div className="flex items-center gap-2">
-                <span className="text-3xl font-bold">{stats.avgRating.toFixed(1)}</span>
-                <div className="flex">
-                  {[1,2,3,4,5].map(i => (
-                    <Star key={i} size={20} className="fill-accent text-accent" />
-                  ))}
-                </div>
+              <div className="flex items-center gap-3">
+                <span className="text-3xl font-bold">{stats.averageRating.toFixed(1)}</span>
+                <StarRating rating={stats.averageRating} size={20} />
+                <span className="text-white/50">({stats.reviewCount})</span>
               </div>
             </div>
+          </div>
+
+          {/* Saját hirdetések */}
+          <div className="mb-6">
+            <h2 className="text-2xl font-bold mb-6">📦 Saját hirdetéseim</h2>
           </div>
 
           {products.length === 0 ? (
@@ -205,7 +184,7 @@ export default function ProfilePage() {
                         {categoryLabels[product.category] || product.category}
                       </div>
                       <h3 className="font-semibold text-lg truncate mb-1">{product.name}</h3>
-                      <div className="text-accent font-bold text-xl">{product.price.toLocaleString()} Ft</div>
+                      <div className="text-accent font-bold text-xl">{formatPrice(product.price)}</div>
                     </div>
                   </div>
                 ))}
