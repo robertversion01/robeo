@@ -38,7 +38,7 @@ export default function Navbar() {
         ROBEO
       </Link>
 
-      <div className="flex-1 max-w-md">
+      <div className="flex-1 max-w-md min-w-0">
         <div className="relative">
           <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-white/40" size={18} />
           <input 
