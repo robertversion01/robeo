@@ -166,7 +166,7 @@ export default function ProductPage({ params }: { params: Promise<{ id: string }
             </div>
 
             {/* Product Details */}
-            <div className="flex flex-col p-3 md:p-0">
+            <div className="flex flex-col p-3 md:p-0 pb-48">
               <div className="text-accent text-sm uppercase tracking-wider mb-1">
                 {categoryLabels[product.category] || product.category}
               </div>

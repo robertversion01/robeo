@@ -125,8 +125,31 @@ export default function ProfilePage() {
           </div>
 
           {/* Saját hirdetések */}
-          <div className="mb-6">
-            <h2 className="text-2xl font-bold mb-6">📦 Saját hirdetéseim</h2>
+          <div className="mb-6 flex items-center justify-between">
+            <h2 className="text-2xl font-bold">📦 Saját hirdetéseim</h2>
+            <button
+              onClick={async () => {
+                if (!confirm('Biztosan törölni szeretnéd AZ ÖSSZES termékedet?')) return;
+                
+                try {
+                  const { data: { user } } = await supabase.auth.getUser();
+                  if (!user) return;
+                  
+                  await supabase
+                    .from('products')
+                    .delete()
+                    .eq('user_id', user.id);
+                  
+                  setProducts([]);
+                  toast.success('✅ Minden termék sikeresen törölve!');
+                } catch (error) {
+                  toast.error('❌ Hiba történt a törlés során');
+                }
+              }}
+              className="px-4 py-2 bg-red-500/20 hover:bg-red-500/30 text-red-400 rounded-xl text-sm transition-colors"
+            >
+              Összes törlése
+            </button>
           </div>
 
           {products.length === 0 ? (

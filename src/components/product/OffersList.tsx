@@ -64,8 +64,9 @@ export default function OffersList() {
       if (error) throw error;
       // @ts-ignore - Supabase returns different format than types expect
       setOffers(data || []);
-    } catch (error) {
-      console.error(error);
+    } catch (error: any) {
+      console.error("Supabase Error Details:", error.message);
+      setOffers([]);
     } finally {
       setLoading(false);
     }

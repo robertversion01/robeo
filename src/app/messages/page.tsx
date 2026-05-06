@@ -292,7 +292,7 @@ export default function MessagesPage() {
                     </div>
                   )}
 
-                  <form onSubmit={sendMessage} className="flex gap-3 max-w-full box-border">
+                   <form onSubmit={sendMessage} className="flex gap-3 max-w-full box-border pr-4">
                     <input
                       type="text"
                       value={newMessage}
