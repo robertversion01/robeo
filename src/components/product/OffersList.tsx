@@ -49,7 +49,6 @@ export default function OffersList() {
         .select(`
           id,
           price,
-          message,
           status,
           created_at,
           buyer_id,
