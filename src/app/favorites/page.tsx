@@ -82,18 +82,7 @@ export default function FavoritesPage() {
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-indigo-950 to-black text-white">
-      {/* Navigation Bar */}
-      <nav className="fixed top-0 left-0 right-0 z-50 px-8 py-5 flex items-center justify-between bg-black/20 backdrop-blur-md border-b border-white/5">
-        <Link href="/" className="text-2xl font-bold tracking-wider hover:text-accent transition-colors">ROBEO</Link>
-        <div className="flex items-center gap-6">
-          <Link href="/messages" className="hover:text-accent transition-colors font-medium">Üzenetek</Link>
-          <Link href="/favorites" className="text-accent font-medium">Kedvencek</Link>
-          <Link href="/upload" className="hover:text-accent transition-colors font-medium">Termék feltöltése</Link>
-          <Link href="/profile" className="hover:text-accent transition-colors font-medium">Profil</Link>
-        </div>
-      </nav>
-
-      <main className="pt-36 pb-20 px-4 md:px-8">
+      <main className="pt-24 pb-12 px-3 md:px-6">
         <div className="max-w-7xl mx-auto">
           <h1 className="text-4xl font-bold mb-2">❤️ Kedvenceim</h1>
           <p className="text-white/60 mb-10">Elmentett termékeim</p>
@@ -106,7 +95,7 @@ export default function FavoritesPage() {
           ) : (
             <>
               <p className="text-white/50 mb-6">{products.length} kedvenc termék</p>
-              <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4 md:gap-6">
+            <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-2">
                 {products.map((product) => (
                   <div 
                     key={product.id} 
@@ -133,7 +122,7 @@ export default function FavoritesPage() {
                       ❤
                     </button>
 
-                    <div className="p-4">
+                    <div className="p-2">
                       <div className="text-xs text-accent mb-1 uppercase tracking-wider">
                         {categoryLabels[product.category] || product.category}
                       </div>
