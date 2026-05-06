@@ -1,8 +1,6 @@
 'use client';
 
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from '@/components/ui/dialog';
-import { Button } from '@/components/ui/button';
-import { Separator } from '@/components/ui/separator';
+// TODO: Replace with native implementation once shadcn is installed
 import { formatPrice, formatDate } from '@/lib/utils';
 import { Printer, Download, X } from 'lucide-react';
 
@@ -37,7 +35,7 @@ export default function ReceiptModal({ isOpen, onClose, receipt }: ReceiptModalP
             <div className="text-sm text-muted-foreground">Tranzakció azonosító: {receipt.transactionId}</div>
           </div>
 
-          <Separator />
+          <div className="h-px bg-border w-full my-2" />
 
           <div className="space-y-3">
             <div className="flex justify-between">
@@ -58,21 +56,21 @@ export default function ReceiptModal({ isOpen, onClose, receipt }: ReceiptModalP
             </div>
           </div>
 
-          <Separator />
+          <div className="h-px bg-border w-full my-2" />
 
           <div className="text-center text-sm text-muted-foreground">
             Ez egy elektronikus nyugta, amely jogosítványként tekinthető.
           </div>
 
           <div className="flex gap-3">
-            <Button variant="secondary" className="flex-1">
+            <button className="flex-1 px-4 py-2 bg-secondary rounded-xl text-secondary-foreground hover:bg-secondary/80 transition-colors flex items-center justify-center">
               <Download className="w-4 h-4 mr-2" />
               Letöltés
-            </Button>
-            <Button variant="secondary" className="flex-1">
+            </button>
+            <button className="flex-1 px-4 py-2 bg-secondary rounded-xl text-secondary-foreground hover:bg-secondary/80 transition-colors flex items-center justify-center">
               <Printer className="w-4 h-4 mr-2" />
               Nyomtatás
-            </Button>
+            </button>
           </div>
         </div>
       </DialogContent>
