@@ -3,7 +3,7 @@
 import { useEffect, useState, Suspense } from 'react';
 import { supabase } from '@/lib/supabase';
 import { useSearchParams, useRouter } from 'next/navigation';
-import CustomSelect from '@/components/CustomSelect';
+import CustomSelect from '@/components/ui/CustomSelect';
 
 const SHIPPING_OPTIONS = [
   { value: 'foxpost', label: 'Foxpost automatába', cost: 1190 },

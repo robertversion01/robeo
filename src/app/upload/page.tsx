@@ -3,7 +3,7 @@
 import { useState } from 'react';
 import { supabase } from '@/lib/supabase';
 import { toast } from 'sonner';
-import CustomSelect from '@/components/CustomSelect';
+import CustomSelect from '@/components/ui/CustomSelect';
 
 export default function UploadPage() {
   const [formData, setFormData] = useState({
