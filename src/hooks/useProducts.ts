@@ -56,7 +56,7 @@ export function useProducts() {
       const { data, error } = await supabase
         .from('products')
         .select('*')
-        .in('status', ['available', 'active'])
+        .in('status', ['active'])
         .order(sortConfig.column, { ascending: sortConfig.order === 'asc' });
 
       if (error) throw error;

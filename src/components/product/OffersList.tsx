@@ -50,6 +50,7 @@ export default function OffersList() {
         .select(`
           id,
           offered_price,
+          message,
           status,
           created_at,
           buyer_id,
@@ -59,8 +60,12 @@ export default function OffersList() {
         .order('created_at', { ascending: false });
 
       if (error) throw error;
-      // @ts-ignore - Supabase returns different format than types expect
-      setOffers(data || []);
+      // Supabase joins return arrays, map to the expected format
+      const mapped = (data || []).map((item: any) => ({
+        ...item,
+        product: Array.isArray(item.product) ? item.product[0] : item.product,
+      }));
+      setOffers(mapped as Offer[]);
     } catch (error: any) {
       console.error("Supabase Error Details:", error.message);
       setOffers([]);

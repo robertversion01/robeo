@@ -13,15 +13,20 @@ interface Product {
   description: string;
   price: number;
   category: string;
+  condition?: string;
+  brand?: string;
   image_url: string | null;
+  images: string[];
   created_at: string;
   user_id: string;
+  status: string;
 }
 
 export default function ProductPage({ params }: { params: Promise<{ id: string }> }) {
   const { id } = use(params);
   const [product, setProduct] = useState<Product | null>(null);
   const [loading, setLoading] = useState(true);
+  const [selectedImageIndex, setSelectedImageIndex] = useState(0);
   
   // Modal States
   const [showMessageModal, setShowMessageModal] = useState(false);
@@ -163,17 +168,43 @@ export default function ProductPage({ params }: { params: Promise<{ id: string }
 
         <div className="max-w-5xl mx-auto">
           <div className="grid grid-cols-1 md:grid-cols-2 md:gap-10">
-            {/* Product Image */}
-            <div className="aspect-square md:rounded-2xl md:overflow-hidden bg-white/5">
-              {product.image_url ? (
-                <img 
-                  src={product.image_url} 
-                  alt={product.name}
-                  className="w-full h-full object-cover"
-                />
-              ) : (
-                <div className="w-full h-full flex items-center justify-center text-white/30 text-6xl">
-                  📷
+            {/* Product Image Gallery */}
+            <div>
+              {/* Main Image */}
+              <div className="aspect-square md:rounded-2xl md:overflow-hidden bg-white/5 mb-3">
+                {(product.images && product.images[selectedImageIndex]) || product.image_url ? (
+                  <img 
+                    src={((product.images && product.images[selectedImageIndex]) || product.image_url) ?? ''} 
+                    alt={product.name}
+                    className="w-full h-full object-cover"
+                  />
+                ) : (
+                  <div className="w-full h-full flex items-center justify-center text-white/30 text-6xl">
+                    📷
+                  </div>
+                )}
+              </div>
+
+              {/* Thumbnail Gallery for additional images */}
+              {product.images && product.images.length > 1 && (
+                <div className="flex gap-2 overflow-x-auto pb-2">
+                  {product.images.map((imgUrl: string, index: number) => (
+                    <button
+                      key={index}
+                      onClick={() => setSelectedImageIndex(index)}
+                      className={`w-16 h-16 rounded-lg overflow-hidden flex-shrink-0 border-2 transition-all ${
+                        selectedImageIndex === index 
+                          ? 'border-accent opacity-100' 
+                          : 'border-white/10 opacity-60 hover:opacity-100'
+                      }`}
+                    >
+                      <img 
+                        src={imgUrl} 
+                        alt={`${product.name} ${index + 1}`}
+                        className="w-full h-full object-cover"
+                      />
+                    </button>
+                  ))}
                 </div>
               )}
             </div>

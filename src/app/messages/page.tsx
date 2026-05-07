@@ -101,7 +101,7 @@ export default function MessagesPage() {
     // Get user emails from auth.users
     const userIds = Array.from(convMap.keys());
     const { data: userData } = await supabase
-      .from('users')
+      .from('profiles')
       .select('id, email')
       .in('id', userIds);
 
