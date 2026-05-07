@@ -1,0 +1,193 @@
+'use client';
+
+import { useEffect, useState } from 'react';
+import { useSearchParams, useRouter } from 'next/navigation';
+import { supabase } from '@/lib/supabase';
+import Link from 'next/link';
+import { CheckCircle, ArrowRight, Truck, Package, CreditCard } from 'lucide-react';
+
+export default function CheckoutSuccessPage() {
+  const searchParams = useSearchParams();
+  const router = useRouter();
+  const [loading, setLoading] = useState(true);
+  const [transaction, setTransaction] = useState<any>(null);
+  const [product, setProduct] = useState<any>(null);
+  const [error, setError] = useState<string | null>(null);
+
+  useEffect(() => {
+    const sessionId = searchParams.get('session_id');
+    if (!sessionId) {
+      setError('No session ID provided');
+      setLoading(false);
+      return;
+    }
+
+    const fetchTransactionDetails = async () => {
+      try {
+        // Get the transaction from the session ID
+        const { data: transactionData, error: transactionError } = await supabase
+          .from('transactions')
+          .select('*, product:product_id(*), buyer:buyer_id(*), seller:seller_id(*)')
+          .eq('payment_intent_id', sessionId)
+          .single();
+
+        if (transactionError || !transactionData) {
+          throw new Error('Transaction not found');
+        }
+
+        setTransaction(transactionData);
+        setProduct(transactionData.product);
+
+        // Update the transaction status to 'paid'
+        await supabase
+          .from('transactions')
+          .update({ status: 'paid' })
+          .eq('id', transactionData.id);
+
+        // Update the product status to 'sold'
+        await supabase
+          .from('products')
+          .update({ status: 'sold' })
+          .eq('id', transactionData.product_id);
+
+        // Send a system message to the seller
+        await supabase
+          .from('messages')
+          .insert({
+            sender_id: transactionData.buyer_id,
+            receiver_id: transactionData.seller_id,
+            content: `🎉 Sikeres vásárlás! A "${transactionData.product.name}" termék kifizetése megtörtént. A pénz letétben van, amíg a termék meg nem érkezik.`,
+            product_id: transactionData.product_id,
+            is_system_message: true
+          });
+
+      } catch (err: any) {
+        console.error('Error fetching transaction details:', err);
+        setError(err.message || 'An error occurred');
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchTransactionDetails();
+  }, [searchParams]);
+
+  if (loading) {
+    return (
+      <div className="min-h-screen bg-white dark:bg-gradient-to-br dark:from-indigo-950 dark:to-black text-gray-900 dark:text-white flex items-center justify-center">
+        <div className="animate-spin h-10 w-10 border-4 border-accent border-t-transparent rounded-full"></div>
+      </div>
+    );
+  }
+
+  if (error) {
+    return (
+      <div className="min-h-screen bg-white dark:bg-gradient-to-br dark:from-indigo-950 dark:to-black text-gray-900 dark:text-white flex flex-col items-center justify-center p-4">
+        <div className="max-w-md w-full bg-white dark:bg-gray-900 rounded-lg p-6 shadow-lg border border-gray-200 dark:border-gray-800 text-center">
+          <h1 className="text-xl font-bold mb-4">Hiba történt</h1>
+          <p className="text-gray-600 dark:text-gray-400 mb-6">{error}</p>
+          <Link 
+            href="/"
+            className="inline-block px-4 py-2 bg-accent text-white rounded-lg hover:bg-accent/90 transition-colors"
+          >
+            Vissza a főoldalra
+          </Link>
+        </div>
+      </div>
+    );
+  }
+
+  return (
+    <div className="min-h-screen bg-white dark:bg-gradient-to-br dark:from-indigo-950 dark:to-black text-gray-900 dark:text-white">
+      <main className="pt-16 pb-12 px-4 md:px-6">
+        <div className="max-w-3xl mx-auto">
+          <div className="bg-white dark:bg-gray-900 rounded-lg p-6 shadow-lg border border-gray-200 dark:border-gray-800">
+            <div className="flex items-center justify-center mb-6">
+              <CheckCircle className="text-green-500 mr-2" size={28} />
+              <h1 className="text-xl font-bold">Sikeres vásárlás!</h1>
+            </div>
+
+            <div className="mb-6 p-4 bg-gray-50 dark:bg-gray-800/50 rounded-lg border border-gray-200 dark:border-gray-700">
+              <p className="text-sm text-gray-600 dark:text-gray-400 mb-1">Vásárolt termék:</p>
+              {product && (
+                <div className="flex items-center">
+                  <div className="w-16 h-16 rounded-md overflow-hidden mr-3 bg-gray-100 dark:bg-gray-800 flex-shrink-0">
+                    {product.image_url ? (
+                      <img 
+                        src={product.image_url} 
+                        alt={product.name}
+                        className="w-full h-full object-cover"
+                      />
+                    ) : (
+                      <div className="w-full h-full flex items-center justify-center text-gray-400">📷</div>
+                    )}
+                  </div>
+                  <div>
+                    <h3 className="font-medium text-gray-900 dark:text-white">{product.name}</h3>
+                    <p className="text-accent font-bold">{product.price.toLocaleString()} Ft</p>
+                  </div>
+                </div>
+              )}
+            </div>
+
+            <div className="mb-6">
+              <h2 className="text-lg font-semibold mb-3">Fizetési folyamat</h2>
+              <div className="space-y-4">
+                <div className="flex items-start">
+                  <div className="bg-green-100 dark:bg-green-900/30 p-2 rounded-full mr-3">
+                    <CreditCard className="text-green-600 dark:text-green-400" size={18} />
+                  </div>
+                  <div>
+                    <h3 className="font-medium text-gray-900 dark:text-white">Fizetés megtörtént</h3>
+                    <p className="text-sm text-gray-600 dark:text-gray-400">A pénz biztonságos letétben van, amíg a termék meg nem érkezik.</p>
+                  </div>
+                </div>
+                
+                <div className="flex items-start">
+                  <div className="bg-gray-100 dark:bg-gray-800 p-2 rounded-full mr-3">
+                    <Package className="text-gray-500" size={18} />
+                  </div>
+                  <div>
+                    <h3 className="font-medium text-gray-900 dark:text-white">Termék feladása</h3>
+                    <p className="text-sm text-gray-600 dark:text-gray-400">Az eladó hamarosan feladja a terméket.</p>
+                  </div>
+                </div>
+                
+                <div className="flex items-start">
+                  <div className="bg-gray-100 dark:bg-gray-800 p-2 rounded-full mr-3">
+                    <Truck className="text-gray-500" size={18} />
+                  </div>
+                  <div>
+                    <h3 className="font-medium text-gray-900 dark:text-white">Szállítás</h3>
+                    <p className="text-sm text-gray-600 dark:text-gray-400">A termék úton van hozzád.</p>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <div className="text-center space-y-3">
+              <p className="text-sm text-gray-600 dark:text-gray-400">
+                A vásárlás részleteit és a szállítás állapotát az üzenetekben követheted nyomon.
+              </p>
+              <div className="flex flex-col sm:flex-row gap-3 justify-center">
+                <Link 
+                  href="/messages"
+                  className="px-4 py-2 bg-accent text-white rounded-lg hover:bg-accent/90 transition-colors flex items-center justify-center"
+                >
+                  Üzenetek megtekintése
+                  <ArrowRight size={16} className="ml-1" />
+                </Link>
+                <Link 
+                  href="/"
+                  className="px-4 py-2 bg-gray-100 dark:bg-gray-800 text-gray-800 dark:text-white rounded-lg hover:bg-gray-200 dark:hover:bg-gray-700 transition-colors"
+                >
+                  Vissza a főoldalra
+                </Link>
+              </div>
+            </div>
+          </div>
+        </div>
+      </main>
+    </div>
+  );
+}

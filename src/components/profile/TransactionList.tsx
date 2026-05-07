@@ -1,0 +1,303 @@
+'use client';
+
+import { useState, useEffect } from 'react';
+import { supabase } from '@/lib/supabase';
+import { formatPrice } from '@/lib/utils';
+import { getOptimizedImageUrl } from '@/lib/imageUtils';
+import { toast } from 'sonner';
+import { CheckCircle, Truck, Package, Clock, AlertCircle, CreditCard } from 'lucide-react';
+import Link from 'next/link';
+
+interface Transaction {
+  id: string;
+  product_id: string;
+  buyer_id: string;
+  seller_id: string;
+  amount: number;
+  status: string;
+  created_at: string;
+  updated_at: string;
+  payment_intent_id: string;
+  product: any;
+  buyer: any;
+  seller: any;
+}
+
+export default function TransactionList() {
+  const [transactions, setTransactions] = useState<Transaction[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [activeTab, setActiveTab] = useState<'buying' | 'selling'>('buying');
+
+  useEffect(() => {
+    loadTransactions();
+  }, [activeTab]);
+
+  const loadTransactions = async () => {
+    try {
+      setLoading(true);
+      const { data: { user } } = await supabase.auth.getUser();
+      
+      if (!user) return;
+
+      const { data, error } = await supabase
+        .from('transactions')
+        .select(`
+          *,
+          product:product_id(*),
+          buyer:buyer_id(*),
+          seller:seller_id(*)
+        `)
+        .eq(activeTab === 'buying' ? 'buyer_id' : 'seller_id', user.id)
+        .order('created_at', { ascending: false });
+
+      if (error) throw error;
+      setTransactions(data || []);
+    } catch (error) {
+      console.error('Error loading transactions:', error);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const updateTransactionStatus = async (transactionId: string, newStatus: string) => {
+    try {
+      const { error } = await supabase
+        .from('transactions')
+        .update({ status: newStatus })
+        .eq('id', transactionId);
+
+      if (error) throw error;
+
+      // Update local state
+      setTransactions(prev => 
+        prev.map(t => t.id === transactionId ? { ...t, status: newStatus } : t)
+      );
+
+      // Send notification to the other party
+      const transaction = transactions.find(t => t.id === transactionId);
+      if (transaction) {
+        const isBuyer = activeTab === 'buying';
+        const senderId = isBuyer ? transaction.buyer_id : transaction.seller_id;
+        const receiverId = isBuyer ? transaction.seller_id : transaction.buyer_id;
+        
+        let message = '';
+        switch (newStatus) {
+          case 'shipped':
+            message = `📦 A termék feladásra került! "${transaction.product.name}" úton van hozzád.`;
+            break;
+          case 'delivered':
+            message = `✅ A vevő megerősítette, hogy a "${transaction.product.name}" termék megérkezett!`;
+            break;
+          case 'completed':
+            message = `💰 A tranzakció befejeződött! A "${transaction.product.name}" termék árát megkapta az eladó.`;
+            break;
+        }
+
+        if (message) {
+          await supabase
+            .from('messages')
+            .insert({
+              sender_id: senderId,
+              receiver_id: receiverId,
+              content: message,
+              product_id: transaction.product_id,
+              is_system_message: true
+            });
+        }
+      }
+
+      toast.success('Státusz sikeresen frissítve!');
+    } catch (error) {
+      console.error('Error updating transaction status:', error);
+      toast.error('Hiba történt a státusz frissítése során');
+    }
+  };
+
+  const getStatusIcon = (status: string) => {
+    switch (status) {
+      case 'payment_pending':
+        return <Clock className="text-yellow-500" size={18} />;
+      case 'payment_failed':
+        return <AlertCircle className="text-red-500" size={18} />;
+      case 'paid':
+        return <CreditCard className="text-green-500" size={18} />;
+      case 'shipped':
+        return <Truck className="text-blue-500" size={18} />;
+      case 'delivered':
+        return <Package className="text-purple-500" size={18} />;
+      case 'completed':
+        return <CheckCircle className="text-green-500" size={18} />;
+      default:
+        return <Clock className="text-gray-500" size={18} />;
+    }
+  };
+
+  const getStatusLabel = (status: string) => {
+    switch (status) {
+      case 'payment_pending': return 'Fizetésre vár';
+      case 'payment_failed': return 'Fizetés sikertelen';
+      case 'paid': return 'Kifizetve';
+      case 'shipped': return 'Feladva';
+      case 'delivered': return 'Kézbesítve';
+      case 'completed': return 'Befejezve';
+      default: return 'Ismeretlen';
+    }
+  };
+
+  const getStatusColor = (status: string) => {
+    switch (status) {
+      case 'payment_pending': return 'bg-yellow-100 text-yellow-800 dark:bg-yellow-900/30 dark:text-yellow-300';
+      case 'payment_failed': return 'bg-red-100 text-red-800 dark:bg-red-900/30 dark:text-red-300';
+      case 'paid': return 'bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-300';
+      case 'shipped': return 'bg-blue-100 text-blue-800 dark:bg-blue-900/30 dark:text-blue-300';
+      case 'delivered': return 'bg-purple-100 text-purple-800 dark:bg-purple-900/30 dark:text-purple-300';
+      case 'completed': return 'bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-300';
+      default: return 'bg-gray-100 text-gray-800 dark:bg-gray-800 dark:text-gray-300';
+    }
+  };
+
+  const renderActionButton = (transaction: Transaction) => {
+    const isBuyer = activeTab === 'buying';
+    const status = transaction.status;
+
+    if (isBuyer) {
+      // Buyer actions
+      if (status === 'shipped') {
+        return (
+          <button
+            onClick={() => updateTransactionStatus(transaction.id, 'delivered')}
+            className="px-3 py-1.5 bg-accent text-white text-xs rounded-lg hover:bg-accent/90 transition-colors"
+          >
+            Megérkezett a termék
+          </button>
+        );
+      }
+    } else {
+      // Seller actions
+      if (status === 'paid') {
+        return (
+          <button
+            onClick={() => updateTransactionStatus(transaction.id, 'shipped')}
+            className="px-3 py-1.5 bg-accent text-white text-xs rounded-lg hover:bg-accent/90 transition-colors"
+          >
+            Feladtam a terméket
+          </button>
+        );
+      }
+      
+      if (status === 'delivered') {
+        return (
+          <button
+            onClick={() => updateTransactionStatus(transaction.id, 'completed')}
+            className="px-3 py-1.5 bg-accent text-white text-xs rounded-lg hover:bg-accent/90 transition-colors"
+          >
+            Pénz átvétele
+          </button>
+        );
+      }
+    }
+
+    return null;
+  };
+
+  return (
+    <div className="space-y-4">
+      <div className="flex border-b border-gray-200 dark:border-gray-800 mb-4">
+        <button
+          onClick={() => setActiveTab('buying')}
+          className={`px-4 py-2 text-sm font-medium ${
+            activeTab === 'buying'
+              ? 'text-accent border-b-2 border-accent'
+              : 'text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-300'
+          }`}
+        >
+          Vásárlásaim
+        </button>
+        <button
+          onClick={() => setActiveTab('selling')}
+          className={`px-4 py-2 text-sm font-medium ${
+            activeTab === 'selling'
+              ? 'text-accent border-b-2 border-accent'
+              : 'text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-300'
+          }`}
+        >
+          Eladásaim
+        </button>
+      </div>
+
+      {loading ? (
+        <div className="flex justify-center py-8">
+          <div className="animate-spin h-8 w-8 border-4 border-accent border-t-transparent rounded-full"></div>
+        </div>
+      ) : transactions.length === 0 ? (
+        <div className="text-center py-8 text-gray-500 dark:text-gray-400">
+          <p>Nincs még {activeTab === 'buying' ? 'vásárlásod' : 'eladásod'}.</p>
+          {activeTab === 'buying' && (
+            <Link href="/" className="text-accent hover:underline mt-2 inline-block">
+              Böngéssz termékek között
+            </Link>
+          )}
+        </div>
+      ) : (
+        <div className="space-y-3">
+          {transactions.map((transaction) => (
+            <div 
+              key={transaction.id} 
+              className="bg-white dark:bg-white/5 border border-gray-200 dark:border-white/10 rounded-lg p-3"
+            >
+              <div className="flex items-start gap-3">
+                {/* Product Image */}
+                <div className="w-16 h-16 rounded-md overflow-hidden bg-gray-100 dark:bg-gray-800 flex-shrink-0">
+                  {transaction.product?.image_url ? (
+                    <img 
+                      src={getOptimizedImageUrl(transaction.product.image_url, 100, 80)} 
+                      alt={transaction.product.name}
+                      className="w-full h-full object-cover"
+                    />
+                  ) : (
+                    <div className="w-full h-full flex items-center justify-center text-gray-400">📷</div>
+                  )}
+                </div>
+                
+                {/* Transaction Details */}
+                <div className="flex-1 min-w-0">
+                  <div className="flex items-center justify-between mb-1">
+                    <h3 className="font-medium text-sm truncate text-gray-900 dark:text-white">
+                      {transaction.product?.name}
+                    </h3>
+                    <span className="text-accent font-bold text-sm">
+                      {formatPrice(transaction.amount)}
+                    </span>
+                  </div>
+                  
+                  <div className="flex items-center gap-1 text-xs text-gray-500 dark:text-gray-400 mb-2">
+                    <span>
+                      {new Date(transaction.created_at).toLocaleDateString('hu-HU')}
+                    </span>
+                    <span>•</span>
+                    <span>
+                      {activeTab === 'buying' 
+                        ? `Eladó: ${transaction.seller?.email?.split('@')[0]}` 
+                        : `Vevő: ${transaction.buyer?.email?.split('@')[0]}`}
+                    </span>
+                  </div>
+                  
+                  <div className="flex items-center justify-between">
+                    <div className="flex items-center gap-1.5">
+                      {getStatusIcon(transaction.status)}
+                      <span className={`text-xs px-2 py-0.5 rounded-full ${getStatusColor(transaction.status)}`}>
+                        {getStatusLabel(transaction.status)}
+                      </span>
+                    </div>
+                    
+                    {renderActionButton(transaction)}
+                  </div>
+                </div>
+              </div>
+            </div>
+          ))}
+        </div>
+      )}
+    </div>
+  );
+}

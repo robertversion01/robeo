@@ -51,6 +51,7 @@ export default function OfferModal({ isOpen, onClose, productId, sellerId, produ
           buyer_id: user.id,
           seller_id: sellerId,
           offered_price: price,
+          price: price, // Adding price field to fix the null value error
           message: message,
           status: 'pending'
         });
@@ -89,46 +90,46 @@ export default function OfferModal({ isOpen, onClose, productId, sellerId, produ
   };
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/70 backdrop-blur-sm" onClick={onClose}>
+    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50 backdrop-blur-sm" onClick={onClose}>
       <div 
-        className="w-full max-w-md p-6 rounded-2xl bg-[rgba(30,27,75,0.95)] backdrop-blur-xl border border-white/10 shadow-2xl"
+        className="w-full max-w-md p-5 rounded-lg bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-800 shadow-xl"
         onClick={e => e.stopPropagation()}
       >
-        <div className="flex items-center justify-between mb-6">
-          <h3 className="text-xl font-bold">Ajánlat küldése</h3>
+        <div className="flex items-center justify-between mb-4">
+          <h3 className="text-lg font-bold text-gray-900 dark:text-white">Ajánlat küldése</h3>
           <button 
             onClick={onClose}
-            className="p-2 rounded-full hover:bg-white/10 transition-colors"
+            className="p-1.5 rounded-full hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors text-gray-500 dark:text-gray-400"
           >
-            <X size={20} />
+            <X size={18} />
           </button>
         </div>
 
-        <div className="mb-6 p-4 rounded-xl bg-white/5 border border-white/10">
-          <p className="text-white/70 text-sm">Ajánlat küldése a következő termékre:</p>
-          <p className="font-semibold mt-1">{productTitle}</p>
+        <div className="mb-4 p-3 rounded-lg bg-gray-50 dark:bg-gray-800/50 border border-gray-200 dark:border-gray-700">
+          <p className="text-gray-500 dark:text-gray-400 text-xs">Ajánlat küldése a következő termékre:</p>
+          <p className="font-semibold mt-1 text-gray-900 dark:text-white text-sm">{productTitle}</p>
           <p className="text-accent font-bold mt-1">{originalPrice.toLocaleString('hu-HU')} Ft</p>
         </div>
 
-        <form onSubmit={handleSubmit} className="space-y-4">
+        <form onSubmit={handleSubmit} className="space-y-3">
           <div>
-            <label className="block text-sm text-white/70 mb-2">Ajánlott ár (Ft)</label>
+            <label className="block text-sm text-gray-700 dark:text-gray-300 mb-1.5">Ajánlott ár (Ft)</label>
             <input
               type="number"
               value={price}
               onChange={(e) => setPrice(Number(e.target.value))}
-              className="w-full px-4 py-3 rounded-xl bg-white/5 border border-white/10 focus:border-accent/50 focus:outline-none transition-colors"
+              className="w-full px-3 py-2 rounded-lg bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-700 focus:border-accent focus:outline-none transition-colors text-gray-900 dark:text-white"
               min="1"
               required
             />
 
-            <div className="flex gap-2 mt-3">
+            <div className="flex gap-1.5 mt-2">
               {[0.7, 0.8, 0.9].map(percent => (
                 <button
                   key={percent}
                   type="button"
                   onClick={() => setPrice(Math.round(originalPrice * percent))}
-                  className="flex-1 py-2 text-sm rounded-lg bg-white/5 hover:bg-white/10 transition-colors"
+                  className="flex-1 py-1.5 text-xs rounded-lg bg-gray-100 dark:bg-gray-800 border border-gray-200 dark:border-gray-700 hover:bg-gray-200 dark:hover:bg-gray-700 transition-colors text-gray-800 dark:text-gray-200"
                 >
                   {Math.round(percent * 100)}%
                 </button>
@@ -137,21 +138,21 @@ export default function OfferModal({ isOpen, onClose, productId, sellerId, produ
           </div>
 
           <div>
-            <label className="block text-sm text-white/70 mb-2">Üzenet (opcionális)</label>
+            <label className="block text-sm text-gray-700 dark:text-gray-300 mb-1.5">Üzenet (opcionális)</label>
             <textarea
               value={message}
               onChange={(e) => setMessage(e.target.value)}
               placeholder="Írj egy rövid üzenetet az eladónak..."
-              className="w-full px-4 py-3 rounded-xl bg-white/5 border border-white/10 focus:border-accent/50 focus:outline-none transition-colors resize-none h-24"
+              className="w-full px-3 py-2 rounded-lg bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-700 focus:border-accent focus:outline-none transition-colors resize-none h-20 text-gray-900 dark:text-white text-sm"
             />
           </div>
 
           <button
             type="submit"
             disabled={loading}
-            className="w-full py-4 rounded-xl bg-gradient-to-r from-accent to-accent/80 hover:from-accent/90 hover:to-accent/70 transition-all font-semibold flex items-center justify-center gap-2 disabled:opacity-50"
+            className="w-full py-2.5 rounded-lg bg-accent hover:bg-accent/90 transition-all font-semibold flex items-center justify-center gap-1.5 disabled:opacity-50 text-white text-sm"
           >
-            <Send size={18} />
+            <Send size={16} />
             {loading ? 'Küldés...' : 'Ajánlat elküldése'}
           </button>
         </form>

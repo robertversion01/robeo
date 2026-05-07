@@ -140,3 +140,13 @@ input, textarea, select {
 ::-webkit-scrollbar-thumb:hover {
   background: #b3b3b3;
 }
+
+/* Hide scrollbar but keep functionality */
+.no-scrollbar {
+  -ms-overflow-style: none;  /* IE and Edge */
+  scrollbar-width: none;  /* Firefox */
+}
+
+.no-scrollbar::-webkit-scrollbar {
+  display: none;  /* Chrome, Safari and Opera */
+}

@@ -8,18 +8,18 @@ interface FiltersProps {
 
 export default function Filters({ categories, selectedCategory, onCategoryChange }: FiltersProps) {
   return (
-    <div className="sticky top-[64px] z-40 bg-background/95 backdrop-blur-md pt-4 pb-3 mb-6 border-b border-border/50 -mx-4 px-4 md:-mx-8 md:px-8">
+    <div className="sticky top-[60px] z-40 bg-white dark:bg-background/95 backdrop-blur-md pt-2 pb-2 mb-4 border-b border-gray-200 dark:border-border/50 -mx-4 px-4 md:-mx-8 md:px-8">
       {/* Category tabs */}
-      <div className="overflow-x-auto pb-4 scrollbar-hide">
-        <div className="flex gap-2 min-w-max">
+      <div className="overflow-x-auto no-scrollbar">
+        <div className="flex gap-1.5 min-w-max">
           {categories.map((category) => (
             <button
               key={category.id}
               onClick={() => onCategoryChange(category.id)}
-              className={`px-4 py-1.5 text-sm rounded-full transition-all duration-200 ${
+              className={`px-3 py-1.5 text-xs rounded-full transition-all duration-200 ${
                 selectedCategory === category.id
-                  ? 'bg-accent text-accent-foreground font-medium'
-                  : 'bg-muted border border-border hover:bg-muted/80'
+                  ? 'bg-accent text-white font-medium'
+                  : 'bg-white dark:bg-gray-800 text-gray-700 dark:text-gray-300 border border-gray-200 dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-700'
               }`}
             >
               {category.label}
