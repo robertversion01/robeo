@@ -17,6 +17,7 @@ export default function ProfilePage() {
   const [loading, setLoading] = useState(true);
   const [user, setUser] = useState<any>(null);
   const [favorites, setFavorites] = useState<Set<string>>(new Set());
+  const [createdAt, setCreatedAt] = useState<string>('');
   const router = useRouter();
   
   const { stats, loading: statsLoading } = useUserStats(user?.id);
@@ -32,7 +33,13 @@ export default function ProfilePage() {
       return;
     }
     setUser(user);
+    setCreatedAt(user.created_at || '');
     loadUserProducts(user.id);
+  };
+
+  const formatDate = (dateStr: string) => {
+    const date = new Date(dateStr);
+    return date.toLocaleDateString('hu-HU', { year: 'numeric', month: 'long' });
   };
 
   const loadUserProducts = async (userId: string) => {
@@ -90,8 +97,20 @@ export default function ProfilePage() {
     <div className="min-h-screen bg-gradient-to-br from-indigo-950 to-black text-white">
       <main className="pt-24 pb-12 px-3 md:px-6">
         <div className="max-w-7xl mx-auto">
-          <h1 className="text-4xl font-bold mb-2">Profilom</h1>
-          <p className="text-white/60 mb-10">Saját feltöltött termékeim</p>
+          <div className="flex items-center gap-4 mb-2">
+            <div className="w-16 h-16 rounded-full bg-accent/20 flex items-center justify-center text-accent text-2xl font-bold">
+              {user?.email?.charAt(0).toUpperCase() || '?'}
+            </div>
+            <div>
+              <h1 className="text-3xl md:text-4xl font-bold">Profilom</h1>
+              <div className="flex items-center gap-2 text-sm text-white/50 mt-1">
+                <span>Tag since {createdAt ? formatDate(createdAt) : 'now'}</span>
+                <span className="w-1 h-1 rounded-full bg-white/30" />
+                <span>{stats.totalProducts} termék</span>
+              </div>
+            </div>
+          </div>
+          <p className="text-white/60 mb-10 ml-0">Saját feltöltött termékeim</p>
 
           {/* Beérkező ajánlatok */}
           <div className="mb-12">
@@ -109,6 +128,11 @@ export default function ProfilePage() {
             <div className="bg-white/5 backdrop-blur-md border border-white/10 rounded-2xl p-6">
               <div className="text-accent text-sm uppercase tracking-wider mb-1">Sikeres eladás</div>
               <div className="text-3xl font-bold">{stats.soldProducts} db</div>
+              {stats.soldProducts > 0 && stats.totalRevenue > 0 && (
+                <div className="text-xs text-white/40 mt-2">
+                  Ø {Math.round(stats.totalRevenue / stats.soldProducts).toLocaleString('hu-HU')} Ft / eladás
+                </div>
+              )}
             </div>
 
             <div className="bg-white/5 backdrop-blur-md border border-white/10 rounded-2xl p-6">
