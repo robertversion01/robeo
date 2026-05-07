@@ -2,15 +2,24 @@ import { NextRequest, NextResponse } from 'next/server';
 import Stripe from 'stripe';
 import { supabase } from '@/lib/supabase';
 
-// Initialize Stripe with your secret key
-const stripe = new Stripe(process.env.STRIPE_SECRET_KEY || '', {
-  apiVersion: '2026-04-22.dahlia',
-});
-
-// This is your Stripe webhook secret for testing your endpoint locally
-const endpointSecret = process.env.STRIPE_WEBHOOK_SECRET;
-
 export async function POST(req: NextRequest) {
+  // Check if Stripe secret key is available
+  if (!process.env.STRIPE_SECRET_KEY) {
+    console.error('Missing Stripe secret key');
+    return NextResponse.json(
+      { error: 'Stripe configuration is missing' },
+      { status: 500 }
+    );
+  }
+
+  // Initialize Stripe with the secret key (lazy initialization)
+  const stripe = new Stripe(process.env.STRIPE_SECRET_KEY, {
+    apiVersion: '2026-04-22.dahlia',
+  });
+
+  // This is your Stripe webhook secret for testing your endpoint locally
+  const endpointSecret = process.env.STRIPE_WEBHOOK_SECRET;
+
   const payload = await req.text();
   const sig = req.headers.get('stripe-signature') as string;
 
@@ -56,6 +65,10 @@ export async function POST(req: NextRequest) {
  * Handle successful payment intent
  */
 async function handlePaymentIntentSucceeded(paymentIntent: Stripe.PaymentIntent) {
+  // Initialize Stripe if needed for any operations within this function
+  const stripe = process.env.STRIPE_SECRET_KEY 
+    ? new Stripe(process.env.STRIPE_SECRET_KEY, { apiVersion: '2026-04-22.dahlia' })
+    : null;
   console.log('Payment Intent Succeeded:', paymentIntent.id);
 
   // Find the transaction associated with this payment intent
@@ -98,6 +111,10 @@ async function handlePaymentIntentSucceeded(paymentIntent: Stripe.PaymentIntent)
  * Handle failed payment intent
  */
 async function handlePaymentIntentFailed(paymentIntent: Stripe.PaymentIntent) {
+  // Initialize Stripe if needed for any operations within this function
+  const stripe = process.env.STRIPE_SECRET_KEY 
+    ? new Stripe(process.env.STRIPE_SECRET_KEY, { apiVersion: '2026-04-22.dahlia' })
+    : null;
   console.log('Payment Intent Failed:', paymentIntent.id);
 
   // Find the transaction associated with this payment intent
@@ -123,6 +140,10 @@ async function handlePaymentIntentFailed(paymentIntent: Stripe.PaymentIntent) {
  * Handle completed checkout session
  */
 async function handleCheckoutSessionCompleted(session: Stripe.Checkout.Session) {
+  // Initialize Stripe if needed for any operations within this function
+  const stripe = process.env.STRIPE_SECRET_KEY 
+    ? new Stripe(process.env.STRIPE_SECRET_KEY, { apiVersion: '2026-04-22.dahlia' })
+    : null;
   console.log('Checkout Session Completed:', session.id);
 
   // Extract metadata from the session

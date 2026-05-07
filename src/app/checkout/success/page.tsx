@@ -22,6 +22,12 @@ export default function CheckoutSuccessPage() {
       return;
     }
 
+    // Check if we're in a browser environment
+    if (typeof window === 'undefined') {
+      setLoading(false);
+      return;
+    }
+
     const fetchTransactionDetails = async () => {
       try {
         // Get the transaction from the session ID

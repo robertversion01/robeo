@@ -2,13 +2,21 @@ import { NextRequest, NextResponse } from 'next/server';
 import Stripe from 'stripe';
 import { supabase } from '@/lib/supabase';
 
-// Initialize Stripe with your secret key
-const stripe = new Stripe(process.env.STRIPE_SECRET_KEY || '', {
-  apiVersion: '2026-04-22.dahlia',
-});
-
 export async function POST(req: NextRequest) {
   try {
+    // Check if Stripe secret key is available
+    if (!process.env.STRIPE_SECRET_KEY) {
+      console.error('Missing Stripe secret key');
+      return NextResponse.json(
+        { error: 'Stripe configuration is missing' },
+        { status: 500 }
+      );
+    }
+
+    // Initialize Stripe with the secret key (lazy initialization)
+    const stripe = new Stripe(process.env.STRIPE_SECRET_KEY, {
+      apiVersion: '2026-04-22.dahlia',
+    });
     const { productId, buyerId } = await req.json();
 
     if (!productId || !buyerId) {
