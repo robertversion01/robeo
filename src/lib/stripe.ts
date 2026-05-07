@@ -1,16 +1,12 @@
 // src/lib/stripe.ts
 import Stripe from 'stripe';
 
-const stripeSecretKey = process.env.STRIPE_SECRET_KEY;
-
-if (!stripeSecretKey) {
-  throw new Error('Missing STRIPE_SECRET_KEY environment variable');
-}
+const stripeSecretKey = process.env.STRIPE_SECRET_KEY!;
 
 export const stripe = new Stripe(stripeSecretKey, {
-  apiVersion: '2026-04-22.dahlia', // frissítsd erre a legújabb stabil verzióra
+  apiVersion: '2025-01-27.acacia' as any, // ✅ Javítva + type assertion
   typescript: true,
 });
 
-// Default export is recommended for easier imports
+// Default export
 export default stripe;
