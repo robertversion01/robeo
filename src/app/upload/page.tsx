@@ -1,9 +1,16 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useRef } from 'react';
 import { supabase } from '@/lib/supabase';
 import { toast } from 'sonner';
+import { X, Plus, ArrowUp, ArrowDown } from 'lucide-react';
 import CustomSelect from '@/components/ui/CustomSelect';
+
+interface UploadedImage {
+  file: File;
+  preview: string;
+  id: string;
+}
 
 export default function UploadPage() {
   const [formData, setFormData] = useState({
@@ -13,19 +20,93 @@ export default function UploadPage() {
     category: '',
     condition: '',
     brand: '',
-    image: null as File | null
   });
+  const [images, setImages] = useState<UploadedImage[]>([]);
   const [loading, setLoading] = useState(false);
+  const fileInputRef = useRef<HTMLInputElement>(null);
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) => {
     const { name, value } = e.target;
     setFormData(prev => ({ ...prev, [name]: value }));
   };
 
-  const handleImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    if (e.target.files && e.target.files[0]) {
-      setFormData(prev => ({ ...prev, image: e.target.files![0] }));
+  const handleImagesChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    if (!e.target.files) return;
+    
+    const newFiles = Array.from(e.target.files);
+    const maxImages = 6;
+    const remaining = maxImages - images.length;
+    
+    if (remaining <= 0) {
+      toast.error(`Maximum ${maxImages} kép tölthető fel!`);
+      return;
     }
+
+    const filesToAdd = newFiles.slice(0, remaining);
+    
+    filesToAdd.forEach((file) => {
+      if (!file.type.startsWith('image/')) {
+        toast.error(`A "${file.name}" nem kép fájl!`);
+        return;
+      }
+      
+      const reader = new FileReader();
+      reader.onload = (e) => {
+        setImages(prev => [...prev, {
+          file,
+          preview: e.target?.result as string,
+          id: Math.random().toString(36).substring(2)
+        }]);
+      };
+      reader.readAsDataURL(file);
+    });
+
+    if (newFiles.length > remaining) {
+      toast.info(`Csak ${remaining} további kép tölthető fel.`);
+    }
+
+    // Reset input
+    if (fileInputRef.current) {
+      fileInputRef.current.value = '';
+    }
+  };
+
+  const removeImage = (imageId: string) => {
+    setImages(prev => prev.filter(img => img.id !== imageId));
+  };
+
+  const moveImage = (index: number, direction: 'up' | 'down') => {
+    const newImages = [...images];
+    const targetIndex = direction === 'up' ? index - 1 : index + 1;
+    
+    if (targetIndex < 0 || targetIndex >= newImages.length) return;
+    
+    [newImages[index], newImages[targetIndex]] = [newImages[targetIndex], newImages[index]];
+    setImages(newImages);
+  };
+
+  const uploadImages = async (userId: string): Promise<string[]> => {
+    const urls: string[] = [];
+    
+    for (const image of images) {
+      const fileExt = image.file.name.split('.').pop();
+      const fileName = `${userId}/${Math.random().toString(36).substring(2)}.${fileExt}`;
+      const filePath = fileName;
+
+      const { error: uploadError } = await supabase.storage
+        .from('product-images')
+        .upload(filePath, image.file);
+
+      if (uploadError) throw uploadError;
+
+      const { data: { publicUrl } } = supabase.storage
+        .from('product-images')
+        .getPublicUrl(filePath);
+
+      urls.push(publicUrl);
+    }
+
+    return urls;
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -33,35 +114,20 @@ export default function UploadPage() {
     setLoading(true);
 
     try {
-      // Get current user
       const { data: { user } } = await supabase.auth.getUser();
       
       if (!user) {
         throw new Error('Kérlek először jelentkezz be!');
       }
 
-      let imageUrl = null;
+      let imageUrls: string[] = [];
 
-      // Upload image if selected
-      if (formData.image) {
-        const fileExt = formData.image.name.split('.').pop();
-        const fileName = `${Math.random().toString(36).substring(2)}.${fileExt}`;
-        const filePath = `${fileName}`;
-
-        const { error: uploadError } = await supabase.storage
-          .from('product-images')
-          .upload(filePath, formData.image);
-
-        if (uploadError) throw uploadError;
-
-        const { data: { publicUrl } } = supabase.storage
-          .from('product-images')
-          .getPublicUrl(filePath);
-
-        imageUrl = publicUrl;
+      // Upload all images
+      if (images.length > 0) {
+        imageUrls = await uploadImages(user.id);
       }
 
-      // Insert product into database with user_id
+      // Insert product with image_url as first image, images as JSON array
       const { error } = await supabase
         .from('products')
         .insert({
@@ -71,7 +137,8 @@ export default function UploadPage() {
           category: formData.category,
           condition: formData.condition,
           brand: formData.brand,
-          image_url: imageUrl,
+          image_url: imageUrls[0] || null,
+          images: imageUrls, // Store all images as JSON array
           user_id: user.id
         });
 
@@ -85,14 +152,14 @@ export default function UploadPage() {
         category: '',
         condition: '',
         brand: '',
-        image: null
       });
+      setImages([]);
 
       toast.success('✅ Termék sikeresen feltöltve!');
 
-    } catch (error) {
+    } catch (error: any) {
       console.error('Error uploading product:', error);
-      toast.error('❌ Hiba történt a feltöltés során! Kérlek próbáld újra.');
+      toast.error('❌ Hiba történt a feltöltés során! ' + (error.message || 'Kérlek próbáld újra.'));
     } finally {
       setLoading(false);
     }
@@ -100,7 +167,6 @@ export default function UploadPage() {
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-indigo-950 to-black text-white">
-
       <main className="min-h-screen pt-28 pb-16 flex flex-col items-center justify-center px-4">
         <div className="w-full max-w-2xl">
           <h1 className="text-4xl md:text-5xl font-bold mb-3 text-center">Termékfeltöltés</h1>
@@ -199,35 +265,106 @@ export default function UploadPage() {
               </div>
             </div>
 
-            {/* Image Upload */}
+            {/* Multi Image Upload - Vinted style */}
             <div>
-              <label className="block mb-2 font-medium text-white/90">Termék képe</label>
-              <div className="border-2 border-dashed border-white/30 rounded-xl p-8 text-center hover:border-accent transition-colors cursor-pointer group">
-                <input
-                  type="file"
-                  name="image"
-                  accept="image/*"
-                  onChange={handleImageChange}
-                  className="hidden"
-                  id="image-upload"
-                />
-                <label htmlFor="image-upload" className="cursor-pointer">
-                  <div className="text-4xl mb-3 group-hover:text-accent transition-colors">📷</div>
-                  <p className="text-white/70">
-                    {formData.image ? formData.image.name : 'Kattints a kép kiválasztásához vagy húzd ide'}
+              <label className="block mb-2 font-medium text-white/90">
+                Képek
+                <span className="text-white/40 text-sm ml-2">({images.length}/6)</span>
+              </label>
+              
+              {/* Image Preview Grid */}
+              {images.length > 0 && (
+                <div className="grid grid-cols-3 gap-3 mb-4">
+                  {images.map((image, index) => (
+                    <div 
+                      key={image.id} 
+                      className="relative aspect-square rounded-xl overflow-hidden bg-white/10 border border-white/10 group"
+                    >
+                      <img 
+                        src={image.preview} 
+                        alt={`Kép ${index + 1}`}
+                        className="w-full h-full object-cover"
+                      />
+                      
+                      {/* Overlay on hover */}
+                      <div className="absolute inset-0 bg-black/50 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center gap-2">
+                        <button
+                          type="button"
+                          onClick={() => moveImage(index, 'up')}
+                          disabled={index === 0}
+                          className="p-1.5 rounded-full bg-white/20 hover:bg-white/30 disabled:opacity-30 transition-colors"
+                        >
+                          <ArrowUp size={16} />
+                        </button>
+                        <button
+                          type="button"
+                          onClick={() => moveImage(index, 'down')}
+                          disabled={index === images.length - 1}
+                          className="p-1.5 rounded-full bg-white/20 hover:bg-white/30 disabled:opacity-30 transition-colors"
+                        >
+                          <ArrowDown size={16} />
+                        </button>
+                      </div>
+
+                      {/* Remove button */}
+                      <button
+                        type="button"
+                        onClick={() => removeImage(image.id)}
+                        className="absolute top-2 right-2 p-1 rounded-full bg-black/60 hover:bg-black/80 transition-colors opacity-0 group-hover:opacity-100"
+                      >
+                        <X size={14} />
+                      </button>
+
+                      {/* Order badge */}
+                      <div className="absolute bottom-2 left-2 px-2 py-0.5 rounded-lg bg-black/60 text-[10px] text-white">
+                        {index + 1}
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              )}
+
+              {/* Upload button */}
+              {images.length < 6 && (
+                <div 
+                  onClick={() => fileInputRef.current?.click()}
+                  className="border-2 border-dashed border-white/30 rounded-xl p-8 text-center hover:border-accent transition-colors cursor-pointer group"
+                >
+                  <input
+                    ref={fileInputRef}
+                    type="file"
+                    accept="image/*"
+                    multiple
+                    onChange={handleImagesChange}
+                    className="hidden"
+                  />
+                  <div className="text-4xl mb-3 group-hover:text-accent transition-colors">
+                    <Plus size={40} className="mx-auto text-white/40 group-hover:text-accent/60" />
+                  </div>
+                  <p className="text-white/70">Kattints a képek kiválasztásához</p>
+                  <p className="text-white/40 text-sm mt-1">
+                    {images.length === 0 
+                      ? 'Első kép a termék fő képe lesz (PNG, JPG, WEBP)'
+                      : 'Válassz további képeket'}
                   </p>
-                  <p className="text-white/40 text-sm mt-1">PNG, JPG, WEBP támogatva</p>
-                </label>
-              </div>
+                </div>
+              )}
             </div>
 
             {/* Submit Button */}
             <button
               type="submit"
-              disabled={loading}
+              disabled={loading || images.length === 0}
               className="w-full py-4 bg-accent text-black font-semibold rounded-xl hover:bg-accent/90 transition-all duration-300 hover:scale-[1.02] shadow-lg shadow-accent/20 mt-4 disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:scale-100"
             >
-              {loading ? 'Feltöltés folyamatban...' : 'Termék feltöltése'}
+              {loading ? (
+                <span className="flex items-center justify-center gap-3">
+                  <span className="animate-spin w-5 h-5 border-2 border-black border-t-transparent rounded-full" />
+                  Feltöltés folyamatban...
+                </span>
+              ) : (
+                'Termék feltöltése'
+              )}
             </button>
           </form>
         </div>

@@ -9,6 +9,7 @@ export interface Product {
   condition?: string;
   brand?: string;
   image_url: string | null;
+  images: string[];
   user_id: string;
   status: 'active' | 'sold' | 'deleted';
   created_at: string;
