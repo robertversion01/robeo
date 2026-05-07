@@ -3,7 +3,8 @@
 import { useEffect, useState } from 'react';
 import { supabase } from '@/lib/supabase';
 import { toast } from 'sonner';
-import { Check, X, Clock } from 'lucide-react';
+import { Check, X, Clock, ExternalLink } from 'lucide-react';
+import Link from 'next/link';
 
 interface Offer {
   id: string;
@@ -70,6 +71,10 @@ export default function OffersList() {
 
   const updateOfferStatus = async (offerId: string, status: 'accepted' | 'rejected') => {
     try {
+      // Find the offer in state to get buyer/product info
+      const currentOffer = offers.find(o => o.id === offerId);
+      if (!currentOffer) return;
+
       const { error } = await supabase
         .from('offers')
         .update({ status })
@@ -77,7 +82,34 @@ export default function OffersList() {
 
       if (error) throw error;
 
-      toast.success(status === 'accepted' ? '✅ Ajánlat elfogadva!' : '❌ Ajánlat elutasítva');
+      // Send system message about the decision
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user) return;
+      
+      if (status === 'accepted') {
+        // Send message to buyer with payment link
+        await supabase
+          .from('messages')
+          .insert({
+            sender_id: user.id,
+            receiver_id: currentOffer.buyer_id,
+            content: `✅ Ajánlatod elfogadva! Fizess itt: ${window.location.origin}/checkout?offer=${offerId}`,
+            product_id: currentOffer.product.id,
+            is_system_message: true
+          });
+      } else {
+        await supabase
+          .from('messages')
+          .insert({
+            sender_id: user.id,
+            receiver_id: currentOffer.buyer_id,
+            content: `❌ Ajánlatod elutasítva: ${currentOffer.product.name}`,
+            product_id: currentOffer.product.id,
+            is_system_message: true
+          });
+      }
+
+      toast.success(status === 'accepted' ? '✅ Ajánlat elfogadva! A vevő értesítést kapott.' : '❌ Ajánlat elutasítva');
       
       // Update local state
       setOffers(prev => prev.map(o => o.id === offerId ? { ...o, status } : o));
@@ -161,6 +193,16 @@ export default function OffersList() {
                     <X size={18} />
                   </button>
                 </div>
+              )}
+
+              {offer.status === 'accepted' && (
+                <Link
+                  href={`/checkout?offer=${offer.id}`}
+                  className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-accent/20 text-accent text-sm hover:bg-accent/30 transition-colors"
+                >
+                  <ExternalLink size={14} />
+                  Fizetés
+                </Link>
               )}
             </div>
 
