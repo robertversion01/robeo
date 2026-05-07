@@ -15,21 +15,21 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "ROBEO - A te stílusod, a te közösséged",
-  description: "Másodkézkeskedés úgy, ahogyan az kellene. Vásárolj, adj el, cserélj és találj új barátokat a stílusos közösségben. 100% magyar platform.",
-  keywords: ["másodkéz", "használt ruházat", "cipő", "streetwear", "vásárlás", "eladás", "piac", "robeo", "közösség", "magyar"],
-  authors: [{ name: "ROBEO" }],
+  title: "Vinted - Vásárolj, adj el és cserélj használt ruhákat",
+  description: "Vásárolj és adj el használt ruhákat, kiegészítőket, kozmetikumokat és még sok mást. Vinted a legjobb hely, ahol eladhatod a már nem használt dolgaidat és új kincseket találhatsz.",
+  keywords: ["másodkéz", "használt ruházat", "cipő", "divat", "vásárlás", "eladás", "piac", "vinted", "fenntartható", "magyar"],
+  authors: [{ name: "Vinted" }],
   openGraph: {
-    title: "ROBEO - A te stílusod, a te közösséged",
-    description: "Másodkézkeskedés úgy, ahogyan az kellene. Biztonságos, egyszerű és stílusos.",
+    title: "Vinted - Vásárolj, adj el és cserélj használt ruhákat",
+    description: "Vásárolj és adj el használt ruhákat, kiegészítőket, kozmetikumokat és még sok mást.",
     type: "website",
     locale: "hu_HU",
-    siteName: "ROBEO"
+    siteName: "Vinted"
   },
   twitter: {
     card: "summary_large_image",
-    title: "ROBEO - A te stílusod, a te közösséged",
-    description: "Másodkézkeskedés úgy, ahogyan az kellene."
+    title: "Vinted - Vásárolj, adj el és cserélj használt ruhákat",
+    description: "Vásárolj és adj el használt ruhákat, kiegészítőket, kozmetikumokat és még sok mást."
   },
   robots: {
     index: true,
@@ -47,21 +47,24 @@ export default function RootLayout({
       lang="hu"
       className={`${geistSans.variable} ${geistMono.variable} h-full antialiased`}
     >
-      <body className="min-h-full flex flex-col">
+      <body className="min-h-full flex flex-col pt-10">
         <Navbar />
         {children}
         <Toaster 
-          position="bottom-right"
+          position="bottom-center"
           toastOptions={{
             style: {
-              background: 'rgba(30, 27, 75, 0.95)',
+              background: 'rgba(255, 255, 255, 0.95)',
               backdropFilter: 'blur(12px)',
-              border: '1px solid rgba(45, 212, 191, 0.3)',
-              color: 'white',
-              borderRadius: '12px',
-              boxShadow: '0 20px 25px -5px rgba(0, 0, 0, 0.3)',
+              border: '1px solid rgba(9, 177, 186, 0.2)',
+              color: '#1a1a1a',
+              borderRadius: '8px',
+              boxShadow: '0 4px 12px rgba(0, 0, 0, 0.08)',
+              fontSize: '14px',
+              fontWeight: '500',
             },
-            duration: 4500,
+            duration: 3000,
+            className: 'vinted-shadow',
           }}
         />
       </body>

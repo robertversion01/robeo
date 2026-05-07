@@ -1,4 +1,5 @@
 // Közös TypeScript típusok a teljes projekthez
+import { TransactionStatus, StripeAccount, Transaction } from './stripe';
 
 export interface Product {
   id: string;
@@ -11,7 +12,10 @@ export interface Product {
   image_url: string | null;
   images: string[];
   user_id: string;
-  status: 'active' | 'sold' | 'deleted';
+  status: 'active' | 'sold' | 'deleted' | 'reserved' | 'shipped' | 'delivered';
+  size?: string;
+  color?: string;
+  transaction_id?: string;
   created_at: string;
   updated_at: string;
 }
@@ -23,9 +27,12 @@ export interface Offer {
   seller_id: string;
   offered_price: number;
   message?: string;
-  status: 'pending' | 'accepted' | 'rejected' | 'cancelled' | 'completed';
+  status: 'pending' | 'accepted' | 'rejected' | 'cancelled' | 'completed' | 'payment_pending' | 'payment_completed' | 'shipped' | 'delivered';
   shipping_method?: string;
   shipping_cost?: number;
+  transaction_id?: string;
+  payment_intent_id?: string;
+  tracking_number?: string;
   created_at: string;
   updated_at: string;
   product?: Product;
@@ -34,7 +41,26 @@ export interface Offer {
 export interface User {
   id: string;
   email: string;
+  username?: string;
+  full_name?: string;
+  avatar_url?: string;
+  bio?: string;
+  location?: string;
+  phone?: string;
+  stripe_account_id?: string;
+  stripe_customer_id?: string;
+  is_seller_onboarded?: boolean;
   created_at: string;
+  updated_at?: string;
+  stripe_account?: StripeAccount;
+}
+
+export interface Profile extends User {
+  total_sales?: number;
+  total_purchases?: number;
+  average_rating?: number;
+  followers_count?: number;
+  following_count?: number;
 }
 
 export interface Message {
@@ -63,4 +89,7 @@ export interface Favorite {
   product_id: string;
   created_at: string;
 }
+
+// Re-export Stripe types for convenience
+export * from './stripe';
 

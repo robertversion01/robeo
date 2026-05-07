@@ -5,22 +5,9 @@ import { supabase } from '@/lib/supabase';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { toast } from 'sonner';
+import { getOptimizedImageUrl, shouldLazyLoad } from '@/lib/imageUtils';
 import OfferModal from '@/components/product/OfferModal';
-
-interface Product {
-  id: string;
-  name: string;
-  description: string;
-  price: number;
-  category: string;
-  condition?: string;
-  brand?: string;
-  image_url: string | null;
-  images: string[];
-  created_at: string;
-  user_id: string;
-  status: string;
-}
+import type { Product } from '@/types';
 
 export default function ProductPage({ params }: { params: Promise<{ id: string }> }) {
   const { id } = use(params);
@@ -99,23 +86,23 @@ export default function ProductPage({ params }: { params: Promise<{ id: string }
 
   if (loading) {
     return (
-      <div className="min-h-screen bg-gradient-to-br from-indigo-950 to-black text-white flex items-center justify-center">
-        <div className="animate-spin h-16 w-16 border-4 border-accent border-t-transparent rounded-full"></div>
+      <div className="min-h-screen bg-white dark:bg-gradient-to-br dark:from-indigo-950 dark:to-black text-gray-900 dark:text-white flex items-center justify-center">
+        <div className="animate-spin h-12 w-12 border-4 border-accent border-t-transparent rounded-full"></div>
       </div>
     );
   }
 
   if (!product) {
     return (
-      <div className="min-h-screen bg-gradient-to-br from-indigo-950 to-black text-white flex flex-col items-center justify-center">
-        <h2 className="text-2xl mb-4">A termék nem található</h2>
+      <div className="min-h-screen bg-white dark:bg-gradient-to-br dark:from-indigo-950 dark:to-black text-gray-900 dark:text-white flex flex-col items-center justify-center">
+        <h2 className="text-xl mb-4">A termék nem található</h2>
         <Link href="/" className="text-accent hover:underline">Vissza a főoldalra</Link>
       </div>
     );
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-indigo-950 to-black text-white">
+    <div className="min-h-screen bg-white dark:bg-gradient-to-br dark:from-indigo-950 dark:to-black text-gray-900 dark:text-white">
 
       {/* Offer Modal */}
       <OfferModal
@@ -129,30 +116,30 @@ export default function ProductPage({ params }: { params: Promise<{ id: string }
 
       {/* Message Modal */}
       {showMessageModal && (
-        <div className="fixed inset-0 bg-black/70 backdrop-blur-sm z-[100] flex items-center justify-center p-4">
-          <div className="bg-white/10 backdrop-blur-md border border-white/10 rounded-3xl p-8 max-w-md w-full">
-            <h2 className="text-2xl font-bold mb-4">Üzenet az eladónak</h2>
-            <p className="text-white/60 mb-6">Írd meg mit szeretnél kérdezni a termékről!</p>
+        <div className="fixed inset-0 bg-black/50 backdrop-blur-sm z-[100] flex items-center justify-center p-4">
+          <div className="bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-800 rounded-lg p-5 max-w-md w-full shadow-lg">
+            <h2 className="text-xl font-bold mb-3 text-gray-900 dark:text-white">Üzenet az eladónak</h2>
+            <p className="text-gray-600 dark:text-gray-400 text-sm mb-4">Írd meg mit szeretnél kérdezni a termékről!</p>
             
             <textarea
               value={messageText}
               onChange={(e) => setMessageText(e.target.value)}
               placeholder="Üzenet szövege..."
               rows={4}
-              className="w-full px-4 py-3 bg-white/10 border border-white/20 rounded-xl focus:outline-none focus:border-accent focus:ring-1 focus:ring-accent transition-all resize-none mb-6"
+              className="w-full px-3 py-2 bg-gray-50 dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg focus:outline-none focus:border-accent focus:ring-1 focus:ring-accent transition-all resize-none mb-4 text-sm"
             />
 
-            <div className="flex gap-4">
+            <div className="flex gap-3">
               <button
                 onClick={() => setShowMessageModal(false)}
-                className="flex-1 py-3 border border-white/30 rounded-xl hover:bg-white/10 transition-all"
+                className="flex-1 py-2.5 border border-gray-300 dark:border-gray-700 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-800 transition-all text-gray-800 dark:text-white text-sm"
               >
                 Mégse
               </button>
               <button
                 onClick={sendMessageToSeller}
                 disabled={sendingMessage}
-                className="flex-1 py-3 bg-accent text-black font-semibold rounded-xl hover:bg-accent/90 transition-all disabled:opacity-50"
+                className="flex-1 py-2.5 bg-accent text-white font-semibold rounded-lg hover:bg-accent/90 transition-all disabled:opacity-50 text-sm"
               >
                 {sendingMessage ? 'Küldés...' : 'Üzenet küldése'}
               </button>
@@ -161,8 +148,8 @@ export default function ProductPage({ params }: { params: Promise<{ id: string }
         </div>
       )}
 
-      <main className="pt-16 pb-24 px-0 md:px-6">
-        <Link href="/" className="inline-flex items-center gap-2 text-white/60 hover:text-white mb-4 transition-colors px-3 md:px-0 md:mb-8">
+      <main className="pt-14 pb-24 px-0 md:px-6">
+        <Link href="/" className="inline-flex items-center gap-2 text-gray-500 dark:text-white/60 hover:text-gray-900 dark:hover:text-white mb-3 transition-colors px-3 md:px-0 md:mb-6">
           ← Vissza a főoldalra
         </Link>
 
@@ -171,15 +158,16 @@ export default function ProductPage({ params }: { params: Promise<{ id: string }
             {/* Product Image Gallery */}
             <div>
               {/* Main Image */}
-              <div className="aspect-square md:rounded-2xl md:overflow-hidden bg-white/5 mb-3">
+              <div className="aspect-square md:rounded-xl md:overflow-hidden bg-gray-100 dark:bg-white/5 mb-2 border border-gray-100 dark:border-white/10">
                 {(product.images && product.images[selectedImageIndex]) || product.image_url ? (
                   <img 
-                    src={((product.images && product.images[selectedImageIndex]) || product.image_url) ?? ''} 
+                    src={getOptimizedImageUrl(((product.images && product.images[selectedImageIndex]) || product.image_url) ?? '', 800, 90)} 
                     alt={product.name}
+                    loading="eager"
                     className="w-full h-full object-cover"
                   />
                 ) : (
-                  <div className="w-full h-full flex items-center justify-center text-white/30 text-6xl">
+                  <div className="w-full h-full flex items-center justify-center text-gray-400 dark:text-white/30 text-5xl">
                     📷
                   </div>
                 )}
@@ -187,20 +175,21 @@ export default function ProductPage({ params }: { params: Promise<{ id: string }
 
               {/* Thumbnail Gallery for additional images */}
               {product.images && product.images.length > 1 && (
-                <div className="flex gap-2 overflow-x-auto pb-2">
+                <div className="flex gap-1.5 overflow-x-auto pb-2">
                   {product.images.map((imgUrl: string, index: number) => (
                     <button
                       key={index}
                       onClick={() => setSelectedImageIndex(index)}
-                      className={`w-16 h-16 rounded-lg overflow-hidden flex-shrink-0 border-2 transition-all ${
+                      className={`w-14 h-14 rounded-md overflow-hidden flex-shrink-0 border transition-all ${
                         selectedImageIndex === index 
-                          ? 'border-accent opacity-100' 
-                          : 'border-white/10 opacity-60 hover:opacity-100'
+                          ? 'border-accent opacity-100 shadow-sm' 
+                          : 'border-gray-200 dark:border-white/10 opacity-70 hover:opacity-100'
                       }`}
                     >
                       <img 
-                        src={imgUrl} 
+                        src={getOptimizedImageUrl(imgUrl, 100, 80)} 
                         alt={`${product.name} ${index + 1}`}
+                        loading={shouldLazyLoad(index) ? "lazy" : "eager"}
                         className="w-full h-full object-cover"
                       />
                     </button>
@@ -211,34 +200,53 @@ export default function ProductPage({ params }: { params: Promise<{ id: string }
 
             {/* Product Details */}
             <div className="flex flex-col p-3 md:p-0 pb-48">
-              <div className="text-accent text-sm uppercase tracking-wider mb-1">
+              <div className="text-accent text-xs uppercase tracking-wider mb-1">
                 {categoryLabels[product.category] || product.category}
               </div>
               
-              <h1 className="text-2xl md:text-4xl font-bold mb-2">{product.name}</h1>
+              <h1 className="text-xl md:text-2xl font-bold mb-2">{product.name}</h1>
               
-              <div className="text-accent font-bold text-3xl mb-4">{product.price.toLocaleString()} Ft</div>
+              <div className="text-accent font-bold text-2xl mb-3">{product.price.toLocaleString()} Ft</div>
               
-              <div className="text-white/70 leading-relaxed mb-4 whitespace-pre-line">
+              {/* Product Attributes */}
+              <div className="flex flex-wrap gap-2 mb-3">
+                {product.brand && (
+                  <div className="bg-gray-100 dark:bg-white/5 px-2 py-1 rounded-md text-xs">
+                    <span className="text-gray-500 dark:text-gray-400">Márka:</span> {product.brand}
+                  </div>
+                )}
+                {product.size && (
+                  <div className="bg-gray-100 dark:bg-white/5 px-2 py-1 rounded-md text-xs">
+                    <span className="text-gray-500 dark:text-gray-400">Méret:</span> {product.size}
+                  </div>
+                )}
+                {product.condition && (
+                  <div className="bg-gray-100 dark:bg-white/5 px-2 py-1 rounded-md text-xs">
+                    <span className="text-gray-500 dark:text-gray-400">Állapot:</span> {product.condition}
+                  </div>
+                )}
+              </div>
+              
+              <div className="text-gray-700 dark:text-white/70 text-sm leading-relaxed mb-4 whitespace-pre-line">
                 {product.description}
               </div>
 
-               <div className="fixed bottom-0 left-0 right-0 md:static mt-auto p-3 md:p-0 md:mt-4 bg-black/80 backdrop-blur-md border-t border-white/10 md:border-t-0 md:bg-transparent md:backdrop-blur-none md:space-y-3 space-y-2">
+               <div className="fixed bottom-0 left-0 right-0 md:static mt-auto p-2 md:p-0 md:mt-4 bg-white dark:bg-black/80 backdrop-blur-md border-t border-gray-200 dark:border-white/10 md:border-t-0 md:bg-transparent md:backdrop-blur-none md:space-y-3 space-y-1.5 shadow-lg md:shadow-none">
                  <button 
                    onClick={() => router.push(`/checkout?id=${id}`)}
-                   className="w-full py-3 md:py-4 bg-cyan-500 text-black font-semibold rounded-xl hover:bg-cyan-400 transition-all duration-300 hover:scale-[1.02] shadow-lg shadow-cyan-500/20 md:bg-accent md:hover:bg-accent/90 md:shadow-accent/20"
+                   className="w-full py-2.5 md:py-3 bg-accent text-white font-semibold rounded-lg hover:bg-accent/90 transition-all duration-300 text-sm"
                  >
                    Vásárlás
                  </button>
                   <button 
                     onClick={() => setShowOfferModal(true)}
-                    className="w-full py-3 md:py-4 bg-white/10 font-semibold rounded-xl hover:bg-white/20 transition-all duration-300"
+                    className="w-full py-2.5 md:py-3 bg-gray-100 dark:bg-white/10 text-gray-800 dark:text-white font-semibold rounded-lg hover:bg-gray-200 dark:hover:bg-white/20 transition-all duration-300 text-sm"
                   >
                     Ajánlatot teszek
                   </button>
                   <button 
                     onClick={() => setShowMessageModal(true)}
-                    className="w-full py-3 md:py-4 border-2 border-white font-semibold rounded-xl hover:bg-white hover:text-black transition-all duration-300"
+                    className="w-full py-2.5 md:py-3 border border-gray-300 dark:border-white/30 text-gray-800 dark:text-white font-semibold rounded-lg hover:bg-gray-100 dark:hover:bg-white/10 transition-all duration-300 text-sm"
                   >
                     Üzenet az eladónak
                   </button>
