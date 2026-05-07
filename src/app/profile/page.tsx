@@ -8,6 +8,7 @@ import { toast } from 'sonner';
 import { useUserStats } from '@/hooks/useUserStats';
 import StarRating from '@/components/review/StarRating';
 import OffersList from '@/components/product/OffersList';
+import ProductGrid from '@/components/product/ProductGrid';
 import { formatPrice } from '@/lib/utils';
 import type { Product } from '@/types';
 
@@ -15,6 +16,7 @@ export default function ProfilePage() {
   const [products, setProducts] = useState<Product[]>([]);
   const [loading, setLoading] = useState(true);
   const [user, setUser] = useState<any>(null);
+  const [favorites, setFavorites] = useState<Set<string>>(new Set());
   const router = useRouter();
   
   const { stats, loading: statsLoading } = useUserStats(user?.id);
@@ -164,13 +166,14 @@ export default function ProfilePage() {
                 {products.map((product) => (
                   <div 
                     key={product.id} 
-                    className="group bg-white/5 backdrop-blur-sm border border-white/10 rounded-2xl overflow-hidden relative"
+                    className="group bg-white/5 backdrop-blur-sm border border-white/10 rounded-lg overflow-hidden relative"
                   >
-                    <Link href={`/products/${product.id}`} className="aspect-square overflow-hidden block">
+                    <Link href={`/products/${product.id}`} className="aspect-[4/5] overflow-hidden block">
                       {product.image_url ? (
                         <img 
                           src={product.image_url} 
                           alt={product.name}
+                          loading="lazy"
                           className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
                         />
                       ) : (
@@ -182,17 +185,17 @@ export default function ProfilePage() {
 
                     <button
                       onClick={() => deleteProduct(product.id)}
-                      className="absolute top-3 right-3 bg-red-500/80 hover:bg-red-500 text-white px-3 py-1 rounded-lg text-sm transition-colors"
+                      className="absolute top-2 right-2 bg-red-500/80 hover:bg-red-500 text-white px-2.5 py-1 rounded-lg text-xs transition-colors"
                     >
                       Törlés
                     </button>
 
-                    <div className="p-2">
-                      <div className="text-xs text-accent mb-1 uppercase tracking-wider">
+                    <div className="p-1.5">
+                      <div className="text-white/50 text-[10px] mb-0.5 uppercase tracking-wider">
                         {categoryLabels[product.category] || product.category}
                       </div>
-                      <h3 className="font-semibold text-lg truncate mb-1">{product.name}</h3>
-                      <div className="text-accent font-bold text-xl">{formatPrice(product.price)}</div>
+                      <h3 className="font-medium text-xs truncate">{product.name}</h3>
+                      <div className="text-accent font-bold text-sm md:text-base mt-0.5">{formatPrice(product.price)}</div>
                     </div>
                   </div>
                 ))}

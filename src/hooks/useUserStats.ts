@@ -37,7 +37,7 @@ export function useUserStats(userId: string | undefined) {
         // Eladott termékek és bevétel
         const { data: soldOffers } = await supabase
           .from('offers')
-          .select('price')
+          .select('offered_price')
           .eq('seller_id', userId)
           .eq('status', 'completed');
 
@@ -47,7 +47,7 @@ export function useUserStats(userId: string | undefined) {
           .select('rating')
           .eq('reviewed_id', userId);
 
-        const totalRevenue = soldOffers?.reduce((sum, o) => sum + o.price, 0) || 0;
+        const totalRevenue = soldOffers?.reduce((sum, o) => sum + o.offered_price, 0) || 0;
         const avgRating = reviews && reviews.length > 0 
           ? reviews.reduce((sum, r) => sum + r.rating, 0) / reviews.length 
           : 0;

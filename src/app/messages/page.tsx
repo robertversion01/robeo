@@ -26,6 +26,7 @@ export default function MessagesPage() {
   const [user, setUser] = useState<any>(null);
   const [conversations, setConversations] = useState<Conversation[]>([]);
   const [selectedConversation, setSelectedConversation] = useState<string | null>(null);
+  const [selectedEmail, setSelectedEmail] = useState<string>('');
   const [messages, setMessages] = useState<Message[]>([]);
   const [newMessage, setNewMessage] = useState('');
   const [showOfferModal, setShowOfferModal] = useState(false);
@@ -117,16 +118,23 @@ export default function MessagesPage() {
     setConversations(convList);
   };
 
-  const loadConversation = async (otherUserId: string) => {
+  const loadConversation = async (otherUserId: string, email?: string) => {
     setSelectedConversation(otherUserId);
+    setSelectedEmail(email || '');
     const { data, error } = await supabase
       .from('messages')
       .select('*')
       .or(`and(sender_id.eq.${user.id},receiver_id.eq.${otherUserId}),and(sender_id.eq.${otherUserId},receiver_id.eq.${user.id})`)
+      .is('is_system_message', false)
       .order('created_at', { ascending: true });
 
     if (error) return;
     setMessages(data || []);
+  };
+
+  const closeConversation = () => {
+    setSelectedConversation(null);
+    setMessages([]);
   };
 
   const sendMessage = async (e: React.FormEvent) => {
@@ -156,13 +164,15 @@ export default function MessagesPage() {
   const sendOffer = async () => {
     if (!offerAmount || !selectedConversation) return;
 
+    // TODO: The product_id needs to be passed from the conversation context
+    // For now, we create the offer without a product reference
     await supabase
       .from('offers')
       .insert({
-        product_id: '00000000-0000-0000-0000-000000000000', // TODO: get actual product id
+        product_id: null,  // Will be set when product context is available
         buyer_id: user.id,
         seller_id: selectedConversation,
-        amount: parseInt(offerAmount),
+        offered_price: parseInt(offerAmount),
         status: 'pending'
       });
 
@@ -172,7 +182,7 @@ export default function MessagesPage() {
         sender_id: user.id,
         receiver_id: selectedConversation,
         content: `💡 AJÁNLAT: ${parseInt(offerAmount).toLocaleString()} Ft`,
-        product_id: '00000000-0000-0000-0000-000000000000'
+        product_id: null
       });
 
     setShowOfferModal(false);
@@ -218,7 +228,7 @@ export default function MessagesPage() {
         <div className="max-w-6xl mx-auto h-full flex flex-col md:flex-row">
           
           {/* Offers Section */}
-          <div className="w-full md:w-80 border-b md:border-b-0 md:border-r border-white/10 overflow-y-auto">
+          <div className={`w-full md:w-80 border-b md:border-b-0 md:border-r border-white/10 overflow-y-auto ${selectedConversation ? 'hidden md:block' : ''}`}>
             <div className="p-5 border-b border-white/10">
               <h2 className="text-xl font-bold mb-4">Beérkező ajánlatok</h2>
               <OffersList />
@@ -235,7 +245,7 @@ export default function MessagesPage() {
                 {conversations.map(conv => (
                   <button
                     key={conv.user_id}
-                    onClick={() => loadConversation(conv.user_id)}
+                    onClick={() => loadConversation(conv.user_id, conv.email)}
                     className={`w-full text-left p-5 border-b border-white/5 hover:bg-white/5 transition-colors ${
                       selectedConversation === conv.user_id ? 'bg-white/10' : ''
                     }`}
@@ -256,13 +266,26 @@ export default function MessagesPage() {
           </div>
 
           {/* Chat Area */}
-          <div className="flex-1 flex flex-col min-h-[70vh] md:min-h-0">
+          <div className={`flex-1 flex flex-col min-h-[70vh] md:min-h-0 ${selectedConversation ? 'block' : 'hidden md:flex'}`}>
             {!selectedConversation ? (
               <div className="flex-1 flex items-center justify-center text-white/50">
                 Válassz ki egy beszélgetést
               </div>
             ) : (
               <>
+                {/* Chat Header (mobile back button) */}
+                <div className="flex items-center gap-3 p-4 border-b border-white/10 md:hidden">
+                  <button
+                    onClick={closeConversation}
+                    className="p-2 rounded-full hover:bg-white/10 transition-colors"
+                  >
+                    ←
+                  </button>
+                  <div className="w-8 h-8 rounded-full bg-accent/20 flex items-center justify-center text-accent font-bold text-sm">
+                    {selectedEmail?.charAt(0).toUpperCase() || '?'}
+                  </div>
+                  <span className="font-medium truncate">{selectedEmail}</span>
+                </div>
                 {/* Messages */}
                 <div className="flex-1 overflow-y-auto p-6 space-y-4">
                   {messages.map(msg => (

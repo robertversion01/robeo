@@ -4,6 +4,7 @@ import { useState } from 'react';
 import { supabase } from '@/lib/supabase';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
+import { toast } from 'sonner';
 
 export default function AuthPage() {
   const [isLogin, setIsLogin] = useState(true);
@@ -34,7 +35,7 @@ export default function AuthPage() {
           password,
         });
         if (error) throw error;
-        alert('✅ Sikeres regisztráció! Erősítsd meg az e-mail címedet.');
+        toast.success('✅ Sikeres regisztráció! Erősítsd meg az e-mail címedet.');
       }
     } catch (err: any) {
       let errorMessage = 'Hiba történt';

@@ -3,6 +3,7 @@
 import { useEffect, useState, Suspense } from 'react';
 import { supabase } from '@/lib/supabase';
 import { useSearchParams, useRouter } from 'next/navigation';
+import { toast } from 'sonner';
 import CustomSelect from '@/components/ui/CustomSelect';
 
 const SHIPPING_OPTIONS = [
@@ -17,17 +18,24 @@ function CheckoutContent() {
   const [product, setProduct] = useState<any>(null);
   const [shippingMethod, setShippingMethod] = useState('');
   const [processingPayment, setProcessingPayment] = useState(false);
+  const [isDirectPurchase, setIsDirectPurchase] = useState(false);
   const router = useRouter();
   const searchParams = useSearchParams();
   const offerId = searchParams.get('offer');
+  const productId = searchParams.get('id');
+  const [amount, setAmount] = useState(0);
 
   useEffect(() => {
-    if (!offerId) {
-      router.push('/messages');
+    if (!offerId && !productId) {
+      router.push('/');
       return;
     }
-    loadOffer();
-  }, [offerId]);
+    if (offerId) {
+      loadOffer();
+    } else if (productId) {
+      loadProduct();
+    }
+  }, [offerId, productId]);
 
   const loadOffer = async () => {
     const { data: { user } } = await supabase.auth.getUser();
@@ -44,17 +52,42 @@ function CheckoutContent() {
       .single();
 
     if (!offerData) {
-      router.push('/messages');
+      router.push('/');
       return;
     }
 
     setOffer(offerData);
     setProduct(offerData.product);
+    setAmount(offerData.offered_price);
+    setLoading(false);
+  };
+
+  const loadProduct = async () => {
+    const { data: { user } } = await supabase.auth.getUser();
+    if (!user) {
+      router.push('/auth');
+      return;
+    }
+
+    const { data: productData } = await supabase
+      .from('products')
+      .select('*')
+      .eq('id', productId)
+      .single();
+
+    if (!productData) {
+      router.push('/');
+      return;
+    }
+
+    setIsDirectPurchase(true);
+    setProduct(productData);
+    setAmount(productData.price);
     setLoading(false);
   };
 
   const shippingCost = SHIPPING_OPTIONS.find(s => s.value === shippingMethod)?.cost || 0;
-  const total = (offer?.offered_price || 0) + shippingCost;
+  const total = amount + shippingCost;
 
   const processPayment = async () => {
     setProcessingPayment(true);
@@ -62,43 +95,43 @@ function CheckoutContent() {
     // Simulate payment processing
     await new Promise(resolve => setTimeout(resolve, 2000));
 
-    // Update offer
-    await supabase
-      .from('offers')
-      .update({
-        shipping_method: shippingMethod,
-        shipping_cost: shippingCost,
-        status: 'paid'
-      })
-      .eq('id', offerId);
-
     // Mark product as sold
     await supabase
       .from('products')
       .update({ status: 'sold' })
       .eq('id', product.id);
 
-    // Send system messages
-    await supabase
-      .from('messages')
-      .insert([
-        {
+    if (offerId) {
+      // Update offer status
+      await supabase
+        .from('offers')
+        .update({
+          shipping_method: shippingMethod,
+          shipping_cost: shippingCost,
+          status: 'completed'
+        })
+        .eq('id', offerId);
+
+      // Send system message for offer purchase
+      await supabase
+        .from('messages')
+        .insert({
           sender_id: offer.buyer_id,
           receiver_id: offer.seller_id,
           content: `✅ FIZETÉS SIKERES! A tranzakció megtörtént. Szállítási mód: ${SHIPPING_OPTIONS.find(s => s.value === shippingMethod)?.label}`
-        }
-      ]);
+        });
+    }
 
-    // Show receipt
-    alert(`✅ VÁSÁRLÁSI BIZONYIT
+    // Show toast instead of alert
+    toast.success(`
+✅ VÁSÁRLÁS SIKERES!
 
 Termék: ${product.name}
-Összeg: ${offer.offered_price.toLocaleString()} Ft
-Szállítás: ${SHIPPING_OPTIONS.find(s => s.value === shippingMethod)?.label}
-Szállítási költség: ${shippingCost.toLocaleString()} Ft
 Végösszeg: ${total.toLocaleString()} Ft
+Szállítás: ${SHIPPING_OPTIONS.find(s => s.value === shippingMethod)?.label}
 
-Köszönjük a vásárlást! A rendelésed azonnal feldolgozásra kerül.`);
+Köszönjük a vásárlást!
+    `.trim());
 
     router.push('/profile');
   };
@@ -121,14 +154,19 @@ Köszönjük a vásárlást! A rendelésed azonnal feldolgozásra kerül.`);
             
             {/* Product Summary */}
             <div className="flex gap-4 pb-4 border-b border-white/10">
-              <div className="w-20 h-20 rounded-xl overflow-hidden bg-white/10">
-                {product.image_url && (
+              <div className="w-20 h-20 rounded-xl overflow-hidden bg-white/10 flex-shrink-0">
+                {product?.image_url ? (
                   <img src={product.image_url} alt={product.name} className="w-full h-full object-cover" />
+                ) : (
+                  <div className="w-full h-full flex items-center justify-center text-2xl">📷</div>
                 )}
               </div>
-              <div className="flex-1">
-                <h3 className="font-semibold text-lg">{product.name}</h3>
-                <div className="text-accent font-bold text-xl">{offer.offered_price.toLocaleString()} Ft</div>
+              <div className="flex-1 min-w-0">
+                <h3 className="font-semibold text-lg truncate">{product?.name}</h3>
+                <div className="text-accent font-bold text-xl">{amount.toLocaleString()} Ft</div>
+                {isDirectPurchase && (
+                  <div className="text-xs text-white/50 mt-1">Közvetlen vásárlás</div>
+                )}
               </div>
             </div>
 
@@ -151,7 +189,7 @@ Köszönjük a vásárlást! A rendelésed azonnal feldolgozásra kerül.`);
               <div className="space-y-3 pt-4 border-t border-white/10">
                 <div className="flex justify-between text-white/70">
                   <span>Termék ára</span>
-                  <span>{offer.offered_price.toLocaleString()} Ft</span>
+                  <span>{amount.toLocaleString()} Ft</span>
                 </div>
                 <div className="flex justify-between text-white/70">
                   <span>Szállítási költség</span>

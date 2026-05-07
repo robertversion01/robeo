@@ -20,9 +20,11 @@ export interface Offer {
   product_id: string;
   buyer_id: string;
   seller_id: string;
-  price: number;
+  offered_price: number;
   message?: string;
   status: 'pending' | 'accepted' | 'rejected' | 'cancelled' | 'completed';
+  shipping_method?: string;
+  shipping_cost?: number;
   created_at: string;
   updated_at: string;
   product?: Product;
@@ -40,6 +42,7 @@ export interface Message {
   receiver_id: string;
   content: string;
   product_id?: string;
+  is_system_message?: boolean;
   created_at: string;
 }
 
@@ -47,6 +50,7 @@ export interface Review {
   id: string;
   reviewer_id: string;
   reviewed_id: string;
+  offer_id?: string;
   rating: number;
   comment?: string;
   created_at: string;
@@ -59,12 +63,3 @@ export interface Favorite {
   created_at: string;
 }
 
-export interface Review {
-  id: string;
-  reviewer_id: string;
-  reviewed_id: string;
-  offer_id: string;
-  rating: number;
-  comment?: string;
-  created_at: string;
-}

@@ -4,6 +4,7 @@ import { useEffect, useState, use } from 'react';
 import { supabase } from '@/lib/supabase';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
+import { toast } from 'sonner';
 import OfferModal from '@/components/product/OfferModal';
 
 interface Product {
@@ -72,12 +73,12 @@ export default function ProductPage({ params }: { params: Promise<{ id: string }
           product_id: id
         });
 
-      alert('✅ Üzenet elküldve az eladónak! A beszélgetésed az Üzenetek menüben jelenik meg.');
+      toast.success('✅ Üzenet elküldve az eladónak! A beszélgetésed az Üzenetek menüben található.');
       setMessageText('');
       setShowMessageModal(false);
     } catch (error) {
       console.error(error);
-      alert('Hiba történt az üzenet küldése során');
+      toast.error('❌ Hiba történt az üzenet küldése során');
     } finally {
       setSendingMessage(false);
     }
