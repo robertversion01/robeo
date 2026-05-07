@@ -5,8 +5,20 @@ import { useSearchParams, useRouter } from 'next/navigation';
 import { supabase } from '@/lib/supabase';
 import Link from 'next/link';
 import { CheckCircle, ArrowRight, Truck, Package, CreditCard } from 'lucide-react';
+import dynamic from 'next/dynamic';
 
+// Use dynamic import with { ssr: false } to prevent server-side rendering
+const CheckoutSuccessContent = dynamic(() => Promise.resolve(CheckoutSuccessContentComponent), {
+  ssr: false,
+});
+
+// Export the page component that uses dynamic import
 export default function CheckoutSuccessPage() {
+  return <CheckoutSuccessContent />;
+}
+
+// The actual component that will be dynamically imported
+function CheckoutSuccessContentComponent() {
   const searchParams = useSearchParams();
   const router = useRouter();
   const [loading, setLoading] = useState(true);
