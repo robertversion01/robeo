@@ -349,10 +349,10 @@ export default function MessagesPage() {
                       className={`flex ${msg.sender_id === user.id ? 'justify-end' : 'justify-start'}`}
                     >
                       <div
-                        className={`max-w-xs md:max-w-md px-5 py-3 rounded-2xl ${
+                        className={`max-w-xs md:max-w-md px-4 py-2.5 rounded-2xl shadow-sm ${
                           msg.sender_id === user.id 
                             ? 'bg-[#007782] text-white rounded-br-none'
-                            : 'bg-gray-100 text-gray-800 rounded-bl-none'
+                            : 'bg-gray-100 text-gray-800 rounded-bl-none border border-gray-200'
                         }`}
                       >
                         {msg.message_type === 'image' && msg.media_url ? (
@@ -360,6 +360,9 @@ export default function MessagesPage() {
                         ) : (
                           msg.content
                         )}
+                        <div className={`mt-1 text-[10px] ${msg.sender_id === user.id ? 'text-white/80' : 'text-gray-500'}`}>
+                          {new Date(msg.created_at).toLocaleTimeString('hu-HU', { hour: '2-digit', minute: '2-digit' })}
+                        </div>
                       </div>
                     </div>
                   ))}

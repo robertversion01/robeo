@@ -375,7 +375,10 @@ export default function ProductPage({ params }: { params: Promise<{ id: string }
                     Ajánlatot teszek
                   </button>
                   <button 
-                    onClick={() => setShowMessageModal(true)}
+                    onClick={() => {
+                      setMessageText(`Szia! Erdeklodnek a ${product.name} irant.`);
+                      setShowMessageModal(true);
+                    }}
                     className="w-full btn-base btn-secondary"
                   >
                     Üzenet az eladónak
