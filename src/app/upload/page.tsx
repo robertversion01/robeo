@@ -166,37 +166,37 @@ export default function UploadPage() {
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-indigo-950 to-black text-white">
-      <main className="min-h-screen pt-28 pb-16 flex flex-col items-center justify-center px-4">
+    <div className="min-h-screen bg-white text-gray-900">
+      <main className="min-h-screen pt-16 pb-10 flex flex-col items-center px-4">
         <div className="w-full max-w-2xl">
-          <h1 className="text-4xl md:text-5xl font-bold mb-3 text-center">Termékfeltöltés</h1>
-          <p className="text-white/60 text-center mb-10">Add hozzá új terméked a közösséghez</p>
+          <h1 className="text-3xl md:text-4xl font-bold mb-2 text-center">Termékfeltöltés</h1>
+          <p className="text-gray-500 text-center mb-6">Add hozzá új terméked a közösséghez</p>
 
-          <form onSubmit={handleSubmit} className="space-y-6 bg-white/5 p-8 rounded-2xl border border-white/10 backdrop-blur-sm">
+          <form onSubmit={handleSubmit} className="space-y-5 bg-white p-5 md:p-7 rounded-2xl border border-gray-200 shadow-sm">
             {/* Product Name */}
             <div>
-              <label className="block mb-2 font-medium text-white/90">Termék neve</label>
+              <label className="block mb-2 font-medium text-gray-700">Termék neve</label>
               <input
                 type="text"
                 name="name"
                 value={formData.name}
                 onChange={handleInputChange}
                 required
-                className="w-full px-4 py-3 bg-white/10 border border-white/20 rounded-xl focus:outline-none focus:border-accent focus:ring-1 focus:ring-accent transition-all"
+                className="w-full px-4 py-3 bg-white border border-gray-300 rounded-xl focus:outline-none focus:border-[#007782] focus:ring-1 focus:ring-[#007782] transition-all"
                 placeholder="pl. Nike Air Max 270"
               />
             </div>
 
             {/* Description */}
             <div>
-              <label className="block mb-2 font-medium text-white/90">Leírás</label>
+              <label className="block mb-2 font-medium text-gray-700">Leírás</label>
               <textarea
                 name="description"
                 value={formData.description}
                 onChange={handleInputChange}
                 required
                 rows={4}
-                className="w-full px-4 py-3 bg-white/10 border border-white/20 rounded-xl focus:outline-none focus:border-accent focus:ring-1 focus:ring-accent transition-all resize-none"
+                className="w-full px-4 py-3 bg-white border border-gray-300 rounded-xl focus:outline-none focus:border-[#007782] focus:ring-1 focus:ring-[#007782] transition-all resize-none"
                 placeholder="Írd le a termék állapotát, méretét és egyéb jellemzőit..."
               />
             </div>
@@ -204,7 +204,7 @@ export default function UploadPage() {
             {/* Price and Category row */}
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
               <div>
-                <label className="block mb-2 font-medium text-white/90">Ár (Ft)</label>
+                <label className="block mb-2 font-medium text-gray-700">Ár (Ft)</label>
                 <input
                   type="number"
                   name="price"
@@ -212,13 +212,13 @@ export default function UploadPage() {
                   onChange={handleInputChange}
                   required
                   min="0"
-                  className="w-full px-4 py-3 bg-white/10 border border-white/20 rounded-xl focus:outline-none focus:border-accent focus:ring-1 focus:ring-accent transition-all"
+                  className="w-full px-4 py-3 bg-white border border-gray-300 rounded-xl focus:outline-none focus:border-[#007782] focus:ring-1 focus:ring-[#007782] transition-all"
                   placeholder="15000"
                 />
               </div>
 
               <div>
-                <label className="block mb-2 font-medium text-white/90">Kategória</label>
+                <label className="block mb-2 font-medium text-gray-700">Kategória</label>
                 <CustomSelect
                   options={[
                     { value: 'clothing', label: 'Ruházat' },
@@ -237,19 +237,19 @@ export default function UploadPage() {
             {/* Brand and Condition row */}
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
               <div>
-                <label className="block mb-2 font-medium text-white/90">Márka</label>
+                <label className="block mb-2 font-medium text-gray-700">Márka</label>
                 <input
                   type="text"
                   name="brand"
                   value={formData.brand}
                   onChange={handleInputChange}
-                  className="w-full px-4 py-3 bg-white/10 border border-white/20 rounded-xl focus:outline-none focus:border-accent focus:ring-1 focus:ring-accent transition-all"
+                  className="w-full px-4 py-3 bg-white border border-gray-300 rounded-xl focus:outline-none focus:border-[#007782] focus:ring-1 focus:ring-[#007782] transition-all"
                   placeholder="pl. Nike, Adidas, Apple"
                 />
               </div>
 
               <div>
-                <label className="block mb-2 font-medium text-white/90">Állapot</label>
+                <label className="block mb-2 font-medium text-gray-700">Állapot</label>
                 <CustomSelect
                   options={[
                     { value: 'new', label: 'Új' },
@@ -267,9 +267,9 @@ export default function UploadPage() {
 
             {/* Multi Image Upload - Vinted style */}
             <div>
-              <label className="block mb-2 font-medium text-white/90">
+              <label className="block mb-2 font-medium text-gray-700">
                 Képek
-                <span className="text-white/40 text-sm ml-2">({images.length}/6)</span>
+                <span className="text-gray-400 text-sm ml-2">({images.length}/6)</span>
               </label>
               
               {/* Image Preview Grid */}
@@ -278,7 +278,7 @@ export default function UploadPage() {
                   {images.map((image, index) => (
                     <div 
                       key={image.id} 
-                      className="relative aspect-square rounded-xl overflow-hidden bg-white/10 border border-white/10 group"
+                      className="relative aspect-square rounded-xl overflow-hidden bg-gray-100 border border-gray-200 group"
                     >
                       <img 
                         src={image.preview} 
@@ -287,12 +287,12 @@ export default function UploadPage() {
                       />
                       
                       {/* Overlay on hover */}
-                      <div className="absolute inset-0 bg-black/50 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center gap-2">
+                      <div className="absolute inset-0 bg-black/45 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center gap-2">
                         <button
                           type="button"
                           onClick={() => moveImage(index, 'up')}
                           disabled={index === 0}
-                          className="p-1.5 rounded-full bg-white/20 hover:bg-white/30 disabled:opacity-30 transition-colors"
+                          className="p-1.5 rounded-full bg-white/30 hover:bg-white/40 disabled:opacity-30 transition-colors"
                         >
                           <ArrowUp size={16} />
                         </button>
@@ -300,7 +300,7 @@ export default function UploadPage() {
                           type="button"
                           onClick={() => moveImage(index, 'down')}
                           disabled={index === images.length - 1}
-                          className="p-1.5 rounded-full bg-white/20 hover:bg-white/30 disabled:opacity-30 transition-colors"
+                          className="p-1.5 rounded-full bg-white/30 hover:bg-white/40 disabled:opacity-30 transition-colors"
                         >
                           <ArrowDown size={16} />
                         </button>
@@ -310,7 +310,7 @@ export default function UploadPage() {
                       <button
                         type="button"
                         onClick={() => removeImage(image.id)}
-                        className="absolute top-2 right-2 p-1 rounded-full bg-black/60 hover:bg-black/80 transition-colors opacity-0 group-hover:opacity-100"
+                        className="absolute top-2 right-2 p-1 rounded-full bg-black/60 hover:bg-black/80 transition-colors opacity-0 group-hover:opacity-100 text-white"
                       >
                         <X size={14} />
                       </button>
@@ -328,7 +328,7 @@ export default function UploadPage() {
               {images.length < 6 && (
                 <div 
                   onClick={() => fileInputRef.current?.click()}
-                  className="border-2 border-dashed border-white/30 rounded-xl p-8 text-center hover:border-accent transition-colors cursor-pointer group"
+                  className="border-2 border-dashed border-gray-300 rounded-xl p-8 text-center hover:border-[#007782] transition-colors cursor-pointer group bg-gray-50"
                 >
                   <input
                     ref={fileInputRef}
@@ -339,10 +339,10 @@ export default function UploadPage() {
                     className="hidden"
                   />
                   <div className="text-4xl mb-3 group-hover:text-accent transition-colors">
-                    <Plus size={40} className="mx-auto text-white/40 group-hover:text-accent/60" />
+                    <Plus size={40} className="mx-auto text-gray-400 group-hover:text-[#007782]" />
                   </div>
-                  <p className="text-white/70">Kattints a képek kiválasztásához</p>
-                  <p className="text-white/40 text-sm mt-1">
+                  <p className="text-gray-700">Kattints a képek kiválasztásához</p>
+                  <p className="text-gray-500 text-sm mt-1">
                     {images.length === 0 
                       ? 'Első kép a termék fő képe lesz (PNG, JPG, WEBP)'
                       : 'Válassz további képeket'}
@@ -355,11 +355,11 @@ export default function UploadPage() {
             <button
               type="submit"
               disabled={loading || images.length === 0}
-              className="w-full py-4 bg-accent text-black font-semibold rounded-xl hover:bg-accent/90 transition-all duration-300 hover:scale-[1.02] shadow-lg shadow-accent/20 mt-4 disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:scale-100"
+              className="w-full py-3.5 bg-[#007782] text-white font-semibold rounded-xl hover:bg-[#00616b] transition-all duration-300 mt-3 disabled:opacity-50 disabled:cursor-not-allowed"
             >
               {loading ? (
                 <span className="flex items-center justify-center gap-3">
-                  <span className="animate-spin w-5 h-5 border-2 border-black border-t-transparent rounded-full" />
+                  <span className="animate-spin w-5 h-5 border-2 border-white border-t-transparent rounded-full" />
                   Feltöltés folyamatban...
                 </span>
               ) : (
