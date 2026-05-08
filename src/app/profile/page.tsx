@@ -136,9 +136,9 @@ export default function ProfilePage() {
 
   return (
     <div className="min-h-screen bg-white text-gray-900">
-      <main className="pt-16 pb-12 px-3 md:px-6">
+      <main className="pt-14 pb-12 px-3 md:px-6">
         <div className="max-w-7xl mx-auto">
-          <div className="flex items-center gap-3 mb-2">
+          <div className="flex items-center gap-3 mb-1.5">
               <div className="w-14 h-14 rounded-full bg-[#007782]/10 flex items-center justify-center text-[#007782] text-xl font-bold">
               {user?.email?.charAt(0).toUpperCase() || '?'}
             </div>
@@ -151,7 +151,7 @@ export default function ProfilePage() {
               </div>
             </div>
           </div>
-          <p className="text-gray-500 text-sm mb-6 ml-0">Saját feltöltött termékeim</p>
+          <p className="text-gray-500 text-sm mb-5 ml-0">Saját feltöltött termékeim</p>
 
           <div className="mb-6">
             <button

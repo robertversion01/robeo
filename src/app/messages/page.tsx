@@ -279,7 +279,7 @@ export default function MessagesPage() {
           </div>
         </div>
       )}
-      <main className="pt-20 pb-24 md:pb-8 h-screen max-w-full overflow-x-hidden">
+      <main className="pt-16 pb-24 md:pb-8 h-screen max-w-full overflow-x-hidden">
         <div className="max-w-6xl mx-auto h-full flex flex-col md:flex-row">
           
           {/* Offers Section */}
@@ -329,10 +329,10 @@ export default function MessagesPage() {
             ) : (
               <>
                 {/* Chat Header (mobile back button) */}
-                <div className="flex items-center gap-3 p-4 border-b border-gray-200 md:hidden">
+                <div className="flex items-center gap-3 p-3 border-b border-gray-200 md:hidden">
                   <button
                     onClick={closeConversation}
-                    className="p-2 rounded-full hover:bg-gray-100 transition-colors"
+                    className="icon-btn text-gray-700"
                   >
                     ←
                   </button>
@@ -342,7 +342,7 @@ export default function MessagesPage() {
                   <span className="font-medium truncate">{selectedEmail}</span>
                 </div>
                 {/* Messages */}
-                <div className="flex-1 overflow-y-auto p-6 space-y-4">
+                <div className="flex-1 overflow-y-auto p-4 md:p-6 space-y-4">
                   {messages.map(msg => (
                     <div 
                       key={msg.id}
@@ -367,7 +367,7 @@ export default function MessagesPage() {
                 </div>
 
                 {/* Message Input */}
-                <div className="p-3 md:p-4 border-t border-gray-200 bg-white sticky bottom-0 z-20">
+                <div className="p-2.5 md:p-4 border-t border-gray-200 bg-white sticky bottom-0 z-20">
                   {/* Offer Button */}
                   {selectedConversation && (
                     <div className="mb-4">
@@ -396,7 +396,7 @@ export default function MessagesPage() {
                       type="button"
                       onClick={() => fileInputRef.current?.click()}
                       disabled={uploadingImage}
-                      className="h-10 w-10 shrink-0 flex items-center justify-center bg-gray-100 border border-gray-300 rounded-full hover:bg-gray-200 transition-all"
+                      className="icon-btn shrink-0 bg-gray-100 border border-gray-300 hover:bg-gray-200 transition-all"
                     >
                       {uploadingImage ? '...' : '📷'}
                     </button>
@@ -409,7 +409,7 @@ export default function MessagesPage() {
                     />
                     <button
                       type="submit"
-                      className="h-10 w-10 shrink-0 flex items-center justify-center bg-[#007782] text-white font-medium rounded-full hover:bg-[#00616b] transition-all"
+                      className="icon-btn shrink-0 bg-[#007782] text-white font-medium hover:bg-[#00616b] transition-all"
                       aria-label="Üzenet küldése"
                     >
                       ➤
