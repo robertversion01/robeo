@@ -47,13 +47,26 @@ export async function POST(req: NextRequest) {
           }
 
           const dbClient = (supabaseAdmin || supabase) as any;
-          let updateQuery = dbClient
+          const { data: productRow } = await dbClient
             .from('products')
-            .update({ featured_until: featuredUntil })
-            .eq('id', promotedProductId);
-          updateQuery = updateQuery.eq('user_id', promoterId);
+            .select('featured_checkout_session_id')
+            .eq('id', promotedProductId)
+            .eq('user_id', promoterId)
+            .maybeSingle();
 
-          const { error: promoteError } = await updateQuery;
+          if (productRow?.featured_checkout_session_id === checkoutSessionId) {
+            return NextResponse.json({ received: true });
+          }
+
+          const { error: promoteError } = await dbClient
+            .from('products')
+            .update({
+              featured_until: featuredUntil,
+              featured_checkout_session_id: checkoutSessionId,
+            })
+            .eq('id', promotedProductId)
+            .eq('user_id', promoterId);
+
           if (promoteError) {
             console.error('[stripe-webhook] failed to mark product as featured', promoteError);
           }
@@ -65,34 +78,54 @@ export async function POST(req: NextRequest) {
       const dbClient = (supabaseAdmin || supabase) as any;
       const { data: transaction } = await dbClient
         .from('transactions')
-        .select('*')
+        .select(
+          'id, buyer_id, seller_id, product_id, status, payment_intent_id, checkout_completed_notified_at'
+        )
         .eq('checkout_session_id', checkoutSessionId)
         .maybeSingle();
 
       if (transaction) {
-        await dbClient
-          .from('transactions')
-          .update({
-            status: 'fizetve',
-            payment_intent_id: session.payment_intent || transaction.payment_intent_id || null,
-          })
-          .eq('id', transaction.id);
+        const needsStatusUpdate = transaction.status !== 'fizetve';
+        const alreadyNotified = Boolean(transaction.checkout_completed_notified_at);
 
-        const { data: buyerProfile } = await dbClient
-          .from('profiles')
-          .select('location, full_name')
-          .eq('id', transaction.buyer_id)
-          .maybeSingle();
+        if (needsStatusUpdate) {
+          await dbClient
+            .from('transactions')
+            .update({
+              status: 'fizetve',
+              payment_intent_id: session.payment_intent || transaction.payment_intent_id || null,
+            })
+            .eq('id', transaction.id);
+        }
 
-        const buyerAddress = buyerProfile?.location || 'Nincs megadva';
-        await dbClient.from('messages').insert({
-          sender_id: transaction.buyer_id,
-          receiver_id: transaction.seller_id,
-          content: `✅ Eladtad a terméket! Itt a vevő címe: ${buyerAddress}`,
-          product_id: transaction.product_id,
-          is_system_message: true,
-          message_type: 'system',
-        });
+        if (!alreadyNotified) {
+          const { data: buyerProfile } = await dbClient
+            .from('profiles')
+            .select('location, full_name')
+            .eq('id', transaction.buyer_id)
+            .maybeSingle();
+
+          const buyerAddress = buyerProfile?.location || 'Nincs megadva';
+          const { error: messageError } = await dbClient.from('messages').insert({
+            sender_id: transaction.buyer_id,
+            receiver_id: transaction.seller_id,
+            content: `✅ Eladtad a terméket! Itt a vevő címe: ${buyerAddress}`,
+            product_id: transaction.product_id,
+            is_system_message: true,
+            message_type: 'system',
+          });
+
+          if (!messageError) {
+            await dbClient
+              .from('transactions')
+              .update({
+                checkout_completed_notified_at: new Date().toISOString(),
+              })
+              .eq('id', transaction.id);
+          } else {
+            console.error('[stripe-webhook] failed to insert checkout system message', messageError);
+          }
+        }
       }
     }
 

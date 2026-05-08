@@ -132,6 +132,13 @@ CREATE INDEX IF NOT EXISTS idx_transactions_checkout_session ON public.transacti
 CREATE INDEX IF NOT EXISTS idx_transactions_payment_intent ON public.transactions(payment_intent_id);
 CREATE INDEX IF NOT EXISTS idx_transactions_status ON public.transactions(status);
 
+-- 12/b Stripe webhook idempotencia (újrapróbált eseményekhez)
+ALTER TABLE IF EXISTS public.transactions
+  ADD COLUMN IF NOT EXISTS checkout_completed_notified_at TIMESTAMPTZ;
+
+ALTER TABLE IF EXISTS public.products
+  ADD COLUMN IF NOT EXISTS featured_checkout_session_id TEXT;
+
 -- 13. Offers lifecycle mezők
 ALTER TABLE IF EXISTS public.offers
   ADD COLUMN IF NOT EXISTS counter_price INTEGER,
