@@ -2,8 +2,6 @@ import { createClient } from '@supabase/supabase-js';
 
 let supabaseInstance: ReturnType<typeof createClient> | null = null;
 let supabaseInitAttempted = false;
-let supabaseAdminInstance: ReturnType<typeof createClient> | null = null;
-let supabaseAdminInitAttempted = false;
 
 export const getSupabaseClient = () => {
   if (supabaseInstance) {
@@ -39,29 +37,28 @@ export const getSupabaseClient = () => {
 };
 
 export const getSupabaseAdminClient = () => {
-  if (typeof window !== 'undefined') return null;
-  if (supabaseAdminInstance) return supabaseAdminInstance;
-  if (supabaseAdminInitAttempted) return null;
-
-  supabaseAdminInitAttempted = true;
-
-  const supabaseUrl =
-    process.env.NEXT_PUBLIC_SUPABASE_URL || process.env.SUPABASE_URL;
-  const serviceRoleKey = process.env.SUPABASE_SERVICE_ROLE_KEY;
-
-  if (!supabaseUrl || !serviceRoleKey) {
-    console.warn('Missing SUPABASE_SERVICE_ROLE_KEY. Admin Supabase client is unavailable.');
+  if (typeof window !== 'undefined') {
+    console.error('[supabase] getSupabaseAdminClient called on client side!');
     return null;
   }
 
-  supabaseAdminInstance = createClient(supabaseUrl, serviceRoleKey, {
+  const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL || process.env.SUPABASE_URL;
+  const serviceRoleKey = process.env.SUPABASE_SERVICE_ROLE_KEY;
+
+  if (!supabaseUrl || !serviceRoleKey) {
+    console.error('[supabase] CRITICAL: Missing Supabase Admin credentials', {
+      hasUrl: !!supabaseUrl,
+      hasServiceRole: !!serviceRoleKey,
+    });
+    return null;
+  }
+
+  return createClient(supabaseUrl, serviceRoleKey, {
     auth: {
       persistSession: false,
       autoRefreshToken: false,
     },
   });
-
-  return supabaseAdminInstance;
 };
 
 function getRequiredSupabaseClient() {
