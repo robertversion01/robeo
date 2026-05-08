@@ -17,14 +17,29 @@ export default function Home() {
     setSelectedCategory,
     categories,
     favorites,
-    toggleFavorite
+    toggleFavorite,
+    user
   } = useProducts();
+
+  const firstName =
+    user?.user_metadata?.full_name?.split(' ')[0] ||
+    user?.user_metadata?.name?.split(' ')[0] ||
+    user?.email?.split('@')[0] ||
+    '';
 
   return (
     <div className="min-h-screen bg-white text-gray-900">
       <main className="pt-16 pb-12 px-3 md:px-6">
         <div className="max-w-7xl mx-auto">
-          <VintedHero products={products} />
+          {!user ? <VintedHero products={products} /> : null}
+
+          {user ? (
+            <section className="mb-4 rounded-2xl border border-gray-200 bg-white px-4 py-4">
+              <p className="text-xl md:text-2xl font-semibold text-gray-900">
+                Szia {firstName}!
+              </p>
+            </section>
+          ) : null}
 
           {/* Search Bar */}
           <div className="relative mb-4 max-w-md">

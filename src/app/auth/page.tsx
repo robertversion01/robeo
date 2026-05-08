@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { supabase } from '@/lib/supabase';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
@@ -13,6 +13,12 @@ export default function AuthPage() {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
   const router = useRouter();
+
+  useEffect(() => {
+    if (typeof window === 'undefined') return;
+    const mode = new URLSearchParams(window.location.search).get('mode');
+    setIsLogin(mode !== 'register');
+  }, []);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -61,46 +67,82 @@ export default function AuthPage() {
     }
   };
 
+  const handleSocialClick = (provider: 'Google' | 'Facebook') => {
+    toast.info(`${provider} belépés hamarosan elérhető.`);
+  };
+
+  const switchMode = () => {
+    const next = !isLogin;
+    setIsLogin(next);
+    router.replace(`/auth?mode=${next ? 'login' : 'register'}`);
+  };
+
   return (
-    <div className="min-h-screen bg-gradient-to-br from-indigo-950 to-black text-white flex items-center justify-center px-4">
+    <div className="min-h-screen bg-white text-gray-900 flex items-center justify-center px-4">
       <div className="w-full max-w-md">
-        <Link href="/" className="block text-center mb-8 text-3xl font-bold tracking-wider hover:text-accent transition-colors">
+        <Link href="/" className="block text-center mb-8 text-3xl font-bold tracking-wider text-[#007782] hover:text-[#00616b] transition-colors">
           ROBEO
         </Link>
 
-        <div className="bg-white/5 backdrop-blur-sm border border-white/10 rounded-3xl p-8">
-          <h1 className="text-3xl font-bold text-center mb-8">
+        <div className="bg-white border border-gray-200 rounded-3xl p-8 shadow-sm">
+          <h1 className="text-3xl font-bold text-center mb-8 text-gray-900">
             {isLogin ? 'Belépés' : 'Regisztráció'}
           </h1>
 
           {error && (
-            <div className="bg-red-500/20 border border-red-500/30 text-red-300 rounded-xl p-3 mb-6 text-center text-sm">
+            <div className="bg-red-50 border border-red-200 text-red-600 rounded-xl p-3 mb-6 text-center text-sm">
               {error}
             </div>
           )}
 
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 mb-5">
+            <button
+              type="button"
+              onClick={() => handleSocialClick('Google')}
+              className="w-full py-2.5 rounded-xl border border-gray-300 bg-white hover:bg-gray-50 text-gray-800 font-medium transition-colors"
+            >
+              Google belépés
+            </button>
+            <button
+              type="button"
+              onClick={() => handleSocialClick('Facebook')}
+              className="w-full py-2.5 rounded-xl border border-gray-300 bg-white hover:bg-gray-50 text-gray-800 font-medium transition-colors"
+            >
+              Facebook belépés
+            </button>
+          </div>
+
+          <div className="relative mb-5">
+            <div className="absolute inset-0 flex items-center">
+              <span className="w-full border-t border-gray-200" />
+            </div>
+            <div className="relative flex justify-center text-xs uppercase">
+              <span className="bg-white px-2 text-gray-500">vagy e-mail címmel</span>
+            </div>
+          </div>
+
           <form onSubmit={handleSubmit} className="space-y-5">
             <div>
-              <label className="block mb-2 font-medium text-white/90">E-mail cím</label>
+              <label className="block mb-2 font-medium text-gray-700">E-mail cím</label>
               <input
                 type="email"
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
                 required
-                className="w-full px-4 py-3 bg-white/10 border border-white/20 rounded-xl focus:outline-none focus:border-accent focus:ring-1 focus:ring-accent transition-all"
+                className="w-full px-4 py-3 bg-white border border-gray-300 rounded-xl focus:outline-none focus:border-[#007782] focus:ring-1 focus:ring-[#007782] transition-all"
                 placeholder="pelda@email.com"
               />
             </div>
 
             <div>
-              <label className="block mb-2 font-medium text-white/90">Jelszó</label>
+              <label className="block mb-2 font-medium text-gray-700">Jelszó</label>
               <input
                 type="password"
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
                 required
                 minLength={6}
-                className="w-full px-4 py-3 bg-white/10 border border-white/20 rounded-xl focus:outline-none focus:border-accent focus:ring-1 focus:ring-accent transition-all"
+                className="w-full px-4 py-3 bg-white border border-gray-300 rounded-xl focus:outline-none focus:border-[#007782] focus:ring-1 focus:ring-[#007782] transition-all"
                 placeholder="••••••••"
               />
             </div>
@@ -108,17 +150,17 @@ export default function AuthPage() {
             <button
               type="submit"
               disabled={loading}
-              className="w-full py-4 bg-accent text-black font-semibold rounded-xl hover:bg-accent/90 transition-all duration-300 hover:scale-[1.02] shadow-lg shadow-accent/20 disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:scale-100 mt-2"
+              className="w-full py-4 bg-[#007782] text-white font-semibold rounded-xl hover:bg-[#00616b] transition-all duration-300 disabled:opacity-50 disabled:cursor-not-allowed mt-2"
             >
               {loading ? 'Folyamatban...' : isLogin ? 'Belépés' : 'Regisztráció'}
             </button>
           </form>
 
-          <div className="mt-8 text-center text-white/60">
+          <div className="mt-8 text-center text-gray-500">
             {isLogin ? 'Még nincs fiókod?' : 'Már van fiókod?'}
             <button
-              onClick={() => setIsLogin(!isLogin)}
-              className="text-accent hover:underline ml-1 font-medium"
+              onClick={switchMode}
+              className="text-[#007782] hover:underline ml-1 font-medium"
             >
               {isLogin ? 'Regisztrálj' : 'Jelentkezz be'}
             </button>
