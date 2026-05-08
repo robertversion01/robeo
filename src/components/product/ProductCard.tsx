@@ -15,7 +15,7 @@ interface ProductCardProps {
 export default function ProductCard({ product, isFavorite, onToggleFavorite }: ProductCardProps) {
   return (
     <div 
-      className="group bg-white dark:bg-card/50 dark:backdrop-blur-sm border border-gray-100 dark:border-border hover:border-accent/30 rounded-lg overflow-hidden transition-all duration-200 relative"
+      className="group bg-white border border-gray-200 rounded-md overflow-hidden transition-colors duration-200 relative"
     >
       <Link href={`/products/${product.id}`} className="aspect-[4/5] overflow-hidden block">
         {product.image_url ? (
@@ -23,10 +23,10 @@ export default function ProductCard({ product, isFavorite, onToggleFavorite }: P
             src={getOptimizedImageUrl(product.image_url, 300, 85)} 
             alt={product.name}
             loading="lazy"
-            className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
+            className="w-full h-full object-cover"
           />
         ) : (
-          <div className="w-full h-full bg-gray-100 dark:bg-muted flex items-center justify-center text-gray-400 dark:text-muted-foreground">
+          <div className="w-full h-full bg-gray-100 flex items-center justify-center text-gray-400">
             📷
           </div>
         )}
@@ -38,33 +38,22 @@ export default function ProductCard({ product, isFavorite, onToggleFavorite }: P
           e.preventDefault();
           onToggleFavorite();
         }}
-        className="absolute top-1.5 right-1.5 z-50 w-6 h-6 rounded-full bg-white/80 dark:bg-black/40 backdrop-blur-sm flex items-center justify-center hover:bg-white dark:hover:bg-black/60 transition-colors shadow-sm"
+        className="absolute top-1.5 right-1.5 z-50 w-6 h-6 rounded-full bg-white/90 backdrop-blur-sm flex items-center justify-center hover:bg-white transition-colors shadow-sm"
       >
         <Heart 
           size={13} 
           className={cn(
             "transition-colors",
-            isFavorite ? "fill-rose-500 text-rose-500" : "fill-transparent text-gray-500 dark:text-white"
+            isFavorite ? "fill-rose-500 text-rose-500" : "fill-transparent text-gray-500"
           )}
         />
       </button>
 
-      <div className="p-1.5 space-y-0.5">
-        <div className="text-accent font-bold text-xs">{formatPrice(product.price)}</div>
-        <h3 className="font-medium text-[11px] truncate leading-tight text-gray-800 dark:text-white">{product.name}</h3>
-        <div className="flex items-center gap-1 flex-wrap">
-          {product.size && (
-            <span className="text-[9px] bg-gray-100 dark:bg-white/10 px-1 py-0.5 rounded text-gray-600 dark:text-gray-300">
-              {product.size}
-            </span>
-          )}
-          {product.brand && (
-            <span className="text-[9px] text-gray-500 dark:text-gray-400 truncate max-w-[80px]">
-              {product.brand}
-            </span>
-          )}
-        </div>
-        <div className="text-[8px] text-gray-400 dark:text-gray-500 uppercase tracking-wider">
+      <div className="p-2 space-y-0.5 text-left">
+        <div className="font-bold text-sm text-gray-900">{formatPrice(product.price)}</div>
+        <div className="text-xs text-gray-800 truncate">{product.brand || product.name}</div>
+        <div className="text-xs text-gray-500 truncate">{product.size || 'Meret nincs megadva'}</div>
+        <div className="text-[10px] text-gray-500 uppercase tracking-wide">
           {product.category}
         </div>
       </div>

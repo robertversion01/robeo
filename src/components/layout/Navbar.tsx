@@ -38,21 +38,21 @@ export default function Navbar({ searchQuery, onSearchChange }: NavbarProps) {
   };
 
   return (
-    <nav className="fixed top-0 left-0 right-0 z-50 px-2 py-2 flex items-center justify-between gap-2 bg-white dark:bg-black/20 backdrop-blur-md border-b border-gray-100 dark:border-white/5 shadow-sm">
-      <Link href="/" className="text-base font-bold tracking-wider hover:text-accent transition-colors flex-shrink-0 text-gray-900 dark:text-white">
-        VINTED
+    <nav className="fixed top-0 left-0 right-0 z-50 px-3 py-2 flex items-center justify-between gap-2 bg-white border-b border-gray-200 shadow-sm">
+      <Link href="/" className="text-base font-bold tracking-wide hover:text-[#007782] transition-colors flex-shrink-0 text-[#007782]">
+        ROBEO
       </Link>
 
       {onSearchChange ? (
         <div className="flex-1 max-w-md min-w-0 w-full">
           <div className="relative">
-            <Search className="absolute left-2.5 top-1/2 -translate-y-1/2 text-gray-400 dark:text-white/40" size={16} />
+            <Search className="absolute left-2.5 top-1/2 -translate-y-1/2 text-gray-400" size={16} />
             <input 
               type="text" 
               placeholder="Keresés..." 
               value={searchQuery || ''}
               onChange={(e) => onSearchChange(e.target.value)}
-              className="w-full pl-8 pr-3 py-1.5 bg-gray-100 dark:bg-white/10 rounded-full text-xs border border-transparent focus:outline-none focus:border-accent/50 transition-colors"
+              className="w-full pl-8 pr-3 py-2 bg-gray-100 rounded-full text-xs border border-gray-200 focus:outline-none focus:border-[#007782] transition-colors"
             />
           </div>
         </div>
@@ -60,24 +60,24 @@ export default function Navbar({ searchQuery, onSearchChange }: NavbarProps) {
       
       <div className="flex items-center gap-0.5 md:gap-2">
         {loading ? (
-          <div className="w-16 h-7 animate-pulse bg-gray-100 dark:bg-white/10 rounded-full"></div>
+            <div className="w-16 h-7 animate-pulse bg-gray-100 rounded-full"></div>
         ) : user ? (
           <>
-            <Link href="/upload" className="p-1.5 rounded-full hover:bg-gray-100 dark:hover:bg-white/10 transition-colors">
-              <Plus size={18} className="text-gray-700 dark:text-white" />
+            <Link href="/upload" className="p-1.5 rounded-full hover:bg-gray-100 transition-colors">
+              <Plus size={18} className="text-gray-700" />
             </Link>
-            <Link href="/messages" className="p-1.5 rounded-full hover:bg-gray-100 dark:hover:bg-white/10 transition-colors relative">
-              <MessageCircle size={18} className="text-gray-700 dark:text-white" />
+            <Link href="/messages" className="p-1.5 rounded-full hover:bg-gray-100 transition-colors relative">
+              <MessageCircle size={18} className="text-gray-700" />
             </Link>
-            <Link href="/favorites" className="p-1.5 rounded-full hover:bg-gray-100 dark:hover:bg-white/10 transition-colors">
-              <Heart size={18} className="text-gray-700 dark:text-white" />
+            <Link href="/favorites" className="p-1.5 rounded-full hover:bg-gray-100 transition-colors">
+              <Heart size={18} className="text-gray-700" />
             </Link>
-            <Link href="/profile" className="p-1.5 rounded-full hover:bg-gray-100 dark:hover:bg-white/10 transition-colors">
-              <User size={18} className="text-gray-700 dark:text-white" />
+            <Link href="/profile" className="p-1.5 rounded-full hover:bg-gray-100 transition-colors">
+              <User size={18} className="text-gray-700" />
             </Link>
           </>
         ) : (
-          <Link href="/auth" className="px-3 py-1 text-xs font-medium border border-gray-300 dark:border-white/30 rounded-full hover:bg-gray-100 dark:hover:bg-white/10 transition-all duration-300 text-gray-800 dark:text-white">
+          <Link href="/auth" className="px-3 py-1 text-xs font-medium border border-gray-300 rounded-full hover:bg-gray-100 transition-all duration-300 text-gray-800">
             Belépés
           </Link>
         )}
