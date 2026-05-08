@@ -4,6 +4,7 @@ import { useState } from 'react';
 import { supabase } from '@/lib/supabase';
 import { toast } from 'sonner';
 import { X, Send } from 'lucide-react';
+import { isUuid } from '@/lib/validators';
 
 interface OfferModalProps {
   isOpen: boolean;
@@ -18,8 +19,6 @@ export default function OfferModal({ isOpen, onClose, productId, sellerId, produ
   const [price, setPrice] = useState<number>(Math.round(originalPrice * 0.85));
   const [message, setMessage] = useState('');
   const [loading, setLoading] = useState(false);
-  const isUuid = (value: string) =>
-    /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i.test(value);
 
   if (!isOpen) return null;
 

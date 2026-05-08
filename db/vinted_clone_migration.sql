@@ -3,6 +3,30 @@
 
 create extension if not exists "pgcrypto";
 
+-- Create reviews table if it does not exist yet
+create table if not exists public.reviews (
+  id uuid primary key default gen_random_uuid(),
+  reviewer_id uuid not null,
+  reviewed_id uuid not null,
+  offer_id uuid,
+  transaction_id uuid,
+  rating integer not null check (rating >= 1 and rating <= 5),
+  comment text,
+  created_at timestamptz not null default now()
+);
+
+-- Create favorites table for heart/save feature
+create table if not exists public.favorites (
+  id uuid primary key default gen_random_uuid(),
+  user_id uuid not null,
+  product_id uuid not null,
+  created_at timestamptz not null default now(),
+  constraint favorites_user_product_unique unique (user_id, product_id)
+);
+
+create index if not exists idx_favorites_user_id on public.favorites(user_id);
+create index if not exists idx_favorites_product_id on public.favorites(product_id);
+
 -- Transactions table hardening
 alter table if exists public.transactions
   add column if not exists fee integer not null default 0,
@@ -117,3 +141,27 @@ on public.reviews
 for select
 to public
 using (true);
+
+-- Favorites policies
+alter table if exists public.favorites enable row level security;
+
+drop policy if exists "favorites_select_own" on public.favorites;
+create policy "favorites_select_own"
+on public.favorites
+for select
+to authenticated
+using (auth.uid() = user_id);
+
+drop policy if exists "favorites_insert_own" on public.favorites;
+create policy "favorites_insert_own"
+on public.favorites
+for insert
+to authenticated
+with check (auth.uid() = user_id);
+
+drop policy if exists "favorites_delete_own" on public.favorites;
+create policy "favorites_delete_own"
+on public.favorites
+for delete
+to authenticated
+using (auth.uid() = user_id);

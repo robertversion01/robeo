@@ -6,6 +6,7 @@ import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import OffersList from '@/components/product/OffersList';
 import { toast } from 'sonner';
+import { isUuid } from '@/lib/validators';
 
 interface Message {
   id: string;
@@ -46,6 +47,8 @@ export default function MessagesPage() {
 
   useEffect(() => {
     if (!user) return;
+    localStorage.setItem(`messages_last_seen_at_${user.id}`, new Date().toISOString());
+    window.dispatchEvent(new CustomEvent('messages:seen'));
     loadConversations();
     subscribeToMessages();
 
@@ -204,8 +207,6 @@ export default function MessagesPage() {
 
   const sendOffer = async () => {
     if (!offerAmount || !selectedConversation || !user?.id) return;
-    const isUuid = (value: string) =>
-      /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i.test(value);
     const latestProductMessage = [...messages].reverse().find((msg) => msg.product_id);
     if (!latestProductMessage?.product_id) {
       toast.error('Ehhez a beszélgetéshez nem találtam termék-azonosítót az ajánlathoz.');
@@ -278,7 +279,7 @@ export default function MessagesPage() {
           </div>
         </div>
       )}
-      <main className="pt-20 pb-8 h-screen max-w-full overflow-x-hidden">
+      <main className="pt-20 pb-24 md:pb-8 h-screen max-w-full overflow-x-hidden">
         <div className="max-w-6xl mx-auto h-full flex flex-col md:flex-row">
           
           {/* Offers Section */}
@@ -366,7 +367,7 @@ export default function MessagesPage() {
                 </div>
 
                 {/* Message Input */}
-                <div className="p-4 border-t border-gray-200">
+                <div className="p-3 md:p-4 border-t border-gray-200 bg-white sticky bottom-0 z-20">
                   {/* Offer Button */}
                   {selectedConversation && (
                     <div className="mb-4">
@@ -379,7 +380,7 @@ export default function MessagesPage() {
                     </div>
                   )}
 
-                   <form onSubmit={sendMessage} className="flex gap-3 max-w-full box-border px-0">
+                   <form onSubmit={sendMessage} className="flex flex-nowrap items-center gap-2 max-w-full box-border px-0">
                     <input
                       ref={fileInputRef}
                       type="file"
@@ -395,7 +396,7 @@ export default function MessagesPage() {
                       type="button"
                       onClick={() => fileInputRef.current?.click()}
                       disabled={uploadingImage}
-                      className="px-4 py-3 bg-gray-100 border border-gray-300 rounded-full hover:bg-gray-200 transition-all"
+                      className="h-10 w-10 shrink-0 flex items-center justify-center bg-gray-100 border border-gray-300 rounded-full hover:bg-gray-200 transition-all"
                     >
                       {uploadingImage ? '...' : '📷'}
                     </button>
@@ -404,13 +405,14 @@ export default function MessagesPage() {
                       value={newMessage}
                       onChange={(e) => setNewMessage(e.target.value)}
                       placeholder="Üzenet írása..."
-                      className="flex-1 px-5 py-3 bg-gray-50 border border-gray-300 rounded-full focus:outline-none focus:border-[#007782] transition-all"
+                      className="flex-1 min-w-0 px-4 py-2.5 bg-gray-50 border border-gray-300 rounded-full focus:outline-none focus:border-[#007782] transition-all"
                     />
                     <button
                       type="submit"
-                      className="px-6 py-3 bg-[#007782] text-white font-medium rounded-full hover:bg-[#00616b] transition-all"
+                      className="h-10 w-10 shrink-0 flex items-center justify-center bg-[#007782] text-white font-medium rounded-full hover:bg-[#00616b] transition-all"
+                      aria-label="Üzenet küldése"
                     >
-                      Küldés
+                      ➤
                     </button>
                   </form>
                 </div>

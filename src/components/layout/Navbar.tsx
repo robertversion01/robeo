@@ -14,21 +14,68 @@ interface NavbarProps {
 export default function Navbar({ searchQuery, onSearchChange }: NavbarProps) {
   const [user, setUser] = useState<any>(null);
   const [loading, setLoading] = useState(true);
+  const [hasUnreadMessages, setHasUnreadMessages] = useState(false);
   const router = useRouter();
 
   useEffect(() => {
+    const checkUnreadMessages = async (currentUserId: string) => {
+      const lastSeen = localStorage.getItem(`messages_last_seen_at_${currentUserId}`) || '1970-01-01T00:00:00.000Z';
+      const { data, error } = await supabase
+        .from('messages')
+        .select('id')
+        .eq('receiver_id', currentUserId)
+        .gt('created_at', lastSeen)
+        .limit(1);
+
+      if (!error) {
+        setHasUnreadMessages((data || []).length > 0);
+      }
+    };
+
     // Check current session
     supabase.auth.getUser().then(({ data: { user } }) => {
       setUser(user);
       setLoading(false);
+      if (user?.id) {
+        checkUnreadMessages(user.id);
+      }
     });
 
     // Listen for auth state changes
     const { data: { subscription } } = supabase.auth.onAuthStateChange((event, session) => {
       setUser(session?.user || null);
+      if (session?.user?.id) {
+        checkUnreadMessages(session.user.id);
+      } else {
+        setHasUnreadMessages(false);
+      }
     });
 
-    return () => subscription.unsubscribe();
+    const channel = supabase.channel('navbar-unread-messages')
+      .on(
+        'postgres_changes',
+        { event: 'INSERT', schema: 'public', table: 'messages' },
+        async (payload: any) => {
+          const { data: { user: currentUser } } = await supabase.auth.getUser();
+          if (currentUser?.id && payload?.new?.receiver_id === currentUser.id) {
+            setHasUnreadMessages(true);
+          }
+        }
+      )
+      .subscribe();
+
+    const handleSeen = () => {
+      supabase.auth.getUser().then(({ data: { user: currentUser } }) => {
+        if (currentUser?.id) checkUnreadMessages(currentUser.id);
+      });
+    };
+    window.addEventListener('messages:seen', handleSeen as EventListener);
+
+    return () => {
+      subscription.unsubscribe();
+      supabase.removeChannel(channel);
+      window.removeEventListener('messages:seen', handleSeen as EventListener);
+    };
   }, []);
 
   const handleSignOut = async () => {
@@ -68,6 +115,9 @@ export default function Navbar({ searchQuery, onSearchChange }: NavbarProps) {
             </Link>
             <Link href="/messages" className="p-1.5 rounded-full hover:bg-gray-100 transition-colors relative">
               <MessageCircle size={18} className="text-gray-700" />
+              {hasUnreadMessages ? (
+                <span className="absolute top-1 right-1 h-2.5 w-2.5 rounded-full bg-red-500 border border-white" />
+              ) : null}
             </Link>
             <Link href="/favorites" className="p-1.5 rounded-full hover:bg-gray-100 transition-colors">
               <Heart size={18} className="text-gray-700" />
