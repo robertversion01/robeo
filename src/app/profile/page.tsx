@@ -16,16 +16,20 @@ import type { Product } from '@/types';
 
 export default function ProfilePage() {
   const [products, setProducts] = useState<Product[]>([]);
+  const [adminProducts, setAdminProducts] = useState<Product[]>([]);
   const [soldProducts, setSoldProducts] = useState<Product[]>([]);
   const [receivedReviews, setReceivedReviews] = useState<Array<{ id: string; rating: number; comment: string | null; created_at: string }>>([]);
   const [loading, setLoading] = useState(true);
   const [user, setUser] = useState<any>(null);
   const [promotingProductIds, setPromotingProductIds] = useState<Set<string>>(new Set());
+  const [updatingFeaturedIds, setUpdatingFeaturedIds] = useState<Set<string>>(new Set());
+  const [featuredDrafts, setFeaturedDrafts] = useState<Record<string, string>>({});
   const [favorites, setFavorites] = useState<Set<string>>(new Set());
   const [createdAt, setCreatedAt] = useState<string>('');
   const router = useRouter();
   
   const { stats, loading: statsLoading } = useUserStats(user?.id);
+  const isAdmin = user?.email === 'hevesi.tr@gmail.com';
 
   useEffect(() => {
     checkUser();
@@ -42,6 +46,9 @@ export default function ProfilePage() {
     loadUserProducts(user.id);
     loadSoldProducts(user.id);
     loadReceivedReviews(user.id);
+    if (user.email === 'hevesi.tr@gmail.com') {
+      loadAllProductsForAdmin();
+    }
   };
 
   const formatDate = (dateStr: string) => {
@@ -92,6 +99,30 @@ export default function ProfilePage() {
       setReceivedReviews((data || []) as Array<{ id: string; rating: number; comment: string | null; created_at: string }>);
     } catch (error) {
       console.error('Error fetching reviews:', error);
+    }
+  };
+
+  const loadAllProductsForAdmin = async () => {
+    try {
+      const { data, error } = await supabase
+        .from('products')
+        .select('*')
+        .order('created_at', { ascending: false });
+
+      if (error) throw error;
+      const allProducts = (data || []) as Product[];
+      setAdminProducts(allProducts);
+      setFeaturedDrafts(
+        allProducts.reduce<Record<string, string>>((acc, item) => {
+          acc[item.id] = item.featured_until
+            ? new Date(item.featured_until).toISOString().slice(0, 16)
+            : '';
+          return acc;
+        }, {})
+      );
+    } catch (error) {
+      console.error('Error fetching admin products:', error);
+      toast.error('Nem sikerult betolteni az admin termeklistat');
     }
   };
 
@@ -154,6 +185,49 @@ export default function ProfilePage() {
     }
   };
 
+  const updateFeaturedUntilAsAdmin = async (productId: string) => {
+    if (!isAdmin) return;
+
+    setUpdatingFeaturedIds((prev) => {
+      const next = new Set(prev);
+      next.add(productId);
+      return next;
+    });
+
+    try {
+      const rawValue = featuredDrafts[productId];
+      const featuredUntil = rawValue ? new Date(rawValue).toISOString() : null;
+
+      const { error } = await supabase
+        .from('products')
+        .update({ featured_until: featuredUntil })
+        .eq('id', productId);
+
+      if (error) throw error;
+
+      setAdminProducts((prev) =>
+        prev.map((item) =>
+          item.id === productId ? { ...item, featured_until: featuredUntil } : item
+        )
+      );
+      setProducts((prev) =>
+        prev.map((item) =>
+          item.id === productId ? { ...item, featured_until: featuredUntil } : item
+        )
+      );
+      toast.success('Kiemelesi datum frissitve');
+    } catch (error) {
+      console.error('Error updating featured_until:', error);
+      toast.error('Nem sikerult frissiteni a kiemelesi datumot');
+    } finally {
+      setUpdatingFeaturedIds((prev) => {
+        const next = new Set(prev);
+        next.delete(productId);
+        return next;
+      });
+    }
+  };
+
   if (loading) {
     return (
       <div className="min-h-screen bg-white text-gray-900 flex items-center justify-center">
@@ -202,6 +276,49 @@ export default function ProfilePage() {
               Kijelentkezés
             </button>
           </div>
+
+          {isAdmin ? (
+            <div className="mb-8 rounded-xl border border-gray-200 bg-gray-50 p-4">
+              <h2 className="text-lg font-semibold mb-3">Admin - Kiemeles kezeles</h2>
+              {adminProducts.length === 0 ? (
+                <p className="text-sm text-gray-500">Nincs megjelenitheto termek.</p>
+              ) : (
+                <div className="space-y-2">
+                  {adminProducts.map((item) => (
+                    <div
+                      key={item.id}
+                      className="flex flex-col md:flex-row md:items-center gap-2 justify-between rounded-lg border border-gray-200 bg-white p-2.5"
+                    >
+                      <div className="min-w-0">
+                        <p className="text-sm font-medium truncate">{item.name}</p>
+                        <p className="text-xs text-gray-500 truncate">
+                          {item.category} · {item.id}
+                        </p>
+                      </div>
+                      <div className="flex items-center gap-2">
+                        <input
+                          type="datetime-local"
+                          value={featuredDrafts[item.id] || ''}
+                          onChange={(e) =>
+                            setFeaturedDrafts((prev) => ({ ...prev, [item.id]: e.target.value }))
+                          }
+                          className="h-9 rounded-md border border-gray-300 px-2 text-xs"
+                        />
+                        <button
+                          type="button"
+                          disabled={updatingFeaturedIds.has(item.id)}
+                          onClick={() => updateFeaturedUntilAsAdmin(item.id)}
+                          className="h-9 rounded-md bg-[#007782] px-3 text-xs font-semibold text-white hover:bg-[#00616b] disabled:opacity-60"
+                        >
+                          {updatingFeaturedIds.has(item.id) ? 'Mentés...' : 'Mentés'}
+                        </button>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              )}
+            </div>
+          ) : null}
 
           {/* Tranzakciók */}
           <div className="mb-8">
