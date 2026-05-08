@@ -6,6 +6,7 @@ import type { Product } from '@/types';
 
 interface VintedHeroProps {
   products: Product[];
+  fullScreen?: boolean;
 }
 
 type HeroProduct = Product;
@@ -22,7 +23,7 @@ function getHeroProducts(products: Product[]): HeroProduct[] {
   return (featured.length > 0 ? featured : withImages).slice(0, 12);
 }
 
-export default function VintedHero({ products }: VintedHeroProps) {
+export default function VintedHero({ products, fullScreen = false }: VintedHeroProps) {
   const heroProducts = useMemo(() => getHeroProducts(products), [products]);
   const floatingItems = useMemo(() => {
     if (heroProducts.length === 0) return [];
@@ -32,14 +33,14 @@ export default function VintedHero({ products }: VintedHeroProps) {
   const columnHeights = ['h-28', 'h-36', 'h-32', 'h-40', 'h-30', 'h-36'];
 
   return (
-    <section className="mb-3 overflow-hidden">
-      <div className="rounded-2xl bg-[#0f1a1d] text-white border border-[#1f2c30] overflow-hidden">
+    <section className={`overflow-hidden w-full ${fullScreen ? 'h-[calc(100vh-2.75rem)]' : 'mb-3'}`}>
+      <div className={`bg-[#0f1a1d] text-white border border-[#1f2c30] overflow-hidden w-full ${fullScreen ? 'h-full rounded-none border-x-0 border-b-0' : 'rounded-2xl'}`}>
         {floatingItems.length === 0 ? (
           <div className="px-4 py-10 text-center text-sm text-gray-300">
             Még nincs kiemelt termék.
           </div>
         ) : (
-          <div className="relative h-[270px] sm:h-[330px] overflow-hidden px-2 pt-2">
+          <div className={`relative overflow-hidden px-2 pt-2 ${fullScreen ? 'h-[52vh]' : 'h-[270px] sm:h-[330px]'}`}>
             <div className="pointer-events-none absolute inset-0 p-2">
               <div className="grid grid-cols-3 gap-2 h-full floating-masonry">
                 {[0, 1, 2].map((col) => (
@@ -76,27 +77,27 @@ export default function VintedHero({ products }: VintedHeroProps) {
 
         )}
 
-        <div className="relative z-10 px-4 pb-4 pt-3 sm:px-5 sm:pb-5">
+        <div className={`relative z-10 px-4 pt-3 sm:px-5 ${fullScreen ? 'pb-6 min-h-[calc(100%-52vh)] flex flex-col justify-end' : 'pb-4 sm:pb-5'}`}>
           <h2 className="text-4xl leading-tight font-semibold font-serif text-white text-center">
-            Csatlakozz, es add el
+            Csatlakozz, és add el
             <br />
             egykor kedvelt cuccaidat
             <br />
-            dijmentesen
+            díjmentesen
           </h2>
 
           <div className="mt-5 space-y-2.5">
             <Link
-              href="/auth?mode=register"
+              href="/auth"
               className="w-full h-12 rounded-xl bg-[#4baab5] text-black text-base font-semibold inline-flex items-center justify-center"
             >
-              Regisztralas a Robeo rendszerébe
+              Regisztrálás a Robeo rendszerébe
             </Link>
             <Link
               href="/auth"
               className="w-full h-12 rounded-xl border border-white/75 bg-black text-white text-base font-semibold inline-flex items-center justify-center"
             >
-              Mar rendelkezem fiokkal
+              Már rendelkezem fiókkal
             </Link>
           </div>
         </div>

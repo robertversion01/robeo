@@ -22,6 +22,7 @@ export default function Navbar({ searchQuery, onSearchChange }: NavbarProps) {
   const [showLiveResults, setShowLiveResults] = useState(false);
   const router = useRouter();
   const resolvedSearchQuery = searchQuery ?? localSearchQuery;
+  const isGuest = !loading && !user;
 
   useEffect(() => {
     const checkUnreadMessages = async (currentUserId: string) => {
@@ -131,46 +132,50 @@ export default function Navbar({ searchQuery, onSearchChange }: NavbarProps) {
   };
 
   return (
-    <nav className="fixed top-0 left-0 right-0 z-50 h-11 px-2 sm:px-3 flex items-center justify-between gap-1 sm:gap-2 bg-white border-b border-gray-200 shadow-sm overflow-x-hidden w-full max-w-full">
-      <Link href="/" className="text-sm font-semibold tracking-wide hover:text-[#007782] transition-colors flex-shrink-0 text-[#007782]">
-        ROBEO
-      </Link>
+    <nav className={`fixed top-0 left-0 right-0 z-50 h-11 px-2 sm:px-3 flex items-center gap-1 sm:gap-2 bg-white border-b border-gray-200 shadow-sm overflow-x-hidden w-full max-w-full ${isGuest ? 'justify-end' : 'justify-between'}`}>
+      {!isGuest ? (
+        <>
+          <Link href="/" className="text-sm font-semibold tracking-wide hover:text-[#007782] transition-colors flex-shrink-0 text-[#007782]">
+            ROBEO
+          </Link>
 
-      <div className={`flex-1 min-w-0 basis-0 w-full shrink ${user ? 'max-w-md' : 'max-w-[36vw] sm:max-w-sm'}`}>
-        <div className="relative">
-          <Search className="absolute left-2.5 top-1/2 -translate-y-1/2 text-gray-400" size={14} />
-          <input 
-            type="text" 
-            placeholder="Keress márkákra, ruhákra..."
-            value={resolvedSearchQuery}
-            onFocus={() => setShowLiveResults(true)}
-            onChange={(e) => onNavbarSearchChange(e.target.value)}
-            className="w-full min-w-0 shrink h-9 pl-8 pr-3 bg-gray-100 rounded-full text-sm border border-gray-200 focus:outline-none focus:ring-1 focus:ring-[#007782]"
-          />
+          <div className={`flex-1 min-w-0 basis-0 w-full shrink ${user ? 'max-w-md' : 'max-w-[36vw] sm:max-w-sm'}`}>
+            <div className="relative">
+              <Search className="absolute left-2.5 top-1/2 -translate-y-1/2 text-gray-400" size={14} />
+              <input 
+                type="text" 
+                placeholder="Keress márkákra, ruhákra..."
+                value={resolvedSearchQuery}
+                onFocus={() => setShowLiveResults(true)}
+                onChange={(e) => onNavbarSearchChange(e.target.value)}
+                className="w-full min-w-0 shrink h-9 pl-8 pr-3 bg-gray-100 rounded-full text-sm border border-gray-200 focus:outline-none focus:ring-1 focus:ring-[#007782]"
+              />
 
-          {showLiveResults && resolvedSearchQuery.trim().length >= 2 ? (
-            <div className="absolute left-0 right-0 top-10 z-50 rounded-xl border border-gray-200 bg-white shadow-lg overflow-hidden">
-              {liveResults.length === 0 ? (
-                <div className="px-3 py-2.5 text-xs text-gray-500">Nincs találat.</div>
-              ) : (
-                <div className="max-h-72 overflow-y-auto">
-                  {liveResults.map((item) => (
-                    <Link
-                      key={item.id}
-                      href={`/products/${item.id}`}
-                      onClick={() => setShowLiveResults(false)}
-                      className="block px-3 py-2.5 hover:bg-gray-50 border-b last:border-b-0 border-gray-100"
-                    >
-                      <p className="text-sm font-medium text-gray-900 truncate">{item.name}</p>
-                      <p className="text-xs text-gray-500">{item.category}</p>
-                    </Link>
-                  ))}
+              {showLiveResults && resolvedSearchQuery.trim().length >= 2 ? (
+                <div className="absolute left-0 right-0 top-10 z-50 rounded-xl border border-gray-200 bg-white shadow-lg overflow-hidden">
+                  {liveResults.length === 0 ? (
+                    <div className="px-3 py-2.5 text-xs text-gray-500">Nincs találat.</div>
+                  ) : (
+                    <div className="max-h-72 overflow-y-auto">
+                      {liveResults.map((item) => (
+                        <Link
+                          key={item.id}
+                          href={`/products/${item.id}`}
+                          onClick={() => setShowLiveResults(false)}
+                          className="block px-3 py-2.5 hover:bg-gray-50 border-b last:border-b-0 border-gray-100"
+                        >
+                          <p className="text-sm font-medium text-gray-900 truncate">{item.name}</p>
+                          <p className="text-xs text-gray-500">{item.category}</p>
+                        </Link>
+                      ))}
+                    </div>
+                  )}
                 </div>
-              )}
+              ) : null}
             </div>
-          ) : null}
-        </div>
-      </div>
+          </div>
+        </>
+      ) : null}
       
       <div className="flex items-center gap-1 md:gap-2 shrink-0">
         {loading ? (
@@ -228,7 +233,7 @@ export default function Navbar({ searchQuery, onSearchChange }: NavbarProps) {
           </>
         ) : (
           <>
-            <Link href="/auth?mode=register" className="h-8 rounded-full bg-[#007782] px-2 text-[11px] sm:px-2.5 sm:text-xs font-semibold text-white inline-flex items-center justify-center whitespace-nowrap shrink-0">
+            <Link href="/auth" className="h-8 rounded-full bg-[#007782] px-2 text-[11px] sm:px-2.5 sm:text-xs font-semibold text-white inline-flex items-center justify-center whitespace-nowrap shrink-0">
               <span className="sm:hidden">Reg.</span>
               <span className="hidden sm:inline">Regisztráció</span>
             </Link>
