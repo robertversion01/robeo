@@ -129,6 +129,7 @@ export default function CheckoutContent() {
         },
         body: JSON.stringify({
           productId: product.id,
+          offerId,
           buyerId: user.id,
           shippingMethod,
           shippingCost

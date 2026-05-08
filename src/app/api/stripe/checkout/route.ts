@@ -19,12 +19,23 @@ export async function POST(req: NextRequest) {
       );
     }
 
-    const { productId, buyerId } = await req.json();
+    const body = await req.json();
+    const { productId, offerId, buyerId } = body as {
+      productId?: string;
+      offerId?: string;
+      buyerId?: string;
+    };
 
-    if (!productId || !buyerId) {
+    console.log('[checkout] Incoming payload', {
+      productId,
+      offerId,
+      buyerId,
+    });
+
+    if ((!productId && !offerId) || !buyerId) {
       return NextResponse.json(
         {
-          error: 'Product ID and buyer ID are required',
+          error: 'Product ID (or Offer ID) and buyer ID are required',
         },
         { status: 400 }
       );
@@ -44,12 +55,83 @@ export async function POST(req: NextRequest) {
       );
     }
 
+    let resolvedProductId = productId;
+
+    // If we have an offer ID, resolve the related product first.
+    if (offerId) {
+      const { data: offerData, error: offerError } = await supabase
+        .from('offers')
+        .select('id, product_id, buyer_id')
+        .eq('id', offerId)
+        .single();
+
+      console.log('[checkout] Offer lookup result', {
+        offerId,
+        offerError,
+        offerProductId: offerData?.product_id,
+        offerBuyerId: offerData?.buyer_id,
+      });
+
+      if (offerError || !offerData) {
+        return NextResponse.json({ error: 'Offer not found' }, { status: 404 });
+      }
+
+      if (offerData.buyer_id && buyerId && offerData.buyer_id !== buyerId) {
+        return NextResponse.json(
+          { error: 'Offer does not belong to this buyer' },
+          { status: 403 }
+        );
+      }
+
+      if (offerData.product_id) {
+        resolvedProductId = offerData.product_id;
+      }
+    }
+
+    // Safety fallback: sometimes productId may actually contain an offer ID.
+    if (!resolvedProductId && productId) {
+      const { data: fallbackOfferData, error: fallbackOfferError } = await supabase
+        .from('offers')
+        .select('id, product_id')
+        .eq('id', productId)
+        .single();
+
+      console.log('[checkout] Fallback offer lookup by productId', {
+        productId,
+        fallbackOfferError,
+        fallbackOfferProductId: fallbackOfferData?.product_id,
+      });
+
+      if (!fallbackOfferError && fallbackOfferData?.product_id) {
+        resolvedProductId = fallbackOfferData.product_id;
+      }
+    }
+
+    if (!resolvedProductId) {
+      return NextResponse.json(
+        { error: 'Unable to resolve product ID for checkout' },
+        { status: 400 }
+      );
+    }
+
+    console.log('[checkout] Resolved product ID', {
+      requestedProductId: productId,
+      offerId,
+      resolvedProductId,
+    });
+
     // Fetch product details from Supabase
     const { data: productData, error: productError } = await supabase
       .from('products')
       .select('*, user:user_id(*)')
-      .eq('id', productId)
+      .eq('id', resolvedProductId)
       .single();
+
+    console.log('[checkout] Product lookup result', {
+      resolvedProductId,
+      productError,
+      productFound: !!productData,
+    });
 
     if (productError || !productData) {
       return NextResponse.json(
@@ -75,6 +157,13 @@ export async function POST(req: NextRequest) {
       .eq('id', sellerId)
       .single();
 
+    console.log('[checkout] Seller lookup result', {
+      sellerId,
+      sellerError,
+      sellerFound: !!sellerData,
+      hasStripeAccount: !!sellerData?.stripe_account_id,
+    });
+
     if (sellerError || !sellerData) {
       return NextResponse.json(
         { error: 'Seller information not found' },
@@ -86,7 +175,7 @@ export async function POST(req: NextRequest) {
     const { data: transaction, error: transactionError } = await supabase
       .from('transactions')
       .insert({
-        product_id: productId,
+        product_id: resolvedProductId,
         buyer_id: buyerId,
         seller_id: sellerId,
         amount: product.price,
@@ -109,9 +198,6 @@ export async function POST(req: NextRequest) {
     const platformFeePercentage = 0.10;
     const platformFee = Math.round(productPrice * platformFeePercentage);
     
-    // Calculate the amount that will go to the seller (90% of the product price)
-    const sellerAmount = productPrice - platformFee;
-
     // Create a Stripe Checkout Session
     const session = await stripe.checkout.sessions.create({
       payment_method_types: ['card'],
@@ -131,9 +217,10 @@ export async function POST(req: NextRequest) {
       ],
       mode: 'payment',
       success_url: `${process.env.NEXT_PUBLIC_BASE_URL}/checkout/success?session_id={CHECKOUT_SESSION_ID}`,
-      cancel_url: `${process.env.NEXT_PUBLIC_BASE_URL}/products/${productId}`,
+      cancel_url: `${process.env.NEXT_PUBLIC_BASE_URL}/products/${resolvedProductId}`,
       metadata: {
-        productId,
+        productId: resolvedProductId,
+        offerId: offerId || '',
         buyerId,
         sellerId,
         transactionId: transaction.id,
