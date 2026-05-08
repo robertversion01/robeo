@@ -85,7 +85,10 @@ export default function Navbar({ searchQuery, onSearchChange }: NavbarProps) {
         if (currentUser?.id) checkUnreadMessages(currentUser.id);
       });
     };
-    const closeProfileMenu = () => setShowProfileMenu(false);
+    const closeProfileMenu = () => {
+      setShowProfileMenu(false);
+      setShowLiveResults(false);
+    };
     window.addEventListener('messages:seen', handleSeen as EventListener);
     window.addEventListener('click', closeProfileMenu);
 
@@ -108,7 +111,7 @@ export default function Navbar({ searchQuery, onSearchChange }: NavbarProps) {
       const { data, error } = await supabase
         .from('products')
         .select('id, name, category')
-        .ilike('name', `%${query}%`)
+        .or(`name.ilike.%${query}%,category.ilike.%${query}%`)
         .limit(8);
 
       if (!error) {
@@ -147,7 +150,7 @@ export default function Navbar({ searchQuery, onSearchChange }: NavbarProps) {
           </Link>
 
           <div className={`flex-1 min-w-0 basis-0 w-full shrink ${user ? 'max-w-md' : 'max-w-[36vw] sm:max-w-sm'}`}>
-            <div className="relative">
+            <div className="relative" onClick={(e) => e.stopPropagation()}>
               <Search className="absolute left-2.5 top-1/2 -translate-y-1/2 text-gray-400" size={14} />
               <input 
                 type="text" 
