@@ -3,7 +3,7 @@
 import { useEffect, useRef, useState } from 'react';
 import { supabase } from '@/lib/supabase';
 import Link from 'next/link';
-import { usePathname, useRouter } from 'next/navigation';
+import { usePathname } from 'next/navigation';
 import { MessageCircle, Heart, User, Search, Plus, LogOut } from 'lucide-react';
 import type { Product } from '@/types';
 
@@ -20,7 +20,6 @@ export default function Navbar({ searchQuery, onSearchChange }: NavbarProps) {
   const [localSearchQuery, setLocalSearchQuery] = useState('');
   const [liveResults, setLiveResults] = useState<Array<Pick<Product, 'id' | 'name' | 'category'>>>([]);
   const [showLiveResults, setShowLiveResults] = useState(false);
-  const router = useRouter();
   const pathname = usePathname();
   const searchContainerRef = useRef<HTMLDivElement | null>(null);
   const profileMenuRef = useRef<HTMLDivElement | null>(null);
@@ -117,7 +116,7 @@ export default function Navbar({ searchQuery, onSearchChange }: NavbarProps) {
       const { data, error } = await supabase
         .from('products')
         .select('id, name, category')
-        .or(`name.ilike.%${query}%,category.ilike.%${query}%`)
+        .or(`name.ilike.%${query}%,category.ilike.%${query}%,brand.ilike.%${query}%`)
         .limit(8);
 
       if (!error) {
@@ -147,7 +146,7 @@ export default function Navbar({ searchQuery, onSearchChange }: NavbarProps) {
   }
 
   return (
-    <nav className={`fixed top-0 left-0 right-0 z-[100] h-11 px-2 sm:px-3 flex items-center gap-1 sm:gap-2 bg-white border-b border-gray-200 shadow-sm overflow-x-hidden w-full max-w-full ${isGuest ? 'justify-end' : 'justify-between'}`}>
+    <nav className={`fixed top-0 left-0 right-0 z-[9999] h-11 px-2 sm:px-3 flex items-center gap-1 sm:gap-2 bg-white border-b border-gray-200 shadow-sm overflow-x-hidden w-full max-w-full pointer-events-auto ${isGuest ? 'justify-end' : 'justify-between'}`}>
       {!isGuest ? (
         <>
           <Link href="/" className="text-sm font-semibold tracking-wide hover:text-[#007782] transition-colors flex-shrink-0 text-[#007782]">
@@ -155,19 +154,21 @@ export default function Navbar({ searchQuery, onSearchChange }: NavbarProps) {
           </Link>
 
           <div className={`flex-1 min-w-0 basis-0 w-full shrink ${user ? 'max-w-md' : 'max-w-[36vw] sm:max-w-sm'}`}>
-            <div ref={searchContainerRef} className="relative z-[120]">
+            <div ref={searchContainerRef} className="relative z-[10000] pointer-events-auto">
               <Search className="absolute left-2.5 top-1/2 -translate-y-1/2 text-gray-400" size={14} />
               <input 
+                id="search-input"
+                name="search"
                 type="text" 
                 placeholder="Keress márkákra, ruhákra..."
                 value={resolvedSearchQuery}
                 onFocus={() => setShowLiveResults(true)}
                 onChange={(e) => onNavbarSearchChange(e.target.value)}
-                className="w-full min-w-0 shrink h-9 pl-8 pr-3 bg-gray-100 rounded-full text-sm border border-gray-200 focus:outline-none focus:ring-1 focus:ring-[#007782]"
+                className="w-full min-w-0 shrink h-9 pl-8 pr-3 bg-gray-100 rounded-full text-sm border border-gray-200 focus:outline-none focus:ring-1 focus:ring-[#007782] pointer-events-auto"
               />
 
               {showLiveResults && resolvedSearchQuery.trim().length >= 2 ? (
-                <div className="absolute left-0 right-0 top-10 z-[130] rounded-xl border border-gray-200 bg-white shadow-lg overflow-hidden">
+                <div className="absolute left-0 right-0 top-10 z-[10001] rounded-xl border border-gray-200 bg-white shadow-lg overflow-hidden pointer-events-auto">
                   {liveResults.length === 0 ? (
                     <div className="px-3 py-2.5 text-xs text-gray-500">Nincs találat.</div>
                   ) : (
@@ -209,10 +210,11 @@ export default function Navbar({ searchQuery, onSearchChange }: NavbarProps) {
             <Link href="/favorites" className="icon-btn text-gray-700">
               <Heart size={16} className="text-gray-700" />
             </Link>
-            <div ref={profileMenuRef} className="relative z-[130]">
+            <div ref={profileMenuRef} className="relative z-[10000] pointer-events-auto">
               <button
                 type="button"
                 onClick={(e) => {
+                  e.preventDefault();
                   setShowProfileMenu((prev) => !prev);
                 }}
                 className="icon-btn text-[#007782] cursor-pointer pointer-events-auto"
@@ -222,7 +224,7 @@ export default function Navbar({ searchQuery, onSearchChange }: NavbarProps) {
               </button>
               {showProfileMenu ? (
                 <div
-                  className="absolute right-0 top-10 w-44 card-base shadow-md p-1 z-[130]"
+                  className="absolute right-0 top-10 w-44 card-base shadow-md p-1 z-[10001] pointer-events-auto"
                 >
                   <Link
                     href="/profile"

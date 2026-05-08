@@ -29,7 +29,7 @@ export default function Home() {
           <VintedHero products={allProducts} fullScreen />
         </main>
       ) : (
-        <main className="w-full max-w-[100vw] overflow-x-hidden pt-11 pb-6 px-3 md:px-6">
+        <main className="w-full max-w-[100vw] overflow-x-hidden pt-16 pb-6 px-3 md:px-6">
           <div className="max-w-7xl mx-auto">
             <VintedHero products={allProducts} />
 
