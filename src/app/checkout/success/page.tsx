@@ -46,7 +46,7 @@ function CheckoutSuccessContentComponent() {
         const { data: transactionData, error: transactionError } = await supabase
           .from('transactions')
           .select('*, product:product_id(*), buyer:buyer_id(*), seller:seller_id(*)')
-          .eq('payment_intent_id', sessionId)
+          .eq('checkout_session_id', sessionId)
           .single();
 
         if (transactionError || !transactionData) {
