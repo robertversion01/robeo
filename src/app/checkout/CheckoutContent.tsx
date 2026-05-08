@@ -205,6 +205,11 @@ export default function CheckoutContent() {
   };
 
   const runPrecheck = async () => {
+    if (processingPayment) {
+      toast.info('A fizetés feldolgozás alatt van, az előellenőrzés most le van tiltva.');
+      return;
+    }
+
     try {
       setValidatingCheckout(true);
 

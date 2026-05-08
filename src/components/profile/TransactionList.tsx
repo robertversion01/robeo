@@ -25,6 +25,14 @@ interface Transaction {
     name: string;
     image_url: string | null;
   };
+  buyer_profile?: {
+    id: string;
+    email: string | null;
+  };
+  seller_profile?: {
+    id: string;
+    email: string | null;
+  };
 }
 
 export default function TransactionList() {
@@ -56,8 +64,16 @@ export default function TransactionList() {
       const productIds = Array.from(
         new Set(baseTransactions.map((item) => item.product_id).filter(Boolean))
       );
+      const participantIds = Array.from(
+        new Set(
+          baseTransactions
+            .flatMap((item) => [item.buyer_id, item.seller_id])
+            .filter(Boolean)
+        )
+      );
 
       let productMap: Record<string, { id: string; name: string; image_url: string | null }> = {};
+      let profileMap: Record<string, { id: string; email: string | null }> = {};
       if (productIds.length > 0) {
         const { data: productsData } = await supabase
           .from('products')
@@ -73,10 +89,27 @@ export default function TransactionList() {
         );
       }
 
+      if (participantIds.length > 0) {
+        const { data: profilesData } = await supabase
+          .from('profiles')
+          .select('id, email')
+          .in('id', participantIds);
+
+        profileMap = (profilesData || []).reduce(
+          (acc: Record<string, { id: string; email: string | null }>, item: any) => {
+            acc[item.id] = item;
+            return acc;
+          },
+          {}
+        );
+      }
+
       setTransactions(
         baseTransactions.map((item) => ({
           ...item,
           product: productMap[item.product_id],
+          buyer_profile: profileMap[item.buyer_id],
+          seller_profile: profileMap[item.seller_id],
         }))
       );
     } catch (error) {
@@ -368,8 +401,8 @@ export default function TransactionList() {
                     <span>•</span>
                     <span>
                       {activeTab === 'buying' 
-                        ? `Eladó: ${transaction.seller_id?.slice(0, 8)}...` 
-                        : `Vevő: ${transaction.buyer_id?.slice(0, 8)}...`}
+                        ? `Eladó: ${transaction.seller_profile?.email || 'Ismeretlen felhasználó'}` 
+                        : `Vevő: ${transaction.buyer_profile?.email || 'Ismeretlen felhasználó'}`}
                     </span>
                   </div>
                   

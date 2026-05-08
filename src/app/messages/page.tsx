@@ -39,6 +39,8 @@ export default function MessagesPage() {
   const [uploadingImage, setUploadingImage] = useState(false);
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
+  const selectedConversationRef = useRef<string | null>(null);
+  const selectedEmailRef = useRef<string>('');
   const router = useRouter();
 
   useEffect(() => {
@@ -60,6 +62,14 @@ export default function MessagesPage() {
   useEffect(() => {
     scrollToBottom();
   }, [messages]);
+
+  useEffect(() => {
+    selectedConversationRef.current = selectedConversation;
+  }, [selectedConversation]);
+
+  useEffect(() => {
+    selectedEmailRef.current = selectedEmail;
+  }, [selectedEmail]);
 
   const scrollToBottom = () => {
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
@@ -97,8 +107,9 @@ export default function MessagesPage() {
         if (!offer) return;
         if (offer.buyer_id === currentUser.id || offer.seller_id === currentUser.id) {
           loadConversations();
-          if (selectedConversation) {
-            loadConversation(selectedConversation, selectedEmail);
+          const activeConversationId = selectedConversationRef.current;
+          if (activeConversationId) {
+            loadConversation(activeConversationId, selectedEmailRef.current);
           }
           if (payload.eventType === 'UPDATE' && offer.status === 'countered') {
             toast.success('Ellenajánlat érkezett, frissítve a beszélgetés.');

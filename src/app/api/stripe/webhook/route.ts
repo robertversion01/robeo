@@ -45,15 +45,20 @@ export async function POST(req: NextRequest) {
         const featuredUntil = new Date(Date.now() + 7 * 24 * 60 * 60 * 1000).toISOString();
 
         if (promotedProductId) {
+          if (!promoterId) {
+            console.error(
+              '[stripe-webhook] missing promoterId metadata for product promotion',
+              { promotedProductId, checkoutSessionId }
+            );
+            return NextResponse.json({ received: true });
+          }
+
           const dbClient = (supabaseAdmin || supabase) as any;
-          const updateQuery = dbClient
+          let updateQuery = dbClient
             .from('products')
             .update({ featured_until: featuredUntil })
             .eq('id', promotedProductId);
-
-          if (promoterId) {
-            updateQuery.eq('user_id', promoterId);
-          }
+          updateQuery = updateQuery.eq('user_id', promoterId);
 
           const { error: promoteError } = await updateQuery;
           if (promoteError) {

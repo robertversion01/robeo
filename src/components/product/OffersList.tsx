@@ -143,8 +143,6 @@ export default function OffersList() {
         .update({
           status: 'countered',
           offered_price: counterPrice,
-          counter_price: counterPrice,
-          counter_message: 'Ellenajánlat elküldve',
           updated_at: new Date().toISOString(),
         })
         .eq('id', offer.id);

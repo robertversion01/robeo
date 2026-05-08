@@ -102,25 +102,6 @@ export async function POST(req: NextRequest) {
       }
     }
 
-    // Safety fallback: sometimes productId may actually contain an offer ID.
-    if (!resolvedProductId && productId) {
-      const { data: fallbackOfferData, error: fallbackOfferError } = await supabase
-        .from('offers')
-        .select('id, product_id')
-        .eq('id', productId)
-        .single();
-
-      console.log('[checkout] Fallback offer lookup by productId', {
-        productId,
-        fallbackOfferError,
-        fallbackOfferProductId: fallbackOfferData?.product_id,
-      });
-
-      if (!fallbackOfferError && fallbackOfferData?.product_id) {
-        resolvedProductId = fallbackOfferData.product_id;
-      }
-    }
-
     if (!resolvedProductId) {
       return NextResponse.json(
         { error: 'Unable to resolve product ID for checkout' },

@@ -55,18 +55,6 @@ export async function POST(req: NextRequest) {
       }
     }
 
-    if (!resolvedProductId && productId) {
-      const { data: fallbackOfferData } = await supabase
-        .from('offers')
-        .select('product_id')
-        .eq('id', productId)
-        .single();
-
-      if (fallbackOfferData?.product_id) {
-        resolvedProductId = fallbackOfferData.product_id;
-      }
-    }
-
     if (!resolvedProductId) {
       return NextResponse.json(
         { ok: false, error: 'Unable to resolve product ID for checkout' },
