@@ -29,20 +29,20 @@ export default function Home() {
 
   return (
     <div className="min-h-screen bg-white text-gray-900">
-      <main className="pt-16 pb-12 px-3 md:px-6">
+      <main className="pt-14 pb-10 px-3 md:px-6">
         <div className="max-w-7xl mx-auto">
           {!user ? <VintedHero products={products} /> : null}
 
           {user ? (
-            <section className="mb-4 rounded-2xl border border-gray-200 bg-white px-4 py-4">
-              <p className="text-xl md:text-2xl font-semibold text-gray-900">
+            <section className="mb-2">
+              <p className="text-sm md:text-base font-semibold text-gray-800">
                 Szia {firstName}!
               </p>
             </section>
           ) : null}
 
           {/* Search Bar */}
-          <div className="relative mb-4 max-w-md">
+          <div className="relative mb-2 max-w-md">
             <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" size={16} />
             <input 
               type="text" 
@@ -59,9 +59,9 @@ export default function Home() {
             onCategoryChange={setSelectedCategory}
           />
 
-          <FreshOffersStrip className="mt-4 mb-4" />
+          <FreshOffersStrip className="mt-2 mb-3" />
 
-          <p className="text-gray-500 text-sm mb-4">
+          <p className="text-gray-500 text-sm mb-3">
             {loading ? 'Betöltés...' : `${products.length} találat`}
           </p>
 

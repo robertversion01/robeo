@@ -4,7 +4,7 @@ import { useEffect, useState } from 'react';
 import { supabase } from '@/lib/supabase';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
-import { MessageCircle, Heart, User, Search, Plus } from 'lucide-react';
+import { MessageCircle, Heart, User, Search, Plus, LogOut } from 'lucide-react';
 
 interface NavbarProps {
   searchQuery?: string;
@@ -15,6 +15,7 @@ export default function Navbar({ searchQuery, onSearchChange }: NavbarProps) {
   const [user, setUser] = useState<any>(null);
   const [loading, setLoading] = useState(true);
   const [hasUnreadMessages, setHasUnreadMessages] = useState(false);
+  const [showProfileMenu, setShowProfileMenu] = useState(false);
   const router = useRouter();
 
   useEffect(() => {
@@ -69,12 +70,15 @@ export default function Navbar({ searchQuery, onSearchChange }: NavbarProps) {
         if (currentUser?.id) checkUnreadMessages(currentUser.id);
       });
     };
+    const closeProfileMenu = () => setShowProfileMenu(false);
     window.addEventListener('messages:seen', handleSeen as EventListener);
+    window.addEventListener('click', closeProfileMenu);
 
     return () => {
       subscription.unsubscribe();
       supabase.removeChannel(channel);
       window.removeEventListener('messages:seen', handleSeen as EventListener);
+      window.removeEventListener('click', closeProfileMenu);
     };
   }, []);
 
@@ -122,9 +126,42 @@ export default function Navbar({ searchQuery, onSearchChange }: NavbarProps) {
             <Link href="/favorites" className="p-1.5 rounded-full hover:bg-gray-100 transition-colors">
               <Heart size={18} className="text-gray-700" />
             </Link>
-            <Link href="/profile" className="p-1.5 rounded-full hover:bg-gray-100 transition-colors">
-              <User size={18} className="text-gray-700" />
-            </Link>
+            <div className="relative">
+              <button
+                type="button"
+                onClick={(e) => {
+                  e.stopPropagation();
+                  setShowProfileMenu((prev) => !prev);
+                }}
+                className="p-1.5 rounded-full hover:bg-gray-100 transition-colors"
+                aria-label="Profil menü"
+              >
+                <User size={18} className="text-gray-700" />
+              </button>
+              {showProfileMenu ? (
+                <div
+                  className="absolute right-0 top-10 w-44 rounded-xl border border-gray-200 bg-white shadow-md p-1 z-50"
+                  onClick={(e) => e.stopPropagation()}
+                >
+                  <Link
+                    href="/profile"
+                    className="w-full flex items-center gap-2 px-3 py-2 rounded-lg text-sm text-gray-700 hover:bg-gray-100"
+                    onClick={() => setShowProfileMenu(false)}
+                  >
+                    <User size={15} />
+                    Profilom
+                  </Link>
+                  <button
+                    type="button"
+                    onClick={handleSignOut}
+                    className="w-full flex items-center gap-2 px-3 py-2 rounded-lg text-sm text-red-600 hover:bg-red-50"
+                  >
+                    <LogOut size={15} />
+                    Kijelentkezés
+                  </button>
+                </div>
+              ) : null}
+            </div>
           </>
         ) : (
           <Link href="/auth" className="px-3 py-1 text-xs font-medium border border-gray-300 rounded-full hover:bg-gray-100 transition-all duration-300 text-gray-800">

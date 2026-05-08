@@ -112,6 +112,12 @@ export default function ProfilePage() {
     }
   };
 
+  const handleSignOut = async () => {
+    await supabase.auth.signOut();
+    router.push('/');
+    router.refresh();
+  };
+
   if (loading) {
     return (
       <div className="min-h-screen bg-white text-gray-900 flex items-center justify-center">
@@ -146,6 +152,16 @@ export default function ProfilePage() {
             </div>
           </div>
           <p className="text-gray-500 text-sm mb-6 ml-0">Saját feltöltött termékeim</p>
+
+          <div className="mb-6">
+            <button
+              type="button"
+              onClick={handleSignOut}
+              className="px-4 py-2 rounded-xl border border-red-200 text-red-600 hover:bg-red-50 transition-colors text-sm font-medium"
+            >
+              Kijelentkezés
+            </button>
+          </div>
 
           {/* Tranzakciók */}
           <div className="mb-8">
