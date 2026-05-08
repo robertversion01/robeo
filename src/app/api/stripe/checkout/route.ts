@@ -184,25 +184,31 @@ export async function POST(req: NextRequest) {
       sellerData?.stripe_account_id || fallbackStripeAccountId || null;
     const sellerEmail = sellerData?.email || 'fallback-seller@robeo.local';
 
-    // Create a transaction record in pending state
-    const { data: transaction, error: transactionError } = await supabase
-      .from('transactions')
-      .insert({
-        product_id: resolvedProductId,
-        buyer_id: buyerId,
-        seller_id: sellerId,
-        amount: product.price,
-        status: 'payment_pending',
-        payment_intent_id: null, // Will be updated after Stripe session creation
-      })
-      .select()
-      .single();
+    // Try to create a transaction record in pending state, but do not block checkout on DB failure.
+    let transaction: { id: string } | null = null;
+    try {
+      const { data: transactionData, error: transactionError } = await supabase
+        .from('transactions')
+        .insert({
+          product_id: resolvedProductId,
+          buyer_id: buyerId,
+          seller_id: sellerId,
+          amount: product.price,
+          status: 'payment_pending',
+          payment_intent_id: null, // Will be updated after Stripe session creation
+        })
+        .select('id')
+        .single();
 
-    if (transactionError) {
-      console.error('Transaction creation error:', transactionError);
-      return NextResponse.json(
-        { error: 'Failed to create transaction' },
-        { status: 500 }
+      if (transactionError) {
+        console.error('[checkout] Transaction creation error (non-blocking):', transactionError);
+      } else if (transactionData?.id) {
+        transaction = { id: transactionData.id };
+      }
+    } catch (transactionInsertError) {
+      console.error(
+        '[checkout] Transaction insert threw error (non-blocking):',
+        transactionInsertError
       );
     }
 
@@ -236,7 +242,7 @@ export async function POST(req: NextRequest) {
         buyerId,
         sellerId,
         sellerEmail,
-        transactionId: transaction.id,
+        transactionId: transaction?.id || '',
         type: 'escrow_payment',
       },
     };
@@ -260,13 +266,17 @@ export async function POST(req: NextRequest) {
     // Create a Stripe Checkout Session
     const session = await stripe.checkout.sessions.create(checkoutSessionPayload);
 
-    // Update the transaction with the payment intent ID
-    await supabase
-      .from('transactions')
-      .update({
-        payment_intent_id: session.payment_intent as string,
-      })
-      .eq('id', transaction.id);
+    // Update the transaction with the payment intent ID when transaction row exists.
+    if (transaction?.id) {
+      await supabase
+        .from('transactions')
+        .update({
+          payment_intent_id: session.payment_intent as string,
+        })
+        .eq('id', transaction.id);
+    } else {
+      console.log('[checkout] Skipping payment_intent_id update because no transaction row exists');
+    }
 
     // Return the session URL
     return NextResponse.json({ url: session.url });
