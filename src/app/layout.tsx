@@ -47,7 +47,7 @@ export default function RootLayout({
       lang="hu"
       className={`${interSans.variable} ${geistMono.variable} h-full antialiased`}
     >
-      <body className="min-h-full flex flex-col pt-10">
+      <body className="min-h-full flex flex-col overflow-x-hidden">
         <Navbar />
         {children}
         <Toaster 

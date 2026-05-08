@@ -48,7 +48,8 @@ export default function AuthPage() {
           password,
         });
         if (error) throw error;
-        toast.success('✅ Sikeres regisztráció! Erősítsd meg az e-mail címedet.');
+        toast.success('✅ Sikeres regisztráció!');
+        router.push('/profile');
       }
     } catch (err: any) {
       let errorMessage = 'Hiba történt';
@@ -81,7 +82,7 @@ export default function AuthPage() {
   };
 
   return (
-    <div className="min-h-screen bg-[#0f1a1d] text-white flex items-center justify-center px-4 py-8">
+    <div className="min-h-screen w-full mt-0 pt-0 bg-[#0f1a1d] text-white flex items-center justify-center px-4 py-8">
       <div className="w-full max-w-md">
         <div className="bg-[#142327] border border-[#22353a] rounded-3xl p-8 shadow-sm">
           <h1 className="text-3xl font-bold text-center mb-6 text-white">
