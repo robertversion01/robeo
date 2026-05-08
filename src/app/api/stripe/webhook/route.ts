@@ -13,8 +13,9 @@ function ok(): NextResponse {
 
 function formatError(err: unknown): string {
   if (err instanceof Error) return err.message.slice(0, MAX_ERROR_LEN);
+  if (typeof err === 'string') return err.slice(0, MAX_ERROR_LEN);
   try {
-    return JSON.stringify(err).slice(0, MAX_ERROR_LEN);
+    return JSON.stringify(err, null, 2).slice(0, MAX_ERROR_LEN);
   } catch {
     return String(err).slice(0, MAX_ERROR_LEN);
   }
