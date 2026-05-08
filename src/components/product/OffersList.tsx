@@ -140,7 +140,13 @@ export default function OffersList() {
 
       const { error } = await supabase
         .from('offers')
-        .update({ status: 'countered', offered_price: counterPrice })
+        .update({
+          status: 'countered',
+          offered_price: counterPrice,
+          counter_price: counterPrice,
+          counter_message: 'Ellenajánlat elküldve',
+          updated_at: new Date().toISOString(),
+        })
         .eq('id', offer.id);
 
       if (error) throw error;
@@ -155,7 +161,7 @@ export default function OffersList() {
           is_system_message: true
         });
 
-      toast.success('Ellenajanlat elkuldve');
+      toast.success('Ellenajánlat elküldve!');
       setOffers((prev) =>
         prev.map((o) => (o.id === offer.id ? { ...o, status: 'countered', offered_price: counterPrice } : o))
       );

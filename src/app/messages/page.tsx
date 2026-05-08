@@ -84,6 +84,26 @@ export default function MessagesPage() {
       }, (payload: any) => {
         const newMsg = payload.new as Message;
         setMessages(prev => [...prev, newMsg]);
+        loadConversations();
+      })
+      .on('postgres_changes', {
+        event: '*',
+        schema: 'public',
+        table: 'offers',
+      }, async (payload: any) => {
+        const { data: { user: currentUser } } = await supabase.auth.getUser();
+        if (!currentUser?.id) return;
+        const offer = payload.new;
+        if (!offer) return;
+        if (offer.buyer_id === currentUser.id || offer.seller_id === currentUser.id) {
+          loadConversations();
+          if (selectedConversation) {
+            loadConversation(selectedConversation, selectedEmail);
+          }
+          if (payload.eventType === 'UPDATE' && offer.status === 'countered') {
+            toast.success('Ellenajánlat érkezett, frissítve a beszélgetés.');
+          }
+        }
       })
       .subscribe();
   };
