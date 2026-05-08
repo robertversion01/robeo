@@ -34,13 +34,19 @@ export default function Navbar({ searchQuery, onSearchChange }: NavbarProps) {
     };
 
     // Check current session
-    supabase.auth.getUser().then(({ data: { user } }) => {
-      setUser(user);
-      setLoading(false);
-      if (user?.id) {
-        checkUnreadMessages(user.id);
-      }
-    });
+    supabase.auth.getUser()
+      .then(({ data: { user } }) => {
+        setUser(user);
+        setLoading(false);
+        if (user?.id) {
+          checkUnreadMessages(user.id);
+        }
+      })
+      .catch((error) => {
+        console.error('Navbar auth init error:', error);
+        setUser(null);
+        setLoading(false);
+      });
 
     // Listen for auth state changes
     const { data: { subscription } } = supabase.auth.onAuthStateChange((event, session) => {

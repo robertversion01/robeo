@@ -29,7 +29,7 @@ export default function FreshOffersStrip({
       const { data, error } = await supabase
         .from('products')
         .select('id, name, image_url, price, category')
-        .not('status', 'eq', 'deleted')
+        .or('status.is.null,status.neq.deleted')
         .order('created_at', { ascending: false })
         .limit(12);
 

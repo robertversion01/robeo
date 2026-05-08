@@ -14,7 +14,7 @@ export function getStripeInstance(): Stripe | null {
 
   stripeInitAttempted = true;
 
-  const secretKey = process.env.STRIPE_SECRET_KEY;
+  const secretKey = process.env.STRIPE_SECRET_KEY || process.env.STRIPE_API_KEY;
   if (!secretKey) {
     console.warn('Missing STRIPE_SECRET_KEY. Stripe client is unavailable.');
     return null;

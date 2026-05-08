@@ -34,18 +34,23 @@ export function useProducts() {
   }, [selectedSort]);
 
   const checkUserAndFavorites = async () => {
-    const { data: { user } } = await supabase.auth.getUser();
-    setUser(user);
+    try {
+      const { data: { user } } = await supabase.auth.getUser();
+      setUser(user);
 
-    if (user) {
-      const { data } = await supabase
-        .from('favorites')
-        .select('product_id')
-        .eq('user_id', user.id);
+      if (user) {
+        const { data } = await supabase
+          .from('favorites')
+          .select('product_id')
+          .eq('user_id', user.id);
 
-      if (data) {
-        setFavorites(new Set(data.map(f => f.product_id)));
+        if (data) {
+          setFavorites(new Set(data.map(f => f.product_id)));
+        }
       }
+    } catch (error) {
+      console.error('Error loading user/favorites:', error);
+      setUser(null);
     }
   };
 
@@ -56,7 +61,7 @@ export function useProducts() {
       const { data, error } = await supabase
         .from('products')
         .select('*')
-        .not('status', 'eq', 'deleted')
+        .or('status.is.null,status.neq.deleted')
         .order(sortConfig.column, { ascending: sortConfig.order === 'asc' });
 
       if (error) throw error;
