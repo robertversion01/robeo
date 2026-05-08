@@ -120,10 +120,10 @@ export async function POST(req: NextRequest) {
       resolvedProductId,
     });
 
-    // Fetch product details from Supabase
+    // Fetch product details without relational join to avoid FK inference issues
     const { data: productData, error: productError } = await supabase
       .from('products')
-      .select('*, user:user_id(*)')
+      .select('id, user_id, name, description, image_url, price')
       .eq('id', resolvedProductId)
       .single();
 
