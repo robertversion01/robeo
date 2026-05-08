@@ -158,7 +158,7 @@ export default function ProductPage({ params }: { params: Promise<{ id: string }
       {/* Message Modal */}
       {showMessageModal && (
         <div className="fixed inset-0 bg-black/50 backdrop-blur-sm z-[100] flex items-center justify-center p-4">
-          <div className="bg-white border border-gray-200 rounded-lg p-5 max-w-md w-full shadow-lg">
+          <div className="card-base p-5 max-w-md w-full shadow-lg">
             <h2 className="text-xl font-bold mb-3 text-gray-900">Üzenet az eladónak</h2>
             <p className="text-gray-600 text-sm mb-4">Írd meg mit szeretnél kérdezni a termékről!</p>
             
@@ -167,20 +167,20 @@ export default function ProductPage({ params }: { params: Promise<{ id: string }
               onChange={(e) => setMessageText(e.target.value)}
               placeholder="Üzenet szövege..."
               rows={4}
-              className="w-full px-3 py-2 bg-gray-50 border border-gray-200 rounded-lg focus:outline-none focus:border-accent focus:ring-1 focus:ring-accent transition-all resize-none mb-4 text-sm"
+              className="textarea-base resize-none mb-4 focus:outline-none focus:ring-1 focus:ring-[#007782]"
             />
 
             <div className="flex gap-3">
               <button
                 onClick={() => setShowMessageModal(false)}
-                className="flex-1 py-2.5 border border-gray-300 rounded-lg hover:bg-gray-100 transition-all text-gray-800 text-sm"
+                className="flex-1 btn-base btn-secondary"
               >
                 Mégse
               </button>
               <button
                 onClick={sendMessageToSeller}
                 disabled={sendingMessage}
-                className="flex-1 py-2.5 bg-accent text-white font-semibold rounded-lg hover:bg-accent/90 transition-all disabled:opacity-50 text-sm"
+                className="flex-1 btn-base btn-primary disabled:opacity-50"
               >
                 {sendingMessage ? 'Küldés...' : 'Üzenet küldése'}
               </button>
@@ -279,19 +279,19 @@ export default function ProductPage({ params }: { params: Promise<{ id: string }
                       ? router.push(`/checkout?offer=${acceptedOffer.id}`)
                       : router.push(`/checkout?id=${id}`)
                   }
-                   className="w-full py-2.5 md:py-3 bg-accent text-white font-semibold rounded-lg hover:bg-accent/90 transition-all duration-300 text-sm"
+                   className="w-full btn-base btn-primary"
                  >
                   {acceptedOffer ? 'Vásárlás alkudott áron' : 'Vásárlás'}
                  </button>
                   <button 
                     onClick={openOfferModal}
-                    className="w-full py-2.5 md:py-3 bg-gray-100 text-gray-800 font-semibold rounded-lg hover:bg-gray-200 transition-all duration-300 text-sm"
+                    className="w-full btn-base btn-secondary"
                   >
                     Ajánlatot teszek
                   </button>
                   <button 
                     onClick={() => setShowMessageModal(true)}
-                    className="w-full py-2.5 md:py-3 border border-gray-300 text-gray-800 font-semibold rounded-lg hover:bg-gray-100 transition-all duration-300 text-sm"
+                    className="w-full btn-base btn-secondary"
                   >
                     Üzenet az eladónak
                   </button>

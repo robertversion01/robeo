@@ -250,7 +250,7 @@ export default function MessagesPage() {
       {/* Offer Modal */}
       {showOfferModal && (
         <div className="fixed inset-0 bg-black/40 z-[100] flex items-center justify-center p-4">
-          <div className="bg-white border border-gray-200 rounded-2xl p-8 max-w-md w-full">
+          <div className="card-base p-8 max-w-md w-full">
             <h2 className="text-2xl font-bold mb-4">💰 Ajánlat teszek</h2>
             <p className="text-gray-500 mb-6">Add meg az ajánlott összeget a termékért!</p>
             
