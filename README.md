@@ -46,6 +46,9 @@ Szerkeszd a fájlt:
 ```env
 NEXT_PUBLIC_SUPABASE_URL=https://your-project-id.supabase.co
 NEXT_PUBLIC_SUPABASE_ANON_KEY=your-supabase-anon-key-here
+STRIPE_SECRET_KEY=sk_test_xxx
+STRIPE_WEBHOOK_SECRET=whsec_xxx
+NEXT_PUBLIC_BASE_URL=http://localhost:3000
 ```
 
 ### 4. Futtasd a fejlesztői szervert
@@ -61,7 +64,7 @@ A projekt elindul a következő címen: **http://localhost:3000**
 
 1.  Menj a [vercel.com](https://vercel.com) oldalra
 2.  Importáld a GitHub repót
-3.  Add hozzá az Environment változókat
+3.  Add hozzá az Environment változókat (`.env.example` alapján)
 4.  Kattints a Deploy gombra
 
 ✅ A projekt automatikusan felépül és indít.
@@ -78,7 +81,7 @@ A projekt elindul a következő címen: **http://localhost:3000**
 ---
 
 ## 🗄️ Adatbázis
-Minden szükséges SQL migráció megtalálható a `LAUNCH-CHECKLIST.md` fájlban. Futtasd le őket a Supabase SQL Editorban első indítás előtt.
+A kanonikus SQL migráció a `supabase/migration.sql` fájlban van. Ezt futtasd le a Supabase SQL Editorban első indítás előtt.
 
 ---
 

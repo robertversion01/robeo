@@ -52,6 +52,9 @@ git push -u origin main
 |---|---|
 | `NEXT_PUBLIC_SUPABASE_URL` | `https://your-project-id.supabase.co` |
 | `NEXT_PUBLIC_SUPABASE_ANON_KEY` | `your-supabase-anon-key-here` |
+| `STRIPE_SECRET_KEY` | `sk_live_or_test_xxx` |
+| `STRIPE_WEBHOOK_SECRET` | `whsec_xxx` |
+| `NEXT_PUBLIC_BASE_URL` | `https://your-deployment-domain.vercel.app` |
 
 5.  Kattints a `Deploy` gombra
 

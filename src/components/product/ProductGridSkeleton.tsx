@@ -1,7 +1,7 @@
 export default function ProductGridSkeleton() {
   return (
-    <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-1 md:gap-2">
-      {Array.from({ length: 8 }).map((_, i) => (
+    <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 xl:grid-cols-6 gap-1.5 md:gap-2">
+      {Array.from({ length: 12 }).map((_, i) => (
         <div key={i} className="rounded-lg overflow-hidden border border-border bg-card/50">
           {/* Image skeleton */}
           <div className="aspect-[4/5] bg-muted animate-pulse" />

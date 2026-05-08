@@ -66,8 +66,11 @@ Ugyanazon az oldalon görgess le az **Environment Variables** részhez:
 |---|---|
 | `NEXT_PUBLIC_SUPABASE_URL` | `https://your-project-id.supabase.co` |
 | `NEXT_PUBLIC_SUPABASE_ANON_KEY` | `your-supabase-anon-key-here` |
+| `STRIPE_SECRET_KEY` | `sk_live_or_test_xxx` |
+| `STRIPE_WEBHOOK_SECRET` | `whsec_xxx` |
+| `NEXT_PUBLIC_BASE_URL` | `https://your-deployment-domain.vercel.app` |
 
-💡 Ezt a két értéket a Supabase projekt beállításaiban találod meg.
+💡 A Supabase értékeket a Supabase beállításokban találod, a Stripe kulcsokat pedig a Stripe Dashboardban.
 
 ---
 

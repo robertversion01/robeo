@@ -20,6 +20,7 @@ export default function ProfilePage() {
   const [receivedReviews, setReceivedReviews] = useState<Array<{ id: string; rating: number; comment: string | null; created_at: string }>>([]);
   const [loading, setLoading] = useState(true);
   const [user, setUser] = useState<any>(null);
+  const [promotingProductIds, setPromotingProductIds] = useState<Set<string>>(new Set());
   const [favorites, setFavorites] = useState<Set<string>>(new Set());
   const [createdAt, setCreatedAt] = useState<string>('');
   const router = useRouter();
@@ -118,6 +119,41 @@ export default function ProfilePage() {
     router.refresh();
   };
 
+  const promoteProductToHero = async (productId: string) => {
+    if (!user?.id) {
+      toast.error('A kiemeleshez be kell jelentkezned.');
+      return;
+    }
+
+    setPromotingProductIds((prev) => {
+      const next = new Set(prev);
+      next.add(productId);
+      return next;
+    });
+
+    try {
+      const response = await fetch('/api/stripe/promote-checkout', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ productId, userId: user.id }),
+      });
+
+      const data = await response.json();
+      if (!response.ok || !data?.url) {
+        throw new Error(data?.error || 'Nem sikerult elinditani a kiemelest');
+      }
+
+      window.location.href = data.url;
+    } catch (error: any) {
+      toast.error(error?.message || 'Hiba tortent a kiemeles inditasakor');
+      setPromotingProductIds((prev) => {
+        const next = new Set(prev);
+        next.delete(productId);
+        return next;
+      });
+    }
+  };
+
   if (loading) {
     return (
       <div className="min-h-screen bg-white text-gray-900 flex items-center justify-center">
@@ -133,6 +169,10 @@ export default function ProfilePage() {
     electronics: 'Elektronika',
     other: 'Egyéb'
   };
+
+  const isProductFeatured = (product: Product) =>
+    typeof product.featured_until === 'string' &&
+    new Date(product.featured_until).getTime() > Date.now();
 
   return (
     <div className="min-h-screen bg-white text-gray-900">
@@ -271,12 +311,38 @@ export default function ProfilePage() {
                       Törlés
                     </button>
 
+                    <div className="absolute left-1.5 top-1.5 z-10">
+                      {isProductFeatured(product) ? (
+                        <span className="rounded-full bg-[#007782] px-2 py-0.5 text-[10px] font-semibold text-white">
+                          Kiemelt
+                        </span>
+                      ) : null}
+                    </div>
+
                     <div className="p-1.5 space-y-0.5">
                       <div className="text-gray-500 text-[8px] uppercase tracking-wider">
                         {categoryLabels[product.category] || product.category}
                       </div>
                       <h3 className="font-medium text-[11px] truncate leading-tight text-gray-800">{product.name}</h3>
                       <div className="text-accent font-bold text-xs">{formatPrice(product.price)}</div>
+                      <button
+                        type="button"
+                        disabled={isProductFeatured(product) || promotingProductIds.has(product.id)}
+                        onClick={() => promoteProductToHero(product.id)}
+                        className={`w-full mt-1 rounded-md px-2 py-1 text-[10px] font-semibold transition-colors ${
+                          isProductFeatured(product)
+                            ? 'bg-emerald-50 text-emerald-700 border border-emerald-200 cursor-not-allowed'
+                            : promotingProductIds.has(product.id)
+                              ? 'bg-gray-100 text-gray-500 border border-gray-200 cursor-wait'
+                              : 'bg-[#007782] text-white hover:bg-[#00616b]'
+                        }`}
+                      >
+                        {isProductFeatured(product)
+                          ? 'Kiemelve a Hero-ban'
+                          : promotingProductIds.has(product.id)
+                            ? 'Atiranyitas Stripe-ra...'
+                            : 'Kiemeles a fooldalra (690 Ft / 7 nap)'}
+                      </button>
                     </div>
                   </div>
                 ))}

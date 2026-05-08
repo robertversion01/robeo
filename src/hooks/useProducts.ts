@@ -128,6 +128,7 @@ export function useProducts() {
   }, [products, searchQuery, selectedCategory]);
 
   return {
+    allProducts: products,
     products: filteredProducts,
     loading,
     searchQuery,

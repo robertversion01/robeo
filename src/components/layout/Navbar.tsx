@@ -95,21 +95,21 @@ export default function Navbar({ searchQuery, onSearchChange }: NavbarProps) {
   };
 
   return (
-    <nav className="fixed top-0 left-0 right-0 z-50 px-3 py-1.5 flex items-center justify-between gap-2 bg-white border-b border-gray-200 shadow-sm">
-      <Link href="/" className="text-base font-bold tracking-wide hover:text-[#007782] transition-colors flex-shrink-0 text-[#007782]">
+    <nav className="fixed top-0 left-0 right-0 z-50 h-11 px-3 flex items-center justify-between gap-2 bg-white border-b border-gray-200 shadow-sm">
+      <Link href="/" className="text-sm font-semibold tracking-wide hover:text-[#007782] transition-colors flex-shrink-0 text-[#007782]">
         ROBEO
       </Link>
 
       {onSearchChange ? (
         <div className="flex-1 max-w-md min-w-0 w-full">
           <div className="relative">
-            <Search className="absolute left-2.5 top-1/2 -translate-y-1/2 text-gray-400" size={16} />
+            <Search className="absolute left-2.5 top-1/2 -translate-y-1/2 text-gray-400" size={14} />
             <input 
               type="text" 
               placeholder="Keresés..." 
               value={searchQuery || ''}
               onChange={(e) => onSearchChange(e.target.value)}
-              className="w-full input-base min-h-10 pl-8 pr-3 py-2 bg-gray-100 rounded-full focus:outline-none focus:ring-1 focus:ring-[#007782]"
+              className="w-full h-9 pl-8 pr-3 bg-gray-100 rounded-full text-sm border border-gray-200 focus:outline-none focus:ring-1 focus:ring-[#007782]"
             />
           </div>
         </div>
@@ -121,16 +121,16 @@ export default function Navbar({ searchQuery, onSearchChange }: NavbarProps) {
         ) : user ? (
           <>
             <Link href="/upload" className="icon-btn text-gray-700">
-              <Plus size={18} className="text-gray-700" />
+              <Plus size={16} className="text-gray-700" />
             </Link>
             <Link href="/messages" className="icon-btn text-gray-700 relative">
-              <MessageCircle size={18} className="text-gray-700" />
+              <MessageCircle size={16} className="text-gray-700" />
               {hasUnreadMessages ? (
                 <span className="absolute top-1 right-1 h-2.5 w-2.5 rounded-full bg-red-500 border border-white" />
               ) : null}
             </Link>
             <Link href="/favorites" className="icon-btn text-gray-700">
-              <Heart size={18} className="text-gray-700" />
+              <Heart size={16} className="text-gray-700" />
             </Link>
             <div className="relative">
               <button
@@ -142,7 +142,7 @@ export default function Navbar({ searchQuery, onSearchChange }: NavbarProps) {
                 className="icon-btn text-gray-700"
                 aria-label="Profil menü"
               >
-                <User size={18} className="text-gray-700" />
+                <User size={16} className="text-gray-700" />
               </button>
               {showProfileMenu ? (
                 <div

@@ -81,8 +81,11 @@ npm run build
 ### 🔑 Környezeti változók
 Készíts egy `.env.local` fájlt a projekt gyökerében:
 ```env
-NEXT_PUBLIC_SUPABASE_URL=
-NEXT_PUBLIC_SUPABASE_ANON_KEY=
+NEXT_PUBLIC_SUPABASE_URL=https://your-project-id.supabase.co
+NEXT_PUBLIC_SUPABASE_ANON_KEY=your-supabase-anon-key-here
+STRIPE_SECRET_KEY=sk_test_xxx
+STRIPE_WEBHOOK_SECRET=whsec_xxx
+NEXT_PUBLIC_BASE_URL=http://localhost:3000
 ```
 
 ---
@@ -92,9 +95,11 @@ NEXT_PUBLIC_SUPABASE_ANON_KEY=
 ✅ **Kész funkciók:**
 - 🔐 Hitelesítés és fiókkezelés
 - 📤 Termék feltöltés és kezelés
+- 🖼️ Több kép feltöltés és rendezés
 - 🔍 Keresés és kategória szűrés
 - 💌 Élő üzenetküldés
 - 🤝 Ajánlat és alku rendszer
+- 💳 Online fizetés (Stripe Checkout)
 - ❤️ Kedvencek rendszer
 - ⭐ Felhasználói értékelések
 - 🧾 Vevői nyugta generálás
@@ -103,9 +108,7 @@ NEXT_PUBLIC_SUPABASE_ANON_KEY=
 🚧 **Tervezett funkciók:**
 - 📧 Email értesítések
 - 🔔 Push értesítések
-- 📸 Több kép feltöltés
 - 📍 Helyalapú szűrés
-- 💳 Online fizetés
 
 ---
 

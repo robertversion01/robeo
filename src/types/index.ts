@@ -13,6 +13,7 @@ export interface Product {
   images: string[];
   user_id: string;
   status: 'active' | 'sold' | 'deleted' | 'reserved' | 'shipped' | 'delivered';
+  featured_until?: string | null;
   size?: string;
   color?: string;
   transaction_id?: string;

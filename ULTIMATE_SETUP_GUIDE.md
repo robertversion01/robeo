@@ -48,46 +48,13 @@ Ez a fájl tartalmazza az összes szükséges adatbázis migrációt és a legfr
 
 ## 📋 ADATBÁZIS MIGRÁCIÓ (FUTTASD A SUPABASE SQL EDITORBAN!)
 
-```sql
--- =============================================
--- ROBEO VÉGLEGES ADATBÁZIS MIGRÁCIÓ
--- =============================================
+Futtasd le a teljes kanonikus migrációt ebből a fájlból:
 
--- 1. Értékelések tábla
-CREATE TABLE reviews (
-  id UUID DEFAULT gen_random_uuid() PRIMARY KEY,
-  seller_id UUID NOT NULL REFERENCES auth.users(id) ON DELETE CASCADE,
-  buyer_id UUID NOT NULL REFERENCES auth.users(id) ON DELETE CASCADE,
-  offer_id UUID NOT NULL REFERENCES offers(id) ON DELETE CASCADE,
-  rating SMALLINT NOT NULL CHECK (rating >= 1 AND rating <= 5),
-  comment TEXT,
-  created_at TIMESTAMP WITH TIME ZONE DEFAULT now()
-);
-
-ALTER TABLE reviews ENABLE ROW LEVEL SECURITY;
-
-CREATE POLICY "Bárki láthatja az értékeléseket" ON reviews FOR SELECT USING (true);
-CREATE POLICY "Csak a vevő hozhat létre értékelést" ON reviews FOR INSERT WITH CHECK (auth.uid() = buyer_id);
-
-CREATE INDEX reviews_seller_id_idx ON reviews(seller_id);
-
--- 2. Publikus felhasználói nézet
-CREATE OR REPLACE VIEW users AS
-  SELECT id, email, created_at, raw_user_meta_data->>'name' as name
-  FROM auth.users;
-
-GRANT SELECT ON users TO authenticated;
-GRANT SELECT ON users TO anon;
-
--- 3. Termék státusz mező hozzáadása
-ALTER TABLE products ADD COLUMN status TEXT DEFAULT 'active';
-ALTER TABLE products ADD COLUMN favorite_count INTEGER DEFAULT 0;
-
--- 4. Realtime engedélyezése
-alter publication supabase_realtime add table favorites;
-alter publication supabase_realtime add table messages;
-alter publication supabase_realtime add table offers;
+```bash
+supabase/migration.sql
 ```
+
+Megjegyzés: ez az egyetlen fenntartott migrációs forrás.
 
 ---
 
@@ -107,6 +74,6 @@ npm install
 npm run dev
 ```
 
-A projekt elérhető: http://localhost:3001
+A projekt elérhető: http://localhost:3000
 
 ✅ **ROBEO most már teljesen piacképes alkalmazás!**

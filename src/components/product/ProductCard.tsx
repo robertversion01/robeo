@@ -38,10 +38,10 @@ export default function ProductCard({ product, isFavorite, onToggleFavorite }: P
           e.preventDefault();
           onToggleFavorite();
         }}
-        className="absolute top-1.5 right-1.5 z-50 w-6 h-6 rounded-full bg-white/90 backdrop-blur-sm flex items-center justify-center hover:bg-white transition-colors shadow-sm"
+        className="absolute top-1 right-1 z-50 w-[22px] h-[22px] rounded-full bg-white/90 backdrop-blur-sm flex items-center justify-center hover:bg-white transition-colors shadow-sm"
       >
         <Heart 
-          size={13} 
+          size={12} 
           className={cn(
             "transition-colors",
             isFavorite ? "fill-rose-500 text-rose-500" : "fill-transparent text-gray-500"
@@ -49,8 +49,8 @@ export default function ProductCard({ product, isFavorite, onToggleFavorite }: P
         />
       </button>
 
-      <div className="p-2 space-y-0.5 text-left">
-        <div className="font-bold text-sm text-gray-900">{formatPrice(product.price)}</div>
+      <div className="p-1.5 space-y-0.5 text-left">
+        <div className="font-bold text-[13px] text-gray-900">{formatPrice(product.price)}</div>
         <div className="text-xs text-gray-800 truncate">{product.brand || product.name}</div>
         <div className="text-xs text-gray-500 truncate">{product.size || 'Meret nincs megadva'}</div>
         <div className="text-[10px] text-gray-500 uppercase tracking-wide">

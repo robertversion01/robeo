@@ -1,76 +1,120 @@
 'use client';
 
+import { useMemo, useRef } from 'react';
 import Link from 'next/link';
+import { ChevronLeft, ChevronRight } from 'lucide-react';
+import { formatPrice } from '@/lib/utils';
 import type { Product } from '@/types';
 
 interface VintedHeroProps {
   products: Product[];
 }
 
-function buildHeroImages(products: Product[]) {
-  const imageProducts = products.filter((product) => Boolean(product.image_url)).slice(0, 14);
-  if (imageProducts.length > 0) {
-    return imageProducts.map((product) => ({
-      id: product.id,
-      name: product.name,
-      image_url: product.image_url as string,
-    }));
-  }
+type HeroProduct = Product & {
+  featured?: boolean;
+  is_featured?: boolean;
+};
 
-  return Array.from({ length: 10 }).map((_, idx) => ({
-    id: `placeholder-${idx}`,
-    name: 'ROBEO termék',
-    image_url: `https://picsum.photos/seed/robeo-${idx}/300/420`,
-  }));
+function getHeroProducts(products: Product[]): HeroProduct[] {
+  const withImages = products.filter((product) => Boolean(product.image_url)) as HeroProduct[];
+  const now = Date.now();
+  const featured = withImages.filter(
+    (product) =>
+      typeof product.featured_until === 'string' &&
+      new Date(product.featured_until).getTime() > now
+  );
+
+  return (featured.length > 0 ? featured : withImages).slice(0, 12);
 }
 
 export default function VintedHero({ products }: VintedHeroProps) {
-  const heroImages = buildHeroImages(products);
-  const firstRow = [...heroImages, ...heroImages];
-  const secondRow = [...heroImages.slice().reverse(), ...heroImages.slice().reverse()];
+  const scrollerRef = useRef<HTMLDivElement | null>(null);
+  const heroProducts = useMemo(() => getHeroProducts(products), [products]);
+
+  const scrollByPage = (direction: 'left' | 'right') => {
+    if (!scrollerRef.current) return;
+    const pageWidth = Math.round(scrollerRef.current.clientWidth * 0.92);
+    scrollerRef.current.scrollBy({
+      left: direction === 'left' ? -pageWidth : pageWidth,
+      behavior: 'smooth',
+    });
+  };
 
   return (
-    <section className="mb-6 md:mb-8">
-      <div className="rounded-3xl overflow-hidden border border-gray-200 bg-white">
-        <div className="bg-white px-2 py-3 md:px-3 md:py-4 space-y-2">
-          <div className="hero-marquee">
-            <div className="hero-track hero-track-left">
-              {firstRow.map((item, idx) => (
-                <div key={`${item.id}-a-${idx}`} className="hero-image-card">
-                  <img src={item.image_url} alt={item.name} className="h-full w-full object-cover" />
-                </div>
-              ))}
-            </div>
-          </div>
-          <div className="hero-marquee">
-            <div className="hero-track hero-track-right">
-              {secondRow.map((item, idx) => (
-                <div key={`${item.id}-b-${idx}`} className="hero-image-card">
-                  <img src={item.image_url} alt={item.name} className="h-full w-full object-cover" />
-                </div>
-              ))}
-            </div>
+    <section className="mb-4 md:mb-5">
+      <div className="rounded-2xl border border-gray-200 bg-white p-2.5 md:p-3">
+        <div className="mb-2 flex items-center justify-between">
+          <h2 className="text-sm md:text-base font-semibold text-gray-900">Kiemelt hirdetések</h2>
+          <div className="flex items-center gap-1">
+            <button
+              type="button"
+              onClick={() => scrollByPage('left')}
+              className="h-8 w-8 rounded-full border border-gray-300 text-gray-600 hover:bg-gray-50 transition-colors inline-flex items-center justify-center"
+              aria-label="Előző"
+            >
+              <ChevronLeft size={16} />
+            </button>
+            <button
+              type="button"
+              onClick={() => scrollByPage('right')}
+              className="h-8 w-8 rounded-full border border-gray-300 text-gray-600 hover:bg-gray-50 transition-colors inline-flex items-center justify-center"
+              aria-label="Következő"
+            >
+              <ChevronRight size={16} />
+            </button>
           </div>
         </div>
 
-        <div className="bg-[#1f2123] px-4 py-8 md:px-8 md:py-10 text-center">
-          <h1 className="text-white text-2xl md:text-4xl font-semibold leading-tight tracking-tight max-w-4xl mx-auto">
-            Csatlakozz, és add el egykor kedvelt cuccaidat díjmentesen
-          </h1>
-          <div className="mt-6 flex flex-col sm:flex-row items-center justify-center gap-3">
-            <Link
-              href="/auth"
-              className="w-full sm:w-auto min-w-[280px] px-6 py-3 rounded-full bg-[#007782] text-white font-semibold text-sm md:text-base hover:bg-[#00616b] transition-colors"
-            >
-              Regisztrálás a ROBEO rendszerébe
-            </Link>
-            <Link
-              href="/auth"
-              className="w-full sm:w-auto min-w-[280px] px-6 py-3 rounded-full border border-gray-400 text-white font-semibold text-sm md:text-base bg-[#2a2d2f] hover:bg-[#323537] transition-colors"
-            >
-              Már rendelkezem fiókkal
-            </Link>
+        {heroProducts.length === 0 ? (
+          <div className="rounded-xl border border-dashed border-gray-300 px-4 py-8 text-sm text-gray-500 text-center">
+            Még nincs kiemelt termék.
           </div>
+        ) : (
+          <div
+            ref={scrollerRef}
+            className="flex gap-2 overflow-x-auto no-scrollbar snap-x snap-mandatory scroll-smooth"
+          >
+            {heroProducts.map((item) => (
+              <Link
+                key={item.id}
+                href={`/products/${item.id}`}
+                className="snap-start shrink-0 w-[72%] sm:w-[44%] lg:w-[28%] rounded-xl overflow-hidden border border-gray-200 bg-white hover:border-[#007782]/40 transition-colors"
+              >
+                <div className="relative aspect-[4/5] bg-gray-100">
+                  {typeof item.featured_until === 'string' &&
+                  new Date(item.featured_until).getTime() > Date.now() ? (
+                    <span className="absolute top-2 left-2 z-10 rounded-full bg-[#007782] px-2.5 py-1 text-[10px] font-semibold uppercase tracking-wide text-white shadow-sm">
+                      Kiemelt ajánlat
+                    </span>
+                  ) : null}
+                  {item.image_url ? (
+                    <img src={item.image_url} alt={item.name} className="h-full w-full object-cover" />
+                  ) : (
+                    <div className="h-full w-full flex items-center justify-center text-gray-400">📦</div>
+                  )}
+                </div>
+                <div className="px-2.5 py-2">
+                  <p className="text-sm font-semibold text-gray-900">{formatPrice(item.price)}</p>
+                  <p className="mt-0.5 text-xs text-gray-600 truncate">{item.brand || item.name}</p>
+                </div>
+              </Link>
+            ))}
+          </div>
+        )}
+
+        <div className="mt-3 flex flex-col sm:flex-row items-center gap-2">
+          <Link
+            href="/auth"
+            className="w-full sm:w-auto px-4 py-2 rounded-full bg-[#007782] text-white font-medium text-sm hover:bg-[#00616b] transition-colors text-center"
+          >
+            Eladni szeretnék
+          </Link>
+          <Link
+            href="/auth"
+            className="w-full sm:w-auto px-4 py-2 rounded-full border border-gray-300 text-gray-700 font-medium text-sm hover:bg-gray-50 transition-colors text-center"
+          >
+            Belépés
+          </Link>
         </div>
       </div>
     </section>

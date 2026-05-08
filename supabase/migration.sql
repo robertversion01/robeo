@@ -1,13 +1,18 @@
 -- ============================================================
 -- ROBEO 1.5 - Adatbázis szinkron migráció
 -- Dátum: 2026-05-07
--- Leírás: products, offers, profiles táblák kiegészítése
+-- Leírás: kanonikus migrációs forrás (schema + RLS + indexek)
 -- ============================================================
+
+CREATE EXTENSION IF NOT EXISTS "pgcrypto";
 
 -- 1. products tábla - hiányzó oszlopok hozzáadása
 ALTER TABLE public.products ADD COLUMN IF NOT EXISTS condition TEXT;
 ALTER TABLE public.products ADD COLUMN IF NOT EXISTS brand TEXT;
 ALTER TABLE public.products ADD COLUMN IF NOT EXISTS images JSONB DEFAULT '[]'::jsonb;
+ALTER TABLE public.products ADD COLUMN IF NOT EXISTS status TEXT DEFAULT 'active';
+ALTER TABLE public.products ADD COLUMN IF NOT EXISTS favorite_count INTEGER DEFAULT 0;
+ALTER TABLE public.products ADD COLUMN IF NOT EXISTS featured_until TIMESTAMPTZ;
 
 -- 2. offers tábla - hiányzó oszlopok hozzáadása
 ALTER TABLE public.offers ADD COLUMN IF NOT EXISTS message TEXT;
@@ -78,3 +83,160 @@ CREATE POLICY "Sellers can update offers"
 -- SELECT column_name, data_type FROM information_schema.columns WHERE table_name = 'products';
 -- SELECT column_name, data_type FROM information_schema.columns WHERE table_name = 'offers';
 -- SELECT * FROM public.profiles LIMIT 10;
+
+-- 10. Reviews tábla (kétirányú értékeléshez)
+CREATE TABLE IF NOT EXISTS public.reviews (
+  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  reviewer_id UUID NOT NULL,
+  reviewed_id UUID NOT NULL,
+  offer_id UUID,
+  transaction_id UUID,
+  rating INTEGER NOT NULL CHECK (rating >= 1 AND rating <= 5),
+  comment TEXT,
+  created_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
+);
+
+ALTER TABLE IF EXISTS public.reviews
+  ADD COLUMN IF NOT EXISTS transaction_id UUID;
+
+CREATE UNIQUE INDEX IF NOT EXISTS idx_reviews_unique_transaction_reviewer
+  ON public.reviews(transaction_id, reviewer_id)
+  WHERE transaction_id IS NOT NULL;
+
+-- 11. Favorites tábla
+CREATE TABLE IF NOT EXISTS public.favorites (
+  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  user_id UUID NOT NULL,
+  product_id UUID NOT NULL,
+  created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+  CONSTRAINT favorites_user_product_unique UNIQUE (user_id, product_id)
+);
+
+CREATE INDEX IF NOT EXISTS idx_favorites_user_id ON public.favorites(user_id);
+CREATE INDEX IF NOT EXISTS idx_favorites_product_id ON public.favorites(product_id);
+
+-- 12. Transactions tábla kiegészítése checkout flow-hoz
+ALTER TABLE IF EXISTS public.transactions
+  ADD COLUMN IF NOT EXISTS fee INTEGER NOT NULL DEFAULT 0,
+  ADD COLUMN IF NOT EXISTS checkout_session_id TEXT,
+  ADD COLUMN IF NOT EXISTS payment_intent_id TEXT,
+  ADD COLUMN IF NOT EXISTS transfer_id TEXT,
+  ADD COLUMN IF NOT EXISTS shipping_method TEXT,
+  ADD COLUMN IF NOT EXISTS shipping_cost INTEGER NOT NULL DEFAULT 0;
+
+UPDATE public.transactions
+SET status = 'fizetve'
+WHERE status IN ('paid', 'payment_succeeded');
+
+CREATE INDEX IF NOT EXISTS idx_transactions_checkout_session ON public.transactions(checkout_session_id);
+CREATE INDEX IF NOT EXISTS idx_transactions_payment_intent ON public.transactions(payment_intent_id);
+CREATE INDEX IF NOT EXISTS idx_transactions_status ON public.transactions(status);
+
+-- 13. Offers lifecycle mezők
+ALTER TABLE IF EXISTS public.offers
+  ADD COLUMN IF NOT EXISTS counter_price INTEGER,
+  ADD COLUMN IF NOT EXISTS counter_message TEXT,
+  ADD COLUMN IF NOT EXISTS updated_at TIMESTAMPTZ DEFAULT NOW();
+
+DO $$
+BEGIN
+  IF NOT EXISTS (
+    SELECT 1
+    FROM pg_constraint
+    WHERE conname = 'offers_minimum_60_percent'
+  ) THEN
+    ALTER TABLE public.offers
+      ADD CONSTRAINT offers_minimum_60_percent
+      CHECK (
+        offered_price >= 1
+      );
+  END IF;
+END $$;
+
+-- 14. Üzenetek média támogatása
+ALTER TABLE IF EXISTS public.messages
+  ADD COLUMN IF NOT EXISTS message_type TEXT DEFAULT 'text',
+  ADD COLUMN IF NOT EXISTS media_url TEXT;
+
+-- 15. Chat média storage bucket + policy
+INSERT INTO storage.buckets (id, name, public)
+VALUES ('chat-media', 'chat-media', true)
+ON CONFLICT (id) DO NOTHING;
+
+DROP POLICY IF EXISTS "chat_media_upload_authenticated" ON storage.objects;
+CREATE POLICY "chat_media_upload_authenticated"
+ON storage.objects
+FOR INSERT
+TO authenticated
+WITH CHECK (bucket_id = 'chat-media');
+
+DROP POLICY IF EXISTS "chat_media_read_public" ON storage.objects;
+CREATE POLICY "chat_media_read_public"
+ON storage.objects
+FOR SELECT
+TO public
+USING (bucket_id = 'chat-media');
+
+-- 16. RLS policy-k transactions/reviews/favorites táblákhoz
+ALTER TABLE IF EXISTS public.transactions ENABLE ROW LEVEL SECURITY;
+
+DROP POLICY IF EXISTS "transactions_insert_checkout" ON public.transactions;
+CREATE POLICY "transactions_insert_checkout"
+ON public.transactions
+FOR INSERT
+TO anon, authenticated
+WITH CHECK (true);
+
+DROP POLICY IF EXISTS "transactions_update_participants" ON public.transactions;
+CREATE POLICY "transactions_update_participants"
+ON public.transactions
+FOR UPDATE
+TO authenticated
+USING (auth.uid() = buyer_id OR auth.uid() = seller_id)
+WITH CHECK (auth.uid() = buyer_id OR auth.uid() = seller_id);
+
+DROP POLICY IF EXISTS "transactions_select_participants" ON public.transactions;
+CREATE POLICY "transactions_select_participants"
+ON public.transactions
+FOR SELECT
+TO authenticated
+USING (auth.uid() = buyer_id OR auth.uid() = seller_id);
+
+ALTER TABLE IF EXISTS public.reviews ENABLE ROW LEVEL SECURITY;
+
+DROP POLICY IF EXISTS "reviews_insert_authenticated" ON public.reviews;
+CREATE POLICY "reviews_insert_authenticated"
+ON public.reviews
+FOR INSERT
+TO authenticated
+WITH CHECK (auth.uid() = reviewer_id);
+
+DROP POLICY IF EXISTS "reviews_select_public" ON public.reviews;
+CREATE POLICY "reviews_select_public"
+ON public.reviews
+FOR SELECT
+TO public
+USING (true);
+
+ALTER TABLE IF EXISTS public.favorites ENABLE ROW LEVEL SECURITY;
+
+DROP POLICY IF EXISTS "favorites_select_own" ON public.favorites;
+CREATE POLICY "favorites_select_own"
+ON public.favorites
+FOR SELECT
+TO authenticated
+USING (auth.uid() = user_id);
+
+DROP POLICY IF EXISTS "favorites_insert_own" ON public.favorites;
+CREATE POLICY "favorites_insert_own"
+ON public.favorites
+FOR INSERT
+TO authenticated
+WITH CHECK (auth.uid() = user_id);
+
+DROP POLICY IF EXISTS "favorites_delete_own" ON public.favorites;
+CREATE POLICY "favorites_delete_own"
+ON public.favorites
+FOR DELETE
+TO authenticated
+USING (auth.uid() = user_id);

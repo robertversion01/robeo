@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { getStripeInstance } from '@/lib/stripe-client';
 import { getSupabaseClient } from '@/lib/supabase';
+import { createClient } from '@supabase/supabase-js';
 
 export const dynamic = 'force-dynamic';
 
@@ -12,7 +13,15 @@ export async function POST(req: NextRequest) {
     }
 
     const supabase = getSupabaseClient() as any;
-    if (!supabase) {
+    const supabaseUrl =
+      process.env.NEXT_PUBLIC_SUPABASE_URL || process.env.SUPABASE_URL || '';
+    const serviceRoleKey = process.env.SUPABASE_SERVICE_ROLE_KEY || '';
+    const supabaseAdmin =
+      supabaseUrl && serviceRoleKey
+        ? createClient(supabaseUrl, serviceRoleKey, { auth: { persistSession: false } })
+        : null;
+
+    if (!supabase && !supabaseAdmin) {
       return NextResponse.json({ error: 'Supabase client unavailable' }, { status: 500 });
     }
 
@@ -28,6 +37,32 @@ export async function POST(req: NextRequest) {
     if (event.type === 'checkout.session.completed') {
       const session = event.data.object as any;
       const checkoutSessionId = session.id as string;
+      const metadataType = session.metadata?.type as string | undefined;
+
+      if (metadataType === 'product_promotion') {
+        const promotedProductId = session.metadata?.productId as string | undefined;
+        const promoterId = session.metadata?.promoterId as string | undefined;
+        const featuredUntil = new Date(Date.now() + 7 * 24 * 60 * 60 * 1000).toISOString();
+
+        if (promotedProductId) {
+          const dbClient = (supabaseAdmin || supabase) as any;
+          const updateQuery = dbClient
+            .from('products')
+            .update({ featured_until: featuredUntil })
+            .eq('id', promotedProductId);
+
+          if (promoterId) {
+            updateQuery.eq('user_id', promoterId);
+          }
+
+          const { error: promoteError } = await updateQuery;
+          if (promoteError) {
+            console.error('[stripe-webhook] failed to mark product as featured', promoteError);
+          }
+        }
+
+        return NextResponse.json({ received: true });
+      }
 
       const { data: transaction } = await supabase
         .from('transactions')
