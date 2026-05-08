@@ -259,7 +259,7 @@ export default function MessagesPage() {
               value={offerAmount}
               onChange={(e) => setOfferAmount(e.target.value)}
               placeholder="Összeg Ft-ban"
-              className="w-full px-5 py-4 bg-gray-50 border border-gray-300 rounded-xl focus:outline-none focus:border-[#007782] focus:ring-1 focus:ring-[#007782] transition-all text-xl text-center mb-6"
+              className="input-base focus:outline-none focus:ring-1 focus:ring-[#007782] text-xl text-center mb-6"
             />
 
             <div className="flex gap-4">
@@ -405,7 +405,7 @@ export default function MessagesPage() {
                       value={newMessage}
                       onChange={(e) => setNewMessage(e.target.value)}
                       placeholder="Üzenet írása..."
-                      className="flex-1 min-w-0 px-4 py-2.5 bg-gray-50 border border-gray-300 rounded-full focus:outline-none focus:border-[#007782] transition-all"
+                      className="flex-1 min-w-0 min-h-10 px-4 py-2.5 bg-gray-50 border border-gray-300 rounded-full focus:outline-none focus:border-[#007782] transition-all"
                     />
                     <button
                       type="submit"

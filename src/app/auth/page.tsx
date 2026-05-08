@@ -129,7 +129,7 @@ export default function AuthPage() {
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
                 required
-              className="w-full min-h-11 px-4 py-3 bg-white border border-gray-300 rounded-xl focus:outline-none focus:border-[#007782] focus:ring-1 focus:ring-[#007782] transition-all"
+                className="input-base focus:outline-none focus:ring-1 focus:ring-[#007782]"
                 placeholder="pelda@email.com"
               />
             </div>
@@ -142,7 +142,7 @@ export default function AuthPage() {
                 onChange={(e) => setPassword(e.target.value)}
                 required
                 minLength={6}
-                className="w-full min-h-11 px-4 py-3 bg-white border border-gray-300 rounded-xl focus:outline-none focus:border-[#007782] focus:ring-1 focus:ring-[#007782] transition-all"
+                className="input-base focus:outline-none focus:ring-1 focus:ring-[#007782]"
                 placeholder="••••••••"
               />
             </div>

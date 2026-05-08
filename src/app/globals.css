@@ -182,6 +182,44 @@ input, textarea, select {
   background: #fef2f2;
 }
 
+.input-base {
+  width: 100%;
+  min-height: 2.75rem;
+  padding: 0.625rem 1rem;
+  border: 1px solid #d1d5db;
+  border-radius: 0.75rem;
+  background: #ffffff;
+  color: #111827;
+  transition: border-color 0.2s ease, background-color 0.2s ease;
+}
+
+.input-base::placeholder {
+  color: #9ca3af;
+}
+
+.input-base:focus {
+  border-color: #007782;
+}
+
+.textarea-base {
+  width: 100%;
+  padding: 0.625rem 1rem;
+  border: 1px solid #d1d5db;
+  border-radius: 0.75rem;
+  background: #ffffff;
+  color: #111827;
+  resize: vertical;
+  transition: border-color 0.2s ease, background-color 0.2s ease;
+}
+
+.textarea-base::placeholder {
+  color: #9ca3af;
+}
+
+.textarea-base:focus {
+  border-color: #007782;
+}
+
 /* Scrollbar styling */
 ::-webkit-scrollbar {
   width: 6px;

@@ -182,7 +182,7 @@ export default function UploadPage() {
                 value={formData.name}
                 onChange={handleInputChange}
                 required
-                className="w-full px-4 py-3 bg-white border border-gray-300 rounded-xl focus:outline-none focus:border-[#007782] focus:ring-1 focus:ring-[#007782] transition-all"
+                className="input-base focus:outline-none focus:ring-1 focus:ring-[#007782]"
                 placeholder="pl. Nike Air Max 270"
               />
             </div>
@@ -196,7 +196,7 @@ export default function UploadPage() {
                 onChange={handleInputChange}
                 required
                 rows={4}
-                className="w-full px-4 py-3 bg-white border border-gray-300 rounded-xl focus:outline-none focus:border-[#007782] focus:ring-1 focus:ring-[#007782] transition-all resize-none"
+                className="textarea-base focus:outline-none focus:ring-1 focus:ring-[#007782] resize-none"
                 placeholder="Írd le a termék állapotát, méretét és egyéb jellemzőit..."
               />
             </div>
@@ -212,7 +212,7 @@ export default function UploadPage() {
                   onChange={handleInputChange}
                   required
                   min="0"
-                  className="w-full px-4 py-3 bg-white border border-gray-300 rounded-xl focus:outline-none focus:border-[#007782] focus:ring-1 focus:ring-[#007782] transition-all"
+                  className="input-base focus:outline-none focus:ring-1 focus:ring-[#007782]"
                   placeholder="15000"
                 />
               </div>
@@ -243,7 +243,7 @@ export default function UploadPage() {
                   name="brand"
                   value={formData.brand}
                   onChange={handleInputChange}
-                  className="w-full px-4 py-3 bg-white border border-gray-300 rounded-xl focus:outline-none focus:border-[#007782] focus:ring-1 focus:ring-[#007782] transition-all"
+                  className="input-base focus:outline-none focus:ring-1 focus:ring-[#007782]"
                   placeholder="pl. Nike, Adidas, Apple"
                 />
               </div>

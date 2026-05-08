@@ -103,7 +103,7 @@ export default function Navbar({ searchQuery, onSearchChange }: NavbarProps) {
               placeholder="Keresés..." 
               value={searchQuery || ''}
               onChange={(e) => onSearchChange(e.target.value)}
-              className="w-full pl-8 pr-3 py-2 bg-gray-100 rounded-full text-sm border border-gray-200 focus:outline-none focus:border-[#007782] transition-colors"
+              className="w-full pl-8 pr-3 py-2 bg-gray-100 rounded-full text-sm border border-gray-200 focus:outline-none focus:border-[#007782] focus:ring-1 focus:ring-[#007782] transition-colors"
             />
           </div>
         </div>

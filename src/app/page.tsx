@@ -49,7 +49,7 @@ export default function Home() {
               placeholder="Keresés..." 
               value={searchQuery || ''}
               onChange={(e) => setSearchQuery(e.target.value)}
-              className="w-full min-h-11 pl-9 pr-4 py-2.5 bg-gray-100 rounded-full text-sm border border-gray-200 focus:outline-none focus:border-[#007782] transition-colors"
+              className="w-full min-h-11 pl-9 pr-4 py-2.5 bg-gray-100 rounded-full text-sm border border-gray-200 focus:outline-none focus:border-[#007782] focus:ring-1 focus:ring-[#007782] transition-colors"
             />
           </div>
 
