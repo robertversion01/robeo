@@ -76,13 +76,90 @@ function getRequiredSupabaseClient() {
   return client;
 }
 
+function createNoopQueryBuilder(message: string) {
+  const result = { data: [] as any[], error: null as any };
+  const singleResult = { data: null as any, error: null as any };
+
+  const builder: any = {
+    select: () => builder,
+    eq: () => builder,
+    neq: () => builder,
+    gt: () => builder,
+    gte: () => builder,
+    lt: () => builder,
+    lte: () => builder,
+    or: () => builder,
+    not: () => builder,
+    in: () => builder,
+    is: () => builder,
+    order: () => builder,
+    limit: () => builder,
+    insert: () => builder,
+    update: () => builder,
+    delete: () => builder,
+    upsert: () => builder,
+    then: (resolve: any, reject?: any) => Promise.resolve(result).then(resolve, reject),
+    single: async () => singleResult,
+    maybeSingle: async () => singleResult,
+  };
+
+  return builder;
+}
+
+function createNoopSupabaseClient(message: string) {
+  const authError = new Error(message);
+
+  return {
+    auth: {
+      getUser: async () => ({ data: { user: null }, error: authError }),
+      signInWithPassword: async () => ({ data: { user: null, session: null }, error: authError }),
+      signUp: async () => ({ data: { user: null, session: null }, error: authError }),
+      signOut: async () => ({ error: null }),
+      onAuthStateChange: () => ({
+        data: { subscription: { unsubscribe: () => {} } },
+      }),
+    },
+    from: () => createNoopQueryBuilder(message),
+    storage: {
+      from: () => ({
+        upload: async () => ({ data: null, error: authError }),
+        getPublicUrl: () => ({ data: { publicUrl: '' } }),
+      }),
+    },
+    channel: () => ({
+      on() {
+        return this;
+      },
+      subscribe() {
+        return this;
+      },
+    }),
+    removeChannel: () => {},
+    removeAllChannels: () => {},
+  };
+}
+
 export const supabase: any = new Proxy({} as any, {
   get(_target, prop, receiver) {
-    const client = getRequiredSupabaseClient();
-    const value = Reflect.get(client, prop, receiver);
+    const client = getSupabaseClient();
+    const fallbackMessage =
+      'Supabase client is unavailable. Ensure NEXT_PUBLIC_SUPABASE_URL and NEXT_PUBLIC_SUPABASE_ANON_KEY are set.';
+    const effectiveClient =
+      client || (typeof window !== 'undefined' ? createNoopSupabaseClient(fallbackMessage) : null);
+
+    if (!effectiveClient) {
+      const requiredClient = getRequiredSupabaseClient();
+      const requiredValue = Reflect.get(requiredClient, prop, receiver);
+      if (typeof requiredValue === 'function') {
+        return requiredValue.bind(requiredClient);
+      }
+      return requiredValue;
+    }
+
+    const value = Reflect.get(effectiveClient, prop, receiver);
 
     if (typeof value === 'function') {
-      return value.bind(client);
+      return value.bind(effectiveClient);
     }
 
     return value;
