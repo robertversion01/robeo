@@ -68,6 +68,9 @@ export default function VintedHero({ products }: VintedHeroProps) {
     startAuto();
     scroller.addEventListener('mouseenter', stopAuto);
     scroller.addEventListener('mouseleave', startAuto);
+    scroller.addEventListener('pointerdown', stopAuto);
+    scroller.addEventListener('pointerup', startAuto);
+    scroller.addEventListener('pointercancel', startAuto);
     scroller.addEventListener('touchstart', stopAuto, { passive: true });
     scroller.addEventListener('touchend', startAuto, { passive: true });
 
@@ -75,6 +78,9 @@ export default function VintedHero({ products }: VintedHeroProps) {
       stopAuto();
       scroller.removeEventListener('mouseenter', stopAuto);
       scroller.removeEventListener('mouseleave', startAuto);
+      scroller.removeEventListener('pointerdown', stopAuto);
+      scroller.removeEventListener('pointerup', startAuto);
+      scroller.removeEventListener('pointercancel', startAuto);
       scroller.removeEventListener('touchstart', stopAuto);
       scroller.removeEventListener('touchend', startAuto);
     };

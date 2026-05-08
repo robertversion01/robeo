@@ -11,8 +11,6 @@ export default function Home() {
     allProducts,
     products,
     loading,
-    searchQuery,
-    setSearchQuery,
     selectedCategory,
     setSelectedCategory,
     categories,
