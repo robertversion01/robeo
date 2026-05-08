@@ -6,7 +6,7 @@ import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { toast } from 'sonner';
 import { Star, ZoomIn, ZoomOut } from 'lucide-react';
-import { getOptimizedImageUrl, shouldLazyLoad } from '@/lib/imageUtils';
+import { getOptimizedImageUrl, getProductImages, shouldLazyLoad } from '@/lib/imageUtils';
 import OfferModal from '@/components/product/OfferModal';
 import type { Product } from '@/types';
 
@@ -166,11 +166,10 @@ export default function ProductPage({ params }: { params: Promise<{ id: string }
     );
   }
 
-  const productImages = (product.images && product.images.length > 0
-    ? product.images
-    : product.image_url
-      ? [product.image_url]
-      : []) as string[];
+  const productImages = getProductImages({
+    image_url: product.image_url,
+    images: product.images || [],
+  });
 
   const sellerDisplayName = sellerProfile?.full_name || sellerProfile?.email?.split('@')[0] || 'Eladó';
   const sellerInitial = sellerDisplayName?.charAt(0).toUpperCase() || 'E';

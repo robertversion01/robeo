@@ -42,22 +42,47 @@ export default function CheckoutContent() {
       return;
     }
 
-    const { data: offerDataRaw } = await supabaseClient
+    const { data: offerDataRaw, error: offerError } = await supabaseClient
       .from('offers')
-      .select('*, product:products(*)')
+      .select('id, product_id, offered_price, buyer_id')
       .eq('id', offerId)
       .eq('buyer_id', user.id)
       .single();
 
     const offerData = offerDataRaw as any;
 
-    if (!offerData) {
+    if (offerError || !offerData) {
+      console.error('[checkout-ui] Offer query failed', {
+        offerId,
+        buyerId: user.id,
+        offerError,
+      });
+      toast.error('Az ajánlat nem található vagy már nem elérhető.');
+      router.push('/');
+      return;
+    }
+
+    const { data: productDataRaw, error: productError } = await supabaseClient
+      .from('products')
+      .select('*')
+      .eq('id', offerData.product_id)
+      .single();
+
+    const productData = productDataRaw as any;
+
+    if (productError || !productData) {
+      console.error('[checkout-ui] Product for offer is missing', {
+        offerId,
+        offerProductId: offerData.product_id,
+        productError,
+      });
+      toast.error('Az ajánlathoz tartozó termék már nem található.');
       router.push('/');
       return;
     }
 
     setOffer(offerData);
-    setProduct(offerData.product);
+    setProduct(productData);
     setAmount(offerData.offered_price);
     setLoading(false);
   };
@@ -71,7 +96,7 @@ export default function CheckoutContent() {
       return;
     }
 
-    const { data: productDataRaw } = await supabaseClient
+    const { data: productDataRaw, error: productError } = await supabaseClient
       .from('products')
       .select('*')
       .eq('id', productId)
@@ -79,7 +104,12 @@ export default function CheckoutContent() {
 
     const productData = productDataRaw as any;
 
-    if (!productData) {
+    if (productError || !productData) {
+      console.error('[checkout-ui] Product query failed', {
+        productId,
+        productError,
+      });
+      toast.error('A termék nem található vagy már nem elérhető.');
       router.push('/');
       return;
     }
@@ -112,6 +142,17 @@ export default function CheckoutContent() {
         return;
       }
 
+      const effectiveProductId = product?.id || productId;
+      if (!effectiveProductId && !offerId) {
+        console.error('[checkout-ui] Missing payment identifiers', {
+          offerId,
+          productIdFromUrl: productId,
+          productIdFromState: product?.id,
+          buyerId: user.id,
+        });
+        throw new Error('Hiányzó azonosítók: nem található termék vagy ajánlat.');
+      }
+
       // Save shipping method to the offer if applicable
       if (offerId) {
         await supabaseClient
@@ -124,23 +165,32 @@ export default function CheckoutContent() {
       }
 
       // Call our Stripe checkout API
+      const checkoutPayload = {
+        productId: effectiveProductId,
+        offerId,
+        buyerId: user.id,
+        shippingMethod,
+        shippingCost
+      };
+
+      console.log('[checkout-ui] Sending checkout payload', checkoutPayload);
+
       const response = await fetch('/api/stripe/checkout', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
         },
-        body: JSON.stringify({
-          productId: product.id,
-          offerId,
-          buyerId: user.id,
-          shippingMethod,
-          shippingCost
-        }),
+        body: JSON.stringify(checkoutPayload),
       });
 
       const data = await response.json();
 
       if (!response.ok) {
+        console.error('[checkout-ui] Checkout API error', {
+          status: response.status,
+          responseData: data,
+          checkoutPayload,
+        });
         throw new Error(data.error || 'Hiba történt a fizetés során');
       }
 

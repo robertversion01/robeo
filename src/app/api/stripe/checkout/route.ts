@@ -78,7 +78,16 @@ export async function POST(req: NextRequest) {
       });
 
       if (offerError || !offerData) {
-        return NextResponse.json({ error: 'Offer not found' }, { status: 404 });
+        console.error('[checkout] Offer not found for checkout', {
+          offerId,
+          buyerId,
+          requestedProductId: productId,
+          offerError,
+        });
+        return NextResponse.json(
+          { error: `Offer not found (offerId: ${offerId || 'missing'})` },
+          { status: 404 }
+        );
       }
 
       if (offerData.buyer_id && buyerId && offerData.buyer_id !== buyerId) {
@@ -139,8 +148,14 @@ export async function POST(req: NextRequest) {
     });
 
     if (productError || !productData) {
+      console.error('[checkout] Product not found after resolution', {
+        resolvedProductId,
+        requestedProductId: productId,
+        offerId,
+        productError,
+      });
       return NextResponse.json(
-        { error: 'Product not found' },
+        { error: `Product not found (productId: ${resolvedProductId})` },
         { status: 404 }
       );
     }
