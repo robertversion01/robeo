@@ -7,6 +7,7 @@ import { getOptimizedImageUrl } from '@/lib/imageUtils';
 import { toast } from 'sonner';
 import { CheckCircle, Truck, Package, Clock, AlertCircle, CreditCard } from 'lucide-react';
 import Link from 'next/link';
+import ReviewForm from '@/components/review/ReviewForm';
 
 interface Transaction {
   id: string;
@@ -28,6 +29,7 @@ export default function TransactionList() {
   const [transactions, setTransactions] = useState<Transaction[]>([]);
   const [loading, setLoading] = useState(true);
   const [activeTab, setActiveTab] = useState<'buying' | 'selling'>('buying');
+  const [reviewedTransactions, setReviewedTransactions] = useState<Set<string>>(new Set());
 
   useEffect(() => {
     loadTransactions();
@@ -357,6 +359,18 @@ export default function TransactionList() {
                     
                     {renderActionButton(transaction)}
                   </div>
+                  {transaction.status === 'sikeresen_atveve' && !reviewedTransactions.has(transaction.id) && (
+                    <div className="mt-3">
+                      <ReviewForm
+                        reviewedId={activeTab === 'buying' ? transaction.seller_id : transaction.buyer_id}
+                        offerId={transaction.id}
+                        transactionId={transaction.id}
+                        onComplete={() =>
+                          setReviewedTransactions((prev) => new Set(prev).add(transaction.id))
+                        }
+                      />
+                    </div>
+                  )}
                 </div>
               </div>
             </div>

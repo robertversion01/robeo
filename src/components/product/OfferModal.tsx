@@ -24,8 +24,13 @@ export default function OfferModal({ isOpen, onClose, productId, sellerId, produ
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     
+    const minimumOffer = Math.ceil(originalPrice * 0.6);
     if (price <= 0) {
       toast.error('Kérlek adj meg egy érvényes árat!');
+      return;
+    }
+    if (price < minimumOffer) {
+      toast.error(`Minimum ajánlat: ${minimumOffer.toLocaleString('hu-HU')} Ft (a vételár 60%-a).`);
       return;
     }
 
@@ -119,9 +124,12 @@ export default function OfferModal({ isOpen, onClose, productId, sellerId, produ
               value={price}
               onChange={(e) => setPrice(Number(e.target.value))}
               className="w-full px-3 py-2 rounded-lg bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-700 focus:border-accent focus:outline-none transition-colors text-gray-900 dark:text-white"
-              min="1"
+              min={Math.ceil(originalPrice * 0.6)}
               required
             />
+            <p className="mt-1 text-xs text-gray-500 dark:text-gray-400">
+              Minimum ajánlat: {Math.ceil(originalPrice * 0.6).toLocaleString('hu-HU')} Ft
+            </p>
 
             <div className="flex gap-1.5 mt-2">
               {[0.7, 0.8, 0.9].map(percent => (

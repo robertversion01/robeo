@@ -21,11 +21,12 @@ export async function POST(req: NextRequest) {
     }
 
     const body = await req.json();
-    const { productId, offerId, buyerId, shippingCost } = body as {
+    const { productId, offerId, buyerId, shippingCost, shippingMethod } = body as {
       productId?: string;
       offerId?: string;
       buyerId?: string;
       shippingCost?: number;
+      shippingMethod?: string;
     };
 
     console.log('[checkout] Incoming payload', {
@@ -33,6 +34,7 @@ export async function POST(req: NextRequest) {
       offerId,
       buyerId,
       shippingCost,
+      shippingMethod,
     });
 
     if ((!productId && !offerId) || !buyerId) {
@@ -226,6 +228,7 @@ export async function POST(req: NextRequest) {
         buyerId,
         sellerId,
         sellerEmail,
+        shippingMethod: shippingMethod || '',
         transactionId,
         type: 'escrow_payment',
       },
@@ -261,6 +264,7 @@ export async function POST(req: NextRequest) {
           seller_id: sellerId,
           amount: totalAmount,
           fee: buyerProtectionFee,
+          shipping_method: shippingMethod || null,
           shipping_cost: normalizedShippingCost,
           status: 'payment_pending',
           checkout_session_id: session.id,

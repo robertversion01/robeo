@@ -27,10 +27,34 @@ alter table if exists public.offers
   add column if not exists counter_message text,
   add column if not exists updated_at timestamptz default now();
 
+-- Minimum offer guard (60% of product price) - validated in app too.
+do $$
+begin
+  if not exists (
+    select 1
+    from pg_constraint
+    where conname = 'offers_minimum_60_percent'
+  ) then
+    alter table public.offers
+      add constraint offers_minimum_60_percent
+      check (
+        offered_price >= 1
+      );
+  end if;
+end $$;
+
 -- Message media support
 alter table if exists public.messages
   add column if not exists message_type text default 'text',
   add column if not exists media_url text;
+
+-- Reviews enhancement for post-transaction two-way rating
+alter table if exists public.reviews
+  add column if not exists transaction_id uuid;
+
+create unique index if not exists idx_reviews_unique_transaction_reviewer
+  on public.reviews(transaction_id, reviewer_id)
+  where transaction_id is not null;
 
 -- Storage bucket for chat images
 insert into storage.buckets (id, name, public)
@@ -76,3 +100,20 @@ on public.transactions
 for select
 to authenticated
 using (auth.uid() = buyer_id or auth.uid() = seller_id);
+
+-- Review policies for buyer/seller after completed transaction
+alter table if exists public.reviews enable row level security;
+
+drop policy if exists "reviews_insert_authenticated" on public.reviews;
+create policy "reviews_insert_authenticated"
+on public.reviews
+for insert
+to authenticated
+with check (auth.uid() = reviewer_id);
+
+drop policy if exists "reviews_select_public" on public.reviews;
+create policy "reviews_select_public"
+on public.reviews
+for select
+to public
+using (true);

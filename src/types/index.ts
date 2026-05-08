@@ -90,6 +90,7 @@ export interface Review {
   reviewer_id: string;
   reviewed_id: string;
   offer_id?: string;
+  transaction_id?: string;
   rating: number;
   comment?: string;
   created_at: string;

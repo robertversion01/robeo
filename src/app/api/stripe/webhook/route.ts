@@ -8,40 +8,63 @@ export async function POST(req: NextRequest) {
   try {
     const stripe = getStripeInstance();
     if (!stripe) {
-      return NextResponse.json({ error: 'Stripe kulcs hiányzik' }, { status: 500 });
+      return NextResponse.json({ error: 'Stripe client unavailable' }, { status: 500 });
     }
 
-    const { productId, price, title } = await req.json();
-    const supabase = getSupabaseClient();
-    
+    const supabase = getSupabaseClient() as any;
     if (!supabase) {
-      return NextResponse.json({ error: 'Adatbázis hiba' }, { status: 500 });
+      return NextResponse.json({ error: 'Supabase client unavailable' }, { status: 500 });
     }
 
-    const { data: { user } } = await supabase.auth.getUser();
-    if (!user) {
-      return NextResponse.json({ error: 'Bejelentkezés szükséges' }, { status: 401 });
+    const webhookSecret = process.env.STRIPE_WEBHOOK_SECRET;
+    const signature = req.headers.get('stripe-signature');
+    if (!webhookSecret || !signature) {
+      return NextResponse.json({ error: 'Webhook signature missing' }, { status: 400 });
     }
 
-    const session = await stripe.checkout.sessions.create({
-      payment_method_types: ['card'],
-      line_items: [{
-        price_data: {
-          currency: 'huf',
-          product_data: { name: title },
-          unit_amount: Math.round(price),
-        },
-        quantity: 1,
-      }],
-      mode: 'payment',
-      success_url: `${process.env.NEXT_PUBLIC_BASE_URL}/checkout/success?session_id={CHECKOUT_SESSION_ID}`,
-      cancel_url: `${process.env.NEXT_PUBLIC_BASE_URL}/products/${productId}`,
-      metadata: { productId, buyerId: user.id },
-    });
+    const body = await req.text();
+    const event = stripe.webhooks.constructEvent(body, signature, webhookSecret);
 
-    return NextResponse.json({ id: session.id });
+    if (event.type === 'checkout.session.completed') {
+      const session = event.data.object as any;
+      const checkoutSessionId = session.id as string;
+
+      const { data: transaction } = await supabase
+        .from('transactions')
+        .select('*')
+        .eq('checkout_session_id', checkoutSessionId)
+        .maybeSingle();
+
+      if (transaction) {
+        await supabase
+          .from('transactions')
+          .update({
+            status: 'fizetve',
+            payment_intent_id: session.payment_intent || transaction.payment_intent_id || null,
+          })
+          .eq('id', transaction.id);
+
+        const { data: buyerProfile } = await supabase
+          .from('profiles')
+          .select('location, full_name')
+          .eq('id', transaction.buyer_id)
+          .maybeSingle();
+
+        const buyerAddress = buyerProfile?.location || 'Nincs megadva';
+        await supabase.from('messages').insert({
+          sender_id: transaction.buyer_id,
+          receiver_id: transaction.seller_id,
+          content: `✅ Eladtad a terméket! Itt a vevő címe: ${buyerAddress}`,
+          product_id: transaction.product_id,
+          is_system_message: true,
+          message_type: 'system',
+        });
+      }
+    }
+
+    return NextResponse.json({ received: true });
   } catch (err: any) {
-    console.error('Stripe hiba:', err);
-    return NextResponse.json({ error: err.message }, { status: 500 });
+    console.error('Stripe webhook error:', err);
+    return NextResponse.json({ error: err.message || 'Webhook processing failed' }, { status: 400 });
   }
 }

@@ -16,6 +16,8 @@ import type { Product } from '@/types';
 
 export default function ProfilePage() {
   const [products, setProducts] = useState<Product[]>([]);
+  const [soldProducts, setSoldProducts] = useState<Product[]>([]);
+  const [receivedReviews, setReceivedReviews] = useState<Array<{ id: string; rating: number; comment: string | null; created_at: string }>>([]);
   const [loading, setLoading] = useState(true);
   const [user, setUser] = useState<any>(null);
   const [favorites, setFavorites] = useState<Set<string>>(new Set());
@@ -37,6 +39,8 @@ export default function ProfilePage() {
     setUser(user);
     setCreatedAt(user.created_at || '');
     loadUserProducts(user.id);
+    loadSoldProducts(user.id);
+    loadReceivedReviews(user.id);
   };
 
   const formatDate = (dateStr: string) => {
@@ -58,6 +62,35 @@ export default function ProfilePage() {
       console.error('Error fetching products:', error);
     } finally {
       setLoading(false);
+    }
+  };
+
+  const loadSoldProducts = async (userId: string) => {
+    try {
+      const { data, error } = await supabase
+        .from('products')
+        .select('*')
+        .eq('user_id', userId)
+        .eq('status', 'sold')
+        .order('updated_at', { ascending: false });
+      if (error) throw error;
+      setSoldProducts((data || []) as Product[]);
+    } catch (error) {
+      console.error('Error fetching sold products:', error);
+    }
+  };
+
+  const loadReceivedReviews = async (userId: string) => {
+    try {
+      const { data, error } = await supabase
+        .from('reviews')
+        .select('id, rating, comment, created_at')
+        .eq('reviewed_id', userId)
+        .order('created_at', { ascending: false });
+      if (error) throw error;
+      setReceivedReviews((data || []) as Array<{ id: string; rating: number; comment: string | null; created_at: string }>);
+    } catch (error) {
+      console.error('Error fetching reviews:', error);
     }
   };
 
@@ -234,6 +267,59 @@ export default function ProfilePage() {
               </div>
             </>
           )}
+
+          <div className="mt-10">
+            <h2 className="text-xl font-bold mb-4">✅ Eladott termékeim</h2>
+            {soldProducts.length === 0 ? (
+              <p className="text-sm text-gray-500 dark:text-white/50">Még nincs eladott termék.</p>
+            ) : (
+              <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-2">
+                {soldProducts.map((product) => (
+                  <Link key={product.id} href={`/products/${product.id}`} className="group bg-white dark:bg-white/5 border border-gray-100 dark:border-white/10 rounded-lg overflow-hidden">
+                    <div className="aspect-[4/5] overflow-hidden">
+                      {product.image_url ? (
+                        <img
+                          src={getOptimizedImageUrl(product.image_url, 300, 85)}
+                          alt={product.name}
+                          loading="lazy"
+                          className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
+                        />
+                      ) : (
+                        <div className="w-full h-full bg-gray-100 dark:bg-white/10 flex items-center justify-center text-gray-400 dark:text-white/30">📷</div>
+                      )}
+                    </div>
+                    <div className="p-1.5">
+                      <h3 className="font-medium text-[11px] truncate leading-tight text-gray-800 dark:text-white">{product.name}</h3>
+                      <div className="text-accent font-bold text-xs">{formatPrice(product.price)}</div>
+                    </div>
+                  </Link>
+                ))}
+              </div>
+            )}
+          </div>
+
+          <div className="mt-10">
+            <h2 className="text-xl font-bold mb-4">⭐ Kapott értékelések</h2>
+            {receivedReviews.length === 0 ? (
+              <p className="text-sm text-gray-500 dark:text-white/50">Még nincs értékelésed.</p>
+            ) : (
+              <div className="space-y-3">
+                {receivedReviews.map((review) => (
+                  <div key={review.id} className="bg-gray-50 dark:bg-white/5 border border-gray-200 dark:border-white/10 rounded-lg p-3">
+                    <div className="flex items-center justify-between">
+                      <StarRating rating={review.rating} size={16} />
+                      <span className="text-xs text-gray-500 dark:text-white/50">
+                        {new Date(review.created_at).toLocaleDateString('hu-HU')}
+                      </span>
+                    </div>
+                    {review.comment && (
+                      <p className="text-sm mt-2 text-gray-700 dark:text-white/80">{review.comment}</p>
+                    )}
+                  </div>
+                ))}
+              </div>
+            )}
+          </div>
         </div>
       </main>
     </div>
