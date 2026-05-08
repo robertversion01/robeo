@@ -121,11 +121,29 @@ export default function Navbar({ searchQuery, onSearchChange }: NavbarProps) {
 
       if (!error) {
         setLiveResults((data || []) as Array<Pick<Product, 'id' | 'name' | 'category'>>);
+      } else {
+        console.warn('[NavbarDebug] Live search query failed', {
+          query,
+          error: error.message,
+          code: error.code,
+        });
       }
     }, 220);
 
     return () => clearTimeout(timeout);
   }, [resolvedSearchQuery]);
+
+  useEffect(() => {
+    if (typeof window === 'undefined') return;
+    console.info('[NavbarDebug] State', {
+      path: pathname,
+      userLoggedIn: Boolean(user),
+      searchQuery: resolvedSearchQuery,
+      showLiveResults,
+      liveResultsCount: liveResults.length,
+      showProfileMenu,
+    });
+  }, [pathname, user, resolvedSearchQuery, showLiveResults, liveResults.length, showProfileMenu]);
 
   const onNavbarSearchChange = (value: string) => {
     if (onSearchChange) {
