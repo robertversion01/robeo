@@ -1,6 +1,5 @@
 'use client';
 
-import { useEffect } from 'react';
 import { useProducts } from '@/hooks/useProducts';
 import Filters from '@/components/product/Filters';
 import ProductGrid from '@/components/product/ProductGrid';
@@ -20,54 +19,39 @@ export default function Home() {
   } = useProducts();
   const isGuest = !user;
 
-  useEffect(() => {
-    if (!isGuest) return;
-    const previousBodyOverflow = document.body.style.overflow;
-    const previousBodyHeight = document.body.style.height;
-    const previousHtmlOverflow = document.documentElement.style.overflow;
-    const previousHtmlHeight = document.documentElement.style.height;
-
-    document.body.style.overflow = 'hidden';
-    document.body.style.height = '100vh';
-    document.documentElement.style.overflow = 'hidden';
-    document.documentElement.style.height = '100vh';
-
-    return () => {
-      document.body.style.overflow = previousBodyOverflow;
-      document.body.style.height = previousBodyHeight;
-      document.documentElement.style.overflow = previousHtmlOverflow;
-      document.documentElement.style.height = previousHtmlHeight;
-    };
-  }, [isGuest]);
-
   return (
-    <div className={`bg-white text-gray-900 overflow-x-hidden max-w-[100vw] ${isGuest ? 'h-screen overflow-hidden mt-0' : 'min-h-screen'}`}>
-      <main className={`w-full max-w-[100vw] overflow-x-hidden ${isGuest ? 'h-screen overflow-hidden p-0 m-0 pt-0 mt-0' : 'pt-10 pb-6 px-3 md:px-6'}`}>
-        <div className={`${isGuest ? 'w-full h-full' : 'max-w-7xl mx-auto'}`}>
-          <VintedHero products={allProducts} fullScreen={isGuest} />
+    <div className="bg-white text-gray-900 overflow-x-hidden max-w-[100vw] min-h-screen">
+      {isGuest ? (
+        <main
+          className="fixed inset-0 z-50 w-full h-screen overflow-hidden bg-red-500 m-0 p-0"
+          style={{ paddingTop: 'env(safe-area-inset-top, 0px)' }}
+        >
+          <VintedHero products={allProducts} fullScreen />
+        </main>
+      ) : (
+        <main className="w-full max-w-[100vw] overflow-x-hidden pt-10 pb-6 px-3 md:px-6">
+          <div className="max-w-7xl mx-auto">
+            <VintedHero products={allProducts} />
 
-          {!isGuest ? (
-            <>
-              <Filters
-                categories={categories}
-                selectedCategory={selectedCategory}
-                onCategoryChange={setSelectedCategory}
-              />
+            <Filters
+              categories={categories}
+              selectedCategory={selectedCategory}
+              onCategoryChange={setSelectedCategory}
+            />
 
-              <p className="text-gray-500 text-sm mb-1.5">
-                {loading ? 'Betöltés...' : `${products.length} találat`}
-              </p>
+            <p className="text-gray-500 text-sm mb-1.5">
+              {loading ? 'Betöltés...' : `${products.length} találat`}
+            </p>
 
-              <ProductGrid
-                products={products}
-                loading={loading}
-                favorites={favorites}
-                onToggleFavorite={toggleFavorite}
-              />
-            </>
-          ) : null}
-        </div>
-      </main>
+            <ProductGrid
+              products={products}
+              loading={loading}
+              favorites={favorites}
+              onToggleFavorite={toggleFavorite}
+            />
+          </div>
+        </main>
+      )}
     </div>
   );
 }
