@@ -146,7 +146,15 @@ export default function Navbar({ searchQuery, onSearchChange }: NavbarProps) {
   }
 
   return (
-    <nav className={`fixed top-0 left-0 right-0 z-[9999] h-11 px-2 sm:px-3 flex items-center gap-1 sm:gap-2 bg-white border-b border-gray-200 shadow-sm overflow-x-hidden w-full max-w-full pointer-events-auto ${isGuest ? 'justify-end' : 'justify-between'}`}>
+    <nav className={`fixed top-0 left-0 right-0 z-[9999] h-11 px-2 sm:px-3 flex items-center gap-1 sm:gap-2 bg-white border-b border-gray-200 shadow-sm overflow-visible w-full max-w-full pointer-events-auto ${isGuest ? 'justify-end' : 'justify-between'}`}>
+      {showProfileMenu ? (
+        <button
+          type="button"
+          aria-label="Profil menü bezárása"
+          onClick={() => setShowProfileMenu(false)}
+          className="fixed inset-0 z-[9998] bg-black/20 cursor-default"
+        />
+      ) : null}
       {!isGuest ? (
         <>
           <Link href="/" className="text-sm font-semibold tracking-wide hover:text-[#007782] transition-colors flex-shrink-0 text-[#007782]">
@@ -168,7 +176,7 @@ export default function Navbar({ searchQuery, onSearchChange }: NavbarProps) {
               />
 
               {showLiveResults && resolvedSearchQuery.trim().length >= 2 ? (
-                <div className="absolute left-0 right-0 top-10 z-[10001] rounded-xl border border-gray-200 bg-white shadow-lg overflow-hidden pointer-events-auto">
+                <div className="absolute left-0 right-0 top-10 z-[9999] rounded-xl border border-gray-200 bg-white shadow-lg overflow-hidden pointer-events-auto">
                   {liveResults.length === 0 ? (
                     <div className="px-3 py-2.5 text-xs text-gray-500">Nincs találat.</div>
                   ) : (
@@ -210,7 +218,7 @@ export default function Navbar({ searchQuery, onSearchChange }: NavbarProps) {
             <Link href="/favorites" className="icon-btn text-gray-700">
               <Heart size={16} className="text-gray-700" />
             </Link>
-            <div ref={profileMenuRef} className="relative z-[10000] pointer-events-auto">
+            <div ref={profileMenuRef} className="relative z-[10000] pointer-events-auto overflow-visible">
               <button
                 type="button"
                 onClick={(e) => {
@@ -224,7 +232,7 @@ export default function Navbar({ searchQuery, onSearchChange }: NavbarProps) {
               </button>
               {showProfileMenu ? (
                 <div
-                  className="absolute right-0 top-10 w-44 card-base shadow-md p-1 z-[10001] pointer-events-auto"
+                  className="absolute right-0 top-10 w-44 card-base shadow-md p-1 z-[9999] pointer-events-auto"
                 >
                   <Link
                     href="/profile"
