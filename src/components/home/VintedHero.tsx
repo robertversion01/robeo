@@ -2,7 +2,6 @@
 
 import { useEffect, useMemo, useRef } from 'react';
 import Link from 'next/link';
-import { ChevronLeft, ChevronRight } from 'lucide-react';
 import { formatPrice } from '@/lib/utils';
 import type { Product } from '@/types';
 
@@ -31,31 +30,25 @@ export default function VintedHero({ products }: VintedHeroProps) {
   const scrollerRef = useRef<HTMLDivElement | null>(null);
   const autoplayRef = useRef<number | null>(null);
   const heroProducts = useMemo(() => getHeroProducts(products), [products]);
-
-  const scrollByPage = (direction: 'left' | 'right') => {
-    if (!scrollerRef.current) return;
-    const pageWidth = Math.round(scrollerRef.current.clientWidth * 0.65);
-    scrollerRef.current.scrollBy({
-      left: direction === 'left' ? -pageWidth : pageWidth,
-      behavior: 'smooth',
-    });
-  };
+  const marqueeItems = useMemo(() => [...heroProducts, ...heroProducts], [heroProducts]);
 
   useEffect(() => {
     const scroller = scrollerRef.current;
-    if (!scroller) return;
+    if (!scroller || heroProducts.length === 0) return;
+
+    let paused = false;
 
     const startAuto = () => {
       if (autoplayRef.current) return;
       autoplayRef.current = window.setInterval(() => {
-        if (!scrollerRef.current) return;
-        const maxLeft = scrollerRef.current.scrollWidth - scrollerRef.current.clientWidth;
-        const atEnd = scrollerRef.current.scrollLeft >= maxLeft - 4;
-        scrollerRef.current.scrollTo({
-          left: atEnd ? 0 : scrollerRef.current.scrollLeft + 220,
-          behavior: 'smooth',
-        });
-      }, 2600);
+        if (!scrollerRef.current || paused) return;
+        const el = scrollerRef.current;
+        const half = el.scrollWidth / 2;
+        el.scrollLeft += 0.9;
+        if (el.scrollLeft >= half) {
+          el.scrollLeft = 0;
+        }
+      }, 24);
     };
 
     const stopAuto = () => {
@@ -65,50 +58,39 @@ export default function VintedHero({ products }: VintedHeroProps) {
       }
     };
 
+    const pause = () => {
+      paused = true;
+    };
+    const resume = () => {
+      paused = false;
+    };
+
     startAuto();
-    scroller.addEventListener('mouseenter', stopAuto);
-    scroller.addEventListener('mouseleave', startAuto);
-    scroller.addEventListener('pointerdown', stopAuto);
-    scroller.addEventListener('pointerup', startAuto);
-    scroller.addEventListener('pointercancel', startAuto);
-    scroller.addEventListener('touchstart', stopAuto, { passive: true });
-    scroller.addEventListener('touchend', startAuto, { passive: true });
+    scroller.addEventListener('mouseenter', pause);
+    scroller.addEventListener('mouseleave', resume);
+    scroller.addEventListener('pointerdown', pause);
+    scroller.addEventListener('pointerup', resume);
+    scroller.addEventListener('pointercancel', resume);
+    scroller.addEventListener('touchstart', pause, { passive: true });
+    scroller.addEventListener('touchend', resume, { passive: true });
 
     return () => {
       stopAuto();
-      scroller.removeEventListener('mouseenter', stopAuto);
-      scroller.removeEventListener('mouseleave', startAuto);
-      scroller.removeEventListener('pointerdown', stopAuto);
-      scroller.removeEventListener('pointerup', startAuto);
-      scroller.removeEventListener('pointercancel', startAuto);
-      scroller.removeEventListener('touchstart', stopAuto);
-      scroller.removeEventListener('touchend', startAuto);
+      scroller.removeEventListener('mouseenter', pause);
+      scroller.removeEventListener('mouseleave', resume);
+      scroller.removeEventListener('pointerdown', pause);
+      scroller.removeEventListener('pointerup', resume);
+      scroller.removeEventListener('pointercancel', resume);
+      scroller.removeEventListener('touchstart', pause);
+      scroller.removeEventListener('touchend', resume);
     };
   }, [heroProducts.length]);
 
   return (
     <section className="mb-2.5">
       <div className="rounded-xl border border-gray-200 bg-white p-2">
-        <div className="mb-1.5 flex items-center justify-between">
-          <h2 className="text-sm md:text-base font-semibold text-gray-900">Kiemelt hirdetések</h2>
-          <div className="flex items-center gap-1">
-            <button
-              type="button"
-              onClick={() => scrollByPage('left')}
-              className="h-8 w-8 rounded-full border border-gray-300 text-gray-600 hover:bg-gray-50 transition-colors inline-flex items-center justify-center"
-              aria-label="Előző"
-            >
-              <ChevronLeft size={16} />
-            </button>
-            <button
-              type="button"
-              onClick={() => scrollByPage('right')}
-              className="h-8 w-8 rounded-full border border-gray-300 text-gray-600 hover:bg-gray-50 transition-colors inline-flex items-center justify-center"
-              aria-label="Következő"
-            >
-              <ChevronRight size={16} />
-            </button>
-          </div>
+        <div className="mb-1.5">
+          <h2 className="text-sm md:text-base font-semibold text-gray-900">Kiemelt ajánlatok</h2>
         </div>
 
         {heroProducts.length === 0 ? (
@@ -120,13 +102,13 @@ export default function VintedHero({ products }: VintedHeroProps) {
             ref={scrollerRef}
             className="flex gap-2 overflow-x-auto no-scrollbar snap-x snap-mandatory scroll-smooth cursor-grab active:cursor-grabbing"
           >
-            {heroProducts.map((item) => (
+            {marqueeItems.map((item, idx) => (
               <Link
-                key={item.id}
+                key={`${item.id}-${idx}`}
                 href={`/products/${item.id}`}
                 className="snap-start shrink-0 w-[38%] sm:w-[26%] lg:w-[16%] rounded-lg overflow-hidden border border-gray-200 bg-white hover:border-[#007782]/40 transition-colors"
               >
-                <div className="relative h-[200px] md:h-[220px] bg-gray-100">
+                <div className="relative h-[180px] md:h-[220px] bg-gray-100">
                   {item.image_url ? (
                     <img src={item.image_url} alt={item.name} className="h-full w-full object-cover" />
                   ) : (

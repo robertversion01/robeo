@@ -3,7 +3,6 @@
 import { useProducts } from '@/hooks/useProducts';
 import Filters from '@/components/product/Filters';
 import ProductGrid from '@/components/product/ProductGrid';
-import FreshOffersStrip from '@/components/home/FreshOffersStrip';
 import VintedHero from '@/components/home/VintedHero';
 
 export default function Home() {
@@ -19,33 +18,17 @@ export default function Home() {
     user
   } = useProducts();
 
-  const firstName =
-    user?.user_metadata?.full_name?.split(' ')[0] ||
-    user?.user_metadata?.name?.split(' ')[0] ||
-    user?.email?.split('@')[0] ||
-    '';
-
   return (
     <div className="min-h-screen bg-white text-gray-900">
       <main className="pt-10 pb-6 px-3 md:px-6">
         <div className="max-w-7xl mx-auto">
-          {!user ? <VintedHero products={allProducts} /> : null}
-
-          {user ? (
-            <section className="mb-2.5">
-              <p className="text-sm font-semibold text-gray-800">
-                Szia {firstName}!
-              </p>
-            </section>
-          ) : null}
+          <VintedHero products={allProducts} />
 
           <Filters
             categories={categories}
             selectedCategory={selectedCategory}
             onCategoryChange={setSelectedCategory}
           />
-
-          <FreshOffersStrip className="mt-0.5 mb-1.5" />
 
           <p className="text-gray-500 text-sm mb-1.5">
             {loading ? 'Betöltés...' : `${products.length} találat`}
