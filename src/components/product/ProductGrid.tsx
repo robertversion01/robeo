@@ -1,6 +1,7 @@
 'use client';
 
 import { useEffect, useState } from 'react';
+import { motion, AnimatePresence } from 'framer-motion';
 import ProductCard from './ProductCard';
 import ProductGridSkeleton from './ProductGridSkeleton';
 import EmptyState from '@/components/ui/EmptyState';
@@ -44,15 +45,24 @@ export default function ProductGrid({
   }
 
   return (
-    <div className={`grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 xl:grid-cols-6 gap-1.5 md:gap-2 transition-opacity duration-300 ${visible ? 'opacity-100' : 'opacity-0'}`}>
-      {products.map((product) => (
-        <ProductCard
-          key={product.id}
-          product={product}
-          isFavorite={favorites.has(product.id)}
-          onToggleFavorite={() => onToggleFavorite(product.id)}
-        />
-      ))}
-    </div>
+    <AnimatePresence mode="wait">
+      <motion.div
+        key={`${transitionKey}-${products.length}`}
+        initial={{ opacity: 0 }}
+        animate={{ opacity: visible ? 1 : 0 }}
+        exit={{ opacity: 0 }}
+        transition={{ duration: 0.28, ease: 'easeOut' }}
+        className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 xl:grid-cols-6 gap-1.5 md:gap-2"
+      >
+        {products.map((product) => (
+          <ProductCard
+            key={product.id}
+            product={product}
+            isFavorite={favorites.has(product.id)}
+            onToggleFavorite={() => onToggleFavorite(product.id)}
+          />
+        ))}
+      </motion.div>
+    </AnimatePresence>
   );
 }

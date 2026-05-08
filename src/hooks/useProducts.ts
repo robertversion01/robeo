@@ -25,6 +25,7 @@ export function useProducts() {
   const [loading, setLoading] = useState(true);
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedCategory, setSelectedCategory] = useState('all');
+  const [selectedMaxPrice, setSelectedMaxPrice] = useState<number>(0);
   const [selectedSort, setSelectedSort] = useState('newest');
   const [favorites, setFavorites] = useState<Set<string>>(new Set());
   const [user, setUser] = useState<any>(null);
@@ -81,7 +82,10 @@ export function useProducts() {
         .order(sortConfig.column, { ascending: sortConfig.order === 'asc' });
 
       if (error) throw error;
-      setProducts(data || []);
+      const fetchedProducts = (data || []) as Product[];
+      setProducts(fetchedProducts);
+      const maxPrice = fetchedProducts.reduce((max, product) => Math.max(max, Number(product.price) || 0), 0);
+      setSelectedMaxPrice((prev) => (prev > 0 ? prev : maxPrice));
     } catch (error) {
       console.error('Error fetching products:', error);
     } finally {
@@ -141,8 +145,17 @@ export function useProducts() {
       filtered = filtered.filter((p) => aliases.includes(normalizeCategory(p.category || '')));
     }
 
+    if (selectedMaxPrice > 0) {
+      filtered = filtered.filter((p) => (Number(p.price) || 0) <= selectedMaxPrice);
+    }
+
     return filtered;
-  }, [products, searchQuery, selectedCategory]);
+  }, [products, searchQuery, selectedCategory, selectedMaxPrice]);
+
+  const maxPriceLimit = useMemo(
+    () => products.reduce((max, product) => Math.max(max, Number(product.price) || 0), 0),
+    [products]
+  );
 
   return {
     allProducts: products,
@@ -152,6 +165,9 @@ export function useProducts() {
     setSearchQuery,
     selectedCategory,
     setSelectedCategory,
+    selectedMaxPrice,
+    setSelectedMaxPrice,
+    maxPriceLimit,
     selectedSort,
     setSelectedSort,
     favorites,

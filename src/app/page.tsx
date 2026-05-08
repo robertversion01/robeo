@@ -12,6 +12,9 @@ export default function Home() {
     loading,
     selectedCategory,
     setSelectedCategory,
+    selectedMaxPrice,
+    setSelectedMaxPrice,
+    maxPriceLimit,
     categories,
     favorites,
     toggleFavorite,
@@ -37,6 +40,9 @@ export default function Home() {
               categories={categories}
               selectedCategory={selectedCategory}
               onCategoryChange={setSelectedCategory}
+              selectedMaxPrice={selectedMaxPrice}
+              maxPriceLimit={maxPriceLimit}
+              onMaxPriceChange={setSelectedMaxPrice}
             />
 
             <p className="text-gray-500 text-sm mb-1.5">
@@ -48,7 +54,7 @@ export default function Home() {
               loading={loading}
               favorites={favorites}
               onToggleFavorite={toggleFavorite}
-              transitionKey={selectedCategory}
+              transitionKey={`${selectedCategory}-${selectedMaxPrice}`}
             />
           </div>
         </main>
