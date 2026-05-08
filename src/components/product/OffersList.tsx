@@ -240,7 +240,7 @@ export default function OffersList() {
                         setCounterValues((prev) => ({ ...prev, [offer.id]: e.target.value }))
                       }
                       placeholder="Ellenajanlat"
-                      className="w-32 input-base min-h-9 px-2.5 py-1.5 text-sm focus:outline-none focus:ring-1 focus:ring-[#007782]"
+                      className="w-full min-w-[120px] input-base min-h-10 p-2 text-base focus:outline-none focus:ring-1 focus:ring-[#007782]"
                     />
                     <button
                       onClick={() => sendCounterOffer(offer)}
