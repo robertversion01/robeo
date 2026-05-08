@@ -2,15 +2,22 @@
 -- ROBEO — stripe_webhook_events tábla egyszeri / biztonságos alkalmazása
 -- Hely: Supabase Dashboard → SQL Editor → illeszd be az EGÉSZ fájlt → Run
 -- Idempotens: többször futtatható (hiba nélkül), kezeli a régi id oszlopot is.
+-- Séma: stripe_event_id, received_at, event_type, payload, processed, processed_at, error
 -- =============================================================================
 
 CREATE TABLE IF NOT EXISTS public.stripe_webhook_events (
   stripe_event_id TEXT PRIMARY KEY,
   received_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+  event_type TEXT,
+  payload JSONB,
+  processed BOOLEAN NOT NULL DEFAULT FALSE,
   processed_at TIMESTAMPTZ,
   error TEXT
 );
 
+ALTER TABLE public.stripe_webhook_events ADD COLUMN IF NOT EXISTS event_type TEXT;
+ALTER TABLE public.stripe_webhook_events ADD COLUMN IF NOT EXISTS payload JSONB;
+ALTER TABLE public.stripe_webhook_events ADD COLUMN IF NOT EXISTS processed BOOLEAN NOT NULL DEFAULT FALSE;
 ALTER TABLE public.stripe_webhook_events ADD COLUMN IF NOT EXISTS processed_at TIMESTAMPTZ;
 ALTER TABLE public.stripe_webhook_events ADD COLUMN IF NOT EXISTS error TEXT;
 
@@ -71,11 +78,7 @@ ALTER TABLE public.stripe_webhook_events ENABLE ROW LEVEL SECURITY;
 REVOKE ALL ON TABLE public.stripe_webhook_events FROM anon;
 REVOKE ALL ON TABLE public.stripe_webhook_events FROM authenticated;
 
-COMMENT ON TABLE public.stripe_webhook_events IS 'Stripe evt_* — service_role; processed_at + error oszlopok.';
+COMMENT ON TABLE public.stripe_webhook_events IS 'Stripe evt_* — service_role; payload audit; processed + processed_at.';
+COMMENT ON COLUMN public.stripe_webhook_events.payload IS 'Stripe Event JSON (audit).';
+COMMENT ON COLUMN public.stripe_webhook_events.processed IS 'true ha a handler lefutott hiba nélkül.';
 COMMENT ON COLUMN public.stripe_webhook_events.error IS 'Feldolgozási hiba szöveg (HTTP válasz mindig 200).';
-
--- Ellenőrzés (opcionális — kommenteld ki ha zavar):
--- SELECT column_name, data_type
--- FROM information_schema.columns
--- WHERE table_schema = 'public' AND table_name = 'stripe_webhook_events'
--- ORDER BY ordinal_position;

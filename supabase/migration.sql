@@ -146,11 +146,17 @@ ALTER TABLE IF EXISTS public.products
 CREATE TABLE IF NOT EXISTS public.stripe_webhook_events (
   stripe_event_id TEXT PRIMARY KEY,
   received_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+  event_type TEXT,
+  payload JSONB,
+  processed BOOLEAN NOT NULL DEFAULT FALSE,
   processed_at TIMESTAMPTZ,
   error TEXT
 );
 
 -- Hiányzó oszlopok (régi táblán is lefut)
+ALTER TABLE public.stripe_webhook_events ADD COLUMN IF NOT EXISTS event_type TEXT;
+ALTER TABLE public.stripe_webhook_events ADD COLUMN IF NOT EXISTS payload JSONB;
+ALTER TABLE public.stripe_webhook_events ADD COLUMN IF NOT EXISTS processed BOOLEAN NOT NULL DEFAULT FALSE;
 ALTER TABLE public.stripe_webhook_events ADD COLUMN IF NOT EXISTS processed_at TIMESTAMPTZ;
 ALTER TABLE public.stripe_webhook_events ADD COLUMN IF NOT EXISTS error TEXT;
 
@@ -212,7 +218,9 @@ ALTER TABLE public.stripe_webhook_events ENABLE ROW LEVEL SECURITY;
 REVOKE ALL ON TABLE public.stripe_webhook_events FROM anon;
 REVOKE ALL ON TABLE public.stripe_webhook_events FROM authenticated;
 
-COMMENT ON TABLE public.stripe_webhook_events IS 'Stripe evt_* — service_role; processed_at + error oszlopok.';
+COMMENT ON TABLE public.stripe_webhook_events IS 'Stripe evt_* — service_role; payload audit; processed + processed_at.';
+COMMENT ON COLUMN public.stripe_webhook_events.payload IS 'Stripe Event JSON (audit).';
+COMMENT ON COLUMN public.stripe_webhook_events.processed IS 'true ha a handler lefutott hiba nélkül.';
 COMMENT ON COLUMN public.stripe_webhook_events.error IS 'Feldolgozási hiba szöveg (HTTP válasz mindig 200).';
 
 -- 13. Offers lifecycle mezők

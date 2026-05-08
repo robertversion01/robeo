@@ -21,6 +21,29 @@ function formatError(err: unknown): string {
   }
 }
 
+/** Supabase jsonb + Stripe auditnapló — sík objektum */
+function stripeEventPayloadForDb(event: Stripe.Event): Record<string, unknown> {
+  try {
+    return JSON.parse(JSON.stringify(event)) as Record<string, unknown>;
+  } catch {
+    return {
+      id: event.id,
+      type: event.type,
+      livemode: event.livemode,
+      api_version: event.api_version,
+    };
+  }
+}
+
+function isStripeEventRowProcessed(row: {
+  processed?: boolean | null;
+  processed_at?: string | null;
+  error?: string | null;
+} | null): boolean {
+  if (!row || row.error) return false;
+  return row.processed === true || Boolean(row.processed_at);
+}
+
 type TxRow = {
   id: string;
   buyer_id: string;
@@ -172,20 +195,28 @@ async function handlePaymentIntentSucceeded(event: Stripe.Event, db: any): Promi
   await applyPaidTransactionEffects(db, transaction as TxRow, paymentIntentId);
 }
 
-async function ensureStripeEventRow(db: any, stripeEventId: string): Promise<'skip_done' | 'skip_inflight' | 'go'> {
+async function ensureStripeEventRow(
+  db: any,
+  event: Stripe.Event
+): Promise<'skip_done' | 'skip_inflight' | 'go'> {
+  const stripeEventId = event.id;
+
   const { data: existing } = await db
     .from('stripe_webhook_events')
-    .select('processed_at, error')
+    .select('processed_at, error, processed')
     .eq('stripe_event_id', stripeEventId)
     .maybeSingle();
 
-  if (existing?.processed_at && !existing.error) {
+  if (isStripeEventRowProcessed(existing)) {
     return 'skip_done';
   }
 
   const { error: insertErr } = await db.from('stripe_webhook_events').insert({
     stripe_event_id: stripeEventId,
     received_at: new Date().toISOString(),
+    event_type: event.type,
+    payload: stripeEventPayloadForDb(event),
+    processed: false,
   });
 
   if (!insertErr) {
@@ -198,15 +229,20 @@ async function ensureStripeEventRow(db: any, stripeEventId: string): Promise<'sk
 
   const { data: row } = await db
     .from('stripe_webhook_events')
-    .select('processed_at, error')
+    .select('processed_at, error, processed')
     .eq('stripe_event_id', stripeEventId)
     .maybeSingle();
 
-  if (row?.processed_at && !row.error) {
+  if (isStripeEventRowProcessed(row)) {
     return 'skip_done';
   }
 
-  if (row && !row.processed_at && !row.error) {
+  const inflight =
+    row &&
+    !row.error &&
+    row.processed !== true &&
+    !row.processed_at;
+  if (inflight) {
     return 'skip_inflight';
   }
 
@@ -217,6 +253,7 @@ async function markEventSuccess(db: any, stripeEventId: string): Promise<void> {
   const { error } = await db
     .from('stripe_webhook_events')
     .update({
+      processed: true,
       processed_at: new Date().toISOString(),
       error: null,
     })
@@ -229,6 +266,7 @@ async function markEventFailure(db: any, stripeEventId: string, message: string)
   const { error } = await db
     .from('stripe_webhook_events')
     .update({
+      processed: false,
       error: message.slice(0, MAX_ERROR_LEN),
     })
     .eq('stripe_event_id', stripeEventId);
@@ -275,7 +313,7 @@ export async function POST(req: NextRequest) {
 
     stripeEventId = event.id;
 
-    const gate = await ensureStripeEventRow(admin, stripeEventId);
+    const gate = await ensureStripeEventRow(admin, event);
     if (gate === 'skip_done' || gate === 'skip_inflight') {
       return ok();
     }
