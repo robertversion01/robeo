@@ -1,6 +1,6 @@
 'use client';
 
-import { useMemo, useRef } from 'react';
+import { useEffect, useMemo, useRef } from 'react';
 import Link from 'next/link';
 import { ChevronLeft, ChevronRight } from 'lucide-react';
 import { formatPrice } from '@/lib/utils';
@@ -29,6 +29,7 @@ function getHeroProducts(products: Product[]): HeroProduct[] {
 
 export default function VintedHero({ products }: VintedHeroProps) {
   const scrollerRef = useRef<HTMLDivElement | null>(null);
+  const autoplayRef = useRef<number | null>(null);
   const heroProducts = useMemo(() => getHeroProducts(products), [products]);
 
   const scrollByPage = (direction: 'left' | 'right') => {
@@ -39,6 +40,45 @@ export default function VintedHero({ products }: VintedHeroProps) {
       behavior: 'smooth',
     });
   };
+
+  useEffect(() => {
+    const scroller = scrollerRef.current;
+    if (!scroller) return;
+
+    const startAuto = () => {
+      if (autoplayRef.current) return;
+      autoplayRef.current = window.setInterval(() => {
+        if (!scrollerRef.current) return;
+        const maxLeft = scrollerRef.current.scrollWidth - scrollerRef.current.clientWidth;
+        const atEnd = scrollerRef.current.scrollLeft >= maxLeft - 4;
+        scrollerRef.current.scrollTo({
+          left: atEnd ? 0 : scrollerRef.current.scrollLeft + 220,
+          behavior: 'smooth',
+        });
+      }, 2600);
+    };
+
+    const stopAuto = () => {
+      if (autoplayRef.current) {
+        window.clearInterval(autoplayRef.current);
+        autoplayRef.current = null;
+      }
+    };
+
+    startAuto();
+    scroller.addEventListener('mouseenter', stopAuto);
+    scroller.addEventListener('mouseleave', startAuto);
+    scroller.addEventListener('touchstart', stopAuto, { passive: true });
+    scroller.addEventListener('touchend', startAuto, { passive: true });
+
+    return () => {
+      stopAuto();
+      scroller.removeEventListener('mouseenter', stopAuto);
+      scroller.removeEventListener('mouseleave', startAuto);
+      scroller.removeEventListener('touchstart', stopAuto);
+      scroller.removeEventListener('touchend', startAuto);
+    };
+  }, [heroProducts.length]);
 
   return (
     <section className="mb-4 md:mb-5">
@@ -78,9 +118,9 @@ export default function VintedHero({ products }: VintedHeroProps) {
               <Link
                 key={item.id}
                 href={`/products/${item.id}`}
-                className="snap-start shrink-0 w-[72%] sm:w-[44%] lg:w-[28%] rounded-xl overflow-hidden border border-gray-200 bg-white hover:border-[#007782]/40 transition-colors"
+                className="snap-start shrink-0 w-[36%] sm:w-[24%] lg:w-[14%] rounded-xl overflow-hidden border border-gray-200 bg-white hover:border-[#007782]/40 transition-colors"
               >
-                <div className="relative aspect-[4/5] bg-gray-100">
+                <div className="relative aspect-[3/4] bg-gray-100">
                   {item.image_url ? (
                     <img src={item.image_url} alt={item.name} className="h-full w-full object-cover" />
                   ) : (

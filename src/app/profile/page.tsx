@@ -107,7 +107,7 @@ export default function ProfilePage() {
         .select('*')
         .eq('user_id', userId)
         .eq('status', 'sold')
-        .order('updated_at', { ascending: false });
+        .order('created_at', { ascending: false });
       if (error) throw error;
       setSoldProducts((data || []) as Product[]);
     } catch (error) {

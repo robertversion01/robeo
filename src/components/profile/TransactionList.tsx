@@ -20,9 +20,11 @@ interface Transaction {
   updated_at: string;
   payment_intent_id: string;
   fee?: number;
-  product: any;
-  buyer: any;
-  seller: any;
+  product?: {
+    id: string;
+    name: string;
+    image_url: string | null;
+  };
 }
 
 export default function TransactionList() {
@@ -44,17 +46,39 @@ export default function TransactionList() {
 
       const { data, error } = await supabase
         .from('transactions')
-        .select(`
-          *,
-          product:product_id(*),
-          buyer:buyer_id(*),
-          seller:seller_id(*)
-        `)
+        .select('*')
         .eq(activeTab === 'buying' ? 'buyer_id' : 'seller_id', user.id)
         .order('created_at', { ascending: false });
 
       if (error) throw error;
-      setTransactions(data || []);
+
+      const baseTransactions = (data || []) as Transaction[];
+      const productIds = Array.from(
+        new Set(baseTransactions.map((item) => item.product_id).filter(Boolean))
+      );
+
+      let productMap: Record<string, { id: string; name: string; image_url: string | null }> = {};
+      if (productIds.length > 0) {
+        const { data: productsData } = await supabase
+          .from('products')
+          .select('id, name, image_url')
+          .in('id', productIds);
+
+        productMap = (productsData || []).reduce(
+          (acc: Record<string, { id: string; name: string; image_url: string | null }>, item: any) => {
+            acc[item.id] = item;
+            return acc;
+          },
+          {}
+        );
+      }
+
+      setTransactions(
+        baseTransactions.map((item) => ({
+          ...item,
+          product: productMap[item.product_id],
+        }))
+      );
     } catch (error) {
       console.error('Error loading transactions:', error);
     } finally {
@@ -344,8 +368,8 @@ export default function TransactionList() {
                     <span>•</span>
                     <span>
                       {activeTab === 'buying' 
-                        ? `Eladó: ${transaction.seller?.email?.split('@')[0]}` 
-                        : `Vevő: ${transaction.buyer?.email?.split('@')[0]}`}
+                        ? `Eladó: ${transaction.seller_id?.slice(0, 8)}...` 
+                        : `Vevő: ${transaction.buyer_id?.slice(0, 8)}...`}
                     </span>
                   </div>
                   
