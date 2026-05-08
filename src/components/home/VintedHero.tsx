@@ -34,7 +34,7 @@ export default function VintedHero({ products }: VintedHeroProps) {
 
   const scrollByPage = (direction: 'left' | 'right') => {
     if (!scrollerRef.current) return;
-    const pageWidth = Math.round(scrollerRef.current.clientWidth * 0.92);
+    const pageWidth = Math.round(scrollerRef.current.clientWidth * 0.65);
     scrollerRef.current.scrollBy({
       left: direction === 'left' ? -pageWidth : pageWidth,
       behavior: 'smooth',
@@ -81,9 +81,9 @@ export default function VintedHero({ products }: VintedHeroProps) {
   }, [heroProducts.length]);
 
   return (
-    <section className="mb-4 md:mb-5">
-      <div className="rounded-2xl border border-gray-200 bg-white p-2.5 md:p-3">
-        <div className="mb-2 flex items-center justify-between">
+    <section className="mb-2.5">
+      <div className="rounded-xl border border-gray-200 bg-white p-2">
+        <div className="mb-1.5 flex items-center justify-between">
           <h2 className="text-sm md:text-base font-semibold text-gray-900">Kiemelt hirdetések</h2>
           <div className="flex items-center gap-1">
             <button
@@ -118,38 +118,23 @@ export default function VintedHero({ products }: VintedHeroProps) {
               <Link
                 key={item.id}
                 href={`/products/${item.id}`}
-                className="snap-start shrink-0 w-[36%] sm:w-[24%] lg:w-[14%] rounded-xl overflow-hidden border border-gray-200 bg-white hover:border-[#007782]/40 transition-colors"
+                className="snap-start shrink-0 w-[38%] sm:w-[26%] lg:w-[16%] rounded-lg overflow-hidden border border-gray-200 bg-white hover:border-[#007782]/40 transition-colors"
               >
-                <div className="relative aspect-[3/4] bg-gray-100">
+                <div className="relative h-[200px] md:h-[220px] bg-gray-100">
                   {item.image_url ? (
                     <img src={item.image_url} alt={item.name} className="h-full w-full object-cover" />
                   ) : (
                     <div className="h-full w-full flex items-center justify-center text-gray-400">📦</div>
                   )}
                 </div>
-                <div className="px-2.5 py-2">
-                  <p className="text-sm font-semibold text-gray-900">{formatPrice(item.price)}</p>
-                  <p className="mt-0.5 text-xs text-gray-600 truncate">{item.brand || item.name}</p>
+                <div className="px-2 py-1.5">
+                  <p className="text-xs font-semibold text-gray-900">{formatPrice(item.price)}</p>
+                  <p className="mt-0.5 text-[11px] text-gray-600 truncate">{item.brand || item.name}</p>
                 </div>
               </Link>
             ))}
           </div>
         )}
-
-        <div className="mt-3 flex flex-col sm:flex-row items-center gap-2">
-          <Link
-            href="/auth"
-            className="w-full sm:w-auto px-4 py-2 rounded-full bg-[#007782] text-white font-medium text-sm hover:bg-[#00616b] transition-colors text-center"
-          >
-            Eladni szeretnék
-          </Link>
-          <Link
-            href="/auth"
-            className="w-full sm:w-auto px-4 py-2 rounded-full border border-gray-300 text-gray-700 font-medium text-sm hover:bg-gray-50 transition-colors text-center"
-          >
-            Belépés
-          </Link>
-        </div>
       </div>
     </section>
   );

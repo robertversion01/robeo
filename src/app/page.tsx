@@ -29,7 +29,7 @@ export default function Home() {
 
   return (
     <div className="min-h-screen bg-white text-gray-900">
-      <main className="pt-11 pb-8 px-3 md:px-6">
+      <main className="pt-10 pb-6 px-3 md:px-6">
         <div className="max-w-7xl mx-auto">
           {!user ? <VintedHero products={allProducts} /> : null}
 
@@ -45,13 +45,11 @@ export default function Home() {
             categories={categories}
             selectedCategory={selectedCategory}
             onCategoryChange={setSelectedCategory}
-            searchQuery={searchQuery}
-            onSearchChange={setSearchQuery}
           />
 
-          <FreshOffersStrip className="mt-1 mb-2.5" />
+          <FreshOffersStrip className="mt-0.5 mb-1.5" />
 
-          <p className="text-gray-500 text-sm mb-2.5">
+          <p className="text-gray-500 text-sm mb-1.5">
             {loading ? 'Betöltés...' : `${products.length} találat`}
           </p>
 
