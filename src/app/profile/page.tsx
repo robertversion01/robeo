@@ -35,6 +35,33 @@ export default function ProfilePage() {
     checkUser();
   }, []);
 
+  useEffect(() => {
+    if (typeof window === 'undefined') return;
+
+    const params = new URLSearchParams(window.location.search);
+    const promoteStatus = params.get('promote');
+
+    if (promoteStatus === 'success') {
+      toast.success('Sikeres kiemelés! Terméked 7 napig a főoldalon marad.');
+      params.delete('promote');
+      const nextQuery = params.toString();
+      const nextUrl = `${window.location.pathname}${nextQuery ? `?${nextQuery}` : ''}`;
+      window.history.replaceState({}, '', nextUrl);
+      if (user?.id) {
+        loadUserProducts(user.id);
+        if (user.email === 'hevesi.tr@gmail.com') {
+          loadAllProductsForAdmin();
+        }
+      }
+    } else if (promoteStatus === 'cancelled') {
+      toast.error('A kiemelési fizetés megszakadt.');
+      params.delete('promote');
+      const nextQuery = params.toString();
+      const nextUrl = `${window.location.pathname}${nextQuery ? `?${nextQuery}` : ''}`;
+      window.history.replaceState({}, '', nextUrl);
+    }
+  }, [user?.id, user?.email]);
+
   const checkUser = async () => {
     const { data: { user } } = await supabase.auth.getUser();
     if (!user) {
