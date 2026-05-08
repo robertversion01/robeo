@@ -57,11 +57,11 @@ export default function ReviewForm({ reviewedId, offerId, transactionId, onCompl
   };
 
   return (
-    <form onSubmit={handleSubmit} className="bg-white/5 backdrop-blur-sm border border-white/10 rounded-2xl p-6 space-y-4">
+    <form onSubmit={handleSubmit} className="bg-white border border-gray-200 rounded-2xl p-6 space-y-4">
       <h3 className="font-bold text-lg">Írj értékelést</h3>
       
       <div className="flex items-center gap-3">
-        <span className="text-sm text-white/70">Értékelés:</span>
+        <span className="text-sm text-gray-600">Értékelés:</span>
         <StarRating rating={rating} size={28} interactive onRate={setRating} />
       </div>
 
@@ -72,15 +72,15 @@ export default function ReviewForm({ reviewedId, offerId, transactionId, onCompl
           placeholder="Oszd meg a tapasztalataidat (opcionális)..."
           rows={3}
           maxLength={500}
-          className="w-full px-4 py-3 bg-white/10 border border-white/20 rounded-xl focus:outline-none focus:border-accent focus:ring-1 focus:ring-accent transition-all resize-none text-sm"
+          className="w-full px-4 py-3 bg-white border border-gray-300 rounded-xl focus:outline-none focus:border-[#007782] focus:ring-1 focus:ring-[#007782] transition-all resize-none text-sm"
         />
-        <div className="text-right text-[10px] text-white/30 mt-1">{comment.length}/500</div>
+        <div className="text-right text-[10px] text-gray-400 mt-1">{comment.length}/500</div>
       </div>
 
       <button
         type="submit"
         disabled={loading || rating === 0}
-        className="w-full py-3 bg-accent text-black font-semibold rounded-xl hover:bg-accent/90 transition-all disabled:opacity-50 disabled:cursor-not-allowed"
+        className="w-full py-3 bg-accent text-white font-semibold rounded-xl hover:bg-accent/90 transition-all disabled:opacity-50 disabled:cursor-not-allowed"
       >
         {loading ? 'Küldés...' : 'Értékelés elküldése'}
       </button>

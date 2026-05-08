@@ -269,13 +269,13 @@ export default function TransactionList() {
 
   return (
     <div className="space-y-4">
-      <div className="flex border-b border-gray-200 dark:border-gray-800 mb-4">
+      <div className="flex border-b border-gray-200 mb-4">
         <button
           onClick={() => setActiveTab('buying')}
           className={`px-4 py-2 text-sm font-medium ${
             activeTab === 'buying'
               ? 'text-accent border-b-2 border-accent'
-              : 'text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-300'
+              : 'text-gray-500 hover:text-gray-700'
           }`}
         >
           Vásárlásaim
@@ -285,7 +285,7 @@ export default function TransactionList() {
           className={`px-4 py-2 text-sm font-medium ${
             activeTab === 'selling'
               ? 'text-accent border-b-2 border-accent'
-              : 'text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-300'
+              : 'text-gray-500 hover:text-gray-700'
           }`}
         >
           Eladásaim
@@ -297,7 +297,7 @@ export default function TransactionList() {
           <div className="animate-spin h-8 w-8 border-4 border-accent border-t-transparent rounded-full"></div>
         </div>
       ) : transactions.length === 0 ? (
-        <div className="text-center py-8 text-gray-500 dark:text-gray-400">
+        <div className="text-center py-8 text-gray-500">
           <p>Nincs még {activeTab === 'buying' ? 'vásárlásod' : 'eladásod'}.</p>
           {activeTab === 'buying' && (
             <Link href="/" className="text-accent hover:underline mt-2 inline-block">
@@ -310,11 +310,11 @@ export default function TransactionList() {
           {transactions.map((transaction) => (
             <div 
               key={transaction.id} 
-              className="bg-white dark:bg-white/5 border border-gray-200 dark:border-white/10 rounded-lg p-3"
+              className="bg-white border border-gray-200 rounded-lg p-3"
             >
               <div className="flex items-start gap-3">
                 {/* Product Image */}
-                <div className="w-16 h-16 rounded-md overflow-hidden bg-gray-100 dark:bg-gray-800 flex-shrink-0">
+                <div className="w-16 h-16 rounded-md overflow-hidden bg-gray-100 flex-shrink-0">
                   {transaction.product?.image_url ? (
                     <img 
                       src={getOptimizedImageUrl(transaction.product.image_url, 100, 80)} 
@@ -329,7 +329,7 @@ export default function TransactionList() {
                 {/* Transaction Details */}
                 <div className="flex-1 min-w-0">
                   <div className="flex items-center justify-between mb-1">
-                    <h3 className="font-medium text-sm truncate text-gray-900 dark:text-white">
+                    <h3 className="font-medium text-sm truncate text-gray-900">
                       {transaction.product?.name}
                     </h3>
                     <span className="text-accent font-bold text-sm">
@@ -337,7 +337,7 @@ export default function TransactionList() {
                     </span>
                   </div>
                   
-                  <div className="flex items-center gap-1 text-xs text-gray-500 dark:text-gray-400 mb-2">
+                  <div className="flex items-center gap-1 text-xs text-gray-500 mb-2">
                     <span>
                       {new Date(transaction.created_at).toLocaleDateString('hu-HU')}
                     </span>
