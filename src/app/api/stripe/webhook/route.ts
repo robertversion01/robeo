@@ -6,6 +6,8 @@ import { getSupabaseAdminClient } from '@/lib/supabase';
 export const dynamic = 'force-dynamic';
 
 const MAX_ERROR_LEN = 8000;
+/** Nagy Stripe payload ellen (jsonb / sor méret) */
+const MAX_EVENT_JSON_CHARS = 450_000;
 
 function ok(): NextResponse {
   return NextResponse.json({ received: true }, { status: 200 });
@@ -24,7 +26,18 @@ function formatError(err: unknown): string {
 /** Supabase jsonb + Stripe auditnapló — sík objektum */
 function stripeEventPayloadForDb(event: Stripe.Event): Record<string, unknown> {
   try {
-    return JSON.parse(JSON.stringify(event)) as Record<string, unknown>;
+    const raw = JSON.stringify(event);
+    if (raw.length > MAX_EVENT_JSON_CHARS) {
+      return {
+        id: event.id,
+        type: event.type,
+        livemode: event.livemode,
+        api_version: event.api_version,
+        _payload_truncated: true,
+        _payload_approx_chars: raw.length,
+      };
+    }
+    return JSON.parse(raw) as Record<string, unknown>;
   } catch {
     return {
       id: event.id,
@@ -323,6 +336,8 @@ export async function POST(req: NextRequest) {
         await handleCheckoutSessionCompleted(event, admin);
       } else if (event.type === 'payment_intent.succeeded') {
         await handlePaymentIntentSucceeded(event, admin);
+      } else {
+        console.info('[stripe-webhook] acknowledged (no domain handler)', event.type);
       }
 
       await markEventSuccess(admin, stripeEventId);
