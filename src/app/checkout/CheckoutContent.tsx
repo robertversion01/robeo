@@ -6,7 +6,6 @@ import { useSearchParams, useRouter } from 'next/navigation';
 import { toast } from 'sonner';
 import { ArrowLeft, ShieldCheck } from 'lucide-react';
 import ShippingSelector from '@/components/product/ShippingSelector';
-import PriceBreakdown, { calculateBuyerProtection } from '@/components/product/PriceBreakdown';
 
 export default function CheckoutContent() {
   const supabaseClient = supabase as any;
@@ -98,7 +97,8 @@ export default function CheckoutContent() {
   ];
 
   const shippingCost = shippingOptions.find(s => s.value === shippingMethod)?.cost || 0;
-  const total = amount + calculateBuyerProtection(amount) + shippingCost;
+  const buyerProtectionFee = Math.round(amount * 0.1);
+  const total = amount + buyerProtectionFee;
 
   const processPayment = async () => {
     try {
@@ -227,10 +227,25 @@ export default function CheckoutContent() {
               <div className="bg-white dark:bg-white/5 border border-gray-200 dark:border-white/10 rounded-lg p-4 lg:sticky lg:top-24">
                 <h3 className="font-bold text-base mb-4">Összegzés</h3>
                 
-                <PriceBreakdown 
-                  price={amount} 
-                  shippingCost={shippingMethod ? shippingCost : undefined}
-                />
+                <div className="space-y-3">
+                  <div className="flex justify-between text-sm">
+                    <span className="text-gray-600 dark:text-white/70">Termek ara</span>
+                    <span className="font-medium text-gray-900 dark:text-white">
+                      {amount.toLocaleString('hu-HU')} Ft
+                    </span>
+                  </div>
+                  <div className="flex justify-between text-sm">
+                    <span className="text-gray-600 dark:text-white/70">Vevovedelemi dij (10%)</span>
+                    <span className="font-medium text-gray-900 dark:text-white">
+                      {buyerProtectionFee.toLocaleString('hu-HU')} Ft
+                    </span>
+                  </div>
+                  <div className="border-t border-gray-200 dark:border-white/10" />
+                  <div className="flex justify-between font-bold">
+                    <span className="text-gray-900 dark:text-white">Vegosszeg</span>
+                    <span className="text-accent text-lg">{total.toLocaleString('hu-HU')} Ft</span>
+                  </div>
+                </div>
 
                 {/* Pay Button */}
                 <button

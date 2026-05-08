@@ -188,10 +188,10 @@ export async function POST(req: NextRequest) {
     // Pre-generate transaction id so it can be attached to Stripe metadata too.
     const transactionId = randomUUID();
 
-    // Calculate the platform fee (10% of the product price)
+    // Vinted-style buyer protection fee (10%)
     const productPrice = product.price;
-    const platformFeePercentage = 0.10;
-    const platformFee = Math.round(productPrice * platformFeePercentage);
+    const buyerProtectionFee = Math.round(productPrice * 0.1);
+    const totalAmount = productPrice + buyerProtectionFee;
     
     const checkoutSessionPayload: any = {
       payment_method_types: ['card'],
@@ -204,7 +204,7 @@ export async function POST(req: NextRequest) {
               description: product.description?.substring(0, 255) || 'No description',
               images: product.image_url ? [product.image_url] : [],
             },
-            unit_amount: product.price * 100, // Stripe uses cents
+            unit_amount: totalAmount * 100, // Stripe uses cents
           },
           quantity: 1,
         },
@@ -227,7 +227,7 @@ export async function POST(req: NextRequest) {
     if (sellerStripeAccountId) {
       checkoutSessionPayload.payment_intent_data = {
         capture_method: 'manual',
-        application_fee_amount: platformFee * 100, // Stripe uses cents
+        application_fee_amount: buyerProtectionFee * 100, // Stripe uses cents
         transfer_data: {
           destination: sellerStripeAccountId,
         },
@@ -251,7 +251,8 @@ export async function POST(req: NextRequest) {
           product_id: resolvedProductId,
           buyer_id: buyerId,
           seller_id: sellerId,
-          amount: product.price,
+          amount: totalAmount,
+          fee: buyerProtectionFee,
           status: 'payment_pending',
           checkout_session_id: session.id,
           payment_intent_id: (session.payment_intent as string) || null,
