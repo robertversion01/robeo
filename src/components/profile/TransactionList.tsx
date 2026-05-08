@@ -5,7 +5,7 @@ import { supabase } from '@/lib/supabase';
 import { formatPrice } from '@/lib/utils';
 import { getOptimizedImageUrl } from '@/lib/imageUtils';
 import { toast } from 'sonner';
-import { CheckCircle, Truck, Package, Clock, AlertCircle, CreditCard } from 'lucide-react';
+import { CheckCircle, Truck, Package, Clock, AlertCircle, CreditCard, Undo2 } from 'lucide-react';
 import Link from 'next/link';
 import ReviewForm from '@/components/review/ReviewForm';
 
@@ -219,6 +219,8 @@ export default function TransactionList() {
         return <Package className="text-purple-500" size={18} />;
       case 'sikeresen_atveve':
         return <CheckCircle className="text-emerald-500" size={18} />;
+      case 'refunded':
+        return <Undo2 className="text-orange-500" size={18} />;
       default:
         return <Clock className="text-gray-500" size={18} />;
     }
@@ -237,6 +239,7 @@ export default function TransactionList() {
       case 'uton': return 'Úton';
       case 'atvetelre_var': return 'Átvételre vár';
       case 'sikeresen_atveve': return 'Sikeresen átvéve';
+      case 'refunded': return 'Visszatérítve';
       default: return 'Ismeretlen';
     }
   };
@@ -254,6 +257,7 @@ export default function TransactionList() {
       case 'uton': return 'bg-indigo-100 text-indigo-800';
       case 'atvetelre_var': return 'bg-purple-100 text-purple-800';
       case 'sikeresen_atveve': return 'bg-emerald-100 text-emerald-800';
+      case 'refunded': return 'bg-orange-100 text-orange-800';
       default: return 'bg-gray-100 text-gray-800';
     }
   };

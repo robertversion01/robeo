@@ -5,6 +5,15 @@ import { getSupabaseAdminClient } from '@/lib/supabase';
 
 export const dynamic = 'force-dynamic';
 
+/** Vercel / naplók szűrése: `[stripe-webhook]` */
+const WEBHOOK_LOG = '[stripe-webhook]';
+
+/**
+ * Stripe Dashboard → webhook események (minimum):
+ * checkout.session.completed, payment_intent.succeeded,
+ * payment_intent.payment_failed, charge.refunded
+ */
+
 const MAX_ERROR_LEN = 8000;
 /** Nagy Stripe payload ellen (jsonb / sor méret) */
 const MAX_EVENT_JSON_CHARS = 450_000;
@@ -135,7 +144,7 @@ async function handleCheckoutSessionCompleted(event: Stripe.Event, db: any): Pro
     const featuredUntil = new Date(Date.now() + 7 * 24 * 60 * 60 * 1000).toISOString();
 
     if (promotedProductId && !promoterId) {
-      console.error('[stripe-webhook] missing promoterId for product promotion', {
+      console.error(WEBHOOK_LOG, 'missing promoterId for product promotion', {
         promotedProductId,
         checkoutSessionId,
       });
@@ -201,11 +210,138 @@ async function handlePaymentIntentSucceeded(event: Stripe.Event, db: any): Promi
 
   if (txErr) throw new Error(`transactions select (PI): ${txErr.message}`);
   if (!transaction) {
-    console.warn('[stripe-webhook] payment_intent.succeeded: no transaction for PI', paymentIntentId);
+    console.warn(WEBHOOK_LOG, 'payment_intent.succeeded: no transaction for PI', paymentIntentId);
     return;
   }
 
   await applyPaidTransactionEffects(db, transaction as TxRow, paymentIntentId);
+}
+
+/** Ne írjuk felül a már „élő” vevői szállítási folyamatot */
+const STATUSES_AFTER_PAYMENT = new Set<string>([
+  'fizetve',
+  'feladva',
+  'uton',
+  'atvetelre_var',
+  'sikeresen_atveve',
+  'funds_released',
+  'refunded',
+  'paid',
+  'shipped',
+  'delivered',
+  'completed',
+]);
+
+async function handlePaymentIntentPaymentFailed(event: Stripe.Event, db: any): Promise<void> {
+  const pi = event.data.object as Stripe.PaymentIntent;
+  const paymentIntentId = pi.id;
+  const reason =
+    pi.last_payment_error?.message ||
+    (typeof pi.last_payment_error?.code === 'string' ? pi.last_payment_error.code : '') ||
+    '';
+
+  const { data: transaction, error: txErr } = await db
+    .from('transactions')
+    .select(
+      'id, buyer_id, seller_id, product_id, status, payment_intent_id, checkout_completed_notified_at'
+    )
+    .eq('payment_intent_id', paymentIntentId)
+    .maybeSingle();
+
+  if (txErr) throw new Error(`transactions select (PI failed): ${txErr.message}`);
+  if (!transaction) {
+    console.warn(WEBHOOK_LOG, 'payment_intent.payment_failed: no transaction', paymentIntentId);
+    return;
+  }
+
+  if (STATUSES_AFTER_PAYMENT.has(transaction.status)) {
+    console.warn(
+      WEBHOOK_LOG,
+      'payment_intent.payment_failed: skip — transaction already past checkout',
+      transaction.id,
+      transaction.status
+    );
+    return;
+  }
+
+  const { error: upErr } = await db
+    .from('transactions')
+    .update({ status: 'payment_failed' })
+    .eq('id', transaction.id);
+
+  if (upErr) throw new Error(`transactions payment_failed update: ${upErr.message}`);
+
+  const detail = reason ? ` (${reason})` : '';
+  const { error: msgErr } = await db.from('messages').insert({
+    sender_id: transaction.buyer_id,
+    receiver_id: transaction.seller_id,
+    content: `❌ A fizetés nem sikerült${detail}`,
+    product_id: transaction.product_id,
+    is_system_message: true,
+    message_type: 'system',
+  });
+
+  if (msgErr) throw new Error(`messages insert (payment_failed): ${msgErr.message}`);
+}
+
+async function handleChargeRefunded(event: Stripe.Event, db: any): Promise<void> {
+  const charge = event.data.object as Stripe.Charge;
+  const piId =
+    typeof charge.payment_intent === 'string'
+      ? charge.payment_intent
+      : charge.payment_intent?.id ?? null;
+
+  if (!piId) {
+    console.warn(WEBHOOK_LOG, 'charge.refunded: charge without payment_intent', charge.id);
+    return;
+  }
+
+  const { data: transaction, error: txErr } = await db
+    .from('transactions')
+    .select(
+      'id, buyer_id, seller_id, product_id, status, payment_intent_id, checkout_completed_notified_at'
+    )
+    .eq('payment_intent_id', piId)
+    .maybeSingle();
+
+  if (txErr) throw new Error(`transactions select (refund): ${txErr.message}`);
+  if (!transaction) {
+    console.warn(WEBHOOK_LOG, 'charge.refunded: no transaction', piId);
+    return;
+  }
+
+  if (transaction.status === 'refunded') {
+    return;
+  }
+
+  const { error: upErr } = await db
+    .from('transactions')
+    .update({ status: 'refunded' })
+    .eq('id', transaction.id);
+
+  if (upErr) throw new Error(`transactions refunded update: ${upErr.message}`);
+
+  const cents = charge.amount_refunded;
+  const amountLabel =
+    typeof cents === 'number' && Number.isFinite(cents)
+      ? (cents / 100).toFixed(2)
+      : '';
+  const curr = (charge.currency ?? 'huf').toUpperCase();
+  const line =
+    amountLabel !== ''
+      ? `💸 Visszatérítés rögzítve: ${amountLabel} ${curr}.`
+      : '💸 Visszatérítés rögzítve a Stripe-ban.';
+
+  const { error: msgErr } = await db.from('messages').insert({
+    sender_id: transaction.buyer_id,
+    receiver_id: transaction.seller_id,
+    content: line,
+    product_id: transaction.product_id,
+    is_system_message: true,
+    message_type: 'system',
+  });
+
+  if (msgErr) throw new Error(`messages insert (refund): ${msgErr.message}`);
 }
 
 async function ensureStripeEventRow(
@@ -285,7 +421,7 @@ async function markEventFailure(db: any, stripeEventId: string, message: string)
     .eq('stripe_event_id', stripeEventId);
 
   if (error) {
-    console.error('[stripe-webhook] failed to persist error column', error);
+    console.error(WEBHOOK_LOG, 'failed to persist error column', error);
   }
 }
 
@@ -297,12 +433,12 @@ export async function POST(req: NextRequest) {
     const admin = getSupabaseAdminClient();
 
     if (!stripe) {
-      console.error('[stripe-webhook] Stripe client unavailable');
+      console.error(WEBHOOK_LOG, 'Stripe client unavailable');
       return ok();
     }
 
     if (!admin) {
-      console.error('[stripe-webhook] SUPABASE_SERVICE_ROLE_KEY missing — admin client required');
+      console.error(WEBHOOK_LOG, 'SUPABASE_SERVICE_ROLE_KEY missing — admin client required');
       return ok();
     }
 
@@ -310,7 +446,7 @@ export async function POST(req: NextRequest) {
     const signature = req.headers.get('stripe-signature');
 
     if (!webhookSecret || !signature) {
-      console.error('[stripe-webhook] STRIPE_WEBHOOK_SECRET or stripe-signature header missing');
+      console.error(WEBHOOK_LOG, 'STRIPE_WEBHOOK_SECRET or stripe-signature header missing');
       return ok();
     }
 
@@ -320,7 +456,7 @@ export async function POST(req: NextRequest) {
     try {
       event = stripe.webhooks.constructEvent(rawBody, signature, webhookSecret);
     } catch (verifyErr) {
-      console.error('[stripe-webhook] constructEvent failed', verifyErr);
+      console.error(WEBHOOK_LOG, 'constructEvent failed', verifyErr);
       return ok();
     }
 
@@ -336,19 +472,23 @@ export async function POST(req: NextRequest) {
         await handleCheckoutSessionCompleted(event, admin);
       } else if (event.type === 'payment_intent.succeeded') {
         await handlePaymentIntentSucceeded(event, admin);
+      } else if (event.type === 'payment_intent.payment_failed') {
+        await handlePaymentIntentPaymentFailed(event, admin);
+      } else if (event.type === 'charge.refunded') {
+        await handleChargeRefunded(event, admin);
       } else {
-        console.info('[stripe-webhook] acknowledged (no domain handler)', event.type);
+        console.info(WEBHOOK_LOG, 'acknowledged (no domain handler)', event.type);
       }
 
       await markEventSuccess(admin, stripeEventId);
     } catch (handlerErr) {
-      console.error('[stripe-webhook] handler error', handlerErr);
+      console.error(WEBHOOK_LOG, 'handler error', handlerErr);
       await markEventFailure(admin, stripeEventId, formatError(handlerErr));
     }
 
     return ok();
   } catch (fatal) {
-    console.error('[stripe-webhook] unexpected failure', fatal);
+    console.error(WEBHOOK_LOG, 'unexpected failure', fatal);
     if (stripeEventId) {
       try {
         const admin = getSupabaseAdminClient();

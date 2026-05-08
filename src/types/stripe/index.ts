@@ -3,6 +3,7 @@
 export type TransactionStatus = 
   | 'payment_pending' 
   | 'payment_processing'
+  | 'payment_failed'
   | 'payment_succeeded'
   | 'fizetve'
   | 'feladva'
