@@ -73,7 +73,7 @@ export default function MessagesPage() {
         event: 'INSERT',
         schema: 'public',
         table: 'messages',
-      }, (payload) => {
+      }, (payload: any) => {
         const newMsg = payload.new as Message;
         setMessages(prev => [...prev, newMsg]);
       })
@@ -91,7 +91,7 @@ export default function MessagesPage() {
 
     // Group by conversation
     const convMap = new Map<string, Message>();
-    data.forEach(msg => {
+    (data as Message[] | null)?.forEach((msg: Message) => {
       const otherUser = msg.sender_id === user.id ? msg.receiver_id : msg.sender_id;
       if (!convMap.has(otherUser)) {
         convMap.set(otherUser, msg);
@@ -106,7 +106,9 @@ export default function MessagesPage() {
       .in('id', userIds);
 
     const emailMap = new Map<string, string>();
-    userData?.forEach(u => emailMap.set(u.id, u.email));
+    (userData as Array<{ id: string; email: string }> | null)?.forEach((u) =>
+      emailMap.set(u.id, u.email)
+    );
 
     const convList: Conversation[] = Array.from(convMap.entries()).map(([user_id, msg]) => ({
       user_id,
@@ -129,7 +131,7 @@ export default function MessagesPage() {
       .order('created_at', { ascending: true });
 
     if (error) return;
-    setMessages(data || []);
+    setMessages((data as Message[]) || []);
   };
 
   const closeConversation = () => {

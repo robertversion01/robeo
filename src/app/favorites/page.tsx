@@ -7,6 +7,10 @@ import { useRouter } from 'next/navigation';
 import ProductGrid from '@/components/product/ProductGrid';
 import type { Product } from '@/types';
 
+type FavoriteRow = {
+  product: Product | null;
+};
+
 export default function FavoritesPage() {
   const [products, setProducts] = useState<Product[]>([]);
   const [loading, setLoading] = useState(true);
@@ -36,8 +40,8 @@ export default function FavoritesPage() {
     if (error) {
       console.error(error);
     } else {
-      const fetchedProducts = ((data || [])
-        .map(item => item?.product)
+      const fetchedProducts = (((data || []) as FavoriteRow[])
+        .map((item) => item?.product)
         .filter(Boolean) as unknown) as Product[];
       setProducts(fetchedProducts);
       setFavorites(new Set(fetchedProducts.map(p => p.id)));

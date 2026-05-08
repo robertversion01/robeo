@@ -1,18 +1,13 @@
 import { NextRequest, NextResponse } from 'next/server';
-import Stripe from 'stripe';
+import { getStripeInstance } from '@/lib/stripe-client';
 import { getSupabaseClient } from '@/lib/supabase';
-
-// Stabil verzió beállítása
-const stripe = new Stripe(process.env.STRIPE_SECRET_KEY || '', {
-  apiVersion: '2025-01-27.acacia' as any,
-});
 
 export const dynamic = 'force-dynamic';
 
 export async function POST(req: NextRequest) {
   try {
-    // Csak futásidőben ellenőrizzük a kulcsot, hogy a build ne álljon le
-    if (!process.env.STRIPE_SECRET_KEY) {
+    const stripe = getStripeInstance();
+    if (!stripe) {
       return NextResponse.json({ error: 'Stripe kulcs hiányzik' }, { status: 500 });
     }
 
