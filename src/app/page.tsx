@@ -5,6 +5,7 @@ import { useProducts } from '@/hooks/useProducts';
 import Filters from '@/components/product/Filters';
 import ProductGrid from '@/components/product/ProductGrid';
 import FreshOffersStrip from '@/components/home/FreshOffersStrip';
+import VintedHero from '@/components/home/VintedHero';
 
 export default function Home() {
   const {
@@ -23,6 +24,8 @@ export default function Home() {
     <div className="min-h-screen bg-white text-gray-900">
       <main className="pt-16 pb-12 px-3 md:px-6">
         <div className="max-w-7xl mx-auto">
+          <VintedHero products={products} />
+
           {/* Search Bar */}
           <div className="relative mb-4 max-w-md">
             <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" size={16} />

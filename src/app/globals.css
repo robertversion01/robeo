@@ -150,3 +150,56 @@ input, textarea, select {
 .no-scrollbar::-webkit-scrollbar {
   display: none;  /* Chrome, Safari and Opera */
 }
+
+@keyframes heroMarqueeLeft {
+  0% {
+    transform: translateX(0);
+  }
+  100% {
+    transform: translateX(-50%);
+  }
+}
+
+@keyframes heroMarqueeRight {
+  0% {
+    transform: translateX(-50%);
+  }
+  100% {
+    transform: translateX(0);
+  }
+}
+
+.hero-marquee {
+  overflow: hidden;
+  width: 100%;
+}
+
+.hero-track {
+  display: flex;
+  width: max-content;
+  gap: 0.5rem;
+}
+
+.hero-track-left {
+  animation: heroMarqueeLeft 40s linear infinite;
+}
+
+.hero-track-right {
+  animation: heroMarqueeRight 44s linear infinite;
+}
+
+.hero-image-card {
+  width: 104px;
+  height: 144px;
+  border-radius: 0.9rem;
+  overflow: hidden;
+  flex-shrink: 0;
+  background: #f3f4f6;
+}
+
+@media (min-width: 768px) {
+  .hero-image-card {
+    width: 124px;
+    height: 170px;
+  }
+}
