@@ -157,7 +157,7 @@ export default function ProfilePage() {
             <button
               type="button"
               onClick={handleSignOut}
-              className="px-4 py-2 rounded-xl border border-red-200 text-red-600 hover:bg-red-50 transition-colors text-sm font-medium"
+              className="btn-base btn-danger"
             >
               Kijelentkezés
             </button>

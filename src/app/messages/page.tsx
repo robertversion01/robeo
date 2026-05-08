@@ -265,13 +265,13 @@ export default function MessagesPage() {
             <div className="flex gap-4">
               <button
                 onClick={() => setShowOfferModal(false)}
-                className="flex-1 py-3 border border-gray-300 rounded-xl hover:bg-gray-100 transition-all"
+                className="flex-1 btn-base btn-secondary"
               >
                 Mégse
               </button>
               <button
                 onClick={sendOffer}
-                className="flex-1 py-3 bg-[#007782] text-white font-semibold rounded-xl hover:bg-[#00616b] transition-all"
+                className="flex-1 btn-base btn-primary"
               >
                 Ajánlat elküldése
               </button>
@@ -373,7 +373,7 @@ export default function MessagesPage() {
                     <div className="mb-4">
                       <button
                         onClick={() => setShowOfferModal(true)}
-                        className="w-full py-3 border-2 border-[#007782] text-[#007782] font-medium rounded-xl hover:bg-[#007782] hover:text-white transition-all"
+                        className="w-full btn-base btn-ghost"
                       >
                         💰 Ajánlatot teszek
                       </button>

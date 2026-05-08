@@ -99,14 +99,14 @@ export default function AuthPage() {
             <button
               type="button"
               onClick={() => handleSocialClick('Google')}
-              className="w-full min-h-11 py-2.5 rounded-xl border border-gray-300 bg-white hover:bg-gray-50 text-gray-800 font-medium transition-colors"
+              className="w-full btn-base btn-secondary"
             >
               Google belépés
             </button>
             <button
               type="button"
               onClick={() => handleSocialClick('Facebook')}
-              className="w-full min-h-11 py-2.5 rounded-xl border border-gray-300 bg-white hover:bg-gray-50 text-gray-800 font-medium transition-colors"
+              className="w-full btn-base btn-secondary"
             >
               Facebook belépés
             </button>
@@ -150,7 +150,7 @@ export default function AuthPage() {
             <button
               type="submit"
               disabled={loading}
-              className="w-full min-h-11 py-3 bg-[#007782] text-white font-semibold rounded-xl hover:bg-[#00616b] transition-all duration-300 disabled:opacity-50 disabled:cursor-not-allowed mt-1"
+              className="w-full btn-base btn-primary disabled:opacity-50 disabled:cursor-not-allowed mt-1"
             >
               {loading ? 'Folyamatban...' : isLogin ? 'Belépés' : 'Regisztráció'}
             </button>

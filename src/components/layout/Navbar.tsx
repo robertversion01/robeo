@@ -164,7 +164,7 @@ export default function Navbar({ searchQuery, onSearchChange }: NavbarProps) {
             </div>
           </>
         ) : (
-          <Link href="/auth" className="px-3 py-1.5 text-sm font-medium border border-gray-300 rounded-full hover:bg-gray-100 transition-all duration-300 text-gray-800">
+          <Link href="/auth" className="btn-base btn-secondary rounded-full px-3">
             Belépés
           </Link>
         )}
