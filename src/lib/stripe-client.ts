@@ -25,7 +25,7 @@ export function getStripeInstance(): Stripe | null {
   // Otherwise create a new instance
   try {
     stripeInstance = new Stripe(process.env.STRIPE_SECRET_KEY, {
-      apiVersion: '2026-04-22.dahlia',
+      apiVersion: '2025-01-27.acacia' as any,
     });
     return stripeInstance;
   } catch (error) {

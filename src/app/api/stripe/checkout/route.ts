@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import Stripe from 'stripe';
-import { supabase } from '@/lib/supabase';
 import { getStripeInstance } from '@/lib/stripe-client';
+import { getSupabaseClient } from '@/lib/supabase';
 
 // Force dynamic rendering
 export const dynamic = 'force-dynamic';
@@ -10,19 +10,38 @@ export async function POST(req: NextRequest) {
   try {
     // Get Stripe instance using the singleton pattern
     const stripe = getStripeInstance();
-    
+
     if (!stripe) {
       return NextResponse.json(
-        { error: 'Stripe configuration is missing' },
+        {
+          error: 'Stripe configuration is missing',
+        },
         { status: 500 }
       );
     }
+
     const { productId, buyerId } = await req.json();
 
     if (!productId || !buyerId) {
       return NextResponse.json(
-        { error: 'Product ID and buyer ID are required' },
+        {
+          error: 'Product ID and buyer ID are required',
+        },
         { status: 400 }
+      );
+    }
+
+    const supabase = getSupabaseClient();
+
+    if (!supabase) {
+      console.error('Supabase configuration is missing');
+      return NextResponse.json(
+        {
+          error: 'Supabase configuration is missing',
+        },
+        {
+          status: 500,
+        }
       );
     }
 
