@@ -3,7 +3,7 @@
 import { useEffect, useState } from 'react';
 import { supabase } from '@/lib/supabase';
 import Link from 'next/link';
-import { useRouter } from 'next/navigation';
+import { usePathname, useRouter } from 'next/navigation';
 import { MessageCircle, Heart, User, Search, Plus, LogOut } from 'lucide-react';
 import type { Product } from '@/types';
 
@@ -21,8 +21,10 @@ export default function Navbar({ searchQuery, onSearchChange }: NavbarProps) {
   const [liveResults, setLiveResults] = useState<Array<Pick<Product, 'id' | 'name' | 'category'>>>([]);
   const [showLiveResults, setShowLiveResults] = useState(false);
   const router = useRouter();
+  const pathname = usePathname();
   const resolvedSearchQuery = searchQuery ?? localSearchQuery;
   const isGuest = !loading && !user;
+  const hideOnGuestHome = pathname === '/' && !user;
 
   useEffect(() => {
     const checkUnreadMessages = async (currentUserId: string) => {
@@ -130,6 +132,10 @@ export default function Navbar({ searchQuery, onSearchChange }: NavbarProps) {
     router.push('/');
     router.refresh();
   };
+
+  if (hideOnGuestHome) {
+    return null;
+  }
 
   return (
     <nav className={`fixed top-0 left-0 right-0 z-50 h-11 px-2 sm:px-3 flex items-center gap-1 sm:gap-2 bg-white border-b border-gray-200 shadow-sm overflow-x-hidden w-full max-w-full ${isGuest ? 'justify-end' : 'justify-between'}`}>

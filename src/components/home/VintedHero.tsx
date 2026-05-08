@@ -33,14 +33,14 @@ export default function VintedHero({ products, fullScreen = false }: VintedHeroP
   const columnHeights = ['h-28', 'h-36', 'h-32', 'h-40', 'h-30', 'h-36'];
 
   return (
-    <section className={`overflow-hidden w-full ${fullScreen ? 'h-[calc(100vh-2.75rem)]' : 'mb-3'}`}>
+    <section className={`overflow-hidden w-full ${fullScreen ? 'h-screen' : 'mb-3'}`}>
       <div className={`bg-[#0f1a1d] text-white border border-[#1f2c30] overflow-hidden w-full ${fullScreen ? 'h-full rounded-none border-x-0 border-b-0' : 'rounded-2xl'}`}>
         {floatingItems.length === 0 ? (
           <div className="px-4 py-10 text-center text-sm text-gray-300">
             Még nincs kiemelt termék.
           </div>
         ) : (
-          <div className={`relative overflow-hidden px-2 pt-2 ${fullScreen ? 'h-[52vh]' : 'h-[270px] sm:h-[330px]'}`}>
+          <div className={`relative overflow-hidden ${fullScreen ? 'h-full px-2 pt-2 pb-[22.5rem]' : 'h-[270px] sm:h-[330px] px-2 pt-2'}`}>
             <div className="pointer-events-none absolute inset-0 p-2">
               <div className="grid grid-cols-3 gap-2 h-full floating-masonry">
                 {[0, 1, 2].map((col) => (
@@ -77,7 +77,7 @@ export default function VintedHero({ products, fullScreen = false }: VintedHeroP
 
         )}
 
-        <div className={`relative z-10 px-4 pt-3 sm:px-5 ${fullScreen ? 'pb-6 min-h-[calc(100%-52vh)] flex flex-col justify-end' : 'pb-4 sm:pb-5'}`}>
+        <div className={`z-10 px-4 pt-3 sm:px-5 ${fullScreen ? 'fixed bottom-0 left-0 right-0 bg-[#0f1a1d] pb-6 pt-4' : 'relative pb-4 sm:pb-5'}`}>
           <h2 className="text-4xl leading-tight font-semibold font-serif text-white text-center">
             Csatlakozz, és add el
             <br />
