@@ -149,12 +149,15 @@ CREATE TABLE IF NOT EXISTS public.stripe_webhook_events (
   error TEXT
 );
 
--- Régi séma (id oszlop): átnevezés + hiányzó mezők
+-- Régi séma (id oszlop): átnevezés csak ha még nincs stripe_event_id (különben 42701)
 DO $$
 BEGIN
   IF EXISTS (
     SELECT 1 FROM information_schema.columns
     WHERE table_schema = 'public' AND table_name = 'stripe_webhook_events' AND column_name = 'id'
+  ) AND NOT EXISTS (
+    SELECT 1 FROM information_schema.columns
+    WHERE table_schema = 'public' AND table_name = 'stripe_webhook_events' AND column_name = 'stripe_event_id'
   ) THEN
     ALTER TABLE public.stripe_webhook_events RENAME COLUMN id TO stripe_event_id;
   END IF;
