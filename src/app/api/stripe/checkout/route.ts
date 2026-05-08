@@ -21,16 +21,18 @@ export async function POST(req: NextRequest) {
     }
 
     const body = await req.json();
-    const { productId, offerId, buyerId } = body as {
+    const { productId, offerId, buyerId, shippingCost } = body as {
       productId?: string;
       offerId?: string;
       buyerId?: string;
+      shippingCost?: number;
     };
 
     console.log('[checkout] Incoming payload', {
       productId,
       offerId,
       buyerId,
+      shippingCost,
     });
 
     if ((!productId && !offerId) || !buyerId) {
@@ -188,12 +190,16 @@ export async function POST(req: NextRequest) {
     // Pre-generate transaction id so it can be attached to Stripe metadata too.
     const transactionId = randomUUID();
 
-    // Vinted-style buyer protection fee: fixed 250 HUF + 10% of product price
+    // Official HU Vinted-style buyer protection fee: fixed 280 HUF + 5% of product price
     const productPrice = product.price;
-    const fixedBuyerProtectionFee = 250;
-    const variableBuyerProtectionFee = Math.round(productPrice * 0.1);
+    const fixedBuyerProtectionFee = 280;
+    const variableBuyerProtectionFee = Math.round(productPrice * 0.05);
     const buyerProtectionFee = fixedBuyerProtectionFee + variableBuyerProtectionFee;
-    const totalAmount = productPrice + buyerProtectionFee;
+    const normalizedShippingCost =
+      typeof shippingCost === 'number' && Number.isFinite(shippingCost) && shippingCost > 0
+        ? Math.round(shippingCost)
+        : 0;
+    const totalAmount = productPrice + buyerProtectionFee + normalizedShippingCost;
     
     const checkoutSessionPayload: any = {
       payment_method_types: ['card'],
@@ -255,6 +261,7 @@ export async function POST(req: NextRequest) {
           seller_id: sellerId,
           amount: totalAmount,
           fee: buyerProtectionFee,
+          shipping_cost: normalizedShippingCost,
           status: 'payment_pending',
           checkout_session_id: session.id,
           payment_intent_id: (session.payment_intent as string) || null,

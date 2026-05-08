@@ -97,10 +97,10 @@ export default function CheckoutContent() {
   ];
 
   const shippingCost = shippingOptions.find(s => s.value === shippingMethod)?.cost || 0;
-  const fixedBuyerProtectionFee = 250;
-  const variableBuyerProtectionFee = Math.round(amount * 0.1);
+  const fixedBuyerProtectionFee = 280;
+  const variableBuyerProtectionFee = Math.round(amount * 0.05);
   const buyerProtectionFee = fixedBuyerProtectionFee + variableBuyerProtectionFee;
-  const total = amount + buyerProtectionFee;
+  const total = amount + buyerProtectionFee + shippingCost;
 
   const processPayment = async () => {
     try {
@@ -225,11 +225,11 @@ export default function CheckoutContent() {
             </div>
 
             {/* Right Column: Price Summary - Vinted sticky sidebar */}
-            <div className="lg:col-span-2">
-              <div className="bg-white dark:bg-white/5 border border-gray-200 dark:border-white/10 rounded-lg p-4 lg:sticky lg:top-24">
+            <div className="lg:col-span-2 min-w-0">
+              <div className="bg-white dark:bg-white/5 border border-gray-200 dark:border-white/10 rounded-lg p-4 lg:sticky lg:top-24 w-full">
                 <h3 className="font-bold text-base mb-4">Összegzés</h3>
                 
-                <div className="space-y-3">
+                <div className="space-y-3 text-sm">
                   <div className="flex justify-between text-sm">
                     <span className="text-gray-600 dark:text-white/70">Termék ára</span>
                     <span className="font-medium text-gray-900 dark:text-white">
@@ -242,6 +242,12 @@ export default function CheckoutContent() {
                     </span>
                     <span className="font-medium text-gray-900 dark:text-white">
                       {buyerProtectionFee.toLocaleString('hu-HU')} Ft
+                    </span>
+                  </div>
+                  <div className="flex justify-between text-sm">
+                    <span className="text-gray-600 dark:text-white/70">Szállítási díj</span>
+                    <span className="font-medium text-gray-900 dark:text-white">
+                      {shippingCost.toLocaleString('hu-HU')} Ft
                     </span>
                   </div>
                   <div className="border-t border-gray-200 dark:border-white/10" />
