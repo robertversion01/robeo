@@ -14,6 +14,7 @@ export default function CheckoutContent() {
   const [product, setProduct] = useState<any>(null);
   const [shippingMethod, setShippingMethod] = useState('');
   const [processingPayment, setProcessingPayment] = useState(false);
+  const [validatingCheckout, setValidatingCheckout] = useState(false);
   const [isDirectPurchase, setIsDirectPurchase] = useState(false);
   const router = useRouter();
   const searchParams = useSearchParams();
@@ -203,6 +204,51 @@ export default function CheckoutContent() {
     }
   };
 
+  const runPrecheck = async () => {
+    try {
+      setValidatingCheckout(true);
+
+      const { data: { user } } = await supabaseClient.auth.getUser();
+      if (!user) {
+        router.push('/auth');
+        return;
+      }
+
+      const payload = {
+        productId: product?.id || productId,
+        offerId,
+        buyerId: user.id,
+      };
+
+      console.log('[checkout-ui] Running precheck with payload', payload);
+
+      const response = await fetch('/api/checkout/validate', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(payload),
+      });
+
+      const data = await response.json();
+      if (!response.ok || !data?.ok) {
+        console.error('[checkout-ui] Precheck failed', {
+          status: response.status,
+          responseData: data,
+          payload,
+        });
+        throw new Error(data?.error || 'Az előellenőrzés sikertelen.');
+      }
+
+      console.info('[checkout-ui] Precheck success', data);
+      toast.success('Előellenőrzés sikeres: Offer/Product/Buyer ID rendben.');
+    } catch (error: any) {
+      toast.error(`Előellenőrzés hiba: ${error?.message || 'Ismeretlen hiba'}`);
+    } finally {
+      setValidatingCheckout(false);
+    }
+  };
+
   const backUrl = isDirectPurchase ? `/products/${productId}` : '/messages';
 
   if (loading) {
@@ -309,9 +355,16 @@ export default function CheckoutContent() {
 
                 {/* Pay Button */}
                 <button
+                  onClick={runPrecheck}
+                  disabled={validatingCheckout || processingPayment}
+                  className="w-full btn-base btn-secondary mt-5 disabled:opacity-50 disabled:cursor-not-allowed"
+                >
+                  {validatingCheckout ? 'Ellenőrzés...' : 'Előellenőrzés (ID validátor)'}
+                </button>
+                <button
                   onClick={processPayment}
                   disabled={!shippingMethod || processingPayment}
-                  className="w-full btn-base btn-primary mt-5 disabled:opacity-50 disabled:cursor-not-allowed"
+                  className="w-full btn-base btn-primary mt-2 disabled:opacity-50 disabled:cursor-not-allowed"
                 >
                   {processingPayment ? (
                     <span className="flex items-center justify-center gap-2">

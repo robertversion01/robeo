@@ -23,6 +23,7 @@ export default function ProfilePage() {
   const [user, setUser] = useState<any>(null);
   const [promotingProductIds, setPromotingProductIds] = useState<Set<string>>(new Set());
   const [updatingFeaturedIds, setUpdatingFeaturedIds] = useState<Set<string>>(new Set());
+  const [runningImageAudit, setRunningImageAudit] = useState(false);
   const [featuredDrafts, setFeaturedDrafts] = useState<Record<string, string>>({});
   const [favorites, setFavorites] = useState<Set<string>>(new Set());
   const [createdAt, setCreatedAt] = useState<string>('');
@@ -255,6 +256,37 @@ export default function ProfilePage() {
     }
   };
 
+  const runImageAuditAsAdmin = async () => {
+    if (!isAdmin || !user?.email) return;
+
+    setRunningImageAudit(true);
+    try {
+      const response = await fetch('/api/admin/image-audit', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ userEmail: user.email }),
+      });
+
+      const data = await response.json();
+      if (!response.ok) {
+        throw new Error(data?.error || 'A képek audit futtatása sikertelen.');
+      }
+
+      toast.success(
+        `Képek audit kész: ${data.fixed} javítva, ${data.unchanged} változatlan.`
+      );
+      await loadAllProductsForAdmin();
+      await loadUserProducts(user.id);
+    } catch (error: any) {
+      console.error('Error running admin image audit:', error);
+      toast.error(error?.message || 'Nem sikerült lefuttatni a képek auditot.');
+    } finally {
+      setRunningImageAudit(false);
+    }
+  };
+
   if (loading) {
     return (
       <div className="min-h-screen bg-white text-gray-900 flex items-center justify-center">
@@ -306,7 +338,17 @@ export default function ProfilePage() {
 
           {isAdmin ? (
             <div className="mb-8 rounded-xl border border-gray-200 bg-gray-50 p-4">
-              <h2 className="text-lg font-semibold mb-3">Admin - Kiemeles kezeles</h2>
+              <div className="mb-3 flex flex-wrap items-center justify-between gap-2">
+                <h2 className="text-lg font-semibold">Admin - Kiemeles kezeles</h2>
+                <button
+                  type="button"
+                  onClick={runImageAuditAsAdmin}
+                  disabled={runningImageAudit}
+                  className="h-9 rounded-md border border-[#007782] bg-white px-3 text-xs font-semibold text-[#007782] hover:bg-[#007782]/5 disabled:cursor-wait disabled:opacity-60"
+                >
+                  {runningImageAudit ? 'Képek audit fut...' : 'Képek audit futtatása'}
+                </button>
+              </div>
               {adminProducts.length === 0 ? (
                 <p className="text-sm text-gray-500">Nincs megjelenitheto termek.</p>
               ) : (
