@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { randomUUID } from 'crypto';
 import { getStripeInstance } from '@/lib/stripe-client';
-import { getSupabaseClient } from '@/lib/supabase';
+import { getSupabaseAdminClient, getSupabaseClient } from '@/lib/supabase';
 
 // Force dynamic rendering
 export const dynamic = 'force-dynamic';
@@ -46,7 +46,7 @@ export async function POST(req: NextRequest) {
       );
     }
 
-    const supabase = getSupabaseClient() as any;
+    const supabase = (getSupabaseAdminClient() || getSupabaseClient()) as any;
 
     if (!supabase) {
       console.error('Supabase configuration is missing');

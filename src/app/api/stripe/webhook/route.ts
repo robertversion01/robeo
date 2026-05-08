@@ -1,7 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { getStripeInstance } from '@/lib/stripe-client';
-import { getSupabaseClient } from '@/lib/supabase';
-import { createClient } from '@supabase/supabase-js';
+import { getSupabaseAdminClient, getSupabaseClient } from '@/lib/supabase';
 
 export const dynamic = 'force-dynamic';
 
@@ -13,13 +12,7 @@ export async function POST(req: NextRequest) {
     }
 
     const supabase = getSupabaseClient() as any;
-    const supabaseUrl =
-      process.env.NEXT_PUBLIC_SUPABASE_URL || process.env.SUPABASE_URL || '';
-    const serviceRoleKey = process.env.SUPABASE_SERVICE_ROLE_KEY || '';
-    const supabaseAdmin =
-      supabaseUrl && serviceRoleKey
-        ? createClient(supabaseUrl, serviceRoleKey, { auth: { persistSession: false } })
-        : null;
+    const supabaseAdmin = getSupabaseAdminClient() as any;
 
     if (!supabase && !supabaseAdmin) {
       return NextResponse.json({ error: 'Supabase client unavailable' }, { status: 500 });
@@ -69,14 +62,15 @@ export async function POST(req: NextRequest) {
         return NextResponse.json({ received: true });
       }
 
-      const { data: transaction } = await supabase
+      const dbClient = (supabaseAdmin || supabase) as any;
+      const { data: transaction } = await dbClient
         .from('transactions')
         .select('*')
         .eq('checkout_session_id', checkoutSessionId)
         .maybeSingle();
 
       if (transaction) {
-        await supabase
+        await dbClient
           .from('transactions')
           .update({
             status: 'fizetve',
@@ -84,14 +78,14 @@ export async function POST(req: NextRequest) {
           })
           .eq('id', transaction.id);
 
-        const { data: buyerProfile } = await supabase
+        const { data: buyerProfile } = await dbClient
           .from('profiles')
           .select('location, full_name')
           .eq('id', transaction.buyer_id)
           .maybeSingle();
 
         const buyerAddress = buyerProfile?.location || 'Nincs megadva';
-        await supabase.from('messages').insert({
+        await dbClient.from('messages').insert({
           sender_id: transaction.buyer_id,
           receiver_id: transaction.seller_id,
           content: `✅ Eladtad a terméket! Itt a vevő címe: ${buyerAddress}`,

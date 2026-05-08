@@ -2,6 +2,8 @@ import { createClient } from '@supabase/supabase-js';
 
 let supabaseInstance: ReturnType<typeof createClient> | null = null;
 let supabaseInitAttempted = false;
+let supabaseAdminInstance: ReturnType<typeof createClient> | null = null;
+let supabaseAdminInitAttempted = false;
 
 export const getSupabaseClient = () => {
   if (supabaseInstance) {
@@ -34,6 +36,32 @@ export const getSupabaseClient = () => {
   });
 
   return supabaseInstance;
+};
+
+export const getSupabaseAdminClient = () => {
+  if (typeof window !== 'undefined') return null;
+  if (supabaseAdminInstance) return supabaseAdminInstance;
+  if (supabaseAdminInitAttempted) return null;
+
+  supabaseAdminInitAttempted = true;
+
+  const supabaseUrl =
+    process.env.NEXT_PUBLIC_SUPABASE_URL || process.env.SUPABASE_URL;
+  const serviceRoleKey = process.env.SUPABASE_SERVICE_ROLE_KEY;
+
+  if (!supabaseUrl || !serviceRoleKey) {
+    console.warn('Missing SUPABASE_SERVICE_ROLE_KEY. Admin Supabase client is unavailable.');
+    return null;
+  }
+
+  supabaseAdminInstance = createClient(supabaseUrl, serviceRoleKey, {
+    auth: {
+      persistSession: false,
+      autoRefreshToken: false,
+    },
+  });
+
+  return supabaseAdminInstance;
 };
 
 function getRequiredSupabaseClient() {

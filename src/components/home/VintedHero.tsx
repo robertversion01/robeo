@@ -98,9 +98,9 @@ export default function VintedHero({ products, fullScreen = false }: VintedHeroP
   }, [featuredProducts.length, fullScreen]);
 
   return (
-    <section className={`overflow-hidden w-full ${fullScreen ? 'h-screen' : 'mb-3 mt-0'}`}>
+    <section className={`overflow-hidden w-full ${fullScreen ? 'min-h-[calc(100svh-3.5rem)]' : 'mb-3 mt-0'}`}>
       {fullScreen ? (
-        <div className="bg-[#0f1a1d] text-white border border-[#1f2c30] overflow-hidden w-full h-full rounded-none border-x-0 border-b-0">
+        <div className="bg-[#0f1a1d] text-white border border-[#1f2c30] overflow-hidden w-full min-h-[calc(100svh-3.5rem)] rounded-none border-x-0 border-b-0">
           {floatingItems.length === 0 ? (
             <div className="px-4 py-10 text-center text-sm text-gray-300">
               Még nincs kiemelt termék.
@@ -142,7 +142,7 @@ export default function VintedHero({ products, fullScreen = false }: VintedHeroP
             </div>
           )}
 
-          <div className="z-10 px-4 pt-3 sm:px-5 fixed bottom-0 left-0 right-0 bg-[#0f1a1d] pb-6 pt-4">
+          <div className="z-10 px-4 pt-3 sm:px-5 pb-6 pt-4">
             <h2 className="text-4xl leading-tight font-semibold font-serif text-white text-center">
               Csatlakozz, és add el
               <br />
@@ -153,13 +153,13 @@ export default function VintedHero({ products, fullScreen = false }: VintedHeroP
 
             <div className="mt-5 space-y-2.5">
               <Link
-                href="/auth?view=sign_up"
+                href="/auth?mode=register"
                 className="w-full h-12 rounded-xl bg-[#4baab5] text-black text-base font-semibold inline-flex items-center justify-center"
               >
                 Regisztrálás a Robeo rendszerébe
               </Link>
               <Link
-                href="/auth?view=sign_in"
+                href="/auth?mode=login"
                 className="w-full h-12 rounded-xl border border-white/75 bg-black text-white text-base font-semibold inline-flex items-center justify-center"
               >
                 Már rendelkezem fiókkal

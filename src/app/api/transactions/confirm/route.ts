@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { getStripeInstance } from '@/lib/stripe-client';
-import { getSupabaseClient } from '@/lib/supabase';
+import { getSupabaseAdminClient, getSupabaseClient } from '@/lib/supabase';
 
 export const dynamic = 'force-dynamic';
 
@@ -12,7 +12,7 @@ export async function POST(req: NextRequest) {
     }
 
     const stripe = getStripeInstance();
-    const supabase = getSupabaseClient() as any;
+    const supabase = (getSupabaseAdminClient() || getSupabaseClient()) as any;
     if (!stripe || !supabase) {
       return NextResponse.json({ error: 'Service unavailable' }, { status: 500 });
     }

@@ -153,6 +153,37 @@ BEGIN
   END IF;
 END $$;
 
+-- 13/b Offer minimum hardening at DB level:
+-- require offered_price >= 60% of the referenced product price.
+CREATE OR REPLACE FUNCTION public.enforce_offer_minimum_60_percent()
+RETURNS trigger AS $$
+DECLARE
+  product_price INTEGER;
+  minimum_allowed INTEGER;
+BEGIN
+  SELECT price INTO product_price
+  FROM public.products
+  WHERE id = NEW.product_id;
+
+  IF product_price IS NULL THEN
+    RAISE EXCEPTION 'Invalid product_id for offer';
+  END IF;
+
+  minimum_allowed := CEIL(product_price * 0.60);
+  IF NEW.offered_price < minimum_allowed THEN
+    RAISE EXCEPTION 'Offer must be at least 60%% of product price (%).', minimum_allowed;
+  END IF;
+
+  RETURN NEW;
+END;
+$$ LANGUAGE plpgsql;
+
+DROP TRIGGER IF EXISTS trg_enforce_offer_minimum_60_percent ON public.offers;
+CREATE TRIGGER trg_enforce_offer_minimum_60_percent
+BEFORE INSERT OR UPDATE OF offered_price, product_id ON public.offers
+FOR EACH ROW
+EXECUTE FUNCTION public.enforce_offer_minimum_60_percent();
+
 -- 14. Üzenetek média támogatása
 ALTER TABLE IF EXISTS public.messages
   ADD COLUMN IF NOT EXISTS message_type TEXT DEFAULT 'text',
@@ -184,8 +215,8 @@ DROP POLICY IF EXISTS "transactions_insert_checkout" ON public.transactions;
 CREATE POLICY "transactions_insert_checkout"
 ON public.transactions
 FOR INSERT
-TO anon, authenticated
-WITH CHECK (true);
+TO authenticated
+WITH CHECK (auth.uid() = buyer_id);
 
 DROP POLICY IF EXISTS "transactions_update_participants" ON public.transactions;
 CREATE POLICY "transactions_update_participants"

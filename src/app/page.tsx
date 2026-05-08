@@ -25,10 +25,7 @@ export default function Home() {
   return (
     <div className="bg-white text-gray-900 overflow-x-hidden max-w-[100vw] min-h-screen">
       {isGuest ? (
-        <main
-          className="fixed inset-0 z-50 w-full h-screen overflow-hidden bg-[#0f1a1d] m-0 p-0"
-          style={{ paddingTop: 'env(safe-area-inset-top, 0px)' }}
-        >
+        <main className="w-full max-w-[100vw] overflow-x-hidden pt-14 bg-[#0f1a1d] min-h-screen">
           <VintedHero products={allProducts} fullScreen />
         </main>
       ) : (
