@@ -29,7 +29,7 @@ function CheckoutSuccessContentComponent() {
   useEffect(() => {
     const sessionId = searchParams.get('session_id');
     if (!sessionId) {
-      setError('No session ID provided');
+      setError('Hiányzó tranzakció azonosító');
       setLoading(false);
       return;
     }
@@ -42,10 +42,10 @@ function CheckoutSuccessContentComponent() {
 
     const fetchTransactionDetails = async () => {
       try {
-        // Get the transaction from the session ID
+        // Get the transaction from checkout session ID.
         const { data: transactionData, error: transactionError } = await supabase
           .from('transactions')
-          .select('*, product:product_id(*), buyer:buyer_id(*), seller:seller_id(*)')
+          .select('*')
           .eq('checkout_session_id', sessionId)
           .single();
 
@@ -53,8 +53,23 @@ function CheckoutSuccessContentComponent() {
           throw new Error('Transaction not found');
         }
 
-        setTransaction(transactionData);
-        setProduct(transactionData.product);
+        const { data: productData, error: productError } = await supabase
+          .from('products')
+          .select('*')
+          .eq('id', transactionData.product_id)
+          .single();
+
+        if (productError || !productData) {
+          throw new Error('Product not found for transaction');
+        }
+
+        const transactionWithRelations = {
+          ...transactionData,
+          product: productData,
+        };
+
+        setTransaction(transactionWithRelations);
+        setProduct(productData);
 
         // Update the transaction status to 'paid'
         await supabase
@@ -74,7 +89,7 @@ function CheckoutSuccessContentComponent() {
           .insert({
             sender_id: transactionData.buyer_id,
             receiver_id: transactionData.seller_id,
-            content: `🎉 Sikeres vásárlás! A "${transactionData.product.name}" termék kifizetése megtörtént. A pénz letétben van, amíg a termék meg nem érkezik.`,
+            content: `🎉 Sikeres vásárlás! A "${productData.name}" termék kifizetése megtörtént. A pénz letétben van, amíg a termék meg nem érkezik.`,
             product_id: transactionData.product_id,
             is_system_message: true
           });
