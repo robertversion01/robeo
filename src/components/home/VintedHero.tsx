@@ -40,8 +40,8 @@ export default function VintedHero({ products, fullScreen = false }: VintedHeroP
             Még nincs kiemelt termék.
           </div>
         ) : (
-          <div className={`relative overflow-hidden ${fullScreen ? 'h-full px-2 pt-2 pb-[22.5rem]' : 'h-[270px] sm:h-[330px] px-2 pt-2'}`}>
-            <div className="pointer-events-none absolute inset-0 p-2">
+          <div className={`relative overflow-hidden ${fullScreen ? 'h-full px-2 pt-0 pb-[22.5rem]' : 'h-[270px] sm:h-[330px] px-2 pt-2'}`}>
+            <div className={`pointer-events-none absolute inset-0 ${fullScreen ? 'px-2 pt-0 pb-[22.5rem]' : 'p-2'}`}>
               <div className="grid grid-cols-3 gap-2 h-full floating-masonry">
                 {[0, 1, 2].map((col) => (
                   <div key={col} className={`flex flex-col gap-2 ${col === 1 ? 'floating-masonry-col-mid' : 'floating-masonry-col'}`}>

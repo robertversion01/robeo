@@ -41,8 +41,8 @@ export default function Home() {
   }, [isGuest]);
 
   return (
-    <div className={`bg-white text-gray-900 overflow-x-hidden max-w-[100vw] ${isGuest ? 'h-screen overflow-hidden' : 'min-h-screen'}`}>
-      <main className={`w-full max-w-[100vw] overflow-x-hidden ${isGuest ? 'h-screen overflow-hidden p-0' : 'pt-10 pb-6 px-3 md:px-6'}`}>
+    <div className={`bg-white text-gray-900 overflow-x-hidden max-w-[100vw] ${isGuest ? 'h-screen overflow-hidden mt-0' : 'min-h-screen'}`}>
+      <main className={`w-full max-w-[100vw] overflow-x-hidden ${isGuest ? 'h-screen overflow-hidden p-0 m-0 pt-0 mt-0' : 'pt-10 pb-6 px-3 md:px-6'}`}>
         <div className={`${isGuest ? 'w-full h-full' : 'max-w-7xl mx-auto'}`}>
           <VintedHero products={allProducts} fullScreen={isGuest} />
 
