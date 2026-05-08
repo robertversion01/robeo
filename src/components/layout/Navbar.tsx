@@ -133,8 +133,7 @@ export default function Navbar({ searchQuery, onSearchChange }: NavbarProps) {
 
   const handleSignOut = async () => {
     await supabase.auth.signOut();
-    router.push('/');
-    router.refresh();
+    window.location.href = '/';
   };
 
   if (hideOnGuestHome || hideOnAuth) {
@@ -142,7 +141,7 @@ export default function Navbar({ searchQuery, onSearchChange }: NavbarProps) {
   }
 
   return (
-    <nav className={`fixed top-0 left-0 right-0 z-50 h-11 px-2 sm:px-3 flex items-center gap-1 sm:gap-2 bg-white border-b border-gray-200 shadow-sm overflow-x-hidden w-full max-w-full ${isGuest ? 'justify-end' : 'justify-between'}`}>
+    <nav className={`fixed top-0 left-0 right-0 z-[100] h-11 px-2 sm:px-3 flex items-center gap-1 sm:gap-2 bg-white border-b border-gray-200 shadow-sm overflow-x-hidden w-full max-w-full ${isGuest ? 'justify-end' : 'justify-between'}`}>
       {!isGuest ? (
         <>
           <Link href="/" className="text-sm font-semibold tracking-wide hover:text-[#007782] transition-colors flex-shrink-0 text-[#007782]">
@@ -162,7 +161,7 @@ export default function Navbar({ searchQuery, onSearchChange }: NavbarProps) {
               />
 
               {showLiveResults && resolvedSearchQuery.trim().length >= 2 ? (
-                <div className="absolute left-0 right-0 top-10 z-50 rounded-xl border border-gray-200 bg-white shadow-lg overflow-hidden">
+                <div className="absolute left-0 right-0 top-10 z-[100] rounded-xl border border-gray-200 bg-white shadow-lg overflow-hidden">
                   {liveResults.length === 0 ? (
                     <div className="px-3 py-2.5 text-xs text-gray-500">Nincs találat.</div>
                   ) : (
@@ -204,7 +203,7 @@ export default function Navbar({ searchQuery, onSearchChange }: NavbarProps) {
             <Link href="/favorites" className="icon-btn text-gray-700">
               <Heart size={16} className="text-gray-700" />
             </Link>
-            <div className="relative">
+            <div className="relative z-[100]">
               <button
                 type="button"
                 onClick={(e) => {
@@ -214,11 +213,11 @@ export default function Navbar({ searchQuery, onSearchChange }: NavbarProps) {
                 className="icon-btn text-[#007782]"
                 aria-label="Profil menü"
               >
-                <User size={16} className="text-[#007782]" />
+                <User size={16} className="text-[#007782] pointer-events-none" />
               </button>
               {showProfileMenu ? (
                 <div
-                  className="absolute right-0 top-10 w-44 card-base shadow-md p-1 z-50"
+                  className="absolute right-0 top-10 w-44 card-base shadow-md p-1 z-[100]"
                   onClick={(e) => e.stopPropagation()}
                 >
                   <Link

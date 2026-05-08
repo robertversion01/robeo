@@ -188,7 +188,7 @@ export default function VintedHero({ products, fullScreen = false }: VintedHeroP
                   href={`/products/${item.id}`}
                   className="shrink-0 w-[37%] sm:w-[26%] md:w-[20%] lg:w-[14%] min-w-[132px] rounded-xl border border-gray-200/90 bg-white p-1 hover:border-[#007782]/40 transition-colors"
                 >
-                  <div className="flex flex-col">
+                  <div className="flex flex-col h-full">
                     <div className="w-full rounded-lg overflow-hidden aspect-[4/5] bg-gray-100">
                       {item.image_url ? (
                         <img src={item.image_url} alt={item.name} className="h-full w-full object-cover" loading="lazy" />
@@ -196,7 +196,7 @@ export default function VintedHero({ products, fullScreen = false }: VintedHeroP
                         <div className="h-full w-full flex items-center justify-center bg-gray-100 text-gray-400">📦</div>
                       )}
                     </div>
-                    <div className="px-1 py-1.5 space-y-0.5">
+                    <div className="px-1 py-1.5 space-y-0.5 flex flex-col">
                       <p className="text-xs font-semibold text-gray-900 truncate">{formatPrice(item.price)}</p>
                       <p className="text-[11px] text-gray-500 truncate">Méret: {item.size || 'N/A'}</p>
                       <p className="text-[11px] text-gray-700 truncate">{item.brand || item.name}</p>
