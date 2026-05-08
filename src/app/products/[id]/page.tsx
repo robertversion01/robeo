@@ -18,6 +18,7 @@ export default function ProductPage({ params }: { params: Promise<{ id: string }
   const [isZoomed, setIsZoomed] = useState(false);
   const [touchStartX, setTouchStartX] = useState<number | null>(null);
   const [sellerProfile, setSellerProfile] = useState<{ full_name?: string | null; email?: string | null } | null>(null);
+  const [sellerReviewSummary, setSellerReviewSummary] = useState<{ avg: number; count: number }>({ avg: 5, count: 0 });
   
   // Modal States
   const [showMessageModal, setShowMessageModal] = useState(false);
@@ -70,6 +71,16 @@ export default function ProductPage({ params }: { params: Promise<{ id: string }
         .maybeSingle();
 
       setSellerProfile((sellerData as { full_name?: string | null; email?: string | null }) || null);
+
+      const { data: reviewData } = await supabase
+        .from('reviews')
+        .select('rating')
+        .eq('reviewed_id', data.user_id);
+
+      const ratings = (reviewData || []).map((entry: any) => Number(entry.rating)).filter(Boolean);
+      const count = ratings.length;
+      const avg = count > 0 ? ratings.reduce((sum, value) => sum + value, 0) / count : 5;
+      setSellerReviewSummary({ avg, count });
     } catch (error) {
       console.error('Error fetching product:', error);
     } finally {
@@ -349,9 +360,15 @@ export default function ProductPage({ params }: { params: Promise<{ id: string }
                     <p className="text-sm font-semibold text-gray-900">{sellerDisplayName}</p>
                     <div className="flex items-center gap-1 text-amber-500">
                       {Array.from({ length: 5 }).map((_, idx) => (
-                        <Star key={idx} size={12} fill="currentColor" />
+                        <Star
+                          key={idx}
+                          size={12}
+                          fill={idx < Math.round(sellerReviewSummary.avg) ? 'currentColor' : 'none'}
+                        />
                       ))}
-                      <span className="ml-1 text-xs text-gray-500">5.0</span>
+                      <span className="ml-1 text-xs text-gray-500">
+                        {sellerReviewSummary.avg.toFixed(1)} ({sellerReviewSummary.count})
+                      </span>
                     </div>
                   </div>
                 </div>

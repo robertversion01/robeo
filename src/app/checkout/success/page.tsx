@@ -7,6 +7,7 @@ import Link from 'next/link';
 import { CheckCircle, ArrowRight, Truck, Package, CreditCard } from 'lucide-react';
 import dynamic from 'next/dynamic';
 import { toast } from 'sonner';
+import ReviewForm from '@/components/review/ReviewForm';
 
 // Use dynamic import with { ssr: false } to prevent server-side rendering
 const CheckoutSuccessContent = dynamic(() => Promise.resolve(CheckoutSuccessContentComponent), {
@@ -27,6 +28,7 @@ function CheckoutSuccessContentComponent() {
   const [product, setProduct] = useState<any>(null);
   const [error, setError] = useState<string | null>(null);
   const [purchaseToastShown, setPurchaseToastShown] = useState(false);
+  const [reviewCompleted, setReviewCompleted] = useState(false);
 
   useEffect(() => {
     const sessionId = searchParams.get('session_id');
@@ -209,6 +211,18 @@ function CheckoutSuccessContentComponent() {
               <p className="text-sm text-gray-600">
                 A vásárlás részleteit és a szállítás állapotát az üzenetekben követheted nyomon.
               </p>
+              {transaction && product && !reviewCompleted ? (
+                <div className="text-left">
+                  <ReviewForm
+                    reviewedId={transaction.seller_id}
+                    productId={product.id}
+                    sellerId={transaction.seller_id}
+                    buyerId={transaction.buyer_id}
+                    transactionId={transaction.id}
+                    onComplete={() => setReviewCompleted(true)}
+                  />
+                </div>
+              ) : null}
               <div className="flex flex-col sm:flex-row gap-3 justify-center">
                 <Link 
                   href="/messages"

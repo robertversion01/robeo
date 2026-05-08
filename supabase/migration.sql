@@ -252,3 +252,9 @@ TO anon, authenticated
 USING (
   COALESCE(status, 'active') <> 'deleted'
 );
+
+-- 18. Reviews schema expansion for product-level buyer/seller feedback
+ALTER TABLE IF EXISTS public.reviews
+  ADD COLUMN IF NOT EXISTS product_id UUID,
+  ADD COLUMN IF NOT EXISTS seller_id UUID,
+  ADD COLUMN IF NOT EXISTS buyer_id UUID;

@@ -7,12 +7,23 @@ import StarRating from './StarRating';
 
 interface ReviewFormProps {
   reviewedId: string;
+  productId?: string;
+  sellerId?: string;
+  buyerId?: string;
   offerId?: string;
   transactionId?: string;
   onComplete?: () => void;
 }
 
-export default function ReviewForm({ reviewedId, offerId, transactionId, onComplete }: ReviewFormProps) {
+export default function ReviewForm({
+  reviewedId,
+  productId,
+  sellerId,
+  buyerId,
+  offerId,
+  transactionId,
+  onComplete,
+}: ReviewFormProps) {
   const [rating, setRating] = useState(0);
   const [comment, setComment] = useState('');
   const [loading, setLoading] = useState(false);
@@ -37,6 +48,9 @@ export default function ReviewForm({ reviewedId, offerId, transactionId, onCompl
         .insert({
           reviewer_id: user.id,
           reviewed_id: reviewedId,
+          product_id: productId || null,
+          seller_id: sellerId || reviewedId,
+          buyer_id: buyerId || user.id,
           offer_id: offerId || null,
           transaction_id: transactionId || null,
           rating,
