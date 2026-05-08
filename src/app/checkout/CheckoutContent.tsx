@@ -261,7 +261,7 @@ export default function CheckoutContent() {
                 <button
                   onClick={processPayment}
                   disabled={!shippingMethod || processingPayment}
-                  className="w-full py-3 bg-accent text-white font-semibold rounded-lg hover:bg-accent/90 transition-all mt-5 disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:bg-accent text-sm"
+                  className="w-full btn-base btn-primary mt-5 disabled:opacity-50 disabled:cursor-not-allowed"
                 >
                   {processingPayment ? (
                     <span className="flex items-center justify-center gap-2">

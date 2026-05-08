@@ -229,7 +229,7 @@ export default function ProfilePage() {
                   toast.error('❌ Hiba történt a törlés során');
                 }
               }}
-              className="px-3 py-1.5 bg-red-50 hover:bg-red-100 text-red-600 rounded-lg text-xs transition-colors"
+              className="btn-base btn-danger text-xs px-3"
             >
               Összes törlése
             </button>

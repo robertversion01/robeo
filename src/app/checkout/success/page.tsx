@@ -121,7 +121,7 @@ function CheckoutSuccessContentComponent() {
           <p className="text-gray-600 mb-6">{error}</p>
           <Link 
             href="/"
-            className="inline-block px-4 py-2 bg-accent text-white rounded-lg hover:bg-accent/90 transition-colors"
+            className="inline-flex items-center justify-center btn-base btn-primary"
           >
             Vissza a főoldalra
           </Link>
@@ -205,14 +205,14 @@ function CheckoutSuccessContentComponent() {
               <div className="flex flex-col sm:flex-row gap-3 justify-center">
                 <Link 
                   href="/messages"
-                  className="px-4 py-2 bg-accent text-white rounded-lg hover:bg-accent/90 transition-colors flex items-center justify-center"
+                  className="inline-flex items-center justify-center btn-base btn-primary"
                 >
                   Üzenetek megtekintése
                   <ArrowRight size={16} className="ml-1" />
                 </Link>
                 <Link 
                   href="/"
-                  className="px-4 py-2 bg-gray-100 text-gray-800 rounded-lg hover:bg-gray-200 transition-colors"
+                  className="inline-flex items-center justify-center btn-base btn-secondary"
                 >
                   Vissza a főoldalra
                 </Link>
