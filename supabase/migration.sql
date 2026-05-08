@@ -61,6 +61,15 @@ CREATE POLICY "Users can update their own profile"
   ON public.profiles FOR UPDATE
   USING (auth.uid() = id);
 
+-- 3/b Profiles — opcionális mezők (webhook / UI; régi DB-n ADD COLUMN IF NOT EXISTS)
+ALTER TABLE public.profiles ADD COLUMN IF NOT EXISTS full_name TEXT;
+ALTER TABLE public.profiles ADD COLUMN IF NOT EXISTS location TEXT;
+ALTER TABLE public.profiles ADD COLUMN IF NOT EXISTS address TEXT;
+ALTER TABLE public.profiles ADD COLUMN IF NOT EXISTS city TEXT;
+ALTER TABLE public.profiles ADD COLUMN IF NOT EXISTS postal_code TEXT;
+ALTER TABLE public.profiles ADD COLUMN IF NOT EXISTS address_line1 TEXT;
+ALTER TABLE public.profiles ADD COLUMN IF NOT EXISTS address_line2 TEXT;
+
 -- 8. RLS az offers táblához (ha még nincs)
 ALTER TABLE public.offers ENABLE ROW LEVEL SECURITY;
 

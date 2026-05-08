@@ -76,6 +76,42 @@ type TxRow = {
   checkout_completed_notified_at: string | null;
 };
 
+/**
+ * Profil sor bármilyen sémájához (nem feltételez fix oszloplistát a SELECT-ben).
+ * Előnyben: location / cím mezők, majd név, legvégül email.
+ */
+function buyerContactHint(profile: Record<string, unknown> | null): string {
+  if (!profile) return 'Nincs megadva';
+
+  const pick = (...keys: string[]) => {
+    for (const k of keys) {
+      const v = profile[k];
+      if (typeof v === 'string' && v.trim().length > 0) return v.trim();
+    }
+    return '';
+  };
+
+  const lineFromParts = () => {
+    const line1 = pick('address_line1', 'address', 'street');
+    const line2 = pick('address_line2');
+    const zip = pick('postal_code', 'zip', 'postcode');
+    const city = pick('city');
+    const country = pick('country');
+    const parts = [line1, line2, [zip, city].filter(Boolean).join(' '), country].filter(
+      (p) => typeof p === 'string' && p.length > 0
+    );
+    return parts.join(', ');
+  };
+
+  return (
+    pick('location', 'shipping_location') ||
+    lineFromParts() ||
+    pick('full_name', 'name', 'display_name') ||
+    pick('email') ||
+    'Nincs megadva'
+  );
+}
+
 async function applyPaidTransactionEffects(
   db: any,
   transaction: TxRow,
@@ -99,17 +135,25 @@ async function applyPaidTransactionEffects(
   if (!alreadyNotified) {
     const { data: buyerProfile, error: profileErr } = await db
       .from('profiles')
-      .select('location, full_name')
+      .select('*')
       .eq('id', transaction.buyer_id)
       .maybeSingle();
 
-    if (profileErr) throw new Error(`profiles select: ${profileErr.message}`);
+    if (profileErr) {
+      console.error(WEBHOOK_LOG, 'profiles select failed', profileErr);
+      throw new Error(`profiles select: ${profileErr.message}`);
+    }
 
-    const buyerAddress = buyerProfile?.location || 'Nincs megadva';
+    const buyerHint = buyerContactHint(
+      buyerProfile && typeof buyerProfile === 'object'
+        ? (buyerProfile as Record<string, unknown>)
+        : null
+    );
+
     const { error: messageError } = await db.from('messages').insert({
       sender_id: transaction.buyer_id,
       receiver_id: transaction.seller_id,
-      content: `✅ Eladtad a terméket! Itt a vevő címe: ${buyerAddress}`,
+      content: `✅ Eladtad a terméket! Vevő adatok / átvétel: ${buyerHint}`,
       product_id: transaction.product_id,
       is_system_message: true,
       message_type: 'system',

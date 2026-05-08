@@ -49,6 +49,9 @@ export const getSupabaseAdminClient = () => {
     console.error('[supabase] CRITICAL: Missing Supabase Admin credentials', {
       hasUrl: !!supabaseUrl,
       hasServiceRole: !!serviceRoleKey,
+      vercelEnv: process.env.VERCEL_ENV ?? null,
+      hint:
+        'Állítsd be a SUPABASE_SERVICE_ROLE_KEY-t és URL-t Vercelen (Production + Preview), majd redeploy.',
     });
     return null;
   }
