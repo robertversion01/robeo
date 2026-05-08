@@ -196,10 +196,10 @@ export default function Navbar({ searchQuery, onSearchChange }: NavbarProps) {
                   e.stopPropagation();
                   setShowProfileMenu((prev) => !prev);
                 }}
-                className="icon-btn text-gray-700"
+                className="icon-btn text-[#007782]"
                 aria-label="Profil menü"
               >
-                <User size={16} className="text-gray-700" />
+                <User size={16} className="text-[#007782]" />
               </button>
               {showProfileMenu ? (
                 <div

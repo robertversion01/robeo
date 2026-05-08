@@ -110,13 +110,13 @@ export default function TransactionList() {
         let message = '';
         switch (newStatus) {
           case 'shipped':
-            message = `📦 A termék feladásra került! "${transaction.product.name}" úton van hozzád.`;
+            message = `📦 A termék feladásra került! "${transaction.product?.name || 'Termék'}" úton van hozzád.`;
             break;
           case 'delivered':
-            message = `✅ A vevő megerősítette, hogy a "${transaction.product.name}" termék megérkezett!`;
+            message = `✅ A vevő megerősítette, hogy a "${transaction.product?.name || 'Termék'}" termék megérkezett!`;
             break;
           case 'completed':
-            message = `💰 A tranzakció befejeződött! A "${transaction.product.name}" termék árát megkapta az eladó.`;
+            message = `💰 A tranzakció befejeződött! A "${transaction.product?.name || 'Termék'}" termék árát megkapta az eladó.`;
             break;
         }
 
