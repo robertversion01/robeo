@@ -20,6 +20,7 @@ export default function ProductPage({ params }: { params: Promise<{ id: string }
   const [showOfferModal, setShowOfferModal] = useState(false);
   const [messageText, setMessageText] = useState('');
   const [sendingMessage, setSendingMessage] = useState(false);
+  const [acceptedOffer, setAcceptedOffer] = useState<{ id: string; offered_price: number } | null>(null);
   const router = useRouter();
 
   useEffect(() => {
@@ -37,6 +38,25 @@ export default function ProductPage({ params }: { params: Promise<{ id: string }
 
       if (error) throw error;
       setProduct(data);
+
+      const { data: { user } } = await supabase.auth.getUser();
+      if (user?.id) {
+        const { data: acceptedOfferData } = await supabase
+          .from('offers')
+          .select('id, offered_price')
+          .eq('product_id', id)
+          .eq('buyer_id', user.id)
+          .eq('status', 'accepted')
+          .order('created_at', { ascending: false })
+          .limit(1)
+          .maybeSingle();
+
+        if (acceptedOfferData) {
+          setAcceptedOffer(acceptedOfferData as { id: string; offered_price: number });
+        } else {
+          setAcceptedOffer(null);
+        }
+      }
     } catch (error) {
       console.error('Error fetching product:', error);
     } finally {
@@ -233,10 +253,14 @@ export default function ProductPage({ params }: { params: Promise<{ id: string }
 
                <div className="fixed bottom-0 left-0 right-0 md:static mt-auto p-2 md:p-0 md:mt-4 bg-white dark:bg-black/80 backdrop-blur-md border-t border-gray-200 dark:border-white/10 md:border-t-0 md:bg-transparent md:backdrop-blur-none md:space-y-3 space-y-1.5 shadow-lg md:shadow-none">
                  <button 
-                   onClick={() => router.push(`/checkout?id=${id}`)}
+                  onClick={() =>
+                    acceptedOffer
+                      ? router.push(`/checkout?offer=${acceptedOffer.id}`)
+                      : router.push(`/checkout?id=${id}`)
+                  }
                    className="w-full py-2.5 md:py-3 bg-accent text-white font-semibold rounded-lg hover:bg-accent/90 transition-all duration-300 text-sm"
                  >
-                   Vásárlás
+                  {acceptedOffer ? 'Vásárlás alkudott áron' : 'Vásárlás'}
                  </button>
                   <button 
                     onClick={() => setShowOfferModal(true)}

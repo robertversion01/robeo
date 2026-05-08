@@ -13,6 +13,7 @@ interface Offer {
   status: string;
   created_at: string;
   buyer_id: string;
+  seller_id?: string;
   product: {
     id: string;
     name: string;
@@ -24,6 +25,7 @@ interface Offer {
 export default function OffersList() {
   const [offers, setOffers] = useState<Offer[]>([]);
   const [loading, setLoading] = useState(true);
+  const [counterValues, setCounterValues] = useState<Record<string, string>>({});
 
   useEffect(() => {
     fetchOffers();
@@ -124,16 +126,56 @@ export default function OffersList() {
     }
   };
 
+  const sendCounterOffer = async (offer: Offer) => {
+    const rawValue = counterValues[offer.id];
+    const counterPrice = Number(rawValue);
+    if (!counterPrice || counterPrice <= 0) {
+      toast.error('Adj meg egy ervenyes ellenajanlatot.');
+      return;
+    }
+
+    try {
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user) return;
+
+      const { error } = await supabase
+        .from('offers')
+        .update({ status: 'countered', offered_price: counterPrice })
+        .eq('id', offer.id);
+
+      if (error) throw error;
+
+      await supabase
+        .from('messages')
+        .insert({
+          sender_id: user.id,
+          receiver_id: offer.buyer_id,
+          content: `🔁 Ellenajanlat: ${counterPrice.toLocaleString('hu-HU')} Ft a(z) ${offer.product.name} termekre.`,
+          product_id: offer.product.id,
+          is_system_message: true
+        });
+
+      toast.success('Ellenajanlat elkuldve');
+      setOffers((prev) =>
+        prev.map((o) => (o.id === offer.id ? { ...o, status: 'countered', offered_price: counterPrice } : o))
+      );
+    } catch (error: any) {
+      toast.error(`Hiba: ${error.message}`);
+    }
+  };
+
   const statusColors: Record<string, string> = {
     pending: 'bg-yellow-500/20 text-yellow-400 border-yellow-500/30',
     accepted: 'bg-green-500/20 text-green-400 border-green-500/30',
-    rejected: 'bg-red-500/20 text-red-400 border-red-500/30'
+    rejected: 'bg-red-500/20 text-red-400 border-red-500/30',
+    countered: 'bg-indigo-500/20 text-indigo-300 border-indigo-500/30'
   };
 
   const statusLabels: Record<string, string> = {
     pending: 'Függőben',
     accepted: 'Elfogadva',
-    rejected: 'Elutasítva'
+    rejected: 'Elutasítva',
+    countered: 'Ellenajánlat'
   };
 
   if (loading) {
@@ -182,7 +224,27 @@ export default function OffersList() {
               </span>
 
               {offer.status === 'pending' && (
-                <div className="flex gap-2">
+                <div className="flex flex-col gap-2">
+                  <div className="flex gap-2">
+                    <input
+                      type="number"
+                      min="1"
+                      value={counterValues[offer.id] || ''}
+                      onChange={(e) =>
+                        setCounterValues((prev) => ({ ...prev, [offer.id]: e.target.value }))
+                      }
+                      placeholder="Ellenajanlat"
+                      className="w-32 rounded-xl bg-white/10 border border-white/20 px-2 py-1 text-sm"
+                    />
+                    <button
+                      onClick={() => sendCounterOffer(offer)}
+                      className="px-2 py-1 rounded-xl bg-indigo-500/20 hover:bg-indigo-500/30 text-indigo-300 text-xs transition-colors"
+                      title="Ellenajánlat"
+                    >
+                      Ellenajanlat
+                    </button>
+                  </div>
+                  <div className="flex gap-2">
                   <button
                     onClick={() => updateOfferStatus(offer.id, 'accepted')}
                     className="p-2.5 rounded-xl bg-green-500/20 hover:bg-green-500/30 text-green-400 transition-colors"
@@ -197,6 +259,7 @@ export default function OffersList() {
                   >
                     <X size={18} />
                   </button>
+                  </div>
                 </div>
               )}
 

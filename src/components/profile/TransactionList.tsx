@@ -18,6 +18,7 @@ interface Transaction {
   created_at: string;
   updated_at: string;
   payment_intent_id: string;
+  fee?: number;
   product: any;
   buyer: any;
   seller: any;
@@ -113,6 +114,28 @@ export default function TransactionList() {
     }
   };
 
+  const confirmTransactionAndReleaseFunds = async (transactionId: string) => {
+    try {
+      const response = await fetch('/api/transactions/confirm', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ transactionId }),
+      });
+      const data = await response.json();
+      if (!response.ok) {
+        throw new Error(data.error || 'Nem sikerült a tranzakció lezárása');
+      }
+
+      setTransactions((prev) =>
+        prev.map((t) => (t.id === transactionId ? { ...t, status: 'sikeresen_atveve' } : t))
+      );
+      toast.success('Tranzakció lezárva, pénz felszabadítva.');
+    } catch (error: any) {
+      console.error('Error confirming transaction:', error);
+      toast.error(error.message || 'Hiba történt a lezárás során');
+    }
+  };
+
   const getStatusIcon = (status: string) => {
     switch (status) {
       case 'payment_pending':
@@ -127,6 +150,16 @@ export default function TransactionList() {
         return <Package className="text-purple-500" size={18} />;
       case 'completed':
         return <CheckCircle className="text-green-500" size={18} />;
+      case 'fizetve':
+        return <CreditCard className="text-green-500" size={18} />;
+      case 'feladva':
+        return <Truck className="text-blue-500" size={18} />;
+      case 'uton':
+        return <Truck className="text-indigo-500" size={18} />;
+      case 'atvetelre_var':
+        return <Package className="text-purple-500" size={18} />;
+      case 'sikeresen_atveve':
+        return <CheckCircle className="text-emerald-500" size={18} />;
       default:
         return <Clock className="text-gray-500" size={18} />;
     }
@@ -140,6 +173,11 @@ export default function TransactionList() {
       case 'shipped': return 'Feladva';
       case 'delivered': return 'Kézbesítve';
       case 'completed': return 'Befejezve';
+      case 'fizetve': return 'Fizetve';
+      case 'feladva': return 'Feladva';
+      case 'uton': return 'Úton';
+      case 'atvetelre_var': return 'Átvételre vár';
+      case 'sikeresen_atveve': return 'Sikeresen átvéve';
       default: return 'Ismeretlen';
     }
   };
@@ -152,6 +190,11 @@ export default function TransactionList() {
       case 'shipped': return 'bg-blue-100 text-blue-800 dark:bg-blue-900/30 dark:text-blue-300';
       case 'delivered': return 'bg-purple-100 text-purple-800 dark:bg-purple-900/30 dark:text-purple-300';
       case 'completed': return 'bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-300';
+      case 'fizetve': return 'bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-300';
+      case 'feladva': return 'bg-blue-100 text-blue-800 dark:bg-blue-900/30 dark:text-blue-300';
+      case 'uton': return 'bg-indigo-100 text-indigo-800 dark:bg-indigo-900/30 dark:text-indigo-300';
+      case 'atvetelre_var': return 'bg-purple-100 text-purple-800 dark:bg-purple-900/30 dark:text-purple-300';
+      case 'sikeresen_atveve': return 'bg-emerald-100 text-emerald-800 dark:bg-emerald-900/30 dark:text-emerald-300';
       default: return 'bg-gray-100 text-gray-800 dark:bg-gray-800 dark:text-gray-300';
     }
   };
@@ -162,36 +205,58 @@ export default function TransactionList() {
 
     if (isBuyer) {
       // Buyer actions
-      if (status === 'shipped') {
+      if (status === 'feladva') {
         return (
           <button
-            onClick={() => updateTransactionStatus(transaction.id, 'delivered')}
+            onClick={() => updateTransactionStatus(transaction.id, 'atvetelre_var')}
             className="px-3 py-1.5 bg-accent text-white text-xs rounded-lg hover:bg-accent/90 transition-colors"
           >
-            Megérkezett a termék
+            Átvételre vár
+          </button>
+        );
+      }
+
+      if (status === 'atvetelre_var') {
+        return (
+          <button
+            onClick={() => confirmTransactionAndReleaseFunds(transaction.id)}
+            className="px-3 py-1.5 bg-green-600 text-white text-xs rounded-lg hover:bg-green-700 transition-colors"
+          >
+            Minden rendben
           </button>
         );
       }
     } else {
       // Seller actions
-      if (status === 'paid') {
+      if (status === 'fizetve') {
         return (
           <button
-            onClick={() => updateTransactionStatus(transaction.id, 'shipped')}
+            onClick={() => updateTransactionStatus(transaction.id, 'feladva')}
             className="px-3 py-1.5 bg-accent text-white text-xs rounded-lg hover:bg-accent/90 transition-colors"
           >
             Feladtam a terméket
           </button>
         );
       }
-      
-      if (status === 'delivered') {
+
+      if (status === 'feladva') {
         return (
           <button
-            onClick={() => updateTransactionStatus(transaction.id, 'completed')}
+            onClick={() => updateTransactionStatus(transaction.id, 'uton')}
+            className="px-3 py-1.5 bg-blue-600 text-white text-xs rounded-lg hover:bg-blue-700 transition-colors"
+          >
+            Úton
+          </button>
+        );
+      }
+
+      if (status === 'uton') {
+        return (
+          <button
+            onClick={() => updateTransactionStatus(transaction.id, 'atvetelre_var')}
             className="px-3 py-1.5 bg-accent text-white text-xs rounded-lg hover:bg-accent/90 transition-colors"
           >
-            Pénz átvétele
+            Átvételre vár
           </button>
         );
       }

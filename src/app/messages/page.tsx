@@ -13,6 +13,8 @@ interface Message {
   content: string;
   created_at: string;
   product_id: string | null;
+  message_type?: 'text' | 'image' | 'system';
+  media_url?: string | null;
 }
 
 interface Conversation {
@@ -32,7 +34,9 @@ export default function MessagesPage() {
   const [showOfferModal, setShowOfferModal] = useState(false);
   const [offerAmount, setOfferAmount] = useState('');
   const [loading, setLoading] = useState(true);
+  const [uploadingImage, setUploadingImage] = useState(false);
   const messagesEndRef = useRef<HTMLDivElement>(null);
+  const fileInputRef = useRef<HTMLInputElement>(null);
   const router = useRouter();
 
   useEffect(() => {
@@ -145,14 +149,48 @@ export default function MessagesPage() {
 
     const content = newMessage.trim();
     setNewMessage('');
+    const latestProductMessage = [...messages].reverse().find((msg) => msg.product_id);
 
     await supabase
       .from('messages')
       .insert({
         sender_id: user.id,
         receiver_id: selectedConversation,
-        content
+        content,
+        product_id: latestProductMessage?.product_id || null,
+        message_type: 'text'
       });
+  };
+
+  const sendImageMessage = async (file: File) => {
+    if (!selectedConversation || !user) return;
+    setUploadingImage(true);
+    try {
+      const fileExt = file.name.split('.').pop() || 'jpg';
+      const filePath = `${user.id}/${Date.now()}.${fileExt}`;
+      const { error: uploadError } = await supabase.storage
+        .from('chat-media')
+        .upload(filePath, file, { upsert: false });
+
+      if (uploadError) throw uploadError;
+
+      const { data: publicData } = supabase.storage.from('chat-media').getPublicUrl(filePath);
+      const mediaUrl = publicData.publicUrl;
+
+      await supabase
+        .from('messages')
+        .insert({
+          sender_id: user.id,
+          receiver_id: selectedConversation,
+          content: '📷 Kép',
+          message_type: 'image',
+          media_url: mediaUrl,
+        });
+    } catch (error: any) {
+      console.error('Image upload error:', error);
+    } finally {
+      setUploadingImage(false);
+    }
   };
 
   if (loading) {
@@ -165,13 +203,14 @@ export default function MessagesPage() {
 
   const sendOffer = async () => {
     if (!offerAmount || !selectedConversation) return;
-
-    // TODO: The product_id needs to be passed from the conversation context
-    // For now, we create the offer without a product reference
+    const latestProductMessage = [...messages].reverse().find((msg) => msg.product_id);
+    if (!latestProductMessage?.product_id) {
+      return;
+    }
     await supabase
       .from('offers')
       .insert({
-        product_id: null,  // Will be set when product context is available
+        product_id: latestProductMessage.product_id,
         buyer_id: user.id,
         seller_id: selectedConversation,
         offered_price: parseInt(offerAmount),
@@ -184,7 +223,8 @@ export default function MessagesPage() {
         sender_id: user.id,
         receiver_id: selectedConversation,
         content: `💡 AJÁNLAT: ${parseInt(offerAmount).toLocaleString()} Ft`,
-        product_id: null
+        product_id: latestProductMessage.product_id,
+        message_type: 'system'
       });
 
     setShowOfferModal(false);
@@ -295,14 +335,18 @@ export default function MessagesPage() {
                       key={msg.id}
                       className={`flex ${msg.sender_id === user.id ? 'justify-end' : 'justify-start'}`}
                     >
-                      <div 
+                      <div
                         className={`max-w-xs md:max-w-md px-5 py-3 rounded-2xl ${
                           msg.sender_id === user.id 
                             ? 'bg-accent text-black rounded-br-none' 
                             : 'bg-white/10 rounded-bl-none'
                         }`}
                       >
-                        {msg.content}
+                        {msg.message_type === 'image' && msg.media_url ? (
+                          <img src={msg.media_url} alt="chat-image" className="max-w-full rounded-lg" />
+                        ) : (
+                          msg.content
+                        )}
                       </div>
                     </div>
                   ))}
@@ -324,6 +368,25 @@ export default function MessagesPage() {
                   )}
 
                    <form onSubmit={sendMessage} className="flex gap-3 max-w-full box-border px-0">
+                    <input
+                      ref={fileInputRef}
+                      type="file"
+                      accept="image/*"
+                      className="hidden"
+                      onChange={(e) => {
+                        const file = e.target.files?.[0];
+                        if (file) sendImageMessage(file);
+                        if (e.target) e.target.value = '';
+                      }}
+                    />
+                    <button
+                      type="button"
+                      onClick={() => fileInputRef.current?.click()}
+                      disabled={uploadingImage}
+                      className="px-4 py-3 bg-white/10 border border-white/20 rounded-full hover:bg-white/20 transition-all"
+                    >
+                      {uploadingImage ? '...' : '📷'}
+                    </button>
                     <input
                       type="text"
                       value={newMessage}

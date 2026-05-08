@@ -231,14 +231,14 @@ export default function CheckoutContent() {
                 
                 <div className="space-y-3">
                   <div className="flex justify-between text-sm">
-                    <span className="text-gray-600 dark:text-white/70">Termek ara</span>
+                    <span className="text-gray-600 dark:text-white/70">Termék ára</span>
                     <span className="font-medium text-gray-900 dark:text-white">
                       {amount.toLocaleString('hu-HU')} Ft
                     </span>
                   </div>
                   <div className="flex justify-between text-sm">
                     <span className="text-gray-600 dark:text-white/70">
-                      Vevovedelmi dij ({fixedBuyerProtectionFee.toLocaleString('hu-HU')} Ft + 10%)
+                      Vevővédelmi díj ({fixedBuyerProtectionFee.toLocaleString('hu-HU')} Ft + {variableBuyerProtectionFee.toLocaleString('hu-HU')} Ft)
                     </span>
                     <span className="font-medium text-gray-900 dark:text-white">
                       {buyerProtectionFee.toLocaleString('hu-HU')} Ft
@@ -246,7 +246,7 @@ export default function CheckoutContent() {
                   </div>
                   <div className="border-t border-gray-200 dark:border-white/10" />
                   <div className="flex justify-between font-bold">
-                    <span className="text-gray-900 dark:text-white">Vegosszeg</span>
+                    <span className="text-gray-900 dark:text-white">Összesen</span>
                     <span className="text-accent text-lg">{total.toLocaleString('hu-HU')} Ft</span>
                   </div>
                 </div>

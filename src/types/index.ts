@@ -27,7 +27,17 @@ export interface Offer {
   seller_id: string;
   offered_price: number;
   message?: string;
-  status: 'pending' | 'accepted' | 'rejected' | 'cancelled' | 'completed' | 'payment_pending' | 'payment_completed' | 'shipped' | 'delivered';
+  status:
+    | 'pending'
+    | 'accepted'
+    | 'rejected'
+    | 'countered'
+    | 'cancelled'
+    | 'completed'
+    | 'payment_pending'
+    | 'payment_completed'
+    | 'shipped'
+    | 'delivered';
   shipping_method?: string;
   shipping_cost?: number;
   transaction_id?: string;
@@ -69,6 +79,8 @@ export interface Message {
   receiver_id: string;
   content: string;
   product_id?: string;
+  message_type?: 'text' | 'image' | 'system';
+  media_url?: string | null;
   is_system_message?: boolean;
   created_at: string;
 }

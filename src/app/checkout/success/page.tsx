@@ -71,10 +71,10 @@ function CheckoutSuccessContentComponent() {
         setTransaction(transactionWithRelations);
         setProduct(productData);
 
-        // Update the transaction status to 'paid'
+        // Update the transaction status to Vinted flow initial state
         await supabase
           .from('transactions')
-          .update({ status: 'paid' })
+          .update({ status: 'fizetve' })
           .eq('id', transactionData.id);
 
         // Update the product status to 'sold'
