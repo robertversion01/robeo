@@ -322,3 +322,31 @@ input, textarea, select {
     height: 170px;
   }
 }
+
+@keyframes masonryFloatUp {
+  0% {
+    transform: translateY(0);
+  }
+  100% {
+    transform: translateY(-64px);
+  }
+}
+
+@keyframes masonryFloatDown {
+  0% {
+    transform: translateY(-64px);
+  }
+  100% {
+    transform: translateY(0);
+  }
+}
+
+.floating-masonry-col {
+  will-change: transform;
+  animation: masonryFloatUp 28s linear infinite alternate;
+}
+
+.floating-masonry-col-mid {
+  will-change: transform;
+  animation: masonryFloatDown 32s linear infinite alternate;
+}

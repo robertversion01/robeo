@@ -1,18 +1,14 @@
 'use client';
 
-import { useEffect, useMemo, useRef } from 'react';
+import { useMemo } from 'react';
 import Link from 'next/link';
-import { formatPrice } from '@/lib/utils';
 import type { Product } from '@/types';
 
 interface VintedHeroProps {
   products: Product[];
 }
 
-type HeroProduct = Product & {
-  featured?: boolean;
-  is_featured?: boolean;
-};
+type HeroProduct = Product;
 
 function getHeroProducts(products: Product[]): HeroProduct[] {
   const withImages = products.filter((product) => Boolean(product.image_url)) as HeroProduct[];
@@ -27,103 +23,83 @@ function getHeroProducts(products: Product[]): HeroProduct[] {
 }
 
 export default function VintedHero({ products }: VintedHeroProps) {
-  const scrollerRef = useRef<HTMLDivElement | null>(null);
-  const autoplayRef = useRef<number | null>(null);
   const heroProducts = useMemo(() => getHeroProducts(products), [products]);
-  const marqueeItems = useMemo(() => [...heroProducts, ...heroProducts], [heroProducts]);
+  const floatingItems = useMemo(() => {
+    if (heroProducts.length === 0) return [];
+    return [...heroProducts, ...heroProducts, ...heroProducts];
+  }, [heroProducts]);
 
-  useEffect(() => {
-    const scroller = scrollerRef.current;
-    if (!scroller || heroProducts.length === 0) return;
-
-    let paused = false;
-
-    const startAuto = () => {
-      if (autoplayRef.current) return;
-      autoplayRef.current = window.setInterval(() => {
-        if (!scrollerRef.current || paused) return;
-        const el = scrollerRef.current;
-        const half = el.scrollWidth / 2;
-        el.scrollLeft += 0.9;
-        if (el.scrollLeft >= half) {
-          el.scrollLeft = 0;
-        }
-      }, 24);
-    };
-
-    const stopAuto = () => {
-      if (autoplayRef.current) {
-        window.clearInterval(autoplayRef.current);
-        autoplayRef.current = null;
-      }
-    };
-
-    const pause = () => {
-      paused = true;
-    };
-    const resume = () => {
-      paused = false;
-    };
-
-    startAuto();
-    scroller.addEventListener('mouseenter', pause);
-    scroller.addEventListener('mouseleave', resume);
-    scroller.addEventListener('pointerdown', pause);
-    scroller.addEventListener('pointerup', resume);
-    scroller.addEventListener('pointercancel', resume);
-    scroller.addEventListener('touchstart', pause, { passive: true });
-    scroller.addEventListener('touchend', resume, { passive: true });
-
-    return () => {
-      stopAuto();
-      scroller.removeEventListener('mouseenter', pause);
-      scroller.removeEventListener('mouseleave', resume);
-      scroller.removeEventListener('pointerdown', pause);
-      scroller.removeEventListener('pointerup', resume);
-      scroller.removeEventListener('pointercancel', resume);
-      scroller.removeEventListener('touchstart', pause);
-      scroller.removeEventListener('touchend', resume);
-    };
-  }, [heroProducts.length]);
+  const columnHeights = ['h-28', 'h-36', 'h-32', 'h-40', 'h-30', 'h-36'];
 
   return (
-    <section className="mb-2.5">
-      <div className="rounded-xl border border-gray-200 bg-white p-2">
-        <div className="mb-1.5">
-          <h2 className="text-sm md:text-base font-semibold text-gray-900">Kiemelt ajánlatok</h2>
-        </div>
-
-        {heroProducts.length === 0 ? (
-          <div className="rounded-xl border border-dashed border-gray-300 px-4 py-8 text-sm text-gray-500 text-center">
+    <section className="mb-3 overflow-hidden">
+      <div className="rounded-2xl bg-[#0f1a1d] text-white border border-[#1f2c30] overflow-hidden">
+        {floatingItems.length === 0 ? (
+          <div className="px-4 py-10 text-center text-sm text-gray-300">
             Még nincs kiemelt termék.
           </div>
         ) : (
-          <div
-            ref={scrollerRef}
-            className="flex gap-2 overflow-x-auto no-scrollbar snap-x snap-mandatory scroll-smooth cursor-grab active:cursor-grabbing"
-            style={{ willChange: 'scroll-position' }}
-          >
-            {marqueeItems.map((item, idx) => (
-              <Link
-                key={`${item.id}-${idx}`}
-                href={`/products/${item.id}`}
-                className="snap-start shrink-0 w-[38%] sm:w-[26%] lg:w-[16%] rounded-lg overflow-hidden border border-gray-200 bg-white hover:border-[#007782]/40 transition-colors"
-              >
-                <div className="relative h-[180px] md:h-[220px] bg-gray-100">
-                  {item.image_url ? (
-                    <img src={item.image_url} alt={item.name} className="h-full w-full object-cover" />
-                  ) : (
-                    <div className="h-full w-full flex items-center justify-center text-gray-400">📦</div>
-                  )}
-                </div>
-                <div className="px-2 py-1.5">
-                  <p className="text-xs font-semibold text-gray-900">{formatPrice(item.price)}</p>
-                  <p className="mt-0.5 text-[11px] text-gray-600 truncate">{item.brand || item.name}</p>
-                </div>
-              </Link>
-            ))}
+          <div className="relative h-[270px] sm:h-[330px] overflow-hidden px-2 pt-2">
+            <div className="pointer-events-none absolute inset-0 p-2">
+              <div className="grid grid-cols-3 gap-2 h-full floating-masonry">
+                {[0, 1, 2].map((col) => (
+                  <div key={col} className={`flex flex-col gap-2 ${col === 1 ? 'floating-masonry-col-mid' : 'floating-masonry-col'}`}>
+                    {floatingItems
+                      .filter((_, index) => index % 3 === col)
+                      .map((item, idx) => (
+                        <Link
+                          key={`${item.id}-${col}-${idx}`}
+                          href={`/products/${item.id}`}
+                          className={`block w-full ${columnHeights[(idx + col) % columnHeights.length]} rounded-2xl overflow-hidden`}
+                        >
+                          {item.image_url ? (
+                            <img
+                              src={item.image_url}
+                              alt={item.name}
+                              className="h-full w-full object-cover opacity-90"
+                              loading="lazy"
+                            />
+                          ) : (
+                            <div className="h-full w-full flex items-center justify-center bg-gray-700 text-gray-300 text-xl">
+                              📦
+                            </div>
+                          )}
+                        </Link>
+                      ))}
+                  </div>
+                ))}
+              </div>
+            </div>
+
+            <div className="absolute inset-x-0 bottom-0 h-28 bg-gradient-to-t from-[#0f1a1d] to-transparent" />
           </div>
+
         )}
+
+        <div className="relative z-10 px-4 pb-4 pt-3 sm:px-5 sm:pb-5">
+          <h2 className="text-4xl leading-tight font-semibold font-serif text-white text-center">
+            Csatlakozz, es add el
+            <br />
+            egykor kedvelt cuccaidat
+            <br />
+            dijmentesen
+          </h2>
+
+          <div className="mt-5 space-y-2.5">
+            <Link
+              href="/auth?mode=register"
+              className="w-full h-12 rounded-xl bg-[#4baab5] text-black text-base font-semibold inline-flex items-center justify-center"
+            >
+              Regisztralas a Robeo rendszerébe
+            </Link>
+            <Link
+              href="/auth"
+              className="w-full h-12 rounded-xl border border-white/75 bg-black text-white text-base font-semibold inline-flex items-center justify-center"
+            >
+              Mar rendelkezem fiokkal
+            </Link>
+          </div>
+        </div>
       </div>
     </section>
   );

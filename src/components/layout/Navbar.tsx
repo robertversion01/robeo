@@ -131,12 +131,12 @@ export default function Navbar({ searchQuery, onSearchChange }: NavbarProps) {
   };
 
   return (
-    <nav className="fixed top-0 left-0 right-0 z-50 h-11 px-3 flex items-center justify-between gap-2 bg-white border-b border-gray-200 shadow-sm">
+    <nav className="fixed top-0 left-0 right-0 z-50 h-11 px-2 sm:px-3 flex items-center justify-between gap-1 sm:gap-2 bg-white border-b border-gray-200 shadow-sm overflow-x-hidden w-full max-w-full">
       <Link href="/" className="text-sm font-semibold tracking-wide hover:text-[#007782] transition-colors flex-shrink-0 text-[#007782]">
         ROBEO
       </Link>
 
-      <div className={`flex-1 min-w-0 w-full ${user ? 'max-w-md' : 'max-w-[45vw] sm:max-w-sm'}`}>
+      <div className={`flex-1 min-w-0 basis-0 w-full shrink ${user ? 'max-w-md' : 'max-w-[36vw] sm:max-w-sm'}`}>
         <div className="relative">
           <Search className="absolute left-2.5 top-1/2 -translate-y-1/2 text-gray-400" size={14} />
           <input 
@@ -145,7 +145,7 @@ export default function Navbar({ searchQuery, onSearchChange }: NavbarProps) {
             value={resolvedSearchQuery}
             onFocus={() => setShowLiveResults(true)}
             onChange={(e) => onNavbarSearchChange(e.target.value)}
-            className="w-full h-9 pl-8 pr-3 bg-gray-100 rounded-full text-sm border border-gray-200 focus:outline-none focus:ring-1 focus:ring-[#007782]"
+            className="w-full min-w-0 shrink h-9 pl-8 pr-3 bg-gray-100 rounded-full text-sm border border-gray-200 focus:outline-none focus:ring-1 focus:ring-[#007782]"
           />
 
           {showLiveResults && resolvedSearchQuery.trim().length >= 2 ? (
@@ -228,10 +228,11 @@ export default function Navbar({ searchQuery, onSearchChange }: NavbarProps) {
           </>
         ) : (
           <>
-            <Link href="/auth?mode=register" className="h-8 rounded-full bg-[#007782] px-2.5 text-xs font-semibold text-white inline-flex items-center justify-center whitespace-nowrap">
-              Regisztráció
+            <Link href="/auth?mode=register" className="h-8 rounded-full bg-[#007782] px-2 text-[11px] sm:px-2.5 sm:text-xs font-semibold text-white inline-flex items-center justify-center whitespace-nowrap shrink-0">
+              <span className="sm:hidden">Reg.</span>
+              <span className="hidden sm:inline">Regisztráció</span>
             </Link>
-            <Link href="/auth" className="h-8 rounded-full border border-gray-300 px-2.5 text-xs font-semibold text-gray-700 inline-flex items-center justify-center whitespace-nowrap">
+            <Link href="/auth" className="h-8 rounded-full border border-gray-300 px-2 text-[11px] sm:px-2.5 sm:text-xs font-semibold text-gray-700 inline-flex items-center justify-center whitespace-nowrap shrink-0">
               Belépés
             </Link>
           </>
