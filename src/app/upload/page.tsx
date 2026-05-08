@@ -155,7 +155,7 @@ export default function UploadPage() {
       });
       setImages([]);
 
-      toast.success('✅ Termék sikeresen feltöltve!');
+      toast.success('Sikeres feltöltés!');
 
     } catch (error: any) {
       console.error('Error uploading product:', error);

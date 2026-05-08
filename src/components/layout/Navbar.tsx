@@ -31,15 +31,24 @@ export default function Navbar({ searchQuery, onSearchChange }: NavbarProps) {
   useEffect(() => {
     const checkUnreadMessages = async (currentUserId: string) => {
       const lastSeen = localStorage.getItem(`messages_last_seen_at_${currentUserId}`) || '1970-01-01T00:00:00.000Z';
-      const { data, error } = await supabase
+      const [{ data: messageData, error: messageError }, { data: offerData, error: offerError }] = await Promise.all([
+        supabase
         .from('messages')
         .select('id')
         .eq('receiver_id', currentUserId)
         .gt('created_at', lastSeen)
-        .limit(1);
+        .limit(1),
+        supabase
+        .from('offers')
+        .select('id')
+        .eq('seller_id', currentUserId)
+        .eq('status', 'pending')
+        .gt('created_at', lastSeen)
+        .limit(1),
+      ]);
 
-      if (!error) {
-        setHasUnreadMessages((data || []).length > 0);
+      if (!messageError && !offerError) {
+        setHasUnreadMessages((messageData || []).length > 0 || (offerData || []).length > 0);
       }
     };
 
@@ -68,13 +77,23 @@ export default function Navbar({ searchQuery, onSearchChange }: NavbarProps) {
       }
     });
 
-    const channel = supabase.channel('navbar-unread-messages')
+    const channel = supabase.channel(`navbar-unread-messages-${Date.now()}`)
       .on(
         'postgres_changes',
         { event: 'INSERT', schema: 'public', table: 'messages' },
         async (payload: any) => {
           const { data: { user: currentUser } } = await supabase.auth.getUser();
           if (currentUser?.id && payload?.new?.receiver_id === currentUser.id) {
+            setHasUnreadMessages(true);
+          }
+        }
+      )
+      .on(
+        'postgres_changes',
+        { event: 'INSERT', schema: 'public', table: 'offers' },
+        async (payload: any) => {
+          const { data: { user: currentUser } } = await supabase.auth.getUser();
+          if (currentUser?.id && payload?.new?.seller_id === currentUser.id) {
             setHasUnreadMessages(true);
           }
         }
@@ -132,18 +151,6 @@ export default function Navbar({ searchQuery, onSearchChange }: NavbarProps) {
 
     return () => clearTimeout(timeout);
   }, [resolvedSearchQuery]);
-
-  useEffect(() => {
-    if (typeof window === 'undefined') return;
-    console.info('[NavbarDebug] State', {
-      path: pathname,
-      userLoggedIn: Boolean(user),
-      searchQuery: resolvedSearchQuery,
-      showLiveResults,
-      liveResultsCount: liveResults.length,
-      showProfileMenu,
-    });
-  }, [pathname, user, resolvedSearchQuery, showLiveResults, liveResults.length, showProfileMenu]);
 
   const onNavbarSearchChange = (value: string) => {
     if (onSearchChange) {

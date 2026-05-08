@@ -6,6 +6,7 @@ import { supabase } from '@/lib/supabase';
 import Link from 'next/link';
 import { CheckCircle, ArrowRight, Truck, Package, CreditCard } from 'lucide-react';
 import dynamic from 'next/dynamic';
+import { toast } from 'sonner';
 
 // Use dynamic import with { ssr: false } to prevent server-side rendering
 const CheckoutSuccessContent = dynamic(() => Promise.resolve(CheckoutSuccessContentComponent), {
@@ -25,6 +26,7 @@ function CheckoutSuccessContentComponent() {
   const [transaction, setTransaction] = useState<any>(null);
   const [product, setProduct] = useState<any>(null);
   const [error, setError] = useState<string | null>(null);
+  const [purchaseToastShown, setPurchaseToastShown] = useState(false);
 
   useEffect(() => {
     const sessionId = searchParams.get('session_id');
@@ -94,6 +96,11 @@ function CheckoutSuccessContentComponent() {
             is_system_message: true
           });
 
+        if (!purchaseToastShown) {
+          toast.success('Sikeres vásárlás! A rendelésed rögzítve lett.');
+          setPurchaseToastShown(true);
+        }
+
       } catch (err: any) {
         console.error('Error fetching transaction details:', err);
         setError(err.message || 'An error occurred');
@@ -103,7 +110,7 @@ function CheckoutSuccessContentComponent() {
     };
 
     fetchTransactionDetails();
-  }, [searchParams]);
+  }, [searchParams, purchaseToastShown]);
 
   if (loading) {
     return (
