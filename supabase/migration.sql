@@ -140,12 +140,20 @@ ALTER TABLE IF EXISTS public.products
   ADD COLUMN IF NOT EXISTS featured_checkout_session_id TEXT;
 
 -- 12/c Feldolgozott Stripe webhook események (evt_…) — retry-nél gyors kilépés
+-- Futtasd egyben ezt a blokkot (CREATE + RLS + REVOKE). Ha a Studio csak a CREATE-ot kéri:
+-- válaszd a „Run and enable RLS” opciót, majd futtasd a REVOKE sorokat külön is.
 CREATE TABLE IF NOT EXISTS public.stripe_webhook_events (
   id TEXT PRIMARY KEY,
   received_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
 );
 
 ALTER TABLE public.stripe_webhook_events ENABLE ROW LEVEL SECURITY;
+
+-- Kliens kulcsokkal ne legyen REST hozzáférés (webhook csak service_role-nel ír).
+REVOKE ALL ON TABLE public.stripe_webhook_events FROM anon;
+REVOKE ALL ON TABLE public.stripe_webhook_events FROM authenticated;
+
+COMMENT ON TABLE public.stripe_webhook_events IS 'Stripe evt_* napló — csak szerver (service_role), nem browser API.';
 
 -- 13. Offers lifecycle mezők
 ALTER TABLE IF EXISTS public.offers
