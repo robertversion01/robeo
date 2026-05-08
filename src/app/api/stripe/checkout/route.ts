@@ -1,5 +1,4 @@
 import { NextRequest, NextResponse } from 'next/server';
-import Stripe from 'stripe';
 import { getStripeInstance } from '@/lib/stripe-client';
 import { getSupabaseClient } from '@/lib/supabase';
 
@@ -31,7 +30,7 @@ export async function POST(req: NextRequest) {
       );
     }
 
-    const supabase = getSupabaseClient();
+    const supabase = getSupabaseClient() as any;
 
     if (!supabase) {
       console.error('Supabase configuration is missing');
@@ -46,18 +45,27 @@ export async function POST(req: NextRequest) {
     }
 
     // Fetch product details from Supabase
-    const { data: product, error: productError } = await supabase
+    const { data: productData, error: productError } = await supabase
       .from('products')
       .select('*, user:user_id(*)')
       .eq('id', productId)
       .single();
 
-    if (productError || !product) {
+    if (productError || !productData) {
       return NextResponse.json(
         { error: 'Product not found' },
         { status: 404 }
       );
     }
+
+    const product = productData as {
+      id: string;
+      user_id: string;
+      name: string;
+      description?: string | null;
+      image_url?: string | null;
+      price: number;
+    };
 
     // Check if the seller has a Stripe account
     const sellerId = product.user_id;

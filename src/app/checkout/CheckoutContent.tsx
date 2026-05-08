@@ -7,9 +7,9 @@ import { toast } from 'sonner';
 import { ArrowLeft, ShieldCheck } from 'lucide-react';
 import ShippingSelector from '@/components/product/ShippingSelector';
 import PriceBreakdown, { calculateBuyerProtection } from '@/components/product/PriceBreakdown';
-import { getStripeInstance } from '@/lib/stripe-client';
 
 export default function CheckoutContent() {
+  const supabaseClient = supabase as any;
   const [loading, setLoading] = useState(true);
   const [offer, setOffer] = useState<any>(null);
   const [product, setProduct] = useState<any>(null);
@@ -35,18 +35,22 @@ export default function CheckoutContent() {
   }, [offerId, productId]);
 
   const loadOffer = async () => {
-    const { data: { user } } = await supabase.auth.getUser();
+    if (!offerId) return;
+
+    const { data: { user } } = await supabaseClient.auth.getUser();
     if (!user) {
       router.push('/auth');
       return;
     }
 
-    const { data: offerData } = await supabase
+    const { data: offerDataRaw } = await supabaseClient
       .from('offers')
       .select('*, product:products(*)')
       .eq('id', offerId)
       .eq('buyer_id', user.id)
       .single();
+
+    const offerData = offerDataRaw as any;
 
     if (!offerData) {
       router.push('/');
@@ -60,17 +64,21 @@ export default function CheckoutContent() {
   };
 
   const loadProduct = async () => {
-    const { data: { user } } = await supabase.auth.getUser();
+    if (!productId) return;
+
+    const { data: { user } } = await supabaseClient.auth.getUser();
     if (!user) {
       router.push('/auth');
       return;
     }
 
-    const { data: productData } = await supabase
+    const { data: productDataRaw } = await supabaseClient
       .from('products')
       .select('*')
       .eq('id', productId)
       .single();
+
+    const productData = productDataRaw as any;
 
     if (!productData) {
       router.push('/');
@@ -96,7 +104,7 @@ export default function CheckoutContent() {
     try {
       setProcessingPayment(true);
 
-      const { data: { user } } = await supabase.auth.getUser();
+      const { data: { user } } = await supabaseClient.auth.getUser();
       if (!user) {
         router.push('/auth');
         return;
@@ -104,7 +112,7 @@ export default function CheckoutContent() {
 
       // Save shipping method to the offer if applicable
       if (offerId) {
-        await supabase
+        await supabaseClient
           .from('offers')
           .update({
             shipping_method: shippingMethod,
