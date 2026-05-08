@@ -23,10 +23,10 @@ export default function ReceiptModal({ isOpen, onClose, receipt }: ReceiptModalP
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/70 backdrop-blur-sm" onClick={onClose}>
       <div 
-        className="max-w-md w-full bg-card border border-border rounded-2xl p-6 shadow-2xl"
+        className="max-w-md w-full card-base p-6 shadow-2xl relative"
         onClick={e => e.stopPropagation()}
       >
-        <button onClick={onClose} className="absolute top-4 right-4 text-muted-foreground hover:text-gray-900">
+        <button onClick={onClose} className="icon-btn absolute top-3 right-3 text-muted-foreground hover:text-gray-900">
           <X size={20} />
         </button>
 
@@ -69,11 +69,11 @@ export default function ReceiptModal({ isOpen, onClose, receipt }: ReceiptModalP
           </div>
 
           <div className="flex gap-3">
-            <button className="flex-1 px-4 py-2 bg-secondary rounded-xl text-secondary-foreground hover:bg-secondary/80 transition-colors flex items-center justify-center">
+            <button className="flex-1 btn-base btn-secondary inline-flex items-center justify-center">
               <Download className="w-4 h-4 mr-2" />
               Letöltés
             </button>
-            <button className="flex-1 px-4 py-2 bg-secondary rounded-xl text-secondary-foreground hover:bg-secondary/80 transition-colors flex items-center justify-center">
+            <button className="flex-1 btn-base btn-secondary inline-flex items-center justify-center">
               <Printer className="w-4 h-4 mr-2" />
               Nyomtatás
             </button>

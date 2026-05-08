@@ -36,14 +36,14 @@ export default function HowItWorksModal({ isOpen, onClose }: HowItWorksModalProp
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/40" onClick={onClose}>
       <div 
-        className="w-full max-w-2xl p-6 rounded-2xl bg-white border border-gray-200 shadow-2xl"
+        className="w-full max-w-2xl p-6 card-base shadow-2xl"
         onClick={e => e.stopPropagation()}
       >
         <div className="flex items-center justify-between mb-8">
           <h3 className="text-2xl font-bold text-gray-900">🤔 Hogyan működik a ROBEO?</h3>
           <button 
             onClick={onClose}
-            className="p-2 rounded-full hover:bg-gray-100 transition-colors text-gray-600"
+            className="icon-btn text-gray-600"
           >
             <X size={20} />
           </button>

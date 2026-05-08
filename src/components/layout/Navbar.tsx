@@ -103,7 +103,7 @@ export default function Navbar({ searchQuery, onSearchChange }: NavbarProps) {
               placeholder="Keresés..." 
               value={searchQuery || ''}
               onChange={(e) => onSearchChange(e.target.value)}
-              className="w-full pl-8 pr-3 py-2 bg-gray-100 rounded-full text-sm border border-gray-200 focus:outline-none focus:border-[#007782] focus:ring-1 focus:ring-[#007782] transition-colors"
+              className="w-full input-base min-h-10 pl-8 pr-3 py-2 bg-gray-100 rounded-full focus:outline-none focus:ring-1 focus:ring-[#007782]"
             />
           </div>
         </div>
@@ -114,16 +114,16 @@ export default function Navbar({ searchQuery, onSearchChange }: NavbarProps) {
             <div className="w-20 h-9 animate-pulse bg-gray-100 rounded-full"></div>
         ) : user ? (
           <>
-            <Link href="/upload" className="h-9 w-9 flex items-center justify-center rounded-full hover:bg-gray-100 transition-colors">
+            <Link href="/upload" className="icon-btn text-gray-700">
               <Plus size={18} className="text-gray-700" />
             </Link>
-            <Link href="/messages" className="h-9 w-9 flex items-center justify-center rounded-full hover:bg-gray-100 transition-colors relative">
+            <Link href="/messages" className="icon-btn text-gray-700 relative">
               <MessageCircle size={18} className="text-gray-700" />
               {hasUnreadMessages ? (
                 <span className="absolute top-1 right-1 h-2.5 w-2.5 rounded-full bg-red-500 border border-white" />
               ) : null}
             </Link>
-            <Link href="/favorites" className="h-9 w-9 flex items-center justify-center rounded-full hover:bg-gray-100 transition-colors">
+            <Link href="/favorites" className="icon-btn text-gray-700">
               <Heart size={18} className="text-gray-700" />
             </Link>
             <div className="relative">
@@ -133,14 +133,14 @@ export default function Navbar({ searchQuery, onSearchChange }: NavbarProps) {
                   e.stopPropagation();
                   setShowProfileMenu((prev) => !prev);
                 }}
-                className="h-9 w-9 flex items-center justify-center rounded-full hover:bg-gray-100 transition-colors"
+                className="icon-btn text-gray-700"
                 aria-label="Profil menü"
               >
                 <User size={18} className="text-gray-700" />
               </button>
               {showProfileMenu ? (
                 <div
-                  className="absolute right-0 top-10 w-44 rounded-xl border border-gray-200 bg-white shadow-md p-1 z-50"
+                  className="absolute right-0 top-10 w-44 card-base shadow-md p-1 z-50"
                   onClick={(e) => e.stopPropagation()}
                 >
                   <Link

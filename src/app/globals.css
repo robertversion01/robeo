@@ -137,6 +137,20 @@ input, textarea, select {
   border-radius: 0.75rem;
 }
 
+.icon-btn {
+  width: 2.25rem;
+  height: 2.25rem;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 9999px;
+  transition: background-color 0.2s ease, color 0.2s ease;
+}
+
+.icon-btn:hover {
+  background: #f3f4f6;
+}
+
 .btn-base {
   min-height: 2.75rem;
   padding: 0.625rem 1rem;
