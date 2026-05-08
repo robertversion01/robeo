@@ -18,6 +18,8 @@ export default function OfferModal({ isOpen, onClose, productId, sellerId, produ
   const [price, setPrice] = useState<number>(Math.round(originalPrice * 0.85));
   const [message, setMessage] = useState('');
   const [loading, setLoading] = useState(false);
+  const isUuid = (value: string) =>
+    /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i.test(value);
 
   if (!isOpen) return null;
 
@@ -33,6 +35,10 @@ export default function OfferModal({ isOpen, onClose, productId, sellerId, produ
       toast.error(`Minimum ajánlat: ${minimumOffer.toLocaleString('hu-HU')} Ft (a vételár 60%-a).`);
       return;
     }
+    if (!isUuid(productId) || !isUuid(sellerId)) {
+      toast.error('Hiányzó vagy hibás termék/eladó azonosító. Frissítsd az oldalt, majd próbáld újra.');
+      return;
+    }
 
     setLoading(true);
 
@@ -41,6 +47,10 @@ export default function OfferModal({ isOpen, onClose, productId, sellerId, produ
       
       if (!user) {
         toast.error('Először be kell jelentkezned!');
+        return;
+      }
+      if (!isUuid(user.id)) {
+        toast.error('Hibás felhasználói azonosító. Jelentkezz ki-be, majd próbáld újra.');
         return;
       }
 
@@ -56,7 +66,7 @@ export default function OfferModal({ isOpen, onClose, productId, sellerId, produ
           buyer_id: user.id,
           seller_id: sellerId,
           offered_price: price,
-          price: price, // Adding price field to fix the null value error
+          price: price,
           message: message,
           status: 'pending'
         });
@@ -97,37 +107,37 @@ export default function OfferModal({ isOpen, onClose, productId, sellerId, produ
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50 backdrop-blur-sm" onClick={onClose}>
       <div 
-        className="w-full max-w-md p-5 rounded-lg bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-800 shadow-xl"
+        className="w-full max-w-md p-5 rounded-lg bg-white border border-gray-200 shadow-xl"
         onClick={e => e.stopPropagation()}
       >
         <div className="flex items-center justify-between mb-4">
-          <h3 className="text-lg font-bold text-gray-900 dark:text-white">Ajánlat küldése</h3>
+          <h3 className="text-lg font-bold text-gray-900">Ajánlat küldése</h3>
           <button 
             onClick={onClose}
-            className="p-1.5 rounded-full hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors text-gray-500 dark:text-gray-400"
+            className="p-1.5 rounded-full hover:bg-gray-100 transition-colors text-gray-500"
           >
             <X size={18} />
           </button>
         </div>
 
-        <div className="mb-4 p-3 rounded-lg bg-gray-50 dark:bg-gray-800/50 border border-gray-200 dark:border-gray-700">
-          <p className="text-gray-500 dark:text-gray-400 text-xs">Ajánlat küldése a következő termékre:</p>
-          <p className="font-semibold mt-1 text-gray-900 dark:text-white text-sm">{productTitle}</p>
+        <div className="mb-4 p-3 rounded-lg bg-gray-50 border border-gray-200">
+          <p className="text-gray-500 text-xs">Ajánlat küldése a következő termékre:</p>
+          <p className="font-semibold mt-1 text-gray-900 text-sm">{productTitle}</p>
           <p className="text-accent font-bold mt-1">{originalPrice.toLocaleString('hu-HU')} Ft</p>
         </div>
 
         <form onSubmit={handleSubmit} className="space-y-3">
           <div>
-            <label className="block text-sm text-gray-700 dark:text-gray-300 mb-1.5">Ajánlott ár (Ft)</label>
+            <label className="block text-sm text-gray-700 mb-1.5">Ajánlott ár (Ft)</label>
             <input
               type="number"
               value={price}
               onChange={(e) => setPrice(Number(e.target.value))}
-              className="w-full px-3 py-2 rounded-lg bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-700 focus:border-accent focus:outline-none transition-colors text-gray-900 dark:text-white"
+              className="w-full px-3 py-2 rounded-lg bg-white border border-gray-300 focus:border-accent focus:outline-none transition-colors text-gray-900"
               min={Math.ceil(originalPrice * 0.6)}
               required
             />
-            <p className="mt-1 text-xs text-gray-500 dark:text-gray-400">
+            <p className="mt-1 text-xs text-gray-500">
               Minimum ajánlat: {Math.ceil(originalPrice * 0.6).toLocaleString('hu-HU')} Ft
             </p>
 
@@ -137,7 +147,7 @@ export default function OfferModal({ isOpen, onClose, productId, sellerId, produ
                   key={percent}
                   type="button"
                   onClick={() => setPrice(Math.round(originalPrice * percent))}
-                  className="flex-1 py-1.5 text-xs rounded-lg bg-gray-100 dark:bg-gray-800 border border-gray-200 dark:border-gray-700 hover:bg-gray-200 dark:hover:bg-gray-700 transition-colors text-gray-800 dark:text-gray-200"
+                  className="flex-1 py-1.5 text-xs rounded-lg bg-gray-100 border border-gray-200 hover:bg-gray-200 transition-colors text-gray-800"
                 >
                   {Math.round(percent * 100)}%
                 </button>
@@ -146,12 +156,12 @@ export default function OfferModal({ isOpen, onClose, productId, sellerId, produ
           </div>
 
           <div>
-            <label className="block text-sm text-gray-700 dark:text-gray-300 mb-1.5">Üzenet (opcionális)</label>
+            <label className="block text-sm text-gray-700 mb-1.5">Üzenet (opcionális)</label>
             <textarea
               value={message}
               onChange={(e) => setMessage(e.target.value)}
               placeholder="Írj egy rövid üzenetet az eladónak..."
-              className="w-full px-3 py-2 rounded-lg bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-700 focus:border-accent focus:outline-none transition-colors resize-none h-20 text-gray-900 dark:text-white text-sm"
+              className="w-full px-3 py-2 rounded-lg bg-white border border-gray-300 focus:border-accent focus:outline-none transition-colors resize-none h-20 text-gray-900 text-sm"
             />
           </div>
 

@@ -96,6 +96,27 @@ export default function ProductPage({ params }: { params: Promise<{ id: string }
     }
   };
 
+  const openOfferModal = async () => {
+    if (!product?.id || !product?.user_id) {
+      toast.error('Hiányzó termék vagy eladó azonosító. Frissítsd az oldalt.');
+      return;
+    }
+
+    const { data: { user } } = await supabase.auth.getUser();
+    if (!user) {
+      toast.error('Ajánlat küldéséhez jelentkezz be.');
+      router.push('/auth');
+      return;
+    }
+
+    if (user.id === product.user_id) {
+      toast.error('Nem tehetsz ajánlatot a saját termékedre.');
+      return;
+    }
+
+    setShowOfferModal(true);
+  };
+
   const categoryLabels: Record<string, string> = {
     clothing: 'Ruházat',
     shoes: 'Cipő',
@@ -263,7 +284,7 @@ export default function ProductPage({ params }: { params: Promise<{ id: string }
                   {acceptedOffer ? 'Vásárlás alkudott áron' : 'Vásárlás'}
                  </button>
                   <button 
-                    onClick={() => setShowOfferModal(true)}
+                    onClick={openOfferModal}
                     className="w-full py-2.5 md:py-3 bg-gray-100 text-gray-800 font-semibold rounded-lg hover:bg-gray-200 transition-all duration-300 text-sm"
                   >
                     Ajánlatot teszek

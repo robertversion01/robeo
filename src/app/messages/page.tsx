@@ -5,6 +5,7 @@ import { supabase } from '@/lib/supabase';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import OffersList from '@/components/product/OffersList';
+import { toast } from 'sonner';
 
 interface Message {
   id: string;
@@ -202,9 +203,20 @@ export default function MessagesPage() {
   }
 
   const sendOffer = async () => {
-    if (!offerAmount || !selectedConversation) return;
+    if (!offerAmount || !selectedConversation || !user?.id) return;
+    const isUuid = (value: string) =>
+      /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i.test(value);
     const latestProductMessage = [...messages].reverse().find((msg) => msg.product_id);
     if (!latestProductMessage?.product_id) {
+      toast.error('Ehhez a beszélgetéshez nem találtam termék-azonosítót az ajánlathoz.');
+      return;
+    }
+    if (
+      !isUuid(latestProductMessage.product_id) ||
+      !isUuid(selectedConversation) ||
+      !isUuid(user.id)
+    ) {
+      toast.error('Hibás azonosító(k), ezért az ajánlat nem küldhető el.');
       return;
     }
     await supabase
