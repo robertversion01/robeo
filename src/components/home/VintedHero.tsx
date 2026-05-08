@@ -2,6 +2,7 @@
 
 import { useEffect, useMemo, useRef } from 'react';
 import Link from 'next/link';
+import { formatPrice } from '@/lib/utils';
 import type { Product } from '@/types';
 
 interface VintedHeroProps {
@@ -44,7 +45,6 @@ export default function VintedHero({ products, fullScreen = false }: VintedHeroP
   }, [featuredProducts]);
 
   const columnHeights = ['h-28', 'h-36', 'h-32', 'h-40', 'h-30', 'h-36'];
-  const stackHeights = ['h-28', 'h-36', 'h-32', 'h-40'];
 
   useEffect(() => {
     if (fullScreen) return;
@@ -186,17 +186,21 @@ export default function VintedHero({ products, fullScreen = false }: VintedHeroP
                 <Link
                   key={`${item.id}-${idx}`}
                   href={`/products/${item.id}`}
-                  className="shrink-0 w-[30%] sm:w-[21%] md:w-[16%] lg:w-[12%] min-w-[112px] rounded-xl border border-gray-200 bg-white p-1 hover:border-[#007782]/40 transition-colors"
+                  className="shrink-0 w-[37%] sm:w-[26%] md:w-[20%] lg:w-[14%] min-w-[132px] rounded-xl border border-gray-200/90 bg-white p-1 hover:border-[#007782]/40 transition-colors"
                 >
-                  <div className="flex flex-col gap-1.5">
-                    <div className={`w-full rounded-lg overflow-hidden ${stackHeights[idx % stackHeights.length]}`}>
+                  <div className="flex flex-col">
+                    <div className="w-full rounded-lg overflow-hidden aspect-[4/5] bg-gray-100">
                       {item.image_url ? (
                         <img src={item.image_url} alt={item.name} className="h-full w-full object-cover" loading="lazy" />
                       ) : (
                         <div className="h-full w-full flex items-center justify-center bg-gray-100 text-gray-400">📦</div>
                       )}
                     </div>
-                    <p className="text-[11px] text-gray-700 truncate px-0.5">{item.brand || item.name}</p>
+                    <div className="px-1 py-1.5 space-y-0.5">
+                      <p className="text-xs font-semibold text-gray-900 truncate">{formatPrice(item.price)}</p>
+                      <p className="text-[11px] text-gray-500 truncate">Méret: {item.size || 'N/A'}</p>
+                      <p className="text-[11px] text-gray-700 truncate">{item.brand || item.name}</p>
+                    </div>
                   </div>
                 </Link>
               ))}
