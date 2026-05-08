@@ -63,6 +63,7 @@ CREATE POLICY "Users can update their own profile"
 
 -- 3/b Profiles — opcionális mezők (webhook / UI; régi DB-n ADD COLUMN IF NOT EXISTS)
 ALTER TABLE public.profiles ADD COLUMN IF NOT EXISTS full_name TEXT;
+ALTER TABLE public.profiles ADD COLUMN IF NOT EXISTS name TEXT;
 ALTER TABLE public.profiles ADD COLUMN IF NOT EXISTS location TEXT;
 ALTER TABLE public.profiles ADD COLUMN IF NOT EXISTS address TEXT;
 ALTER TABLE public.profiles ADD COLUMN IF NOT EXISTS city TEXT;

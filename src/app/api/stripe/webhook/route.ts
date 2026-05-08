@@ -76,42 +76,6 @@ type TxRow = {
   checkout_completed_notified_at: string | null;
 };
 
-/**
- * Profil sor bármilyen sémájához (nem feltételez fix oszloplistát a SELECT-ben).
- * Előnyben: location / cím mezők, majd név, legvégül email.
- */
-function buyerContactHint(profile: Record<string, unknown> | null): string {
-  if (!profile) return 'Nincs megadva';
-
-  const pick = (...keys: string[]) => {
-    for (const k of keys) {
-      const v = profile[k];
-      if (typeof v === 'string' && v.trim().length > 0) return v.trim();
-    }
-    return '';
-  };
-
-  const lineFromParts = () => {
-    const line1 = pick('address_line1', 'address', 'street');
-    const line2 = pick('address_line2');
-    const zip = pick('postal_code', 'zip', 'postcode');
-    const city = pick('city');
-    const country = pick('country');
-    const parts = [line1, line2, [zip, city].filter(Boolean).join(' '), country].filter(
-      (p) => typeof p === 'string' && p.length > 0
-    );
-    return parts.join(', ');
-  };
-
-  return (
-    pick('location', 'shipping_location') ||
-    lineFromParts() ||
-    pick('full_name', 'name', 'display_name') ||
-    pick('email') ||
-    'Nincs megadva'
-  );
-}
-
 async function applyPaidTransactionEffects(
   db: any,
   transaction: TxRow,
@@ -135,7 +99,9 @@ async function applyPaidTransactionEffects(
   if (!alreadyNotified) {
     const { data: buyerProfile, error: profileErr } = await db
       .from('profiles')
-      .select('*')
+      .select(
+        'full_name, name, email, location, address, city, postal_code, address_line1, address_line2'
+      )
       .eq('id', transaction.buyer_id)
       .maybeSingle();
 
@@ -144,16 +110,27 @@ async function applyPaidTransactionEffects(
       throw new Error(`profiles select: ${profileErr.message}`);
     }
 
-    const buyerHint = buyerContactHint(
-      buyerProfile && typeof buyerProfile === 'object'
-        ? (buyerProfile as Record<string, unknown>)
-        : null
-    );
+    let buyerAddress = 'Nincs megadva';
+
+    if (buyerProfile) {
+      buyerAddress =
+        [
+          buyerProfile.location,
+          buyerProfile.address,
+          buyerProfile.address_line1,
+          buyerProfile.city,
+          buyerProfile.postal_code,
+        ]
+          .filter(Boolean)
+          .join(', ') ||
+        buyerProfile.email ||
+        'Nincs cím';
+    }
 
     const { error: messageError } = await db.from('messages').insert({
       sender_id: transaction.buyer_id,
       receiver_id: transaction.seller_id,
-      content: `✅ Eladtad a terméket! Vevő adatok / átvétel: ${buyerHint}`,
+      content: `✅ Eladtad a terméket! Itt a vevő címe: ${buyerAddress}`,
       product_id: transaction.product_id,
       is_system_message: true,
       message_type: 'system',
