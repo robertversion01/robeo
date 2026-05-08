@@ -5,6 +5,7 @@ import { supabase } from '@/lib/supabase';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import ProductGrid from '@/components/product/ProductGrid';
+import FreshOffersStrip from '@/components/home/FreshOffersStrip';
 import type { Product } from '@/types';
 
 type FavoriteRow = {
@@ -70,27 +71,27 @@ export default function FavoritesPage() {
 
   if (loading) {
     return (
-      <div className="min-h-screen bg-white dark:bg-gradient-to-br dark:from-indigo-950 dark:to-black text-gray-900 dark:text-white flex items-center justify-center">
+      <div className="min-h-screen bg-white text-gray-900 flex items-center justify-center">
         <div className="animate-spin h-10 w-10 border-4 border-accent border-t-transparent rounded-full"></div>
       </div>
     );
   }
 
   return (
-    <div className="min-h-screen bg-white dark:bg-gradient-to-br dark:from-indigo-950 dark:to-black text-gray-900 dark:text-white">
+    <div className="min-h-screen bg-white text-gray-900">
       <main className="pt-16 pb-12 px-3 md:px-6">
         <div className="max-w-7xl mx-auto">
           <h1 className="text-2xl md:text-3xl font-bold mb-1">❤️ Kedvenceim</h1>
-          <p className="text-gray-500 dark:text-white/60 text-sm mb-6">Elmentett termékeim</p>
+          <p className="text-gray-500 text-sm mb-6">Elmentett termékeim</p>
 
           {products.length === 0 ? (
-            <div className="text-center py-16 text-gray-400 dark:text-white/50">
+            <div className="text-center py-16 text-gray-400">
               <p className="text-lg mb-3">Még nincsenek kedvenced</p>
               <Link href="/" className="text-accent hover:underline">Nézz körbe a galériában →</Link>
             </div>
           ) : (
             <>
-              <p className="text-gray-500 dark:text-white/50 text-sm mb-4">{products.length} kedvenc termék</p>
+              <p className="text-gray-500 text-sm mb-4">{products.length} kedvenc termék</p>
               <ProductGrid
                 products={products}
                 loading={false}
@@ -99,6 +100,8 @@ export default function FavoritesPage() {
               />
             </>
           )}
+
+          <FreshOffersStrip title="Hasonló termékek" className="mt-10" />
         </div>
       </main>
     </div>

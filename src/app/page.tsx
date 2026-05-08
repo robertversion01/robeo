@@ -23,8 +23,6 @@ export default function Home() {
     <div className="min-h-screen bg-white text-gray-900">
       <main className="pt-16 pb-12 px-3 md:px-6">
         <div className="max-w-7xl mx-auto">
-          <FreshOffersStrip />
-
           {/* Search Bar */}
           <div className="relative mb-4 max-w-md">
             <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" size={16} />
@@ -42,6 +40,8 @@ export default function Home() {
             selectedCategory={selectedCategory}
             onCategoryChange={setSelectedCategory}
           />
+
+          <FreshOffersStrip className="mt-4 mb-4" />
 
           <p className="text-gray-500 text-sm mb-4">
             {loading ? 'Betöltés...' : `${products.length} találat`}
