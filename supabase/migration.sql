@@ -139,6 +139,14 @@ ALTER TABLE IF EXISTS public.transactions
 ALTER TABLE IF EXISTS public.products
   ADD COLUMN IF NOT EXISTS featured_checkout_session_id TEXT;
 
+-- 12/c Feldolgozott Stripe webhook események (evt_…) — retry-nél gyors kilépés
+CREATE TABLE IF NOT EXISTS public.stripe_webhook_events (
+  id TEXT PRIMARY KEY,
+  received_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
+);
+
+ALTER TABLE public.stripe_webhook_events ENABLE ROW LEVEL SECURITY;
+
 -- 13. Offers lifecycle mezők
 ALTER TABLE IF EXISTS public.offers
   ADD COLUMN IF NOT EXISTS counter_price INTEGER,
