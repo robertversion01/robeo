@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { supabase } from '@/lib/supabase';
 import Link from 'next/link';
 import { usePathname, useRouter } from 'next/navigation';
@@ -22,6 +22,8 @@ export default function Navbar({ searchQuery, onSearchChange }: NavbarProps) {
   const [showLiveResults, setShowLiveResults] = useState(false);
   const router = useRouter();
   const pathname = usePathname();
+  const searchContainerRef = useRef<HTMLDivElement | null>(null);
+  const profileMenuRef = useRef<HTMLDivElement | null>(null);
   const resolvedSearchQuery = searchQuery ?? localSearchQuery;
   const isGuest = !loading && !user;
   const hideOnGuestHome = pathname === '/' && !user;
@@ -85,18 +87,22 @@ export default function Navbar({ searchQuery, onSearchChange }: NavbarProps) {
         if (currentUser?.id) checkUnreadMessages(currentUser.id);
       });
     };
-    const closeProfileMenu = () => {
+    const closeOnOutsidePointer = (event: PointerEvent) => {
+      const targetNode = event.target as Node | null;
+      if (!targetNode) return;
+      if (profileMenuRef.current?.contains(targetNode)) return;
+      if (searchContainerRef.current?.contains(targetNode)) return;
       setShowProfileMenu(false);
       setShowLiveResults(false);
     };
     window.addEventListener('messages:seen', handleSeen as EventListener);
-    window.addEventListener('click', closeProfileMenu);
+    window.addEventListener('pointerdown', closeOnOutsidePointer);
 
     return () => {
       subscription.unsubscribe();
       supabase.removeChannel(channel);
       window.removeEventListener('messages:seen', handleSeen as EventListener);
-      window.removeEventListener('click', closeProfileMenu);
+      window.removeEventListener('pointerdown', closeOnOutsidePointer);
     };
   }, []);
 
@@ -149,7 +155,7 @@ export default function Navbar({ searchQuery, onSearchChange }: NavbarProps) {
           </Link>
 
           <div className={`flex-1 min-w-0 basis-0 w-full shrink ${user ? 'max-w-md' : 'max-w-[36vw] sm:max-w-sm'}`}>
-            <div className="relative" onClick={(e) => e.stopPropagation()}>
+            <div ref={searchContainerRef} className="relative z-[120]">
               <Search className="absolute left-2.5 top-1/2 -translate-y-1/2 text-gray-400" size={14} />
               <input 
                 type="text" 
@@ -161,7 +167,7 @@ export default function Navbar({ searchQuery, onSearchChange }: NavbarProps) {
               />
 
               {showLiveResults && resolvedSearchQuery.trim().length >= 2 ? (
-                <div className="absolute left-0 right-0 top-10 z-[100] rounded-xl border border-gray-200 bg-white shadow-lg overflow-hidden">
+                <div className="absolute left-0 right-0 top-10 z-[130] rounded-xl border border-gray-200 bg-white shadow-lg overflow-hidden">
                   {liveResults.length === 0 ? (
                     <div className="px-3 py-2.5 text-xs text-gray-500">Nincs találat.</div>
                   ) : (
@@ -203,22 +209,20 @@ export default function Navbar({ searchQuery, onSearchChange }: NavbarProps) {
             <Link href="/favorites" className="icon-btn text-gray-700">
               <Heart size={16} className="text-gray-700" />
             </Link>
-            <div className="relative z-[100]">
+            <div ref={profileMenuRef} className="relative z-[130]">
               <button
                 type="button"
                 onClick={(e) => {
-                  e.stopPropagation();
                   setShowProfileMenu((prev) => !prev);
                 }}
-                className="icon-btn text-[#007782]"
+                className="icon-btn text-[#007782] cursor-pointer pointer-events-auto"
                 aria-label="Profil menü"
               >
-                <User size={16} className="text-[#007782] pointer-events-none" />
+                <User size={16} className="text-[#007782] pointer-events-auto" />
               </button>
               {showProfileMenu ? (
                 <div
-                  className="absolute right-0 top-10 w-44 card-base shadow-md p-1 z-[100]"
-                  onClick={(e) => e.stopPropagation()}
+                  className="absolute right-0 top-10 w-44 card-base shadow-md p-1 z-[130]"
                 >
                   <Link
                     href="/profile"

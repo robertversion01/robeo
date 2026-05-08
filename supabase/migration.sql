@@ -240,3 +240,15 @@ ON public.favorites
 FOR DELETE
 TO authenticated
 USING (auth.uid() = user_id);
+
+-- 17. Products read policy for public live search/grid
+ALTER TABLE IF EXISTS public.products ENABLE ROW LEVEL SECURITY;
+
+DROP POLICY IF EXISTS "products_select_public_active" ON public.products;
+CREATE POLICY "products_select_public_active"
+ON public.products
+FOR SELECT
+TO anon, authenticated
+USING (
+  COALESCE(status, 'active') <> 'deleted'
+);
