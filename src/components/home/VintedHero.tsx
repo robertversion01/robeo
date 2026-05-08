@@ -88,13 +88,13 @@ export default function VintedHero({ products, fullScreen = false }: VintedHeroP
 
           <div className="mt-5 space-y-2.5">
             <Link
-              href="/auth"
+              href="/auth?view=sign_up"
               className="w-full h-12 rounded-xl bg-[#4baab5] text-black text-base font-semibold inline-flex items-center justify-center"
             >
               Regisztrálás a Robeo rendszerébe
             </Link>
             <Link
-              href="/auth"
+              href="/auth?view=sign_in"
               className="w-full h-12 rounded-xl border border-white/75 bg-black text-white text-base font-semibold inline-flex items-center justify-center"
             >
               Már rendelkezem fiókkal

@@ -25,6 +25,7 @@ export default function Navbar({ searchQuery, onSearchChange }: NavbarProps) {
   const resolvedSearchQuery = searchQuery ?? localSearchQuery;
   const isGuest = !loading && !user;
   const hideOnGuestHome = pathname === '/' && !user;
+  const hideOnAuth = pathname === '/auth';
 
   useEffect(() => {
     const checkUnreadMessages = async (currentUserId: string) => {
@@ -133,7 +134,7 @@ export default function Navbar({ searchQuery, onSearchChange }: NavbarProps) {
     router.refresh();
   };
 
-  if (hideOnGuestHome) {
+  if (hideOnGuestHome || hideOnAuth) {
     return null;
   }
 
@@ -239,11 +240,11 @@ export default function Navbar({ searchQuery, onSearchChange }: NavbarProps) {
           </>
         ) : (
           <>
-            <Link href="/auth" className="h-8 rounded-full bg-[#007782] px-2 text-[11px] sm:px-2.5 sm:text-xs font-semibold text-white inline-flex items-center justify-center whitespace-nowrap shrink-0">
+            <Link href="/auth?view=sign_up" className="h-8 rounded-full bg-[#007782] px-2 text-[11px] sm:px-2.5 sm:text-xs font-semibold text-white inline-flex items-center justify-center whitespace-nowrap shrink-0">
               <span className="sm:hidden">Reg.</span>
               <span className="hidden sm:inline">Regisztráció</span>
             </Link>
-            <Link href="/auth" className="h-8 rounded-full border border-gray-300 px-2 text-[11px] sm:px-2.5 sm:text-xs font-semibold text-gray-700 inline-flex items-center justify-center whitespace-nowrap shrink-0">
+            <Link href="/auth?view=sign_in" className="h-8 rounded-full border border-gray-300 px-2 text-[11px] sm:px-2.5 sm:text-xs font-semibold text-gray-700 inline-flex items-center justify-center whitespace-nowrap shrink-0">
               Belépés
             </Link>
           </>

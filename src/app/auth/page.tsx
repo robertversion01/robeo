@@ -3,7 +3,6 @@
 import { useEffect, useState } from 'react';
 import { supabase } from '@/lib/supabase';
 import { useRouter } from 'next/navigation';
-import Link from 'next/link';
 import { toast } from 'sonner';
 
 export default function AuthPage() {
@@ -16,8 +15,16 @@ export default function AuthPage() {
 
   useEffect(() => {
     if (typeof window === 'undefined') return;
-    const mode = new URLSearchParams(window.location.search).get('mode');
-    setIsLogin(mode !== 'register');
+    const params = new URLSearchParams(window.location.search);
+    const view = params.get('view');
+    const mode = params.get('mode');
+    if (view === 'sign_up' || mode === 'register') {
+      setIsLogin(false);
+      return;
+    }
+    if (view === 'sign_in' || mode === 'login') {
+      setIsLogin(true);
+    }
   }, []);
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -67,25 +74,17 @@ export default function AuthPage() {
     }
   };
 
-  const handleSocialClick = (provider: 'Google' | 'Facebook') => {
-    toast.info(`${provider} belépés hamarosan elérhető.`);
-  };
-
   const switchMode = () => {
     const next = !isLogin;
     setIsLogin(next);
-    router.replace(`/auth?mode=${next ? 'login' : 'register'}`);
+    router.replace(`/auth?view=${next ? 'sign_in' : 'sign_up'}`);
   };
 
   return (
-    <div className="min-h-screen bg-white text-gray-900 flex items-center justify-center px-4">
+    <div className="min-h-screen bg-[#0f1a1d] text-white flex items-center justify-center px-4 py-8">
       <div className="w-full max-w-md">
-        <Link href="/" className="block text-center mb-8 text-3xl font-bold tracking-wider text-[#007782] hover:text-[#00616b] transition-colors">
-          ROBEO
-        </Link>
-
-        <div className="bg-white border border-gray-200 rounded-3xl p-8 shadow-sm">
-          <h1 className="text-3xl font-bold text-center mb-6 text-gray-900">
+        <div className="bg-[#142327] border border-[#22353a] rounded-3xl p-8 shadow-sm">
+          <h1 className="text-3xl font-bold text-center mb-6 text-white">
             {isLogin ? 'Belépés' : 'Regisztráció'}
           </h1>
 
@@ -95,54 +94,32 @@ export default function AuthPage() {
             </div>
           )}
 
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 mb-5">
-            <button
-              type="button"
-              onClick={() => handleSocialClick('Google')}
-              className="w-full btn-base btn-secondary"
-            >
-              Google belépés
-            </button>
-            <button
-              type="button"
-              onClick={() => handleSocialClick('Facebook')}
-              className="w-full btn-base btn-secondary"
-            >
-              Facebook belépés
-            </button>
-          </div>
-
-          <div className="relative mb-5">
-            <div className="absolute inset-0 flex items-center">
-              <span className="w-full border-t border-gray-200" />
-            </div>
-            <div className="relative flex justify-center text-xs uppercase">
-              <span className="bg-white px-2 text-gray-500">vagy e-mail címmel</span>
-            </div>
+          <div className="mb-5 rounded-xl border border-[#2a3f44] bg-[#102024] px-3 py-2 text-center text-xs uppercase tracking-wide text-gray-300">
+            Regisztráció és belépés e-mail címmel
           </div>
 
           <form onSubmit={handleSubmit} className="space-y-4">
             <div>
-              <label className="block mb-2 font-medium text-gray-700">E-mail cím</label>
+              <label className="block mb-2 font-medium text-gray-200">E-mail cím</label>
               <input
                 type="email"
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
                 required
-                className="input-base focus:outline-none focus:ring-1 focus:ring-[#007782]"
+                className="w-full min-h-11 px-4 rounded-xl border border-[#2f4a50] bg-[#0f1d21] text-white placeholder:text-gray-400 focus:outline-none focus:ring-1 focus:ring-[#4baab5]"
                 placeholder="pelda@email.com"
               />
             </div>
 
             <div>
-              <label className="block mb-2 font-medium text-gray-700">Jelszó</label>
+              <label className="block mb-2 font-medium text-gray-200">Jelszó</label>
               <input
                 type="password"
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
                 required
                 minLength={6}
-                className="input-base focus:outline-none focus:ring-1 focus:ring-[#007782]"
+                className="w-full min-h-11 px-4 rounded-xl border border-[#2f4a50] bg-[#0f1d21] text-white placeholder:text-gray-400 focus:outline-none focus:ring-1 focus:ring-[#4baab5]"
                 placeholder="••••••••"
               />
             </div>
@@ -150,17 +127,17 @@ export default function AuthPage() {
             <button
               type="submit"
               disabled={loading}
-              className="w-full btn-base btn-primary disabled:opacity-50 disabled:cursor-not-allowed mt-1"
+              className="w-full h-12 rounded-xl bg-[#4baab5] text-black text-base font-semibold inline-flex items-center justify-center disabled:opacity-50 disabled:cursor-not-allowed mt-1"
             >
               {loading ? 'Folyamatban...' : isLogin ? 'Belépés' : 'Regisztráció'}
             </button>
           </form>
 
-          <div className="mt-6 text-center text-gray-500">
+          <div className="mt-6 text-center text-gray-300">
             {isLogin ? 'Még nincs fiókod?' : 'Már van fiókod?'}
             <button
               onClick={switchMode}
-              className="text-[#007782] hover:underline ml-1 font-medium"
+              className="text-[#4baab5] hover:underline ml-1 font-medium"
             >
               {isLogin ? 'Regisztrálj' : 'Jelentkezz be'}
             </button>
