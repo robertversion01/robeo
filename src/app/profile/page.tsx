@@ -428,14 +428,6 @@ export default function ProfilePage() {
                       Törlés
                     </button>
 
-                    <div className="absolute left-1.5 top-1.5 z-10">
-                      {isProductFeatured(product) ? (
-                        <span className="rounded-full bg-[#007782] px-2 py-0.5 text-[10px] font-semibold text-white">
-                          Kiemelt
-                        </span>
-                      ) : null}
-                    </div>
-
                     <div className="p-1.5 space-y-0.5">
                       <div className="text-gray-500 text-[8px] uppercase tracking-wider">
                         {categoryLabels[product.category] || product.category}

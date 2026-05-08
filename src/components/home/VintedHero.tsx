@@ -72,7 +72,7 @@ export default function VintedHero({ products }: VintedHeroProps) {
         ) : (
           <div
             ref={scrollerRef}
-            className="flex gap-2 overflow-x-auto no-scrollbar snap-x snap-mandatory scroll-smooth"
+            className="flex gap-2 overflow-x-auto no-scrollbar snap-x snap-mandatory scroll-smooth cursor-grab active:cursor-grabbing"
           >
             {heroProducts.map((item) => (
               <Link
@@ -81,12 +81,6 @@ export default function VintedHero({ products }: VintedHeroProps) {
                 className="snap-start shrink-0 w-[72%] sm:w-[44%] lg:w-[28%] rounded-xl overflow-hidden border border-gray-200 bg-white hover:border-[#007782]/40 transition-colors"
               >
                 <div className="relative aspect-[4/5] bg-gray-100">
-                  {typeof item.featured_until === 'string' &&
-                  new Date(item.featured_until).getTime() > Date.now() ? (
-                    <span className="absolute top-2 left-2 z-10 rounded-full bg-[#007782] px-2.5 py-1 text-[10px] font-semibold uppercase tracking-wide text-white shadow-sm">
-                      Kiemelt ajánlat
-                    </span>
-                  ) : null}
                   {item.image_url ? (
                     <img src={item.image_url} alt={item.name} className="h-full w-full object-cover" />
                   ) : (
