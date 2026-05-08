@@ -136,7 +136,7 @@ export default function Navbar({ searchQuery, onSearchChange }: NavbarProps) {
         ROBEO
       </Link>
 
-      <div className="flex-1 max-w-md min-w-0 w-full">
+      <div className={`flex-1 min-w-0 w-full ${user ? 'max-w-md' : 'max-w-[45vw] sm:max-w-sm'}`}>
         <div className="relative">
           <Search className="absolute left-2.5 top-1/2 -translate-y-1/2 text-gray-400" size={14} />
           <input 
@@ -172,7 +172,7 @@ export default function Navbar({ searchQuery, onSearchChange }: NavbarProps) {
         </div>
       </div>
       
-      <div className="flex items-center gap-0.5 md:gap-2">
+      <div className="flex items-center gap-1 md:gap-2 shrink-0">
         {loading ? (
             <div className="w-20 h-9 animate-pulse bg-gray-100 rounded-full"></div>
         ) : user ? (
@@ -227,9 +227,14 @@ export default function Navbar({ searchQuery, onSearchChange }: NavbarProps) {
             </div>
           </>
         ) : (
-          <Link href="/auth" className="btn-base btn-secondary rounded-full px-3">
-            Belépés
-          </Link>
+          <>
+            <Link href="/auth?mode=register" className="h-8 rounded-full bg-[#007782] px-2.5 text-xs font-semibold text-white inline-flex items-center justify-center whitespace-nowrap">
+              Regisztráció
+            </Link>
+            <Link href="/auth" className="h-8 rounded-full border border-gray-300 px-2.5 text-xs font-semibold text-gray-700 inline-flex items-center justify-center whitespace-nowrap">
+              Belépés
+            </Link>
+          </>
         )}
       </div>
     </nav>

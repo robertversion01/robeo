@@ -101,6 +101,7 @@ export default function VintedHero({ products }: VintedHeroProps) {
           <div
             ref={scrollerRef}
             className="flex gap-2 overflow-x-auto no-scrollbar snap-x snap-mandatory scroll-smooth cursor-grab active:cursor-grabbing"
+            style={{ willChange: 'scroll-position' }}
           >
             {marqueeItems.map((item, idx) => (
               <Link
