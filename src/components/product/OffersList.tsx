@@ -184,7 +184,7 @@ export default function OffersList() {
 
   if (offers.length === 0) {
     return (
-      <div className="text-center py-12 text-white/50">
+      <div className="text-center py-12 text-gray-500">
         <p>Még nincsenek beérkező ajánlataid</p>
       </div>
     );
@@ -193,10 +193,10 @@ export default function OffersList() {
   return (
     <div className="space-y-4">
       {offers.map(offer => (
-        <div key={offer.id} className="p-5 rounded-2xl bg-white/5 border border-white/10 backdrop-blur-sm">
+        <div key={offer.id} className="p-5 rounded-2xl bg-white border border-gray-200">
           <div className="flex flex-col md:flex-row md:items-center gap-4">
             
-            <div className="w-16 h-16 rounded-xl bg-white/10 overflow-hidden flex-shrink-0">
+            <div className="w-16 h-16 rounded-xl bg-gray-100 overflow-hidden flex-shrink-0">
               {offer.product.image_url ? (
                 <img src={offer.product.image_url} alt={offer.product.name} className="w-full h-full object-cover" />
               ) : (
@@ -207,10 +207,10 @@ export default function OffersList() {
             <div className="flex-1">
               <p className="font-semibold">{offer.product.name}</p>
               <div className="flex items-center gap-3 mt-1">
-                <span className="text-accent font-bold">{offer.offered_price.toLocaleString('hu-HU')} Ft</span>
-                <span className="text-white/40 text-sm">eredeti: {offer.product.price.toLocaleString('hu-HU')} Ft</span>
+                <span className="text-[#007782] font-bold">{offer.offered_price.toLocaleString('hu-HU')} Ft</span>
+                <span className="text-gray-500 text-sm">eredeti: {offer.product.price.toLocaleString('hu-HU')} Ft</span>
               </div>
-              {offer.message && <p className="text-white/60 text-sm mt-1">{offer.message}</p>}
+              {offer.message && <p className="text-gray-600 text-sm mt-1">{offer.message}</p>}
             </div>
 
             <div className="flex items-center gap-3">
@@ -234,11 +234,11 @@ export default function OffersList() {
                         setCounterValues((prev) => ({ ...prev, [offer.id]: e.target.value }))
                       }
                       placeholder="Ellenajanlat"
-                      className="w-32 rounded-xl bg-white/10 border border-white/20 px-2 py-1 text-sm"
+                      className="w-32 rounded-xl bg-gray-50 border border-gray-300 px-2 py-1 text-sm"
                     />
                     <button
                       onClick={() => sendCounterOffer(offer)}
-                      className="px-2 py-1 rounded-xl bg-indigo-500/20 hover:bg-indigo-500/30 text-indigo-300 text-xs transition-colors"
+                      className="px-3 py-1 rounded-full bg-gray-100 hover:bg-gray-200 text-gray-700 border border-gray-300 text-xs transition-colors"
                       title="Ellenajánlat"
                     >
                       Ellenajanlat
@@ -247,17 +247,17 @@ export default function OffersList() {
                   <div className="flex gap-2">
                   <button
                     onClick={() => updateOfferStatus(offer.id, 'accepted')}
-                    className="p-2.5 rounded-xl bg-green-500/20 hover:bg-green-500/30 text-green-400 transition-colors"
+                    className="px-3 py-1.5 rounded-full bg-[#007782] hover:bg-[#00616b] text-white text-sm transition-colors"
                     title="Elfogadás"
                   >
-                    <Check size={18} />
+                    <Check size={16} />
                   </button>
                   <button
                     onClick={() => updateOfferStatus(offer.id, 'rejected')}
-                    className="p-2.5 rounded-xl bg-red-500/20 hover:bg-red-500/30 text-red-400 transition-colors"
+                    className="px-3 py-1.5 rounded-full bg-white hover:bg-gray-100 text-gray-700 border border-gray-300 text-sm transition-colors"
                     title="Elutasítás"
                   >
-                    <X size={18} />
+                    <X size={16} />
                   </button>
                   </div>
                 </div>
@@ -266,7 +266,7 @@ export default function OffersList() {
               {offer.status === 'accepted' && (
                 <Link
                   href={`/checkout?offer=${offer.id}`}
-                  className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-accent/20 text-accent text-sm hover:bg-accent/30 transition-colors"
+                  className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-[#007782] text-white text-sm hover:bg-[#00616b] transition-colors"
                 >
                   <ExternalLink size={14} />
                   Fizetés

@@ -195,8 +195,8 @@ export default function MessagesPage() {
 
   if (loading) {
     return (
-      <div className="min-h-screen bg-gradient-to-br from-indigo-950 to-black text-white flex items-center justify-center">
-        <div className="animate-spin h-12 w-12 border-4 border-accent border-t-transparent rounded-full"></div>
+      <div className="min-h-screen bg-white text-gray-900 flex items-center justify-center">
+        <div className="animate-spin h-12 w-12 border-4 border-[#007782] border-t-transparent rounded-full"></div>
       </div>
     );
   }
@@ -232,33 +232,33 @@ export default function MessagesPage() {
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-indigo-950 to-black text-white">
+    <div className="min-h-screen bg-white text-gray-900">
 
       {/* Offer Modal */}
       {showOfferModal && (
-        <div className="fixed inset-0 bg-black/70 backdrop-blur-sm z-[100] flex items-center justify-center p-4">
-          <div className="bg-white/10 backdrop-blur-md border border-white/10 rounded-3xl p-8 max-w-md w-full">
+        <div className="fixed inset-0 bg-black/40 z-[100] flex items-center justify-center p-4">
+          <div className="bg-white border border-gray-200 rounded-2xl p-8 max-w-md w-full">
             <h2 className="text-2xl font-bold mb-4">💰 Ajánlat teszek</h2>
-            <p className="text-white/60 mb-6">Add meg az ajánlott összeget a termékért!</p>
+            <p className="text-gray-500 mb-6">Add meg az ajánlott összeget a termékért!</p>
             
             <input
               type="number"
               value={offerAmount}
               onChange={(e) => setOfferAmount(e.target.value)}
               placeholder="Összeg Ft-ban"
-              className="w-full px-5 py-4 bg-white/10 border border-white/20 rounded-xl focus:outline-none focus:border-accent focus:ring-1 focus:ring-accent transition-all text-xl text-center mb-6"
+              className="w-full px-5 py-4 bg-gray-50 border border-gray-300 rounded-xl focus:outline-none focus:border-[#007782] focus:ring-1 focus:ring-[#007782] transition-all text-xl text-center mb-6"
             />
 
             <div className="flex gap-4">
               <button
                 onClick={() => setShowOfferModal(false)}
-                className="flex-1 py-3 border border-white/30 rounded-xl hover:bg-white/10 transition-all"
+                className="flex-1 py-3 border border-gray-300 rounded-xl hover:bg-gray-100 transition-all"
               >
                 Mégse
               </button>
               <button
                 onClick={sendOffer}
-                className="flex-1 py-3 bg-accent text-black font-semibold rounded-xl hover:bg-accent/90 transition-all"
+                className="flex-1 py-3 bg-[#007782] text-white font-semibold rounded-xl hover:bg-[#00616b] transition-all"
               >
                 Ajánlat elküldése
               </button>
@@ -270,16 +270,16 @@ export default function MessagesPage() {
         <div className="max-w-6xl mx-auto h-full flex flex-col md:flex-row">
           
           {/* Offers Section */}
-          <div className={`w-full md:w-80 border-b md:border-b-0 md:border-r border-white/10 overflow-y-auto ${selectedConversation ? 'hidden md:block' : ''}`}>
-            <div className="p-5 border-b border-white/10">
+          <div className={`w-full md:w-80 border-b md:border-b-0 md:border-r border-gray-200 overflow-y-auto ${selectedConversation ? 'hidden md:block' : ''}`}>
+            <div className="p-5 border-b border-gray-200">
               <h2 className="text-xl font-bold mb-4">Beérkező ajánlatok</h2>
               <OffersList />
             </div>
 
-            <h2 className="text-xl font-bold p-5 border-b border-white/10">Beszélgetések</h2>
+            <h2 className="text-xl font-bold p-5 border-b border-gray-200">Beszélgetések</h2>
             
             {conversations.length === 0 ? (
-              <div className="p-8 text-center text-white/50">
+              <div className="p-8 text-center text-gray-500">
                 Nincs még beszélgetésed
               </div>
             ) : (
@@ -288,17 +288,17 @@ export default function MessagesPage() {
                   <button
                     key={conv.user_id}
                     onClick={() => loadConversation(conv.user_id, conv.email)}
-                    className={`w-full text-left p-5 border-b border-white/5 hover:bg-white/5 transition-colors ${
-                      selectedConversation === conv.user_id ? 'bg-white/10' : ''
+                    className={`w-full text-left p-5 border-b border-gray-100 hover:bg-gray-50 transition-colors ${
+                      selectedConversation === conv.user_id ? 'bg-gray-50' : ''
                     }`}
                   >
                     <div className="flex items-center gap-3">
-                      <div className="w-10 h-10 rounded-full bg-accent/20 flex items-center justify-center text-accent font-bold">
+                      <div className="w-10 h-10 rounded-full bg-[#007782]/10 flex items-center justify-center text-[#007782] font-bold">
                         {conv.email?.charAt(0).toUpperCase() || '?'}
                       </div>
                       <div className="flex-1 min-w-0">
                         <div className="font-medium mb-1 truncate">{conv.email}</div>
-                        <div className="text-sm text-white/60 truncate">{conv.last_message}</div>
+                        <div className="text-sm text-gray-500 truncate">{conv.last_message}</div>
                       </div>
                     </div>
                   </button>
@@ -310,20 +310,20 @@ export default function MessagesPage() {
           {/* Chat Area */}
           <div className={`flex-1 flex flex-col min-h-[70vh] md:min-h-0 ${selectedConversation ? 'block' : 'hidden md:flex'}`}>
             {!selectedConversation ? (
-              <div className="flex-1 flex items-center justify-center text-white/50">
+              <div className="flex-1 flex items-center justify-center text-gray-500">
                 Válassz ki egy beszélgetést
               </div>
             ) : (
               <>
                 {/* Chat Header (mobile back button) */}
-                <div className="flex items-center gap-3 p-4 border-b border-white/10 md:hidden">
+                <div className="flex items-center gap-3 p-4 border-b border-gray-200 md:hidden">
                   <button
                     onClick={closeConversation}
-                    className="p-2 rounded-full hover:bg-white/10 transition-colors"
+                    className="p-2 rounded-full hover:bg-gray-100 transition-colors"
                   >
                     ←
                   </button>
-                  <div className="w-8 h-8 rounded-full bg-accent/20 flex items-center justify-center text-accent font-bold text-sm">
+                  <div className="w-8 h-8 rounded-full bg-[#007782]/10 flex items-center justify-center text-[#007782] font-bold text-sm">
                     {selectedEmail?.charAt(0).toUpperCase() || '?'}
                   </div>
                   <span className="font-medium truncate">{selectedEmail}</span>
@@ -338,8 +338,8 @@ export default function MessagesPage() {
                       <div
                         className={`max-w-xs md:max-w-md px-5 py-3 rounded-2xl ${
                           msg.sender_id === user.id 
-                            ? 'bg-accent text-black rounded-br-none' 
-                            : 'bg-white/10 rounded-bl-none'
+                            ? 'bg-[#007782] text-white rounded-br-none'
+                            : 'bg-gray-100 text-gray-800 rounded-bl-none'
                         }`}
                       >
                         {msg.message_type === 'image' && msg.media_url ? (
@@ -354,13 +354,13 @@ export default function MessagesPage() {
                 </div>
 
                 {/* Message Input */}
-                <div className="p-4 border-t border-white/10">
+                <div className="p-4 border-t border-gray-200">
                   {/* Offer Button */}
                   {selectedConversation && (
                     <div className="mb-4">
                       <button
                         onClick={() => setShowOfferModal(true)}
-                        className="w-full py-3 border-2 border-accent text-accent font-medium rounded-xl hover:bg-accent hover:text-black transition-all"
+                        className="w-full py-3 border-2 border-[#007782] text-[#007782] font-medium rounded-xl hover:bg-[#007782] hover:text-white transition-all"
                       >
                         💰 Ajánlatot teszek
                       </button>
@@ -383,7 +383,7 @@ export default function MessagesPage() {
                       type="button"
                       onClick={() => fileInputRef.current?.click()}
                       disabled={uploadingImage}
-                      className="px-4 py-3 bg-white/10 border border-white/20 rounded-full hover:bg-white/20 transition-all"
+                      className="px-4 py-3 bg-gray-100 border border-gray-300 rounded-full hover:bg-gray-200 transition-all"
                     >
                       {uploadingImage ? '...' : '📷'}
                     </button>
@@ -392,11 +392,11 @@ export default function MessagesPage() {
                       value={newMessage}
                       onChange={(e) => setNewMessage(e.target.value)}
                       placeholder="Üzenet írása..."
-                      className="flex-1 px-5 py-3 bg-white/10 border border-white/20 rounded-full focus:outline-none focus:border-accent transition-all"
+                      className="flex-1 px-5 py-3 bg-gray-50 border border-gray-300 rounded-full focus:outline-none focus:border-[#007782] transition-all"
                     />
                     <button
                       type="submit"
-                      className="px-6 py-3 bg-accent text-black font-medium rounded-full hover:bg-accent/90 transition-all"
+                      className="px-6 py-3 bg-[#007782] text-white font-medium rounded-full hover:bg-[#00616b] transition-all"
                     >
                       Küldés
                     </button>

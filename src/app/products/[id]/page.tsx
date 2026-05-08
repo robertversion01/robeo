@@ -106,7 +106,7 @@ export default function ProductPage({ params }: { params: Promise<{ id: string }
 
   if (loading) {
     return (
-      <div className="min-h-screen bg-white dark:bg-gradient-to-br dark:from-indigo-950 dark:to-black text-gray-900 dark:text-white flex items-center justify-center">
+      <div className="min-h-screen bg-white text-gray-900 flex items-center justify-center">
         <div className="animate-spin h-12 w-12 border-4 border-accent border-t-transparent rounded-full"></div>
       </div>
     );
@@ -114,7 +114,7 @@ export default function ProductPage({ params }: { params: Promise<{ id: string }
 
   if (!product) {
     return (
-      <div className="min-h-screen bg-white dark:bg-gradient-to-br dark:from-indigo-950 dark:to-black text-gray-900 dark:text-white flex flex-col items-center justify-center">
+      <div className="min-h-screen bg-white text-gray-900 flex flex-col items-center justify-center">
         <h2 className="text-xl mb-4">A termék nem található</h2>
         <Link href="/" className="text-accent hover:underline">Vissza a főoldalra</Link>
       </div>
@@ -122,7 +122,7 @@ export default function ProductPage({ params }: { params: Promise<{ id: string }
   }
 
   return (
-    <div className="min-h-screen bg-white dark:bg-gradient-to-br dark:from-indigo-950 dark:to-black text-gray-900 dark:text-white">
+    <div className="min-h-screen bg-white text-gray-900">
 
       {/* Offer Modal */}
       <OfferModal
@@ -137,22 +137,22 @@ export default function ProductPage({ params }: { params: Promise<{ id: string }
       {/* Message Modal */}
       {showMessageModal && (
         <div className="fixed inset-0 bg-black/50 backdrop-blur-sm z-[100] flex items-center justify-center p-4">
-          <div className="bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-800 rounded-lg p-5 max-w-md w-full shadow-lg">
-            <h2 className="text-xl font-bold mb-3 text-gray-900 dark:text-white">Üzenet az eladónak</h2>
-            <p className="text-gray-600 dark:text-gray-400 text-sm mb-4">Írd meg mit szeretnél kérdezni a termékről!</p>
+          <div className="bg-white border border-gray-200 rounded-lg p-5 max-w-md w-full shadow-lg">
+            <h2 className="text-xl font-bold mb-3 text-gray-900">Üzenet az eladónak</h2>
+            <p className="text-gray-600 text-sm mb-4">Írd meg mit szeretnél kérdezni a termékről!</p>
             
             <textarea
               value={messageText}
               onChange={(e) => setMessageText(e.target.value)}
               placeholder="Üzenet szövege..."
               rows={4}
-              className="w-full px-3 py-2 bg-gray-50 dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg focus:outline-none focus:border-accent focus:ring-1 focus:ring-accent transition-all resize-none mb-4 text-sm"
+              className="w-full px-3 py-2 bg-gray-50 border border-gray-200 rounded-lg focus:outline-none focus:border-accent focus:ring-1 focus:ring-accent transition-all resize-none mb-4 text-sm"
             />
 
             <div className="flex gap-3">
               <button
                 onClick={() => setShowMessageModal(false)}
-                className="flex-1 py-2.5 border border-gray-300 dark:border-gray-700 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-800 transition-all text-gray-800 dark:text-white text-sm"
+                className="flex-1 py-2.5 border border-gray-300 rounded-lg hover:bg-gray-100 transition-all text-gray-800 text-sm"
               >
                 Mégse
               </button>
@@ -169,7 +169,7 @@ export default function ProductPage({ params }: { params: Promise<{ id: string }
       )}
 
       <main className="pt-14 pb-24 px-0 md:px-6">
-        <Link href="/" className="inline-flex items-center gap-2 text-gray-500 dark:text-white/60 hover:text-gray-900 dark:hover:text-white mb-3 transition-colors px-3 md:px-0 md:mb-6">
+        <Link href="/" className="inline-flex items-center gap-2 text-gray-500 hover:text-gray-900 mb-3 transition-colors px-3 md:px-0 md:mb-6">
           ← Vissza a főoldalra
         </Link>
 
@@ -178,7 +178,7 @@ export default function ProductPage({ params }: { params: Promise<{ id: string }
             {/* Product Image Gallery */}
             <div>
               {/* Main Image */}
-              <div className="aspect-square md:rounded-xl md:overflow-hidden bg-gray-100 dark:bg-white/5 mb-2 border border-gray-100 dark:border-white/10">
+              <div className="aspect-square md:rounded-xl md:overflow-hidden bg-gray-100 mb-2 border border-gray-200">
                 {(product.images && product.images[selectedImageIndex]) || product.image_url ? (
                   <img 
                     src={getOptimizedImageUrl(((product.images && product.images[selectedImageIndex]) || product.image_url) ?? '', 800, 90)} 
@@ -187,7 +187,7 @@ export default function ProductPage({ params }: { params: Promise<{ id: string }
                     className="w-full h-full object-cover"
                   />
                 ) : (
-                  <div className="w-full h-full flex items-center justify-center text-gray-400 dark:text-white/30 text-5xl">
+                  <div className="w-full h-full flex items-center justify-center text-gray-400 text-5xl">
                     📷
                   </div>
                 )}
@@ -203,7 +203,7 @@ export default function ProductPage({ params }: { params: Promise<{ id: string }
                       className={`w-14 h-14 rounded-md overflow-hidden flex-shrink-0 border transition-all ${
                         selectedImageIndex === index 
                           ? 'border-accent opacity-100 shadow-sm' 
-                          : 'border-gray-200 dark:border-white/10 opacity-70 hover:opacity-100'
+                          : 'border-gray-200 opacity-70 hover:opacity-100'
                       }`}
                     >
                       <img 
@@ -231,27 +231,27 @@ export default function ProductPage({ params }: { params: Promise<{ id: string }
               {/* Product Attributes */}
               <div className="flex flex-wrap gap-2 mb-3">
                 {product.brand && (
-                  <div className="bg-gray-100 dark:bg-white/5 px-2 py-1 rounded-md text-xs">
-                    <span className="text-gray-500 dark:text-gray-400">Márka:</span> {product.brand}
+                  <div className="bg-gray-100 px-2 py-1 rounded-md text-xs">
+                    <span className="text-gray-500">Márka:</span> {product.brand}
                   </div>
                 )}
                 {product.size && (
-                  <div className="bg-gray-100 dark:bg-white/5 px-2 py-1 rounded-md text-xs">
-                    <span className="text-gray-500 dark:text-gray-400">Méret:</span> {product.size}
+                  <div className="bg-gray-100 px-2 py-1 rounded-md text-xs">
+                    <span className="text-gray-500">Méret:</span> {product.size}
                   </div>
                 )}
                 {product.condition && (
-                  <div className="bg-gray-100 dark:bg-white/5 px-2 py-1 rounded-md text-xs">
-                    <span className="text-gray-500 dark:text-gray-400">Állapot:</span> {product.condition}
+                  <div className="bg-gray-100 px-2 py-1 rounded-md text-xs">
+                    <span className="text-gray-500">Állapot:</span> {product.condition}
                   </div>
                 )}
               </div>
               
-              <div className="text-gray-700 dark:text-white/70 text-sm leading-relaxed mb-4 whitespace-pre-line">
+              <div className="text-gray-700 text-sm leading-relaxed mb-4 whitespace-pre-line">
                 {product.description}
               </div>
 
-               <div className="fixed bottom-0 left-0 right-0 md:static mt-auto p-2 md:p-0 md:mt-4 bg-white dark:bg-black/80 backdrop-blur-md border-t border-gray-200 dark:border-white/10 md:border-t-0 md:bg-transparent md:backdrop-blur-none md:space-y-3 space-y-1.5 shadow-lg md:shadow-none">
+               <div className="fixed bottom-0 left-0 right-0 md:static mt-auto p-2 md:p-0 md:mt-4 bg-white backdrop-blur-md border-t border-gray-200 md:border-t-0 md:bg-transparent md:backdrop-blur-none md:space-y-3 space-y-1.5 shadow-lg md:shadow-none">
                  <button 
                   onClick={() =>
                     acceptedOffer
@@ -264,13 +264,13 @@ export default function ProductPage({ params }: { params: Promise<{ id: string }
                  </button>
                   <button 
                     onClick={() => setShowOfferModal(true)}
-                    className="w-full py-2.5 md:py-3 bg-gray-100 dark:bg-white/10 text-gray-800 dark:text-white font-semibold rounded-lg hover:bg-gray-200 dark:hover:bg-white/20 transition-all duration-300 text-sm"
+                    className="w-full py-2.5 md:py-3 bg-gray-100 text-gray-800 font-semibold rounded-lg hover:bg-gray-200 transition-all duration-300 text-sm"
                   >
                     Ajánlatot teszek
                   </button>
                   <button 
                     onClick={() => setShowMessageModal(true)}
-                    className="w-full py-2.5 md:py-3 border border-gray-300 dark:border-white/30 text-gray-800 dark:text-white font-semibold rounded-lg hover:bg-gray-100 dark:hover:bg-white/10 transition-all duration-300 text-sm"
+                    className="w-full py-2.5 md:py-3 border border-gray-300 text-gray-800 font-semibold rounded-lg hover:bg-gray-100 transition-all duration-300 text-sm"
                   >
                     Üzenet az eladónak
                   </button>
