@@ -1,5 +1,6 @@
 'use client';
 
+import { useEffect, useState } from 'react';
 import ProductCard from './ProductCard';
 import ProductGridSkeleton from './ProductGridSkeleton';
 import EmptyState from '@/components/ui/EmptyState';
@@ -10,9 +11,24 @@ interface ProductGridProps {
   loading: boolean;
   favorites: Set<string>;
   onToggleFavorite: (productId: string) => void;
+  transitionKey?: string;
 }
 
-export default function ProductGrid({ products, loading, favorites, onToggleFavorite }: ProductGridProps) {
+export default function ProductGrid({
+  products,
+  loading,
+  favorites,
+  onToggleFavorite,
+  transitionKey = 'default',
+}: ProductGridProps) {
+  const [visible, setVisible] = useState(true);
+
+  useEffect(() => {
+    setVisible(false);
+    const frame = window.requestAnimationFrame(() => setVisible(true));
+    return () => window.cancelAnimationFrame(frame);
+  }, [transitionKey, products.length]);
+
   if (loading) {
     return <ProductGridSkeleton />;
   }
@@ -28,7 +44,7 @@ export default function ProductGrid({ products, loading, favorites, onToggleFavo
   }
 
   return (
-    <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 xl:grid-cols-6 gap-1.5 md:gap-2">
+    <div className={`grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 xl:grid-cols-6 gap-1.5 md:gap-2 transition-opacity duration-300 ${visible ? 'opacity-100' : 'opacity-0'}`}>
       {products.map((product) => (
         <ProductCard
           key={product.id}

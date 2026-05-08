@@ -4,6 +4,22 @@ import { useEffect, useState, useMemo } from 'react';
 import { supabase } from '@/lib/supabase';
 import type { Product } from '@/types';
 
+const CATEGORY_ALIASES: Record<string, string[]> = {
+  clothing: ['clothing', 'ruhazat', 'ruházat', 'clothes'],
+  shoes: ['shoes', 'cipo', 'cipő', 'shoe'],
+  accessories: ['accessories', 'kiegeszitok', 'kiegészítők', 'accessory'],
+  electronics: ['electronics', 'elektronika', 'electronic'],
+  other: ['other', 'egyeb', 'egyéb'],
+};
+
+function normalizeCategory(value: string) {
+  return value
+    .toLowerCase()
+    .normalize('NFD')
+    .replace(/[\u0300-\u036f]/g, '')
+    .trim();
+}
+
 export function useProducts() {
   const [products, setProducts] = useState<Product[]>([]);
   const [loading, setLoading] = useState(true);
@@ -121,7 +137,8 @@ export function useProducts() {
     }
 
     if (selectedCategory !== 'all') {
-      filtered = filtered.filter(p => p.category === selectedCategory);
+      const aliases = CATEGORY_ALIASES[selectedCategory] || [selectedCategory];
+      filtered = filtered.filter((p) => aliases.includes(normalizeCategory(p.category || '')));
     }
 
     return filtered;

@@ -16,8 +16,10 @@ export default function Filters({
       <div className="flex gap-1.5 min-w-max overflow-x-auto no-scrollbar">
         {categories.map((category) => (
           <button
+            type="button"
             key={category.id}
             onClick={() => onCategoryChange(category.id)}
+            aria-pressed={selectedCategory === category.id}
             className={`px-3 h-9 text-xs sm:text-sm rounded-full transition-all duration-200 whitespace-nowrap ${
               selectedCategory === category.id
                 ? 'bg-[#007782] text-white font-medium border border-[#007782]'

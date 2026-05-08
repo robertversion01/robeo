@@ -48,6 +48,7 @@ export default function Home() {
               loading={loading}
               favorites={favorites}
               onToggleFavorite={toggleFavorite}
+              transitionKey={selectedCategory}
             />
           </div>
         </main>
