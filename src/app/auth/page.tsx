@@ -85,7 +85,7 @@ export default function AuthPage() {
         </Link>
 
         <div className="bg-white border border-gray-200 rounded-3xl p-8 shadow-sm">
-          <h1 className="text-3xl font-bold text-center mb-8 text-gray-900">
+          <h1 className="text-3xl font-bold text-center mb-6 text-gray-900">
             {isLogin ? 'Belépés' : 'Regisztráció'}
           </h1>
 
@@ -99,14 +99,14 @@ export default function AuthPage() {
             <button
               type="button"
               onClick={() => handleSocialClick('Google')}
-              className="w-full py-2.5 rounded-xl border border-gray-300 bg-white hover:bg-gray-50 text-gray-800 font-medium transition-colors"
+              className="w-full min-h-11 py-2.5 rounded-xl border border-gray-300 bg-white hover:bg-gray-50 text-gray-800 font-medium transition-colors"
             >
               Google belépés
             </button>
             <button
               type="button"
               onClick={() => handleSocialClick('Facebook')}
-              className="w-full py-2.5 rounded-xl border border-gray-300 bg-white hover:bg-gray-50 text-gray-800 font-medium transition-colors"
+              className="w-full min-h-11 py-2.5 rounded-xl border border-gray-300 bg-white hover:bg-gray-50 text-gray-800 font-medium transition-colors"
             >
               Facebook belépés
             </button>
@@ -121,7 +121,7 @@ export default function AuthPage() {
             </div>
           </div>
 
-          <form onSubmit={handleSubmit} className="space-y-5">
+          <form onSubmit={handleSubmit} className="space-y-4">
             <div>
               <label className="block mb-2 font-medium text-gray-700">E-mail cím</label>
               <input
@@ -129,7 +129,7 @@ export default function AuthPage() {
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
                 required
-                className="w-full px-4 py-3 bg-white border border-gray-300 rounded-xl focus:outline-none focus:border-[#007782] focus:ring-1 focus:ring-[#007782] transition-all"
+              className="w-full min-h-11 px-4 py-3 bg-white border border-gray-300 rounded-xl focus:outline-none focus:border-[#007782] focus:ring-1 focus:ring-[#007782] transition-all"
                 placeholder="pelda@email.com"
               />
             </div>
@@ -142,7 +142,7 @@ export default function AuthPage() {
                 onChange={(e) => setPassword(e.target.value)}
                 required
                 minLength={6}
-                className="w-full px-4 py-3 bg-white border border-gray-300 rounded-xl focus:outline-none focus:border-[#007782] focus:ring-1 focus:ring-[#007782] transition-all"
+                className="w-full min-h-11 px-4 py-3 bg-white border border-gray-300 rounded-xl focus:outline-none focus:border-[#007782] focus:ring-1 focus:ring-[#007782] transition-all"
                 placeholder="••••••••"
               />
             </div>
@@ -150,13 +150,13 @@ export default function AuthPage() {
             <button
               type="submit"
               disabled={loading}
-              className="w-full py-4 bg-[#007782] text-white font-semibold rounded-xl hover:bg-[#00616b] transition-all duration-300 disabled:opacity-50 disabled:cursor-not-allowed mt-2"
+              className="w-full min-h-11 py-3 bg-[#007782] text-white font-semibold rounded-xl hover:bg-[#00616b] transition-all duration-300 disabled:opacity-50 disabled:cursor-not-allowed mt-1"
             >
               {loading ? 'Folyamatban...' : isLogin ? 'Belépés' : 'Regisztráció'}
             </button>
           </form>
 
-          <div className="mt-8 text-center text-gray-500">
+          <div className="mt-6 text-center text-gray-500">
             {isLogin ? 'Még nincs fiókod?' : 'Már van fiókod?'}
             <button
               onClick={switchMode}

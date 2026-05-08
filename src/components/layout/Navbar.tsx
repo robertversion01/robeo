@@ -89,7 +89,7 @@ export default function Navbar({ searchQuery, onSearchChange }: NavbarProps) {
   };
 
   return (
-    <nav className="fixed top-0 left-0 right-0 z-50 px-3 py-2 flex items-center justify-between gap-2 bg-white border-b border-gray-200 shadow-sm">
+    <nav className="fixed top-0 left-0 right-0 z-50 px-3 py-1.5 flex items-center justify-between gap-2 bg-white border-b border-gray-200 shadow-sm">
       <Link href="/" className="text-base font-bold tracking-wide hover:text-[#007782] transition-colors flex-shrink-0 text-[#007782]">
         ROBEO
       </Link>
@@ -103,7 +103,7 @@ export default function Navbar({ searchQuery, onSearchChange }: NavbarProps) {
               placeholder="Keresés..." 
               value={searchQuery || ''}
               onChange={(e) => onSearchChange(e.target.value)}
-              className="w-full pl-8 pr-3 py-2 bg-gray-100 rounded-full text-xs border border-gray-200 focus:outline-none focus:border-[#007782] transition-colors"
+              className="w-full pl-8 pr-3 py-2 bg-gray-100 rounded-full text-sm border border-gray-200 focus:outline-none focus:border-[#007782] transition-colors"
             />
           </div>
         </div>
@@ -111,19 +111,19 @@ export default function Navbar({ searchQuery, onSearchChange }: NavbarProps) {
       
       <div className="flex items-center gap-0.5 md:gap-2">
         {loading ? (
-            <div className="w-16 h-7 animate-pulse bg-gray-100 rounded-full"></div>
+            <div className="w-20 h-9 animate-pulse bg-gray-100 rounded-full"></div>
         ) : user ? (
           <>
-            <Link href="/upload" className="p-1.5 rounded-full hover:bg-gray-100 transition-colors">
+            <Link href="/upload" className="h-9 w-9 flex items-center justify-center rounded-full hover:bg-gray-100 transition-colors">
               <Plus size={18} className="text-gray-700" />
             </Link>
-            <Link href="/messages" className="p-1.5 rounded-full hover:bg-gray-100 transition-colors relative">
+            <Link href="/messages" className="h-9 w-9 flex items-center justify-center rounded-full hover:bg-gray-100 transition-colors relative">
               <MessageCircle size={18} className="text-gray-700" />
               {hasUnreadMessages ? (
                 <span className="absolute top-1 right-1 h-2.5 w-2.5 rounded-full bg-red-500 border border-white" />
               ) : null}
             </Link>
-            <Link href="/favorites" className="p-1.5 rounded-full hover:bg-gray-100 transition-colors">
+            <Link href="/favorites" className="h-9 w-9 flex items-center justify-center rounded-full hover:bg-gray-100 transition-colors">
               <Heart size={18} className="text-gray-700" />
             </Link>
             <div className="relative">
@@ -133,7 +133,7 @@ export default function Navbar({ searchQuery, onSearchChange }: NavbarProps) {
                   e.stopPropagation();
                   setShowProfileMenu((prev) => !prev);
                 }}
-                className="p-1.5 rounded-full hover:bg-gray-100 transition-colors"
+                className="h-9 w-9 flex items-center justify-center rounded-full hover:bg-gray-100 transition-colors"
                 aria-label="Profil menü"
               >
                 <User size={18} className="text-gray-700" />
@@ -145,7 +145,7 @@ export default function Navbar({ searchQuery, onSearchChange }: NavbarProps) {
                 >
                   <Link
                     href="/profile"
-                    className="w-full flex items-center gap-2 px-3 py-2 rounded-lg text-sm text-gray-700 hover:bg-gray-100"
+                    className="w-full min-h-9 flex items-center gap-2 px-3 py-2 rounded-lg text-sm text-gray-700 hover:bg-gray-100"
                     onClick={() => setShowProfileMenu(false)}
                   >
                     <User size={15} />
@@ -154,7 +154,7 @@ export default function Navbar({ searchQuery, onSearchChange }: NavbarProps) {
                   <button
                     type="button"
                     onClick={handleSignOut}
-                    className="w-full flex items-center gap-2 px-3 py-2 rounded-lg text-sm text-red-600 hover:bg-red-50"
+                    className="w-full min-h-9 flex items-center gap-2 px-3 py-2 rounded-lg text-sm text-red-600 hover:bg-red-50"
                   >
                     <LogOut size={15} />
                     Kijelentkezés
@@ -164,7 +164,7 @@ export default function Navbar({ searchQuery, onSearchChange }: NavbarProps) {
             </div>
           </>
         ) : (
-          <Link href="/auth" className="px-3 py-1 text-xs font-medium border border-gray-300 rounded-full hover:bg-gray-100 transition-all duration-300 text-gray-800">
+          <Link href="/auth" className="px-3 py-1.5 text-sm font-medium border border-gray-300 rounded-full hover:bg-gray-100 transition-all duration-300 text-gray-800">
             Belépés
           </Link>
         )}

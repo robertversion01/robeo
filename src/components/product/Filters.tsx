@@ -16,7 +16,7 @@ export default function Filters({ categories, selectedCategory, onCategoryChange
             <button
               key={category.id}
               onClick={() => onCategoryChange(category.id)}
-              className={`px-3 py-1.5 text-xs rounded-full transition-all duration-200 ${
+              className={`px-3 py-2 text-sm rounded-full transition-all duration-200 whitespace-nowrap ${
                 selectedCategory === category.id
                   ? 'bg-[#007782] text-white font-medium border border-[#007782]'
                   : 'bg-white text-gray-700 border border-gray-300 hover:bg-gray-50'

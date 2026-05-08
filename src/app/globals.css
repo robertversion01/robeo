@@ -106,6 +106,15 @@ button, .btn {
   letter-spacing: 0.01em;
 }
 
+button:focus-visible,
+a:focus-visible,
+input:focus-visible,
+textarea:focus-visible,
+select:focus-visible {
+  outline: 2px solid var(--ring);
+  outline-offset: 2px;
+}
+
 /* Vinted-style inputs */
 input, textarea, select {
   font-size: 0.875rem;
