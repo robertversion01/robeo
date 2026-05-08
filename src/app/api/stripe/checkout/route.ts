@@ -188,9 +188,11 @@ export async function POST(req: NextRequest) {
     // Pre-generate transaction id so it can be attached to Stripe metadata too.
     const transactionId = randomUUID();
 
-    // Vinted-style buyer protection fee (10%)
+    // Vinted-style buyer protection fee: fixed 250 HUF + 10% of product price
     const productPrice = product.price;
-    const buyerProtectionFee = Math.round(productPrice * 0.1);
+    const fixedBuyerProtectionFee = 250;
+    const variableBuyerProtectionFee = Math.round(productPrice * 0.1);
+    const buyerProtectionFee = fixedBuyerProtectionFee + variableBuyerProtectionFee;
     const totalAmount = productPrice + buyerProtectionFee;
     
     const checkoutSessionPayload: any = {

@@ -97,7 +97,9 @@ export default function CheckoutContent() {
   ];
 
   const shippingCost = shippingOptions.find(s => s.value === shippingMethod)?.cost || 0;
-  const buyerProtectionFee = Math.round(amount * 0.1);
+  const fixedBuyerProtectionFee = 250;
+  const variableBuyerProtectionFee = Math.round(amount * 0.1);
+  const buyerProtectionFee = fixedBuyerProtectionFee + variableBuyerProtectionFee;
   const total = amount + buyerProtectionFee;
 
   const processPayment = async () => {
@@ -235,7 +237,9 @@ export default function CheckoutContent() {
                     </span>
                   </div>
                   <div className="flex justify-between text-sm">
-                    <span className="text-gray-600 dark:text-white/70">Vevovedelemi dij (10%)</span>
+                    <span className="text-gray-600 dark:text-white/70">
+                      Vevovedelmi dij ({fixedBuyerProtectionFee.toLocaleString('hu-HU')} Ft + 10%)
+                    </span>
                     <span className="font-medium text-gray-900 dark:text-white">
                       {buyerProtectionFee.toLocaleString('hu-HU')} Ft
                     </span>
