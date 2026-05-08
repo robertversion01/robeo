@@ -165,10 +165,10 @@ export default function OffersList() {
   };
 
   const statusColors: Record<string, string> = {
-    pending: 'bg-yellow-500/20 text-yellow-400 border-yellow-500/30',
-    accepted: 'bg-green-500/20 text-green-400 border-green-500/30',
-    rejected: 'bg-red-500/20 text-red-400 border-red-500/30',
-    countered: 'bg-indigo-500/20 text-indigo-300 border-indigo-500/30'
+    pending: 'bg-yellow-50 text-yellow-700 border-yellow-200',
+    accepted: 'bg-green-50 text-green-700 border-green-200',
+    rejected: 'bg-red-50 text-red-700 border-red-200',
+    countered: 'bg-indigo-50 text-indigo-700 border-indigo-200'
   };
 
   const statusLabels: Record<string, string> = {
@@ -193,7 +193,7 @@ export default function OffersList() {
   return (
     <div className="space-y-4">
       {offers.map(offer => (
-        <div key={offer.id} className="p-5 rounded-2xl bg-white border border-gray-200">
+        <div key={offer.id} className="card-base p-5">
           <div className="flex flex-col md:flex-row md:items-center gap-4">
             
             <div className="w-16 h-16 rounded-xl bg-gray-100 overflow-hidden flex-shrink-0">
@@ -234,11 +234,11 @@ export default function OffersList() {
                         setCounterValues((prev) => ({ ...prev, [offer.id]: e.target.value }))
                       }
                       placeholder="Ellenajanlat"
-                      className="w-32 rounded-xl bg-gray-50 border border-gray-300 px-2 py-1 text-sm"
+                      className="w-32 input-base min-h-9 px-2.5 py-1.5 text-sm focus:outline-none focus:ring-1 focus:ring-[#007782]"
                     />
                     <button
                       onClick={() => sendCounterOffer(offer)}
-                      className="px-3 py-1 rounded-full bg-gray-100 hover:bg-gray-200 text-gray-700 border border-gray-300 text-xs transition-colors"
+                      className="btn-base btn-secondary min-h-9 px-3 text-xs"
                       title="Ellenajánlat"
                     >
                       Ellenajanlat
@@ -247,14 +247,14 @@ export default function OffersList() {
                   <div className="flex gap-2">
                   <button
                     onClick={() => updateOfferStatus(offer.id, 'accepted')}
-                    className="px-3 py-1.5 rounded-full bg-[#007782] hover:bg-[#00616b] text-white text-sm transition-colors"
+                    className="btn-base btn-primary min-h-9 px-3"
                     title="Elfogadás"
                   >
                     <Check size={16} />
                   </button>
                   <button
                     onClick={() => updateOfferStatus(offer.id, 'rejected')}
-                    className="px-3 py-1.5 rounded-full bg-white hover:bg-gray-100 text-gray-700 border border-gray-300 text-sm transition-colors"
+                    className="btn-base btn-secondary min-h-9 px-3"
                     title="Elutasítás"
                   >
                     <X size={16} />
@@ -266,7 +266,7 @@ export default function OffersList() {
               {offer.status === 'accepted' && (
                 <Link
                   href={`/checkout?offer=${offer.id}`}
-                  className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-[#007782] text-white text-sm hover:bg-[#00616b] transition-colors"
+                  className="inline-flex items-center gap-1.5 btn-base btn-primary min-h-9 px-3"
                 >
                   <ExternalLink size={14} />
                   Fizetés

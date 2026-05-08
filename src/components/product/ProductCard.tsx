@@ -15,7 +15,7 @@ interface ProductCardProps {
 export default function ProductCard({ product, isFavorite, onToggleFavorite }: ProductCardProps) {
   return (
     <div 
-      className="group bg-white border border-gray-200 rounded-md overflow-hidden transition-colors duration-200 relative"
+      className="group card-base overflow-hidden transition-colors duration-200 relative hover:border-[#007782]/40"
     >
       <Link href={`/products/${product.id}`} className="aspect-[4/5] overflow-hidden block">
         {product.image_url ? (

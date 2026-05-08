@@ -54,7 +54,7 @@ export default function FreshOffersStrip({
       </div>
 
       {items.length === 0 ? (
-        <div className="bg-white border border-gray-200 rounded-xl px-4 py-3 text-sm text-gray-500">
+        <div className="card-base px-4 py-3 text-sm text-gray-500">
           Jelenleg nincs elérhető friss ajánlat.
         </div>
       ) : (
@@ -63,7 +63,7 @@ export default function FreshOffersStrip({
           <Link
             key={item.id}
             href={`/products/${item.id}`}
-            className="min-w-[220px] max-w-[220px] bg-white border border-gray-200 rounded-xl p-2.5 hover:border-[#007782]/40 transition-colors"
+            className="min-w-[220px] max-w-[220px] card-base p-2.5 hover:border-[#007782]/40 transition-colors"
           >
             <div className="flex items-center gap-2.5">
               <div className="h-14 w-14 bg-gray-100 rounded-lg overflow-hidden shrink-0">
