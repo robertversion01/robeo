@@ -142,6 +142,7 @@ ALTER TABLE IF EXISTS public.products
 -- 12/c Feldolgozott Stripe webhook események (evt_…) — idempotencia + hibanapló
 -- Futtasd egyben ezt a blokkot (CREATE + RLS + REVOKE). Ha a Studio csak a CREATE-ot kéri:
 -- válaszd a „Run and enable RLS” opciót, majd futtasd a REVOKE sorokat külön is.
+-- Önálló, teljes szkript: supabase/sql/apply_stripe_webhook_events.sql
 CREATE TABLE IF NOT EXISTS public.stripe_webhook_events (
   stripe_event_id TEXT PRIMARY KEY,
   received_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
@@ -149,7 +150,49 @@ CREATE TABLE IF NOT EXISTS public.stripe_webhook_events (
   error TEXT
 );
 
--- Régi séma (id oszlop): átnevezés csak ha még nincs stripe_event_id (különben 42701)
+-- Hiányzó oszlopok (régi táblán is lefut)
+ALTER TABLE public.stripe_webhook_events ADD COLUMN IF NOT EXISTS processed_at TIMESTAMPTZ;
+ALTER TABLE public.stripe_webhook_events ADD COLUMN IF NOT EXISTS error TEXT;
+
+-- Ritka: egyszerre létezett id ÉS stripe_event_id (félbemaradt migráció) — egyesítés, PK javítás
+DO $$
+DECLARE
+  pk_rec RECORD;
+BEGIN
+  IF EXISTS (
+    SELECT 1 FROM information_schema.columns
+    WHERE table_schema = 'public' AND table_name = 'stripe_webhook_events' AND column_name = 'id'
+  ) AND EXISTS (
+    SELECT 1 FROM information_schema.columns
+    WHERE table_schema = 'public' AND table_name = 'stripe_webhook_events' AND column_name = 'stripe_event_id'
+  ) THEN
+    UPDATE public.stripe_webhook_events t
+    SET stripe_event_id = t.id
+    WHERE t.stripe_event_id IS NULL OR btrim(t.stripe_event_id) = '';
+
+    FOR pk_rec IN
+      SELECT c.conname
+      FROM pg_constraint c
+      WHERE c.conrelid = 'public.stripe_webhook_events'::regclass
+        AND c.contype = 'p'
+    LOOP
+      EXECUTE format('ALTER TABLE public.stripe_webhook_events DROP CONSTRAINT %I', pk_rec.conname);
+    END LOOP;
+
+    ALTER TABLE public.stripe_webhook_events DROP COLUMN id;
+
+    IF NOT EXISTS (
+      SELECT 1 FROM pg_constraint c
+      WHERE c.conrelid = 'public.stripe_webhook_events'::regclass
+        AND c.contype = 'p'
+    ) THEN
+      ALTER TABLE public.stripe_webhook_events
+        ADD CONSTRAINT stripe_webhook_events_pkey PRIMARY KEY (stripe_event_id);
+    END IF;
+  END IF;
+END $$;
+
+-- Régi séma: csak id — átnevezés stripe_event_id-re (csak ha még nincs stripe_event_id)
 DO $$
 BEGIN
   IF EXISTS (
@@ -162,9 +205,6 @@ BEGIN
     ALTER TABLE public.stripe_webhook_events RENAME COLUMN id TO stripe_event_id;
   END IF;
 END $$;
-
-ALTER TABLE public.stripe_webhook_events ADD COLUMN IF NOT EXISTS processed_at TIMESTAMPTZ;
-ALTER TABLE public.stripe_webhook_events ADD COLUMN IF NOT EXISTS error TEXT;
 
 ALTER TABLE public.stripe_webhook_events ENABLE ROW LEVEL SECURITY;
 
