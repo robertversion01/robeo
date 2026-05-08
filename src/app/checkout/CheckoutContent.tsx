@@ -157,19 +157,19 @@ export default function CheckoutContent() {
 
   if (loading) {
     return (
-      <div className="min-h-screen bg-white dark:bg-gradient-to-br dark:from-indigo-950 dark:to-black text-gray-900 dark:text-white flex items-center justify-center">
+      <div className="min-h-screen bg-white text-gray-900 flex items-center justify-center">
         <div className="animate-spin h-10 w-10 border-4 border-accent border-t-transparent rounded-full"></div>
       </div>
     );
   }
 
   return (
-    <div className="min-h-screen bg-white dark:bg-gradient-to-br dark:from-indigo-950 dark:to-black text-gray-900 dark:text-white">
-      <main className="min-h-screen pt-16 pb-24">
+    <div className="min-h-screen bg-white text-gray-900">
+      <main className="min-h-screen pt-14 pb-16">
         <div className="max-w-4xl mx-auto px-4">
           {/* Back button + Title */}
-          <div className="flex items-center gap-3 mb-6 pt-4">
-            <button onClick={() => router.push(backUrl)} className="p-2 rounded-full hover:bg-gray-100 dark:hover:bg-white/10 transition-colors text-gray-700 dark:text-white">
+          <div className="flex items-center gap-3 mb-4 pt-3">
+            <button onClick={() => router.push(backUrl)} className="p-2 rounded-full hover:bg-gray-100 transition-colors text-gray-700">
               <ArrowLeft size={18} />
             </button>
             <h1 className="text-xl font-bold">Fizetés</h1>
@@ -179,32 +179,32 @@ export default function CheckoutContent() {
             {/* Left Column: Product + Shipping */}
             <div className="lg:col-span-3 space-y-6">
               {/* Product Summary - Vinted style card */}
-              <div className="bg-white dark:bg-white/5 border border-gray-200 dark:border-white/10 rounded-lg p-4">
+              <div className="bg-white border border-gray-200 rounded-lg p-4">
                 <div className="flex gap-3">
-                  <div className="w-20 h-20 rounded-md overflow-hidden bg-gray-100 dark:bg-white/10 flex-shrink-0">
+                  <div className="w-20 h-20 rounded-md overflow-hidden bg-gray-100 flex-shrink-0">
                     {product?.image_url ? (
                       <img src={product.image_url} alt={product.name} className="w-full h-full object-cover" />
                     ) : (
-                      <div className="w-full h-full flex items-center justify-center text-2xl text-gray-400 dark:text-white/40">📷</div>
+                      <div className="w-full h-full flex items-center justify-center text-2xl text-gray-400">📷</div>
                     )}
                   </div>
                   <div className="flex-1 min-w-0">
-                    <h3 className="font-semibold text-base truncate text-gray-900 dark:text-white">{product?.name}</h3>
-                    <div className="text-gray-500 dark:text-white/50 text-xs mt-1">
+                    <h3 className="font-semibold text-base truncate text-gray-900">{product?.name}</h3>
+                    <div className="text-gray-500 text-xs mt-1">
                       {product?.category === 'clothing' ? 'Ruházat' :
                        product?.category === 'shoes' ? 'Cipő' :
                        product?.category === 'accessories' ? 'Kiegészítők' : product?.category}
                     </div>
                     <div className="text-accent font-bold text-lg mt-1">{amount.toLocaleString('hu-HU')} Ft</div>
                     {isDirectPurchase && (
-                      <div className="text-[10px] text-gray-400 dark:text-white/40 mt-0.5">Közvetlen vásárlás</div>
+                      <div className="text-[10px] text-gray-400 mt-0.5">Közvetlen vásárlás</div>
                     )}
                   </div>
                 </div>
               </div>
 
               {/* Shipping Selection - Vinted radio card style */}
-              <div className="bg-white dark:bg-white/5 border border-gray-200 dark:border-white/10 rounded-lg p-4">
+              <div className="bg-white border border-gray-200 rounded-lg p-4">
                 <ShippingSelector
                   value={shippingMethod}
                   onChange={setShippingMethod}
@@ -215,8 +215,8 @@ export default function CheckoutContent() {
               <div className="bg-accent/5 border border-accent/20 rounded-lg p-3 flex items-start gap-2">
                 <ShieldCheck size={18} className="text-accent flex-shrink-0 mt-0.5" />
                 <div>
-                  <p className="text-sm font-medium text-gray-900 dark:text-white">Vevővédelem</p>
-                  <p className="text-xs text-gray-500 dark:text-white/50 mt-0.5">
+                  <p className="text-sm font-medium text-gray-900">Vevővédelem</p>
+                  <p className="text-xs text-gray-500 mt-0.5">
                     A vevővédelmi díj biztosítja, hogy ha a termék nem érkezik meg, 
                     vagy nem egyezik a leírással, teljes visszatérítést kapsz.
                   </p>
@@ -226,33 +226,33 @@ export default function CheckoutContent() {
 
             {/* Right Column: Price Summary - Vinted sticky sidebar */}
             <div className="lg:col-span-2 min-w-0">
-              <div className="bg-white dark:bg-white/5 border border-gray-200 dark:border-white/10 rounded-lg p-4 lg:sticky lg:top-24 w-full">
+              <div className="bg-white border border-gray-200 rounded-lg p-4 lg:sticky lg:top-20 w-full">
                 <h3 className="font-bold text-base mb-4">Összegzés</h3>
                 
                 <div className="space-y-3 text-sm">
                   <div className="flex justify-between text-sm">
-                    <span className="text-gray-600 dark:text-white/70">Termék ára</span>
-                    <span className="font-medium text-gray-900 dark:text-white">
+                    <span className="text-gray-600">Termék ára</span>
+                    <span className="font-medium text-gray-900">
                       {amount.toLocaleString('hu-HU')} Ft
                     </span>
                   </div>
                   <div className="flex justify-between text-sm">
-                    <span className="text-gray-600 dark:text-white/70">
+                    <span className="text-gray-600">
                       Vevővédelmi díj ({fixedBuyerProtectionFee.toLocaleString('hu-HU')} Ft + {variableBuyerProtectionFee.toLocaleString('hu-HU')} Ft)
                     </span>
-                    <span className="font-medium text-gray-900 dark:text-white">
+                    <span className="font-medium text-gray-900">
                       {buyerProtectionFee.toLocaleString('hu-HU')} Ft
                     </span>
                   </div>
                   <div className="flex justify-between text-sm">
-                    <span className="text-gray-600 dark:text-white/70">Szállítási díj</span>
-                    <span className="font-medium text-gray-900 dark:text-white">
+                    <span className="text-gray-600">Szállítási díj</span>
+                    <span className="font-medium text-gray-900">
                       {shippingCost.toLocaleString('hu-HU')} Ft
                     </span>
                   </div>
-                  <div className="border-t border-gray-200 dark:border-white/10" />
+                  <div className="border-t border-gray-200" />
                   <div className="flex justify-between font-bold">
-                    <span className="text-gray-900 dark:text-white">Összesen</span>
+                    <span className="text-gray-900">Összesen</span>
                     <span className="text-accent text-lg">{total.toLocaleString('hu-HU')} Ft</span>
                   </div>
                 </div>
@@ -273,7 +273,7 @@ export default function CheckoutContent() {
                   )}
                 </button>
 
-                <p className="text-[10px] text-gray-400 dark:text-white/30 text-center mt-3">
+                <p className="text-[10px] text-gray-400 text-center mt-3">
                   A fizetés gombra kattintva elfogadod a vásárlási feltételeket.
                 </p>
               </div>

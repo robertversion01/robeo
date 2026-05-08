@@ -107,7 +107,7 @@ function CheckoutSuccessContentComponent() {
 
   if (loading) {
     return (
-      <div className="min-h-screen bg-white dark:bg-gradient-to-br dark:from-indigo-950 dark:to-black text-gray-900 dark:text-white flex items-center justify-center">
+      <div className="min-h-screen bg-white text-gray-900 flex items-center justify-center">
         <div className="animate-spin h-10 w-10 border-4 border-accent border-t-transparent rounded-full"></div>
       </div>
     );
@@ -115,10 +115,10 @@ function CheckoutSuccessContentComponent() {
 
   if (error) {
     return (
-      <div className="min-h-screen bg-white dark:bg-gradient-to-br dark:from-indigo-950 dark:to-black text-gray-900 dark:text-white flex flex-col items-center justify-center p-4">
-        <div className="max-w-md w-full bg-white dark:bg-gray-900 rounded-lg p-6 shadow-lg border border-gray-200 dark:border-gray-800 text-center">
+      <div className="min-h-screen bg-white text-gray-900 flex flex-col items-center justify-center p-4">
+        <div className="max-w-md w-full bg-white rounded-lg p-6 shadow-lg border border-gray-200 text-center">
           <h1 className="text-xl font-bold mb-4">Hiba történt</h1>
-          <p className="text-gray-600 dark:text-gray-400 mb-6">{error}</p>
+          <p className="text-gray-600 mb-6">{error}</p>
           <Link 
             href="/"
             className="inline-block px-4 py-2 bg-accent text-white rounded-lg hover:bg-accent/90 transition-colors"
@@ -131,20 +131,20 @@ function CheckoutSuccessContentComponent() {
   }
 
   return (
-    <div className="min-h-screen bg-white dark:bg-gradient-to-br dark:from-indigo-950 dark:to-black text-gray-900 dark:text-white">
-      <main className="pt-16 pb-12 px-4 md:px-6">
+    <div className="min-h-screen bg-white text-gray-900">
+      <main className="pt-14 pb-10 px-4 md:px-6">
         <div className="max-w-3xl mx-auto">
-          <div className="bg-white dark:bg-gray-900 rounded-lg p-6 shadow-lg border border-gray-200 dark:border-gray-800">
+          <div className="bg-white rounded-lg p-6 shadow-lg border border-gray-200">
             <div className="flex items-center justify-center mb-6">
               <CheckCircle className="text-green-500 mr-2" size={28} />
               <h1 className="text-xl font-bold">Sikeres vásárlás!</h1>
             </div>
 
-            <div className="mb-6 p-4 bg-gray-50 dark:bg-gray-800/50 rounded-lg border border-gray-200 dark:border-gray-700">
-              <p className="text-sm text-gray-600 dark:text-gray-400 mb-1">Vásárolt termék:</p>
+            <div className="mb-6 p-4 bg-gray-50 rounded-lg border border-gray-200">
+              <p className="text-sm text-gray-600 mb-1">Vásárolt termék:</p>
               {product && (
                 <div className="flex items-center">
-                  <div className="w-16 h-16 rounded-md overflow-hidden mr-3 bg-gray-100 dark:bg-gray-800 flex-shrink-0">
+                  <div className="w-16 h-16 rounded-md overflow-hidden mr-3 bg-gray-100 flex-shrink-0">
                     {product.image_url ? (
                       <img 
                         src={product.image_url} 
@@ -156,7 +156,7 @@ function CheckoutSuccessContentComponent() {
                     )}
                   </div>
                   <div>
-                    <h3 className="font-medium text-gray-900 dark:text-white">{product.name}</h3>
+                    <h3 className="font-medium text-gray-900">{product.name}</h3>
                     <p className="text-accent font-bold">{product.price.toLocaleString()} Ft</p>
                   </div>
                 </div>
@@ -167,39 +167,39 @@ function CheckoutSuccessContentComponent() {
               <h2 className="text-lg font-semibold mb-3">Fizetési folyamat</h2>
               <div className="space-y-4">
                 <div className="flex items-start">
-                  <div className="bg-green-100 dark:bg-green-900/30 p-2 rounded-full mr-3">
-                    <CreditCard className="text-green-600 dark:text-green-400" size={18} />
+                  <div className="bg-green-100 p-2 rounded-full mr-3">
+                    <CreditCard className="text-green-600" size={18} />
                   </div>
                   <div>
-                    <h3 className="font-medium text-gray-900 dark:text-white">Fizetés megtörtént</h3>
-                    <p className="text-sm text-gray-600 dark:text-gray-400">A pénz biztonságos letétben van, amíg a termék meg nem érkezik.</p>
+                    <h3 className="font-medium text-gray-900">Fizetés megtörtént</h3>
+                    <p className="text-sm text-gray-600">A pénz biztonságos letétben van, amíg a termék meg nem érkezik.</p>
                   </div>
                 </div>
                 
                 <div className="flex items-start">
-                  <div className="bg-gray-100 dark:bg-gray-800 p-2 rounded-full mr-3">
+                  <div className="bg-gray-100 p-2 rounded-full mr-3">
                     <Package className="text-gray-500" size={18} />
                   </div>
                   <div>
-                    <h3 className="font-medium text-gray-900 dark:text-white">Termék feladása</h3>
-                    <p className="text-sm text-gray-600 dark:text-gray-400">Az eladó hamarosan feladja a terméket.</p>
+                    <h3 className="font-medium text-gray-900">Termék feladása</h3>
+                    <p className="text-sm text-gray-600">Az eladó hamarosan feladja a terméket.</p>
                   </div>
                 </div>
                 
                 <div className="flex items-start">
-                  <div className="bg-gray-100 dark:bg-gray-800 p-2 rounded-full mr-3">
+                  <div className="bg-gray-100 p-2 rounded-full mr-3">
                     <Truck className="text-gray-500" size={18} />
                   </div>
                   <div>
-                    <h3 className="font-medium text-gray-900 dark:text-white">Szállítás</h3>
-                    <p className="text-sm text-gray-600 dark:text-gray-400">A termék úton van hozzád.</p>
+                    <h3 className="font-medium text-gray-900">Szállítás</h3>
+                    <p className="text-sm text-gray-600">A termék úton van hozzád.</p>
                   </div>
                 </div>
               </div>
             </div>
 
             <div className="text-center space-y-3">
-              <p className="text-sm text-gray-600 dark:text-gray-400">
+              <p className="text-sm text-gray-600">
                 A vásárlás részleteit és a szállítás állapotát az üzenetekben követheted nyomon.
               </p>
               <div className="flex flex-col sm:flex-row gap-3 justify-center">
@@ -212,7 +212,7 @@ function CheckoutSuccessContentComponent() {
                 </Link>
                 <Link 
                   href="/"
-                  className="px-4 py-2 bg-gray-100 dark:bg-gray-800 text-gray-800 dark:text-white rounded-lg hover:bg-gray-200 dark:hover:bg-gray-700 transition-colors"
+                  className="px-4 py-2 bg-gray-100 text-gray-800 rounded-lg hover:bg-gray-200 transition-colors"
                 >
                   Vissza a főoldalra
                 </Link>
