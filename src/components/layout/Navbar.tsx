@@ -5,6 +5,7 @@ import { supabase } from '@/lib/supabase';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { MessageCircle, Heart, User, Search, Plus, LogOut } from 'lucide-react';
+import type { Product } from '@/types';
 
 interface NavbarProps {
   searchQuery?: string;
@@ -16,7 +17,11 @@ export default function Navbar({ searchQuery, onSearchChange }: NavbarProps) {
   const [loading, setLoading] = useState(true);
   const [hasUnreadMessages, setHasUnreadMessages] = useState(false);
   const [showProfileMenu, setShowProfileMenu] = useState(false);
+  const [localSearchQuery, setLocalSearchQuery] = useState('');
+  const [liveResults, setLiveResults] = useState<Array<Pick<Product, 'id' | 'name' | 'category'>>>([]);
+  const [showLiveResults, setShowLiveResults] = useState(false);
   const router = useRouter();
+  const resolvedSearchQuery = searchQuery ?? localSearchQuery;
 
   useEffect(() => {
     const checkUnreadMessages = async (currentUserId: string) => {
@@ -88,6 +93,37 @@ export default function Navbar({ searchQuery, onSearchChange }: NavbarProps) {
     };
   }, []);
 
+  useEffect(() => {
+    const query = resolvedSearchQuery.trim();
+    if (query.length < 2) {
+      setLiveResults([]);
+      return;
+    }
+
+    const timeout = setTimeout(async () => {
+      const { data, error } = await supabase
+        .from('products')
+        .select('id, name, category')
+        .ilike('name', `%${query}%`)
+        .limit(8);
+
+      if (!error) {
+        setLiveResults((data || []) as Array<Pick<Product, 'id' | 'name' | 'category'>>);
+      }
+    }, 220);
+
+    return () => clearTimeout(timeout);
+  }, [resolvedSearchQuery]);
+
+  const onNavbarSearchChange = (value: string) => {
+    if (onSearchChange) {
+      onSearchChange(value);
+    } else {
+      setLocalSearchQuery(value);
+    }
+    setShowLiveResults(true);
+  };
+
   const handleSignOut = async () => {
     await supabase.auth.signOut();
     router.push('/');
@@ -100,20 +136,41 @@ export default function Navbar({ searchQuery, onSearchChange }: NavbarProps) {
         ROBEO
       </Link>
 
-      {onSearchChange ? (
-        <div className="flex-1 max-w-md min-w-0 w-full">
-          <div className="relative">
-            <Search className="absolute left-2.5 top-1/2 -translate-y-1/2 text-gray-400" size={14} />
-            <input 
-              type="text" 
-              placeholder="Keresés..." 
-              value={searchQuery || ''}
-              onChange={(e) => onSearchChange(e.target.value)}
-              className="w-full h-9 pl-8 pr-3 bg-gray-100 rounded-full text-sm border border-gray-200 focus:outline-none focus:ring-1 focus:ring-[#007782]"
-            />
-          </div>
+      <div className="flex-1 max-w-md min-w-0 w-full">
+        <div className="relative">
+          <Search className="absolute left-2.5 top-1/2 -translate-y-1/2 text-gray-400" size={14} />
+          <input 
+            type="text" 
+            placeholder="Keress márkákra, ruhákra..."
+            value={resolvedSearchQuery}
+            onFocus={() => setShowLiveResults(true)}
+            onChange={(e) => onNavbarSearchChange(e.target.value)}
+            className="w-full h-9 pl-8 pr-3 bg-gray-100 rounded-full text-sm border border-gray-200 focus:outline-none focus:ring-1 focus:ring-[#007782]"
+          />
+
+          {showLiveResults && resolvedSearchQuery.trim().length >= 2 ? (
+            <div className="absolute left-0 right-0 top-10 z-50 rounded-xl border border-gray-200 bg-white shadow-lg overflow-hidden">
+              {liveResults.length === 0 ? (
+                <div className="px-3 py-2.5 text-xs text-gray-500">Nincs találat.</div>
+              ) : (
+                <div className="max-h-72 overflow-y-auto">
+                  {liveResults.map((item) => (
+                    <Link
+                      key={item.id}
+                      href={`/products/${item.id}`}
+                      onClick={() => setShowLiveResults(false)}
+                      className="block px-3 py-2.5 hover:bg-gray-50 border-b last:border-b-0 border-gray-100"
+                    >
+                      <p className="text-sm font-medium text-gray-900 truncate">{item.name}</p>
+                      <p className="text-xs text-gray-500">{item.category}</p>
+                    </Link>
+                  ))}
+                </div>
+              )}
+            </div>
+          ) : null}
         </div>
-      ) : null}
+      </div>
       
       <div className="flex items-center gap-0.5 md:gap-2">
         {loading ? (
