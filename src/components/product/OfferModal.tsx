@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useEffect, useId, useRef, useState } from 'react';
 import { supabase } from '@/lib/supabase';
 import { toast } from 'sonner';
 import { X, Send } from 'lucide-react';
@@ -15,35 +15,79 @@ interface OfferModalProps {
   originalPrice: number;
 }
 
-export default function OfferModal({ isOpen, onClose, productId, sellerId, productTitle, originalPrice }: OfferModalProps) {
-  const [price, setPrice] = useState<number>(Math.round(originalPrice * 0.85));
+export default function OfferModal({
+  isOpen,
+  onClose,
+  productId,
+  sellerId,
+  productTitle,
+  originalPrice,
+}: OfferModalProps) {
+  const titleId = useId();
+  const onCloseRef = useRef(onClose);
+  onCloseRef.current = onClose;
+
+  const [price, setPrice] = useState(0);
   const [message, setMessage] = useState('');
   const [loading, setLoading] = useState(false);
 
+  useEffect(() => {
+    if (!isOpen || originalPrice <= 0) return;
+    setPrice(Math.round(originalPrice * 0.85));
+    setMessage('');
+    setLoading(false);
+  }, [isOpen, originalPrice]);
+
+  useEffect(() => {
+    if (!isOpen) return;
+    const prevOverflow = document.body.style.overflow;
+    document.body.style.overflow = 'hidden';
+
+    const onKeyDown = (e: KeyboardEvent) => {
+      if (e.key === 'Escape') {
+        e.preventDefault();
+        onCloseRef.current();
+      }
+    };
+    window.addEventListener('keydown', onKeyDown);
+
+    return () => {
+      document.body.style.overflow = prevOverflow;
+      window.removeEventListener('keydown', onKeyDown);
+    };
+  }, [isOpen]);
+
   if (!isOpen) return null;
+
+  const minimumOffer = Math.ceil(originalPrice * 0.6);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    
-    const minimumOffer = Math.ceil(originalPrice * 0.6);
+
     if (price <= 0) {
       toast.error('Kérlek adj meg egy érvényes árat!');
       return;
     }
     if (price < minimumOffer) {
-      toast.error(`Minimum ajánlat: ${minimumOffer.toLocaleString('hu-HU')} Ft (a vételár 60%-a).`);
+      toast.error(
+        `Minimum ajánlat: ${minimumOffer.toLocaleString('hu-HU')} Ft (a vételár legalább 60%-a).`
+      );
       return;
     }
     if (!isUuid(productId) || !isUuid(sellerId)) {
-      toast.error('Hiányzó vagy hibás termék/eladó azonosító. Frissítsd az oldalt, majd próbáld újra.');
+      toast.error(
+        'Hiányzó vagy hibás termék/eladó azonosító. Frissítsd az oldalt, majd próbáld újra.'
+      );
       return;
     }
 
     setLoading(true);
 
     try {
-      const { data: { user } } = await supabase.auth.getUser();
-      
+      const {
+        data: { user },
+      } = await supabase.auth.getUser();
+
       if (!user) {
         toast.error('Először be kell jelentkezned!');
         return;
@@ -58,17 +102,14 @@ export default function OfferModal({ isOpen, onClose, productId, sellerId, produ
         return;
       }
 
-      const { error } = await supabase
-        .from('offers')
-        .insert({
-          product_id: productId,
-          buyer_id: user.id,
-          seller_id: sellerId,
-          offered_price: price,
-          price: price,
-          message: message,
-          status: 'pending'
-        });
+      const { error } = await supabase.from('offers').insert({
+        product_id: productId,
+        buyer_id: user.id,
+        seller_id: sellerId,
+        offered_price: price,
+        message: message.trim() || null,
+        status: 'pending',
+      });
 
       if (error) {
         if (error.code === '23505') {
@@ -77,102 +118,129 @@ export default function OfferModal({ isOpen, onClose, productId, sellerId, produ
           throw error;
         }
       } else {
-        // Send automatic system message to chat
         try {
-          await supabase
-            .from('messages')
-            .insert({
-              sender_id: user.id,
-              receiver_id: sellerId,
-              content: `🔔 Új ajánlat érkezett: ${price.toLocaleString('hu-HU')} Ft`,
-              product_id: productId,
-              is_system_message: true
-            });
+          await supabase.from('messages').insert({
+            sender_id: user.id,
+            receiver_id: sellerId,
+            content: `🔔 Új ajánlat érkezett: ${price.toLocaleString('hu-HU')} Ft`,
+            product_id: productId,
+            is_system_message: true,
+            message_type: 'system',
+          });
         } catch {
-          // Ignore duplicate/conflict error for system message
+          // Nem kritikus
         }
 
-        toast.success('✅ Ajánlat sikeresen elküldve! Az eladó hamarosan válaszol.');
-        onClose();
+        toast.success('Ajánlat elküldve. Az eladó értesítést kap az üzenetekben.');
+        window.dispatchEvent(new CustomEvent('offers:updated'));
+        onCloseRef.current();
       }
-
-    } catch (error: any) {
-      toast.error('Hiba történt az ajánlat küldése közben: ' + error.message);
+    } catch (error: unknown) {
+      const msg = error instanceof Error ? error.message : 'Ismeretlen hiba';
+      toast.error('Hiba az ajánlat küldése közben: ' + msg);
     } finally {
       setLoading(false);
     }
   };
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50 backdrop-blur-sm" onClick={onClose}>
-      <div 
-        className="w-full max-w-md p-5 rounded-lg bg-white border border-gray-200 shadow-xl"
-        onClick={e => e.stopPropagation()}
+    <div
+      className="fixed inset-0 z-[200] flex items-end justify-center sm:items-center p-0 sm:p-4 bg-black/50 backdrop-blur-sm"
+      role="presentation"
+      onClick={() => onCloseRef.current()}
+    >
+      <div
+        role="dialog"
+        aria-modal="true"
+        aria-labelledby={titleId}
+        className="w-full max-w-md rounded-t-2xl sm:rounded-2xl bg-white border border-gray-200 shadow-2xl max-h-[90vh] overflow-y-auto"
+        onClick={(e) => e.stopPropagation()}
       >
-        <div className="flex items-center justify-between mb-4">
-          <h3 className="text-lg font-bold text-gray-900">Ajánlat küldése</h3>
-          <button 
-            onClick={onClose}
-            className="p-1.5 rounded-full hover:bg-gray-100 transition-colors text-gray-500"
-          >
-            <X size={18} />
-          </button>
-        </div>
-
-        <div className="mb-4 p-3 rounded-lg bg-gray-50 border border-gray-200">
-          <p className="text-gray-500 text-xs">Ajánlat küldése a következő termékre:</p>
-          <p className="font-semibold mt-1 text-gray-900 text-sm">{productTitle}</p>
-          <p className="text-accent font-bold mt-1">{originalPrice.toLocaleString('hu-HU')} Ft</p>
-        </div>
-
-        <form onSubmit={handleSubmit} className="space-y-3">
-          <div>
-            <label className="block text-sm text-gray-700 mb-1.5">Ajánlott ár (Ft)</label>
-            <input
-              type="number"
-              value={price}
-              onChange={(e) => setPrice(Number(e.target.value))}
-              className="w-full px-3 py-2 rounded-lg bg-white border border-gray-300 focus:border-accent focus:outline-none transition-colors text-gray-900"
-              min={Math.ceil(originalPrice * 0.6)}
-              required
-            />
-            <p className="mt-1 text-xs text-gray-500">
-              Minimum ajánlat: {Math.ceil(originalPrice * 0.6).toLocaleString('hu-HU')} Ft
-            </p>
-
-            <div className="flex gap-1.5 mt-2">
-              {[0.7, 0.8, 0.9].map(percent => (
-                <button
-                  key={percent}
-                  type="button"
-                  onClick={() => setPrice(Math.round(originalPrice * percent))}
-                  className="flex-1 py-1.5 text-xs rounded-lg bg-gray-100 border border-gray-200 hover:bg-gray-200 transition-colors text-gray-800"
-                >
-                  {Math.round(percent * 100)}%
-                </button>
-              ))}
-            </div>
+        <div className="sticky top-0 z-10 flex items-center justify-between gap-3 border-b border-gray-100 bg-white px-4 py-3 rounded-t-2xl">
+          <div className="min-w-0">
+            <h3 id={titleId} className="text-lg font-bold text-gray-900 truncate">
+              Ajánlat küldése
+            </h3>
+            <p className="text-xs text-gray-500 truncate">{productTitle}</p>
           </div>
-
-          <div>
-            <label className="block text-sm text-gray-700 mb-1.5">Üzenet (opcionális)</label>
-            <textarea
-              value={message}
-              onChange={(e) => setMessage(e.target.value)}
-              placeholder="Írj egy rövid üzenetet az eladónak..."
-              className="w-full px-3 py-2 rounded-lg bg-white border border-gray-300 focus:border-accent focus:outline-none transition-colors resize-none h-20 text-gray-900 text-sm"
-            />
-          </div>
-
           <button
-            type="submit"
-            disabled={loading}
-            className="w-full py-2.5 rounded-lg bg-accent hover:bg-accent/90 transition-all font-semibold flex items-center justify-center gap-1.5 disabled:opacity-50 text-white text-sm"
+            type="button"
+            onClick={() => onCloseRef.current()}
+            className="shrink-0 p-2 rounded-full hover:bg-gray-100 transition-colors text-gray-500"
+            aria-label="Bezárás"
           >
-            <Send size={16} />
-            {loading ? 'Küldés...' : 'Ajánlat elküldése'}
+            <X size={20} />
           </button>
-        </form>
+        </div>
+
+        <div className="p-4 space-y-4">
+          <div className="rounded-xl bg-gray-50 border border-gray-200 p-3">
+            <p className="text-gray-500 text-xs">Listaár</p>
+            <p className="text-[#007782] font-bold text-lg tabular-nums">
+              {originalPrice.toLocaleString('hu-HU')} Ft
+            </p>
+          </div>
+
+          <form onSubmit={handleSubmit} className="space-y-4">
+            <div>
+              <label htmlFor="offer-price" className="block text-sm font-medium text-gray-700 mb-1.5">
+                Ajánlott ár (Ft)
+              </label>
+              <input
+                id="offer-price"
+                type="number"
+                inputMode="numeric"
+                value={price || ''}
+                onChange={(e) => setPrice(Number(e.target.value))}
+                className="w-full px-3 py-2.5 rounded-xl bg-white border border-gray-300 focus:border-[#007782] focus:ring-1 focus:ring-[#007782] focus:outline-none transition-colors text-gray-900 tabular-nums"
+                min={minimumOffer}
+                required
+                disabled={loading}
+              />
+              <p className="mt-1.5 text-xs text-gray-500">
+                Legalább {minimumOffer.toLocaleString('hu-HU')} Ft (60% a listaárhoz képest).
+              </p>
+
+              <div className="flex gap-2 mt-3">
+                {[0.65, 0.75, 0.85, 0.9].map((percent) => (
+                  <button
+                    key={percent}
+                    type="button"
+                    disabled={loading}
+                    onClick={() => setPrice(Math.round(originalPrice * percent))}
+                    className="flex-1 py-2 text-xs font-medium rounded-lg bg-gray-100 border border-gray-200 hover:bg-gray-200 transition-colors text-gray-800 disabled:opacity-50"
+                  >
+                    {Math.round(percent * 100)}%
+                  </button>
+                ))}
+              </div>
+            </div>
+
+            <div>
+              <label htmlFor="offer-msg" className="block text-sm font-medium text-gray-700 mb-1.5">
+                Üzenet (opcionális)
+              </label>
+              <textarea
+                id="offer-msg"
+                value={message}
+                onChange={(e) => setMessage(e.target.value)}
+                placeholder="Pl. szívesen átvenném személyesen…"
+                rows={3}
+                disabled={loading}
+                className="w-full px-3 py-2.5 rounded-xl bg-white border border-gray-300 focus:border-[#007782] focus:ring-1 focus:ring-[#007782] focus:outline-none transition-colors resize-none text-gray-900 text-sm"
+              />
+            </div>
+
+            <button
+              type="submit"
+              disabled={loading}
+              className="w-full py-3 rounded-xl bg-[#007782] hover:bg-[#006670] transition-colors font-semibold flex items-center justify-center gap-2 disabled:opacity-50 disabled:pointer-events-none text-white text-sm"
+            >
+              <Send size={18} />
+              {loading ? 'Küldés…' : 'Ajánlat elküldése'}
+            </button>
+          </form>
+        </div>
       </div>
     </div>
   );

@@ -7,6 +7,7 @@ import Link from 'next/link';
 import OffersList from '@/components/product/OffersList';
 import { toast } from 'sonner';
 import { isUuid } from '@/lib/validators';
+import { MAIN_TOP_PADDING } from '@/lib/layoutTokens';
 
 interface Message {
   id: string;
@@ -35,6 +36,8 @@ export default function MessagesPage() {
   const [newMessage, setNewMessage] = useState('');
   const [showOfferModal, setShowOfferModal] = useState(false);
   const [offerAmount, setOfferAmount] = useState('');
+  const [offerMeta, setOfferMeta] = useState<{ min: number; title: string } | null>(null);
+  const [offerSending, setOfferSending] = useState(false);
   const [loading, setLoading] = useState(true);
   const [uploadingImage, setUploadingImage] = useState(false);
   const messagesEndRef = useRef<HTMLDivElement>(null);
@@ -70,6 +73,40 @@ export default function MessagesPage() {
   useEffect(() => {
     selectedEmailRef.current = selectedEmail;
   }, [selectedEmail]);
+
+  useEffect(() => {
+    if (!showOfferModal || !selectedConversation || !user?.id) {
+      setOfferMeta(null);
+      return;
+    }
+    const latestProductMessage = [...messages]
+      .reverse()
+      .find((msg) => msg.product_id);
+    if (!latestProductMessage?.product_id) {
+      setOfferMeta(null);
+      return;
+    }
+    let cancelled = false;
+    (async () => {
+      const { data, error } = await supabase
+        .from('products')
+        .select('price, name')
+        .eq('id', latestProductMessage.product_id!)
+        .maybeSingle();
+      if (cancelled || error || !data) {
+        if (!cancelled) setOfferMeta(null);
+        return;
+      }
+      const price = Number(data.price);
+      setOfferMeta({
+        min: Math.ceil(price * 0.6),
+        title: data.name || 'Termék',
+      });
+    })();
+    return () => {
+      cancelled = true;
+    };
+  }, [showOfferModal, selectedConversation, user?.id, messages]);
 
   const scrollToBottom = () => {
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
@@ -237,7 +274,7 @@ export default function MessagesPage() {
   }
 
   const sendOffer = async () => {
-    if (!offerAmount || !selectedConversation || !user?.id) return;
+    if (!selectedConversation || !user?.id) return;
     const latestProductMessage = [...messages].reverse().find((msg) => msg.product_id);
     if (!latestProductMessage?.product_id) {
       toast.error('Ehhez a beszélgetéshez nem találtam termék-azonosítót az ajánlathoz.');
@@ -251,28 +288,57 @@ export default function MessagesPage() {
       toast.error('Hibás azonosító(k), ezért az ajánlat nem küldhető el.');
       return;
     }
-    await supabase
-      .from('offers')
-      .insert({
+
+    const amount = parseInt(offerAmount, 10);
+    if (!Number.isFinite(amount) || amount <= 0) {
+      toast.error('Adj meg érvényes összeget.');
+      return;
+    }
+
+    const minimum = offerMeta?.min ?? 1;
+    if (amount < minimum) {
+      toast.error(`Minimum ajánlat: ${minimum.toLocaleString('hu-HU')} Ft (a listaár ~60%-a).`);
+      return;
+    }
+
+    setOfferSending(true);
+    try {
+      const { error: offerErr } = await supabase.from('offers').insert({
         product_id: latestProductMessage.product_id,
         buyer_id: user.id,
         seller_id: selectedConversation,
-        offered_price: parseInt(offerAmount),
-        status: 'pending'
+        offered_price: amount,
+        status: 'pending',
       });
 
-    await supabase
-      .from('messages')
-      .insert({
+      if (offerErr) {
+        if (offerErr.code === '23505') {
+          toast.error('Már van aktív ajánlatod ehhez a termékhez.');
+        } else {
+          throw offerErr;
+        }
+        return;
+      }
+
+      await supabase.from('messages').insert({
         sender_id: user.id,
         receiver_id: selectedConversation,
-        content: `💡 AJÁNLAT: ${parseInt(offerAmount).toLocaleString()} Ft`,
+        content: `💡 Ajánlat: ${amount.toLocaleString('hu-HU')} Ft`,
         product_id: latestProductMessage.product_id,
-        message_type: 'system'
+        message_type: 'system',
+        is_system_message: true,
       });
 
-    setShowOfferModal(false);
-    setOfferAmount('');
+      toast.success('Ajánlat elküldve.');
+      setShowOfferModal(false);
+      setOfferAmount('');
+      window.dispatchEvent(new CustomEvent('offers:updated'));
+    } catch (e: unknown) {
+      const msg = e instanceof Error ? e.message : 'Ismeretlen hiba';
+      toast.error('Ajánlat küldése sikertelen: ' + msg);
+    } finally {
+      setOfferSending(false);
+    }
   };
 
   return (
@@ -280,37 +346,64 @@ export default function MessagesPage() {
 
       {/* Offer Modal */}
       {showOfferModal && (
-        <div className="fixed inset-0 bg-black/40 z-[100] flex items-center justify-center p-4">
-          <div className="card-base p-8 max-w-md w-full">
-            <h2 className="text-2xl font-bold mb-4">💰 Ajánlat teszek</h2>
-            <p className="text-gray-500 mb-6">Add meg az ajánlott összeget a termékért!</p>
-            
+        <div
+          className="fixed inset-0 bg-black/50 backdrop-blur-sm z-[200] flex items-end sm:items-center justify-center p-0 sm:p-4"
+          role="presentation"
+          onClick={() => !offerSending && setShowOfferModal(false)}
+        >
+          <div
+            role="dialog"
+            aria-modal="true"
+            className="w-full max-w-md rounded-t-2xl sm:rounded-2xl bg-white border border-gray-200 shadow-2xl p-5 sm:p-6"
+            onClick={(e) => e.stopPropagation()}
+          >
+            <h2 className="text-lg font-bold text-gray-900">Ajánlat küldése</h2>
+            {offerMeta ? (
+              <p className="text-sm text-gray-600 mt-1 line-clamp-2">{offerMeta.title}</p>
+            ) : (
+              <p className="text-sm text-amber-700 mt-1">Termék betöltése…</p>
+            )}
+            <p className="text-xs text-gray-500 mt-3">
+              {offerMeta
+                ? `Legalább ${offerMeta.min.toLocaleString('hu-HU')} Ft (listaár ~60%-a).`
+                : 'A minimum az aktuális listaárhoz igazodik.'}
+            </p>
+
             <input
               type="number"
+              inputMode="numeric"
               value={offerAmount}
               onChange={(e) => setOfferAmount(e.target.value)}
-              placeholder="Összeg Ft-ban"
-              className="input-base focus:outline-none focus:ring-1 focus:ring-[#007782] text-xl text-center mb-6"
+              placeholder="Összeg (Ft)"
+              disabled={offerSending}
+              min={offerMeta?.min ?? 1}
+              className="mt-4 w-full input-base min-h-12 rounded-xl text-center text-lg font-semibold tabular-nums focus:ring-[#007782] focus:border-[#007782]"
             />
 
-            <div className="flex gap-4">
+            <div className="flex gap-3 mt-5">
               <button
+                type="button"
+                disabled={offerSending}
                 onClick={() => setShowOfferModal(false)}
-                className="flex-1 btn-base btn-secondary"
+                className="flex-1 btn-base btn-secondary min-h-11 rounded-xl"
               >
                 Mégse
               </button>
               <button
-                onClick={sendOffer}
-                className="flex-1 btn-base btn-primary"
+                type="button"
+                disabled={offerSending || !offerMeta}
+                onClick={() => void sendOffer()}
+                className="flex-1 btn-base btn-primary min-h-11 rounded-xl"
               >
-                Ajánlat elküldése
+                {offerSending ? 'Küldés…' : 'Küldés'}
               </button>
             </div>
           </div>
         </div>
       )}
-      <main className="pt-16 pb-24 md:pb-8 h-screen max-w-full overflow-x-hidden">
+      <main
+        className={`${MAIN_TOP_PADDING} pb-24 md:pb-8 min-h-[100dvh] md:h-screen max-w-full overflow-x-hidden`}
+      >
         <div className="max-w-6xl mx-auto h-full flex flex-col md:flex-row">
           
           {/* Offers Section */}

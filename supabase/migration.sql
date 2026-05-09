@@ -85,9 +85,12 @@ CREATE POLICY "Users can insert offers"
   WITH CHECK (auth.uid() = buyer_id);
 
 DROP POLICY IF EXISTS "Sellers can update offers" ON public.offers;
-CREATE POLICY "Sellers can update offers"
+DROP POLICY IF EXISTS "Offer participants can update" ON public.offers;
+CREATE POLICY "Offer participants can update"
   ON public.offers FOR UPDATE
-  USING (auth.uid() = seller_id);
+  TO authenticated
+  USING (auth.uid() = buyer_id OR auth.uid() = seller_id)
+  WITH CHECK (auth.uid() = buyer_id OR auth.uid() = seller_id);
 
 -- 9. Ellenőrző lekérdezések (megjegyzésként)
 -- SELECT column_name, data_type FROM information_schema.columns WHERE table_name = 'products';
@@ -384,6 +387,28 @@ TO anon, authenticated
 USING (
   COALESCE(status, 'active') <> 'deleted'
 );
+
+DROP POLICY IF EXISTS "products_insert_own" ON public.products;
+CREATE POLICY "products_insert_own"
+ON public.products FOR INSERT
+TO authenticated
+WITH CHECK (auth.uid() = user_id);
+
+DROP POLICY IF EXISTS "products_update_own" ON public.products;
+CREATE POLICY "products_update_own"
+ON public.products FOR UPDATE
+TO authenticated
+USING (auth.uid() = user_id)
+WITH CHECK (auth.uid() = user_id);
+
+COMMENT ON POLICY "products_select_public_active" ON public.products IS
+  'Publikus lista / keresés: csak nem törölt (soft delete kiesik).';
+COMMENT ON POLICY "products_insert_own" ON public.products IS
+  'Új termék: csak saját user_id-val.';
+COMMENT ON POLICY "products_update_own" ON public.products IS
+  'Csak a tulajdonos módosíthat (UPDATE); törlés = status = deleted (hard DELETE nincs engedélyezve kliensen).';
+
+-- Hard DELETE nem engedélyezett authenticated számára (nincs DELETE policy → tiltva).
 
 -- 18. Reviews schema expansion for product-level buyer/seller feedback
 ALTER TABLE IF EXISTS public.reviews

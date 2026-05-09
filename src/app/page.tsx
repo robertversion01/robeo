@@ -4,6 +4,7 @@ import { useProducts } from '@/hooks/useProducts';
 import Filters from '@/components/product/Filters';
 import ProductGrid from '@/components/product/ProductGrid';
 import VintedHero from '@/components/home/VintedHero';
+import { MAIN_TOP_PADDING } from '@/lib/layoutTokens';
 
 export default function Home() {
   const {
@@ -18,7 +19,10 @@ export default function Home() {
     categories,
     favorites,
     toggleFavorite,
-    user
+    user,
+    selectedSort,
+    setSelectedSort,
+    sortOptions,
   } = useProducts();
   const isGuest = !user;
 
@@ -29,20 +33,27 @@ export default function Home() {
           <VintedHero products={allProducts} fullScreen />
         </main>
       ) : (
-        <main className="w-full max-w-[100vw] overflow-x-hidden pt-16 pb-6 px-3 md:px-6">
+        <main
+          className={`w-full max-w-[100vw] overflow-x-hidden ${MAIN_TOP_PADDING} pb-4 px-2 md:px-6`}
+        >
           <div className="max-w-7xl mx-auto">
-            <VintedHero products={allProducts} />
+            <VintedHero products={allProducts} compact />
 
-            <Filters
-              categories={categories}
-              selectedCategory={selectedCategory}
-              onCategoryChange={setSelectedCategory}
-              selectedMaxPrice={selectedMaxPrice}
-              maxPriceLimit={maxPriceLimit}
-              onMaxPriceChange={setSelectedMaxPrice}
-            />
+            <div className="sticky z-30 -mx-2 md:-mx-6 mb-1.5 border-b border-gray-200/90 bg-white/95 px-2 pt-1.5 pb-0 backdrop-blur-md supports-[backdrop-filter]:bg-white/80 md:px-6 shadow-sm top-[6.75rem] sm:top-11">
+              <Filters
+                categories={categories}
+                selectedCategory={selectedCategory}
+                onCategoryChange={setSelectedCategory}
+                selectedMaxPrice={selectedMaxPrice}
+                maxPriceLimit={maxPriceLimit}
+                onMaxPriceChange={setSelectedMaxPrice}
+                sortOptions={sortOptions}
+                selectedSort={selectedSort}
+                onSortChange={setSelectedSort}
+              />
+            </div>
 
-            <p className="text-gray-500 text-sm mb-1.5">
+            <p className="text-gray-500 text-sm mb-2 tabular-nums">
               {loading ? 'Betöltés...' : `${products.length} találat`}
             </p>
 

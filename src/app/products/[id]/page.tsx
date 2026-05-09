@@ -9,6 +9,7 @@ import { Star, ZoomIn, ZoomOut } from 'lucide-react';
 import { getOptimizedImageUrl, getProductImages, shouldLazyLoad } from '@/lib/imageUtils';
 import OfferModal from '@/components/product/OfferModal';
 import type { Product } from '@/types';
+import { MAIN_TOP_PADDING } from '@/lib/layoutTokens';
 
 export default function ProductPage({ params }: { params: Promise<{ id: string }> }) {
   const { id } = use(params);
@@ -240,7 +241,7 @@ export default function ProductPage({ params }: { params: Promise<{ id: string }
         </div>
       )}
 
-      <main className="pt-14 pb-24 px-0 md:px-6">
+      <main className={`${MAIN_TOP_PADDING} pb-24 px-0 md:px-6`}>
         <Link href="/" className="inline-flex items-center gap-2 text-gray-500 hover:text-gray-900 mb-3 transition-colors px-3 md:px-0 md:mb-6">
           ← Vissza a főoldalra
         </Link>

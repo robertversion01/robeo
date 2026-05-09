@@ -8,11 +8,13 @@ import { toast } from 'sonner';
 import { useUserStats } from '@/hooks/useUserStats';
 import StarRating from '@/components/review/StarRating';
 import OffersList from '@/components/product/OffersList';
+import BuyerOffersList from '@/components/product/BuyerOffersList';
 import TransactionList from '@/components/profile/TransactionList';
 import ProductGrid from '@/components/product/ProductGrid';
 import { formatPrice } from '@/lib/utils';
 import { getOptimizedImageUrl } from '@/lib/imageUtils';
 import type { Product } from '@/types';
+import { MAIN_TOP_PADDING } from '@/lib/layoutTokens';
 
 export default function ProfilePage() {
   const [products, setProducts] = useState<Product[]>([]);
@@ -27,9 +29,14 @@ export default function ProfilePage() {
   const [featuredDrafts, setFeaturedDrafts] = useState<Record<string, string>>({});
   const [favorites, setFavorites] = useState<Set<string>>(new Set());
   const [createdAt, setCreatedAt] = useState<string>('');
+  const [deleteTarget, setDeleteTarget] = useState<{ id: string; name: string } | null>(null);
+  const [deleteBusy, setDeleteBusy] = useState(false);
+  const [bulkDeleteOpen, setBulkDeleteOpen] = useState(false);
+  const [bulkBusy, setBulkBusy] = useState(false);
+  const [statsTick, setStatsTick] = useState(0);
   const router = useRouter();
-  
-  const { stats, loading: statsLoading } = useUserStats(user?.id);
+
+  const { stats, loading: statsLoading } = useUserStats(user?.id, statsTick);
   const isAdmin = user?.email === 'hevesi.tr@gmail.com';
 
   useEffect(() => {
@@ -90,6 +97,7 @@ export default function ProfilePage() {
         .from('products')
         .select('*')
         .eq('user_id', userId)
+        .or('status.is.null,status.neq.deleted')
         .order('created_at', { ascending: false });
 
       if (error) throw error;
@@ -154,21 +162,92 @@ export default function ProfilePage() {
     }
   };
 
-  const deleteProduct = async (productId: string) => {
-    if (!confirm('Biztosan törölni szeretnéd ezt a terméket?')) return;
+  const confirmDeleteProduct = async () => {
+    if (!deleteTarget) return;
+    const productId = deleteTarget.id;
+    const snapshot = products;
+
+    setDeleteBusy(true);
+    setProducts((prev) => prev.filter((p) => p.id !== productId));
+    setDeleteTarget(null);
 
     try {
+      const {
+        data: { user },
+      } = await supabase.auth.getUser();
+      if (!user) {
+        setProducts(snapshot);
+        toast.error('Jelentkezz be újra.');
+        return;
+      }
+
       const { error } = await supabase
         .from('products')
-        .delete()
-        .eq('id', productId);
+        .update({
+          status: 'deleted',
+          updated_at: new Date().toISOString(),
+        })
+        .eq('id', productId)
+        .eq('user_id', user.id);
 
       if (error) throw error;
-      setProducts(prev => prev.filter(p => p.id !== productId));
-      toast.success('✅ Termék sikeresen törölve!');
+
+      toast.success('Hirdetés törölve. A termék többé nem látható a piactéren.');
+      setStatsTick((t) => t + 1);
+      window.dispatchEvent(new CustomEvent('products:updated'));
     } catch (error) {
       console.error('Error deleting product:', error);
-      toast.error('❌ Hiba történt a törlés során');
+      setProducts(snapshot);
+      toast.error(
+        'A törlés nem sikerült (hálózat vagy jogosultság). Semmi sem változott a listádon.'
+      );
+    } finally {
+      setDeleteBusy(false);
+    }
+  };
+
+  const confirmBulkDeleteAll = async () => {
+    const snapshot = [...products];
+    if (snapshot.length === 0) {
+      setBulkDeleteOpen(false);
+      return;
+    }
+
+    setBulkBusy(true);
+    setProducts([]);
+    setBulkDeleteOpen(false);
+
+    try {
+      const {
+        data: { user },
+      } = await supabase.auth.getUser();
+      if (!user) {
+        setProducts(snapshot);
+        toast.error('Jelentkezz be újra.');
+        return;
+      }
+
+      const ids = snapshot.map((p) => p.id);
+      const { error } = await supabase
+        .from('products')
+        .update({
+          status: 'deleted',
+          updated_at: new Date().toISOString(),
+        })
+        .in('id', ids)
+        .eq('user_id', user.id);
+
+      if (error) throw error;
+
+      toast.success('A kijelölt hirdetéseid törölve — nem látszanak a piactéren.');
+      setStatsTick((t) => t + 1);
+      window.dispatchEvent(new CustomEvent('products:updated'));
+    } catch (error) {
+      console.error('Bulk delete error:', error);
+      setProducts(snapshot);
+      toast.error('Az összes törlése nem sikerült. A listád változatlan.');
+    } finally {
+      setBulkBusy(false);
     }
   };
 
@@ -309,7 +388,100 @@ export default function ProfilePage() {
 
   return (
     <div className="min-h-screen bg-white text-gray-900">
-      <main className="pt-14 pb-12 px-3 md:px-6">
+      {deleteTarget ? (
+        <div
+          className="fixed inset-0 z-[300] flex items-center justify-center p-4 bg-black/50 backdrop-blur-[2px]"
+          role="presentation"
+          onClick={() => {
+            if (!deleteBusy) setDeleteTarget(null);
+          }}
+        >
+          <div
+            role="dialog"
+            aria-modal="true"
+            aria-labelledby="delete-product-title"
+            className="bg-white rounded-2xl shadow-xl max-w-sm w-full p-5 border border-gray-200"
+            onClick={(e) => e.stopPropagation()}
+          >
+            <h3 id="delete-product-title" className="text-lg font-bold text-gray-900">
+              Hirdetés törlése?
+            </h3>
+            <p className="text-sm text-gray-600 mt-2">
+              Biztosan törlöd ezt a hirdetést? Ez a művelet nem visszavonható — a termék eltűnik a
+              piactérről (technikai értelemben megjelölés törlésként). Csak a saját hirdetéseidet
+              törölheted; ezt az adatbázis RLS szabályai is kényszerítik.
+            </p>
+            <p className="text-xs text-gray-500 mt-2 font-medium">„{deleteTarget.name}”</p>
+            <div className="flex gap-2 mt-5">
+              <button
+                type="button"
+                className="flex-1 btn-base btn-secondary"
+                disabled={deleteBusy}
+                onClick={() => setDeleteTarget(null)}
+              >
+                Mégse
+              </button>
+              <button
+                type="button"
+                className="flex-1 btn-base btn-danger"
+                disabled={deleteBusy}
+                onClick={confirmDeleteProduct}
+              >
+                {deleteBusy ? 'Törlés…' : 'Törlés'}
+              </button>
+            </div>
+          </div>
+        </div>
+      ) : null}
+
+      {bulkDeleteOpen ? (
+        <div
+          className="fixed inset-0 z-[300] flex items-center justify-center p-4 bg-black/50 backdrop-blur-[2px]"
+          role="presentation"
+          onClick={() => {
+            if (!bulkBusy) setBulkDeleteOpen(false);
+          }}
+        >
+          <div
+            role="dialog"
+            aria-modal="true"
+            aria-labelledby="bulk-delete-title"
+            className="bg-white rounded-2xl shadow-xl max-w-sm w-full p-5 border border-red-100"
+            onClick={(e) => e.stopPropagation()}
+          >
+            <h3 id="bulk-delete-title" className="text-lg font-bold text-red-800">
+              Összes hirdetés törlése?
+            </h3>
+            <p className="text-sm text-gray-700 mt-3">
+              Ez <strong>minden aktív</strong> hirdetésedet eltávolítja a piactérről egyszerre. Nem
+              vonható vissza; csak új feltöltéssel jelenhetsz meg újra.
+            </p>
+            <p className="text-xs text-gray-500 mt-2">
+              Érintett hirdetések száma: <strong>{products.length}</strong>
+            </p>
+            <div className="flex gap-2 mt-5">
+              <button
+                type="button"
+                className="flex-1 btn-base btn-secondary"
+                disabled={bulkBusy}
+                onClick={() => setBulkDeleteOpen(false)}
+              >
+                Mégse
+              </button>
+              <button
+                type="button"
+                className="flex-1 btn-base btn-danger"
+                disabled={bulkBusy || products.length === 0}
+                onClick={() => void confirmBulkDeleteAll()}
+              >
+                {bulkBusy ? 'Törlés…' : 'Összes törlése'}
+              </button>
+            </div>
+          </div>
+        </div>
+      ) : null}
+
+      <main className={`${MAIN_TOP_PADDING} pb-12 px-3 md:px-6`}>
         <div className="max-w-7xl mx-auto">
           <div className="flex items-center gap-3 mb-1.5">
               <div className="w-14 h-14 rounded-full bg-[#007782]/10 flex items-center justify-center text-[#007782] text-xl font-bold">
@@ -401,6 +573,12 @@ export default function ProfilePage() {
             <OffersList />
           </div>
 
+          {/* Küldött ajánlatok (vevő) */}
+          <div className="mb-8">
+            <h2 className="text-xl font-bold mb-4">📤 Küldött ajánlataim</h2>
+            <BuyerOffersList />
+          </div>
+
           {/* Statistics Dashboard */}
           <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mb-8">
             <div className="bg-gray-50 border border-gray-200 rounded-lg p-4">
@@ -437,25 +615,10 @@ export default function ProfilePage() {
           <div className="mb-4 flex items-center justify-between">
             <h2 className="text-xl font-bold">📦 Saját hirdetéseim</h2>
             <button
-              onClick={async () => {
-                if (!confirm('Biztosan törölni szeretnéd AZ ÖSSZES termékedet?')) return;
-                
-                try {
-                  const { data: { user } } = await supabase.auth.getUser();
-                  if (!user) return;
-                  
-                  await supabase
-                    .from('products')
-                    .delete()
-                    .eq('user_id', user.id);
-                  
-                  setProducts([]);
-                  toast.success('✅ Minden termék sikeresen törölve!');
-                } catch (error) {
-                  toast.error('❌ Hiba történt a törlés során');
-                }
-              }}
-              className="btn-base btn-danger text-xs px-3"
+              type="button"
+              disabled={products.length === 0 || bulkBusy}
+              onClick={() => setBulkDeleteOpen(true)}
+              className="btn-base btn-danger text-xs px-3 disabled:opacity-50"
             >
               Összes törlése
             </button>
@@ -491,7 +654,10 @@ export default function ProfilePage() {
                     </Link>
 
                     <button
-                      onClick={() => deleteProduct(product.id)}
+                      type="button"
+                      onClick={() =>
+                        setDeleteTarget({ id: product.id, name: product.name })
+                      }
                       className="absolute top-1.5 right-1.5 bg-red-500/90 hover:bg-red-500 text-white px-2 py-0.5 rounded text-[10px] transition-colors"
                     >
                       Törlés

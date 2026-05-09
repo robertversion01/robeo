@@ -8,6 +8,7 @@ import { CheckCircle, ArrowRight, Truck, Package, CreditCard } from 'lucide-reac
 import dynamic from 'next/dynamic';
 import { toast } from 'sonner';
 import ReviewForm from '@/components/review/ReviewForm';
+import { MAIN_TOP_PADDING } from '@/lib/layoutTokens';
 
 // Use dynamic import with { ssr: false } to prevent server-side rendering
 const CheckoutSuccessContent = dynamic(() => Promise.resolve(CheckoutSuccessContentComponent), {
@@ -141,7 +142,7 @@ function CheckoutSuccessContentComponent() {
 
   return (
     <div className="min-h-screen bg-white text-gray-900">
-      <main className="pt-14 pb-10 px-4 md:px-6">
+      <main className={`${MAIN_TOP_PADDING} pb-10 px-4 md:px-6`}>
         <div className="max-w-3xl mx-auto">
           <div className="bg-white rounded-lg p-6 shadow-lg border border-gray-200">
             <div className="flex items-center justify-center mb-6">

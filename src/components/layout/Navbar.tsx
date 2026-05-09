@@ -5,6 +5,7 @@ import { supabase } from '@/lib/supabase';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import { MessageCircle, Heart, User, Search, Plus, LogOut } from 'lucide-react';
+import { useBrowseSearch } from '@/context/BrowseContext';
 import type { Product } from '@/types';
 
 interface NavbarProps {
@@ -13,17 +14,19 @@ interface NavbarProps {
 }
 
 export default function Navbar({ searchQuery, onSearchChange }: NavbarProps) {
+  const browse = useBrowseSearch();
   const [user, setUser] = useState<any>(null);
   const [loading, setLoading] = useState(true);
   const [hasUnreadMessages, setHasUnreadMessages] = useState(false);
   const [showProfileMenu, setShowProfileMenu] = useState(false);
-  const [localSearchQuery, setLocalSearchQuery] = useState('');
-  const [liveResults, setLiveResults] = useState<Array<Pick<Product, 'id' | 'name' | 'category'>>>([]);
+  const [liveResults, setLiveResults] = useState<
+    Array<Pick<Product, 'id' | 'name' | 'category' | 'brand'>>
+  >([]);
   const [showLiveResults, setShowLiveResults] = useState(false);
   const pathname = usePathname();
   const searchContainerRef = useRef<HTMLDivElement | null>(null);
   const profileMenuRef = useRef<HTMLDivElement | null>(null);
-  const resolvedSearchQuery = searchQuery ?? localSearchQuery;
+  const resolvedSearchQuery = searchQuery ?? browse.searchQuery;
   const isGuest = !loading && !user;
   const hideOnGuestHome = pathname === '/' && !user;
   const hideOnAuth = pathname === '/auth';
@@ -31,24 +34,39 @@ export default function Navbar({ searchQuery, onSearchChange }: NavbarProps) {
   useEffect(() => {
     const checkUnreadMessages = async (currentUserId: string) => {
       const lastSeen = localStorage.getItem(`messages_last_seen_at_${currentUserId}`) || '1970-01-01T00:00:00.000Z';
-      const [{ data: messageData, error: messageError }, { data: offerData, error: offerError }] = await Promise.all([
+      const [
+        { data: messageData, error: messageError },
+        { data: sellerOfferData, error: sellerOfferError },
+        { data: buyerCounterData, error: buyerCounterError },
+      ] = await Promise.all([
         supabase
-        .from('messages')
-        .select('id')
-        .eq('receiver_id', currentUserId)
-        .gt('created_at', lastSeen)
-        .limit(1),
+          .from('messages')
+          .select('id')
+          .eq('receiver_id', currentUserId)
+          .gt('created_at', lastSeen)
+          .limit(1),
         supabase
-        .from('offers')
-        .select('id')
-        .eq('seller_id', currentUserId)
-        .eq('status', 'pending')
-        .gt('created_at', lastSeen)
-        .limit(1),
+          .from('offers')
+          .select('id')
+          .eq('seller_id', currentUserId)
+          .eq('status', 'pending')
+          .gt('created_at', lastSeen)
+          .limit(1),
+        supabase
+          .from('offers')
+          .select('id')
+          .eq('buyer_id', currentUserId)
+          .eq('status', 'countered')
+          .gt('updated_at', lastSeen)
+          .limit(1),
       ]);
 
-      if (!messageError && !offerError) {
-        setHasUnreadMessages((messageData || []).length > 0 || (offerData || []).length > 0);
+      if (!messageError && !sellerOfferError && !buyerCounterError) {
+        setHasUnreadMessages(
+          (messageData || []).length > 0 ||
+            (sellerOfferData || []).length > 0 ||
+            (buyerCounterData || []).length > 0
+        );
       }
     };
 
@@ -98,6 +116,21 @@ export default function Navbar({ searchQuery, onSearchChange }: NavbarProps) {
           }
         }
       )
+      .on(
+        'postgres_changes',
+        { event: 'UPDATE', schema: 'public', table: 'offers' },
+        async (payload: any) => {
+          const { data: { user: currentUser } } = await supabase.auth.getUser();
+          const row = payload?.new;
+          if (
+            currentUser?.id &&
+            row?.buyer_id === currentUser.id &&
+            row?.status === 'countered'
+          ) {
+            setHasUnreadMessages(true);
+          }
+        }
+      )
       .subscribe();
 
     const handleSeen = () => {
@@ -114,12 +147,14 @@ export default function Navbar({ searchQuery, onSearchChange }: NavbarProps) {
       setShowLiveResults(false);
     };
     window.addEventListener('messages:seen', handleSeen as EventListener);
+    window.addEventListener('offers:updated', handleSeen as EventListener);
     window.addEventListener('pointerdown', closeOnOutsidePointer);
 
     return () => {
       subscription.unsubscribe();
       supabase.removeChannel(channel);
       window.removeEventListener('messages:seen', handleSeen as EventListener);
+      window.removeEventListener('offers:updated', handleSeen as EventListener);
       window.removeEventListener('pointerdown', closeOnOutsidePointer);
     };
   }, []);
@@ -134,12 +169,14 @@ export default function Navbar({ searchQuery, onSearchChange }: NavbarProps) {
     const timeout = setTimeout(async () => {
       const { data, error } = await supabase
         .from('products')
-        .select('id, name, category')
+        .select('id, name, category, brand')
         .or(`name.ilike.%${query}%,category.ilike.%${query}%,brand.ilike.%${query}%`)
         .limit(8);
 
       if (!error) {
-        setLiveResults((data || []) as Array<Pick<Product, 'id' | 'name' | 'category'>>);
+        setLiveResults(
+          (data || []) as Array<Pick<Product, 'id' | 'name' | 'category' | 'brand'>>
+        );
       } else {
         console.warn('[NavbarDebug] Live search query failed', {
           query,
@@ -156,7 +193,7 @@ export default function Navbar({ searchQuery, onSearchChange }: NavbarProps) {
     if (onSearchChange) {
       onSearchChange(value);
     } else {
-      setLocalSearchQuery(value);
+      browse.setSearchQuery(value);
     }
     setShowLiveResults(true);
   };
@@ -170,8 +207,60 @@ export default function Navbar({ searchQuery, onSearchChange }: NavbarProps) {
     return null;
   }
 
+  const loggedIn = Boolean(user);
+  const mobileSearchStack = loggedIn && !loading;
+
+  const searchField = (
+    <div
+      ref={searchContainerRef}
+      className={`relative z-[10000] pointer-events-auto ${mobileSearchStack ? 'w-full' : ''}`}
+    >
+      <Search className="absolute left-2.5 top-1/2 -translate-y-1/2 text-gray-400" size={14} />
+      <input
+        id="search-input"
+        name="search"
+        type="text"
+        placeholder="Keress márkákra, ruhákra..."
+        value={resolvedSearchQuery}
+        onFocus={() => setShowLiveResults(true)}
+        onChange={(e) => onNavbarSearchChange(e.target.value)}
+        className="w-full min-w-0 shrink h-10 sm:h-9 pl-8 pr-3 bg-gray-100 rounded-full text-sm border border-gray-200 focus:outline-none focus:ring-1 focus:ring-[#007782] pointer-events-auto"
+      />
+
+      {showLiveResults && resolvedSearchQuery.trim().length >= 2 ? (
+        <div className="absolute left-0 right-0 top-11 sm:top-10 z-[9999] rounded-xl border border-gray-200 bg-white shadow-lg overflow-hidden pointer-events-auto">
+          {liveResults.length === 0 ? (
+            <div className="px-3 py-2.5 text-xs text-gray-500">Nincs találat.</div>
+          ) : (
+            <div className="max-h-72 overflow-y-auto">
+              {liveResults.map((item) => (
+                <Link
+                  key={item.id}
+                  href={`/products/${item.id}`}
+                  onClick={() => setShowLiveResults(false)}
+                  className="block px-3 py-2.5 hover:bg-gray-50 border-b last:border-b-0 border-gray-100"
+                >
+                  <p className="text-sm font-medium text-gray-900 truncate">{item.name}</p>
+                  <p className="text-xs text-gray-500 truncate">
+                    {[item.brand, item.category].filter(Boolean).join(' · ') || item.category}
+                  </p>
+                </Link>
+              ))}
+            </div>
+          )}
+        </div>
+      ) : null}
+    </div>
+  );
+
   return (
-    <nav className={`fixed top-0 left-0 right-0 z-[9999] h-11 px-2 sm:px-3 flex items-center gap-1 sm:gap-2 bg-white border-b border-gray-200 shadow-sm overflow-visible w-full max-w-full pointer-events-auto ${isGuest ? 'justify-end' : 'justify-between'}`}>
+    <nav
+      className={`fixed top-0 left-0 right-0 z-[9999] bg-white border-b border-gray-200 shadow-sm overflow-visible w-full max-w-full pointer-events-auto ${
+        mobileSearchStack
+          ? 'flex flex-wrap items-center gap-x-2 gap-y-2 px-2 pt-2 pb-2 sm:h-11 sm:py-0 sm:flex-nowrap sm:px-3 sm:gap-2'
+          : `h-11 px-2 sm:px-3 flex items-center gap-1 sm:gap-2 ${isGuest ? 'justify-end' : 'justify-between'}`
+      }`}
+    >
       {showProfileMenu ? (
         <button
           type="button"
@@ -180,56 +269,102 @@ export default function Navbar({ searchQuery, onSearchChange }: NavbarProps) {
           className="fixed inset-0 z-[9998] bg-black/20 cursor-default"
         />
       ) : null}
-      {!isGuest ? (
+      {!isGuest && !mobileSearchStack ? (
         <>
-          <Link href="/" className="text-sm font-semibold tracking-wide hover:text-[#007782] transition-colors flex-shrink-0 text-[#007782]">
+          <Link
+            href="/"
+            className="text-sm font-semibold tracking-wide hover:text-[#007782] transition-colors flex-shrink-0 text-[#007782]"
+          >
             ROBEO
           </Link>
 
-          <div className={`flex-1 min-w-0 basis-0 w-full shrink ${user ? 'max-w-md' : 'max-w-[36vw] sm:max-w-sm'}`}>
-            <div ref={searchContainerRef} className="relative z-[10000] pointer-events-auto">
-              <Search className="absolute left-2.5 top-1/2 -translate-y-1/2 text-gray-400" size={14} />
-              <input 
-                id="search-input"
-                name="search"
-                type="text" 
-                placeholder="Keress márkákra, ruhákra..."
-                value={resolvedSearchQuery}
-                onFocus={() => setShowLiveResults(true)}
-                onChange={(e) => onNavbarSearchChange(e.target.value)}
-                className="w-full min-w-0 shrink h-9 pl-8 pr-3 bg-gray-100 rounded-full text-sm border border-gray-200 focus:outline-none focus:ring-1 focus:ring-[#007782] pointer-events-auto"
-              />
-
-              {showLiveResults && resolvedSearchQuery.trim().length >= 2 ? (
-                <div className="absolute left-0 right-0 top-10 z-[9999] rounded-xl border border-gray-200 bg-white shadow-lg overflow-hidden pointer-events-auto">
-                  {liveResults.length === 0 ? (
-                    <div className="px-3 py-2.5 text-xs text-gray-500">Nincs találat.</div>
-                  ) : (
-                    <div className="max-h-72 overflow-y-auto">
-                      {liveResults.map((item) => (
-                        <Link
-                          key={item.id}
-                          href={`/products/${item.id}`}
-                          onClick={() => setShowLiveResults(false)}
-                          className="block px-3 py-2.5 hover:bg-gray-50 border-b last:border-b-0 border-gray-100"
-                        >
-                          <p className="text-sm font-medium text-gray-900 truncate">{item.name}</p>
-                          <p className="text-xs text-gray-500">{item.category}</p>
-                        </Link>
-                      ))}
-                    </div>
-                  )}
+          <div
+            className={`flex-1 min-w-0 basis-0 w-full shrink ${user ? 'max-w-md' : 'max-w-[36vw] sm:max-w-sm'}`}
+          >
+            {searchField}
+          </div>
+        </>
+      ) : null}
+      {!isGuest && mobileSearchStack ? (
+        <>
+          <Link
+            href="/"
+            className="order-1 shrink-0 text-sm font-semibold tracking-wide hover:text-[#007782] transition-colors text-[#007782]"
+          >
+            ROBEO
+          </Link>
+          <div className="order-2 ml-auto flex items-center gap-1 md:gap-2 shrink-0 sm:order-3 sm:ml-0">
+            <Link href="/upload" className="icon-btn text-gray-700">
+              <Plus size={16} className="text-gray-700" />
+            </Link>
+            <Link href="/messages" className="icon-btn text-gray-700 relative">
+              <MessageCircle size={16} className="text-gray-700" />
+              {hasUnreadMessages ? (
+                <span className="absolute top-1 right-1 h-2.5 w-2.5 rounded-full bg-red-500 border border-white" />
+              ) : null}
+            </Link>
+            <Link href="/favorites" className="icon-btn text-gray-700">
+              <Heart size={16} className="text-gray-700" />
+            </Link>
+            <div
+              ref={profileMenuRef}
+              className="relative z-[10000] pointer-events-auto overflow-visible"
+            >
+              <button
+                type="button"
+                onClick={(e) => {
+                  e.preventDefault();
+                  setShowProfileMenu((prev) => !prev);
+                }}
+                className="icon-btn text-[#007782] cursor-pointer pointer-events-auto"
+                aria-label="Profil menü"
+              >
+                <User size={16} className="text-[#007782] pointer-events-auto" />
+              </button>
+              {showProfileMenu ? (
+                <div className="absolute right-0 top-10 w-44 card-base shadow-md p-1 z-[9999] pointer-events-auto">
+                  <Link
+                    href="/profile"
+                    className="w-full min-h-9 flex items-center gap-2 px-3 py-2 rounded-lg text-sm text-gray-700 hover:bg-gray-100"
+                    onClick={() => setShowProfileMenu(false)}
+                  >
+                    <User size={15} />
+                    Profilom
+                  </Link>
+                  <button
+                    type="button"
+                    onClick={handleSignOut}
+                    className="w-full min-h-9 flex items-center gap-2 px-3 py-2 rounded-lg text-sm text-red-600 hover:bg-red-50"
+                  >
+                    <LogOut size={15} />
+                    Kijelentkezés
+                  </button>
                 </div>
               ) : null}
             </div>
           </div>
+          <div className="order-3 w-full basis-full sm:order-2 sm:flex-1 sm:basis-auto min-w-0 max-w-full sm:max-w-md">
+            {searchField}
+          </div>
         </>
       ) : null}
-      
-      <div className="flex items-center gap-1 md:gap-2 shrink-0">
+
+      <div
+        className={`flex items-center gap-1 md:gap-2 shrink-0 ${mobileSearchStack ? 'hidden' : ''}`}
+      >
         {loading ? (
             <div className="w-20 h-9 animate-pulse bg-gray-100 rounded-full"></div>
-        ) : user ? (
+        ) : !user ? (
+          <>
+            <Link href="/auth?view=sign_up" className="h-8 rounded-full bg-[#007782] px-2 text-[11px] sm:px-2.5 sm:text-xs font-semibold text-white inline-flex items-center justify-center whitespace-nowrap shrink-0">
+              <span className="sm:hidden">Reg.</span>
+              <span className="hidden sm:inline">Regisztráció</span>
+            </Link>
+            <Link href="/auth?view=sign_in" className="h-8 rounded-full border border-gray-300 px-2 text-[11px] sm:px-2.5 sm:text-xs font-semibold text-gray-700 inline-flex items-center justify-center whitespace-nowrap shrink-0">
+              Belépés
+            </Link>
+          </>
+        ) : mobileSearchStack ? null : (
           <>
             <Link href="/upload" className="icon-btn text-gray-700">
               <Plus size={16} className="text-gray-700" />
@@ -278,16 +413,6 @@ export default function Navbar({ searchQuery, onSearchChange }: NavbarProps) {
                 </div>
               ) : null}
             </div>
-          </>
-        ) : (
-          <>
-            <Link href="/auth?view=sign_up" className="h-8 rounded-full bg-[#007782] px-2 text-[11px] sm:px-2.5 sm:text-xs font-semibold text-white inline-flex items-center justify-center whitespace-nowrap shrink-0">
-              <span className="sm:hidden">Reg.</span>
-              <span className="hidden sm:inline">Regisztráció</span>
-            </Link>
-            <Link href="/auth?view=sign_in" className="h-8 rounded-full border border-gray-300 px-2 text-[11px] sm:px-2.5 sm:text-xs font-semibold text-gray-700 inline-flex items-center justify-center whitespace-nowrap shrink-0">
-              Belépés
-            </Link>
           </>
         )}
       </div>

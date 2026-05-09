@@ -6,6 +6,7 @@ import { useSearchParams, useRouter } from 'next/navigation';
 import { toast } from 'sonner';
 import { ArrowLeft, ShieldCheck } from 'lucide-react';
 import ShippingSelector from '@/components/product/ShippingSelector';
+import { MAIN_TOP_PADDING } from '@/lib/layoutTokens';
 
 export default function CheckoutContent() {
   const supabaseClient = supabase as any;
@@ -45,7 +46,7 @@ export default function CheckoutContent() {
 
     const { data: offerDataRaw, error: offerError } = await supabaseClient
       .from('offers')
-      .select('id, product_id, offered_price, buyer_id')
+      .select('id, product_id, offered_price, buyer_id, status')
       .eq('id', offerId)
       .eq('buyer_id', user.id)
       .single();
@@ -60,6 +61,14 @@ export default function CheckoutContent() {
       });
       toast.error('Az ajánlat nem található vagy már nem elérhető.');
       router.push('/');
+      return;
+    }
+
+    if ((offerData as { status?: string }).status !== 'accepted') {
+      toast.error(
+        'Csak elfogadott ajánlattal lehet fizetni. Ha ellenajánlatot kaptál, előbb fogadd el a profilodon.'
+      );
+      router.push('/profile');
       return;
     }
 
@@ -266,7 +275,7 @@ export default function CheckoutContent() {
 
   return (
     <div className="min-h-screen bg-white text-gray-900">
-      <main className="min-h-screen pt-14 pb-16">
+      <main className={`min-h-screen ${MAIN_TOP_PADDING} pb-16`}>
         <div className="max-w-4xl mx-auto px-4">
           {/* Back button + Title */}
           <div className="flex items-center gap-3 mb-4 pt-3">

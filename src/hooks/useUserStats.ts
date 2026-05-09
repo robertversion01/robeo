@@ -11,7 +11,7 @@ interface UserStats {
   reviewCount: number;
 }
 
-export function useUserStats(userId: string | undefined) {
+export function useUserStats(userId: string | undefined, refreshToken: number = 0) {
   const [stats, setStats] = useState<UserStats>({
     totalProducts: 0,
     soldProducts: 0,
@@ -68,7 +68,7 @@ export function useUserStats(userId: string | undefined) {
     };
 
     fetchStats();
-  }, [userId]);
+  }, [userId, refreshToken]);
 
   return { stats, loading };
 }

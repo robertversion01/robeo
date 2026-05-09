@@ -1,7 +1,8 @@
 'use client';
 
-import { useEffect, useState, useMemo } from 'react';
+import { useEffect, useState, useMemo, useCallback } from 'react';
 import { supabase } from '@/lib/supabase';
+import { useBrowseSearch } from '@/context/BrowseContext';
 import type { Product } from '@/types';
 
 const CATEGORY_ALIASES: Record<string, string[]> = {
@@ -20,35 +21,68 @@ function normalizeCategory(value: string) {
     .trim();
 }
 
+const SORT_OPTIONS = [
+  { id: 'newest', label: 'Legújabb előre', column: 'created_at', order: 'desc' as const },
+  { id: 'price_asc', label: 'Legolcsóbb előre', column: 'price', order: 'asc' as const },
+  { id: 'price_desc', label: 'Legdrágább előre', column: 'price', order: 'desc' as const },
+];
+
+const CATEGORIES = [
+  { id: 'all', label: 'Összes' },
+  { id: 'clothing', label: 'Ruházat' },
+  { id: 'shoes', label: 'Cipő' },
+  { id: 'accessories', label: 'Kiegészítők' },
+  { id: 'electronics', label: 'Elektronika' },
+  { id: 'other', label: 'Egyéb' },
+];
+
 export function useProducts() {
+  const { searchQuery, setSearchQuery } = useBrowseSearch();
   const [products, setProducts] = useState<Product[]>([]);
   const [loading, setLoading] = useState(true);
-  const [searchQuery, setSearchQuery] = useState('');
   const [selectedCategory, setSelectedCategory] = useState('all');
   const [selectedMaxPrice, setSelectedMaxPrice] = useState<number>(0);
   const [selectedSort, setSelectedSort] = useState('newest');
   const [favorites, setFavorites] = useState<Set<string>>(new Set());
   const [user, setUser] = useState<any>(null);
 
-  const sortOptions = [
-    { id: 'newest', label: 'Legújabb előre', column: 'created_at', order: 'desc' },
-    { id: 'price_asc', label: 'Legolcsóbb előre', column: 'price', order: 'asc' },
-    { id: 'price_desc', label: 'Legdrágább előre', column: 'price', order: 'desc' },
-  ];
+  const fetchProducts = useCallback(async () => {
+    try {
+      const sortConfig = SORT_OPTIONS.find((s) => s.id === selectedSort)!;
 
-  const categories = [
-    { id: 'all', label: 'Összes' },
-    { id: 'clothing', label: 'Ruházat' },
-    { id: 'shoes', label: 'Cipő' },
-    { id: 'accessories', label: 'Kiegészítők' },
-    { id: 'electronics', label: 'Elektronika' },
-    { id: 'other', label: 'Egyéb' },
-  ];
+      const { data, error } = await supabase
+        .from('products')
+        .select('*')
+        .or('status.is.null,status.neq.deleted')
+        .order(sortConfig.column, { ascending: sortConfig.order === 'asc' });
+
+      if (error) throw error;
+      const fetchedProducts = (data || []) as Product[];
+      setProducts(fetchedProducts);
+      const maxPrice = fetchedProducts.reduce(
+        (max, product) => Math.max(max, Number(product.price) || 0),
+        0
+      );
+      setSelectedMaxPrice((prev) => (prev > 0 ? prev : maxPrice));
+    } catch (error) {
+      console.error('Error fetching products:', error);
+    } finally {
+      setLoading(false);
+    }
+  }, [selectedSort]);
 
   useEffect(() => {
     fetchProducts();
     checkUserAndFavorites();
-  }, [selectedSort]);
+  }, [fetchProducts]);
+
+  useEffect(() => {
+    const onCatalogRefresh = () => {
+      fetchProducts();
+    };
+    window.addEventListener('products:updated', onCatalogRefresh);
+    return () => window.removeEventListener('products:updated', onCatalogRefresh);
+  }, [fetchProducts]);
 
   const checkUserAndFavorites = async () => {
     try {
@@ -68,28 +102,6 @@ export function useProducts() {
     } catch (error) {
       console.error('Error loading user/favorites:', error);
       setUser(null);
-    }
-  };
-
-  const fetchProducts = async () => {
-    try {
-      const sortConfig = sortOptions.find(s => s.id === selectedSort)!;
-
-      const { data, error } = await supabase
-        .from('products')
-        .select('*')
-        .or('status.is.null,status.neq.deleted')
-        .order(sortConfig.column, { ascending: sortConfig.order === 'asc' });
-
-      if (error) throw error;
-      const fetchedProducts = (data || []) as Product[];
-      setProducts(fetchedProducts);
-      const maxPrice = fetchedProducts.reduce((max, product) => Math.max(max, Number(product.price) || 0), 0);
-      setSelectedMaxPrice((prev) => (prev > 0 ? prev : maxPrice));
-    } catch (error) {
-      console.error('Error fetching products:', error);
-    } finally {
-      setLoading(false);
     }
   };
 
@@ -134,10 +146,15 @@ export function useProducts() {
     let filtered = [...products];
 
     if (searchQuery.trim()) {
-      filtered = filtered.filter(p => 
-        p.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-        p.description.toLowerCase().includes(searchQuery.toLowerCase())
-      );
+      const q = searchQuery.toLowerCase().trim();
+      filtered = filtered.filter((p) => {
+        const brand = (p.brand || '').toLowerCase();
+        return (
+          p.name.toLowerCase().includes(q) ||
+          p.description.toLowerCase().includes(q) ||
+          brand.includes(q)
+        );
+      });
     }
 
     if (selectedCategory !== 'all') {
@@ -172,8 +189,8 @@ export function useProducts() {
     setSelectedSort,
     favorites,
     toggleFavorite,
-    sortOptions,
-    categories,
+    sortOptions: SORT_OPTIONS,
+    categories: CATEGORIES,
     user
   };
 }

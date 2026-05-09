@@ -1,7 +1,7 @@
 import type { Metadata } from "next";
 import { Inter, Geist_Mono } from "next/font/google";
 import "./globals.css";
-import Navbar from "../components/layout/Navbar";
+import AppChrome from "../components/layout/AppChrome";
 import { Toaster } from "sonner";
 
 const interSans = Inter({
@@ -48,8 +48,7 @@ export default function RootLayout({
       className={`${interSans.variable} ${geistMono.variable} h-full antialiased`}
     >
       <body className="min-h-full flex flex-col overflow-x-hidden">
-        <Navbar />
-        {children}
+        <AppChrome>{children}</AppChrome>
         <Toaster 
           position="bottom-center"
           toastOptions={{

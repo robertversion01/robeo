@@ -61,12 +61,14 @@ export async function POST(req: NextRequest) {
     }
 
     let resolvedProductId = productId;
+    /** Ajánlati ár — csak elfogadott ajánlatnál */
+    let negotiatedPrice: number | null = null;
 
     // If we have an offer ID, resolve the related product first.
     if (offerId) {
       const { data: offerData, error: offerError } = await supabase
         .from('offers')
-        .select('id, product_id, buyer_id')
+        .select('id, product_id, buyer_id, offered_price, status')
         .eq('id', offerId)
         .single();
 
@@ -75,6 +77,7 @@ export async function POST(req: NextRequest) {
         offerError,
         offerProductId: offerData?.product_id,
         offerBuyerId: offerData?.buyer_id,
+        status: (offerData as { status?: string })?.status,
       });
 
       if (offerError || !offerData) {
@@ -96,6 +99,23 @@ export async function POST(req: NextRequest) {
           { status: 403 }
         );
       }
+
+      const offerStatus = (offerData as { status?: string }).status;
+      if (offerStatus !== 'accepted') {
+        return NextResponse.json(
+          {
+            error:
+              'Csak elfogadott ajánlattal lehet fizetni. Az eladónak el kell fogadnia az ajánlatot (vagy az ellenajánlatot).',
+          },
+          { status: 400 }
+        );
+      }
+
+      const op = (offerData as { offered_price?: number }).offered_price;
+      if (typeof op !== 'number' || !Number.isFinite(op) || op < 1) {
+        return NextResponse.json({ error: 'Érvénytelen ajánlati ár.' }, { status: 400 });
+      }
+      negotiatedPrice = Math.round(op);
 
       if (offerData.product_id) {
         resolvedProductId = offerData.product_id;
@@ -188,8 +208,9 @@ export async function POST(req: NextRequest) {
     // Pre-generate transaction id so it can be attached to Stripe metadata too.
     const transactionId = randomUUID();
 
-    // Official HU Vinted-style buyer protection fee: fixed 280 HUF + 5% of product price
-    const productPrice = product.price;
+    // Official HU Vinted-style buyer protection fee: fixed 280 HUF + 5% of alapár (ajánlat / közvetlen vásárlás)
+    const productPrice =
+      negotiatedPrice !== null ? negotiatedPrice : Math.round(product.price);
     const fixedBuyerProtectionFee = 280;
     const variableBuyerProtectionFee = Math.round(productPrice * 0.05);
     const buyerProtectionFee = fixedBuyerProtectionFee + variableBuyerProtectionFee;

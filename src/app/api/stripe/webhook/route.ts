@@ -253,6 +253,14 @@ const STATUSES_AFTER_PAYMENT = new Set<string>([
   'completed',
 ]);
 
+/** Stripe hiba szöveg rövidítése; üres, ha nincs értelmes tartalom */
+function formatStripeFailureDetail(raw: string): string {
+  const t = raw.trim();
+  if (!t) return '';
+  const short = t.length > 160 ? `${t.slice(0, 157)}…` : t;
+  return ` (${short})`;
+}
+
 async function handlePaymentIntentPaymentFailed(event: Stripe.Event, db: any): Promise<void> {
   const pi = event.data.object as Stripe.PaymentIntent;
   const paymentIntentId = pi.id;
@@ -292,15 +300,25 @@ async function handlePaymentIntentPaymentFailed(event: Stripe.Event, db: any): P
 
   if (upErr) throw new Error(`transactions payment_failed update: ${upErr.message}`);
 
-  const detail = reason ? ` (${reason})` : '';
-  const { error: msgErr } = await db.from('messages').insert({
-    sender_id: transaction.buyer_id,
-    receiver_id: transaction.seller_id,
-    content: `❌ A fizetés nem sikerült${detail}`,
-    product_id: transaction.product_id,
-    is_system_message: true,
-    message_type: 'system',
-  });
+  const detail = formatStripeFailureDetail(reason);
+  const { error: msgErr } = await db.from('messages').insert([
+    {
+      sender_id: transaction.buyer_id,
+      receiver_id: transaction.seller_id,
+      content: `❌ A vevő fizetése nem sikerült${detail}. A vevő újrapróbálhatja a fizetést (checkout / termék oldal).`,
+      product_id: transaction.product_id,
+      is_system_message: true,
+      message_type: 'system',
+    },
+    {
+      sender_id: transaction.seller_id,
+      receiver_id: transaction.buyer_id,
+      content: `❌ A fizetésed nem sikerült${detail}. Ellenőrizd a kártyát és az egyenleget, majd próbáld újra a fizetést.`,
+      product_id: transaction.product_id,
+      is_system_message: true,
+      message_type: 'system',
+    },
+  ]);
 
   if (msgErr) throw new Error(`messages insert (payment_failed): ${msgErr.message}`);
 }
@@ -348,19 +366,29 @@ async function handleChargeRefunded(event: Stripe.Event, db: any): Promise<void>
       ? (cents / 100).toFixed(2)
       : '';
   const curr = (charge.currency ?? 'huf').toUpperCase();
-  const line =
+  const amountPart =
     amountLabel !== ''
-      ? `💸 Visszatérítés rögzítve: ${amountLabel} ${curr}.`
-      : '💸 Visszatérítés rögzítve a Stripe-ban.';
+      ? `${amountLabel} ${curr}`
+      : 'az összeg';
 
-  const { error: msgErr } = await db.from('messages').insert({
-    sender_id: transaction.buyer_id,
-    receiver_id: transaction.seller_id,
-    content: line,
-    product_id: transaction.product_id,
-    is_system_message: true,
-    message_type: 'system',
-  });
+  const { error: msgErr } = await db.from('messages').insert([
+    {
+      sender_id: transaction.buyer_id,
+      receiver_id: transaction.seller_id,
+      content: `💸 Visszatérítés történt a vevőnek: ${amountPart}. A banktól függően 5–10 munkanap alatt jelenhet meg.`,
+      product_id: transaction.product_id,
+      is_system_message: true,
+      message_type: 'system',
+    },
+    {
+      sender_id: transaction.seller_id,
+      receiver_id: transaction.buyer_id,
+      content: `💸 Visszatérítésed feldolgozva: ${amountPart}. A számládon néhány napon belül megjelenhet.`,
+      product_id: transaction.product_id,
+      is_system_message: true,
+      message_type: 'system',
+    },
+  ]);
 
   if (msgErr) throw new Error(`messages insert (refund): ${msgErr.message}`);
 }

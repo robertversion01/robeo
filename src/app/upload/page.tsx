@@ -5,6 +5,7 @@ import { supabase } from '@/lib/supabase';
 import { toast } from 'sonner';
 import { X, Plus, ArrowUp, ArrowDown } from 'lucide-react';
 import CustomSelect from '@/components/ui/CustomSelect';
+import { MAIN_TOP_PADDING } from '@/lib/layoutTokens';
 
 interface UploadedImage {
   file: File;
@@ -167,7 +168,9 @@ export default function UploadPage() {
 
   return (
     <div className="min-h-screen bg-white text-gray-900">
-      <main className="min-h-screen pt-16 pb-10 flex flex-col items-center px-4">
+      <main
+        className={`min-h-screen ${MAIN_TOP_PADDING} pb-10 flex flex-col items-center px-4`}
+      >
         <div className="w-full max-w-2xl">
           <h1 className="text-3xl md:text-4xl font-bold mb-2 text-center">Termékfeltöltés</h1>
           <p className="text-gray-500 text-center mb-6">Add hozzá új terméked a közösséghez</p>

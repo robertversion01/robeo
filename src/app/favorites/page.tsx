@@ -7,6 +7,7 @@ import { useRouter } from 'next/navigation';
 import ProductGrid from '@/components/product/ProductGrid';
 import FreshOffersStrip from '@/components/home/FreshOffersStrip';
 import type { Product } from '@/types';
+import { MAIN_TOP_PADDING } from '@/lib/layoutTokens';
 
 type FavoriteRow = {
   product: Product | null;
@@ -79,7 +80,7 @@ export default function FavoritesPage() {
 
   return (
     <div className="min-h-screen bg-white text-gray-900">
-      <main className="pt-14 pb-12 px-3 md:px-6">
+      <main className={`${MAIN_TOP_PADDING} pb-12 px-3 md:px-6`}>
         <div className="max-w-7xl mx-auto">
           <h1 className="text-2xl md:text-3xl font-bold mb-0.5">❤️ Kedvenceim</h1>
           <p className="text-gray-500 text-sm mb-5">Elmentett termékeim</p>
