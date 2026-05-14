@@ -10,8 +10,12 @@ public static class DependencyInjection
 {
     public static IServiceCollection AddInfrastructure(this IServiceCollection services, IConfiguration configuration)
     {
-        var connectionString = configuration.GetConnectionString("Postgres")
-            ?? "Host=localhost;Port=5432;Database=robeo;Username=postgres;Password=postgres";
+        var connectionString = configuration.GetConnectionString("Postgres");
+        if (string.IsNullOrWhiteSpace(connectionString))
+        {
+            throw new InvalidOperationException(
+                "ConnectionStrings:Postgres is not configured. Set ConnectionStrings__Postgres, user secrets, or appsettings (see .env.example).");
+        }
 
         services.AddDbContext<AppDbContext>(opt =>
             opt.UseNpgsql(connectionString).UseSnakeCaseNamingConvention());
