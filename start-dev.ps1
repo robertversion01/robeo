@@ -1,40 +1,21 @@
 <#
-ROBEO Fejlesztői Szerver Indító Script
-Automatikusan beállítja a Node.js útvonalat és elindítja a projekt
+ROBEO – helyi fejlesztői szerver (Next.js a repó gyökerében).
+Használat: a repó gyökeréből futtasd: .\start-dev.ps1
+A szerver minden interfészen hallgat (0.0.0.0:3000), így a telefon a LAN IP-n is eléri: http://<PC_LAN_IP>:3000
 #>
 
-Write-Host "🚀 ROBEO Fejlesztői Szerver Indítása" -ForegroundColor Cyan
-Write-Host "====================================" -ForegroundColor Cyan
-Write-Host ""
+$ErrorActionPreference = "Stop"
+$root = Split-Path -Parent $MyInvocation.MyCommand.Path
+Set-Location $root
 
-# Node.js portable mappa útvonala
-$nodePath = "C:\Users\hevesitr\Desktop\node-portable\node-v22.14.0-win-x64"
-
-# Ellenőrizzük hogy létezik-e a mappa
-if (-not (Test-Path $nodePath)) {
-    Write-Host "❌ Hiba: Node.js portable mappa nem található!" -ForegroundColor Red
-    Write-Host "   Elvárt hely: $nodePath" -ForegroundColor Gray
-    Write-Host ""
-    Read-Host "Nyomj Entert a kilépéshez"
+if (-not (Get-Command node -ErrorAction SilentlyContinue)) {
+    Write-Host "[ERROR] Node.js nincs a PATH-on. Telepítsd a Node LTS-t, majd próbáld újra." -ForegroundColor Red
     exit 1
 }
 
-# Hozzáadjuk a PATH-hoz az aktuális munkamenethez
-$env:PATH = "$nodePath;$env:PATH"
-
-Write-Host "✅ Node.js útvonal beállítva" -ForegroundColor Green
+Write-Host "ROBEO dev – Node $(node --version), npm $(npm --version)" -ForegroundColor Cyan
+Write-Host "Könyvtár: $root"
+Write-Host "Indítás: npm run dev (0.0.0.0:3000 – elérhető LAN-ról is)" -ForegroundColor Green
 Write-Host ""
 
-# Verzió ellenőrzés
-node --version
-npm --version
-
-Write-Host ""
-Write-Host "📦 Projekt indítása..." -ForegroundColor Yellow
-Write-Host ""
-
-# Indítjuk a fejlesztői szervert
 npm run dev
-
-Write-Host ""
-Read-Host "Nyomj Entert a kilépéshez"

@@ -1,3 +1,5 @@
+using System.Net;
+using System.Net.Sockets;
 using System.Text;
 using System.Text.Json.Serialization;
 using Marketplace.Application;
@@ -7,6 +9,21 @@ using Microsoft.IdentityModel.Tokens;
 
 var builder = WebApplication.CreateBuilder(args);
 
+static bool IsAllowedDevCorsOrigin(string origin)
+{
+    if (string.IsNullOrWhiteSpace(origin)) return false;
+    if (!Uri.TryCreate(origin, UriKind.Absolute, out var uri)) return false;
+    if (string.Equals(uri.Host, "localhost", StringComparison.OrdinalIgnoreCase)) return true;
+    if (uri.Host == "127.0.0.1") return true;
+    if (!IPAddress.TryParse(uri.Host, out var ip)) return false;
+    if (ip.AddressFamily != AddressFamily.InterNetwork) return false;
+    var b = ip.GetAddressBytes();
+    if (b[0] == 10) return true;
+    if (b[0] == 172 && b[1] >= 16 && b[1] <= 31) return true;
+    if (b[0] == 192 && b[1] == 168) return true;
+    return false;
+}
+
 builder.Services.AddControllers().AddJsonOptions(o =>
 {
     o.JsonSerializerOptions.PropertyNamingPolicy = System.Text.Json.JsonNamingPolicy.CamelCase;
@@ -15,13 +32,26 @@ builder.Services.AddControllers().AddJsonOptions(o =>
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
 
-var corsOrigins = builder.Configuration["Cors:Origins"]?.Split(';', StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries)
-    ?? new[] { "http://localhost:5173", "http://127.0.0.1:5173" };
-builder.Services.AddCors(options =>
+if (builder.Environment.IsDevelopment())
 {
-    options.AddDefaultPolicy(policy =>
-        policy.WithOrigins(corsOrigins).AllowAnyHeader().AllowAnyMethod());
-});
+    builder.Services.AddCors(options =>
+    {
+        options.AddDefaultPolicy(policy =>
+            policy.SetIsOriginAllowed(IsAllowedDevCorsOrigin)
+                .AllowAnyHeader()
+                .AllowAnyMethod());
+    });
+}
+else
+{
+    var corsOrigins = builder.Configuration["Cors:Origins"]?.Split(';', StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries)
+        ?? new[] { "http://localhost:5173", "http://127.0.0.1:5173", "http://localhost:3000", "http://127.0.0.1:3000" };
+    builder.Services.AddCors(options =>
+    {
+        options.AddDefaultPolicy(policy =>
+            policy.WithOrigins(corsOrigins).AllowAnyHeader().AllowAnyMethod());
+    });
+}
 
 builder.Services.AddInfrastructure(builder.Configuration);
 builder.Services.AddScoped<ProductService>();
@@ -63,7 +93,11 @@ app.Use(async (context, next) =>
     await next();
 });
 
-app.UseHttpsRedirection();
+if (!app.Environment.IsDevelopment())
+{
+    app.UseHttpsRedirection();
+}
+
 app.UseCors();
 app.UseAuthentication();
 app.UseAuthorization();
