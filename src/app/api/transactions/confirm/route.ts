@@ -2,13 +2,21 @@ import { NextRequest, NextResponse } from 'next/server';
 import { getStripeInstance } from '@/lib/stripe-client';
 import { getSupabaseAdminClient, getSupabaseClient } from '@/lib/supabase';
 import { canBuyerConfirmReceipt } from '@/lib/transactionFlow';
+import {
+  capturePaymentIntentSafe,
+  resolveTransactionPaymentIntentId,
+} from '@/lib/transactionPaymentIntent';
 
 export const dynamic = 'force-dynamic';
 
 export async function POST(req: NextRequest) {
   try {
-    const body = (await req.json()) as { transactionId?: string; buyerId?: string };
-    const { transactionId, buyerId } = body;
+    const body = (await req.json()) as {
+      transactionId?: string;
+      buyerId?: string;
+      paymentIntentId?: string;
+    };
+    const { transactionId, buyerId, paymentIntentId: bodyPaymentIntentId } = body;
 
     if (!transactionId) {
       return NextResponse.json({ error: 'Transaction ID is required' }, { status: 400 });
@@ -18,13 +26,15 @@ export async function POST(req: NextRequest) {
     const supabase = (getSupabaseAdminClient() || getSupabaseClient()) as ReturnType<
       typeof getSupabaseAdminClient
     >;
-    if (!stripe || !supabase) {
+    if (!supabase) {
       return NextResponse.json({ error: 'Service unavailable' }, { status: 500 });
     }
 
     const { data: transaction, error: transactionError } = await supabase
       .from('transactions')
-      .select('id, buyer_id, seller_id, payment_intent_id, status, product_id')
+      .select(
+        'id, buyer_id, seller_id, payment_intent_id, checkout_session_id, status, product_id',
+      )
       .eq('id', transactionId)
       .single();
 
@@ -46,11 +56,35 @@ export async function POST(req: NextRequest) {
       );
     }
 
-    if (!transaction.payment_intent_id) {
-      return NextResponse.json({ error: 'Payment intent is missing' }, { status: 400 });
-    }
+    let resolvedPaymentIntentId: string | null = null;
+    let captured = false;
 
-    await stripe.paymentIntents.capture(transaction.payment_intent_id);
+    if (stripe) {
+      resolvedPaymentIntentId = await resolveTransactionPaymentIntentId(
+        stripe,
+        transaction,
+        bodyPaymentIntentId,
+      );
+
+      if (resolvedPaymentIntentId) {
+        await capturePaymentIntentSafe(stripe, resolvedPaymentIntentId);
+        captured = true;
+
+        if (resolvedPaymentIntentId !== transaction.payment_intent_id) {
+          await supabase
+            .from('transactions')
+            .update({ payment_intent_id: resolvedPaymentIntentId })
+            .eq('id', transaction.id);
+        }
+      } else {
+        console.warn(
+          '[transactions.confirm] no payment_intent_id — completing without Stripe capture',
+          { transactionId },
+        );
+      }
+    } else {
+      console.warn('[transactions.confirm] Stripe unavailable — status update only');
+    }
 
     const { error: updateError } = await supabase
       .from('transactions')
@@ -64,7 +98,7 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: updateError.message }, { status: 500 });
     }
 
-    return NextResponse.json({ success: true });
+    return NextResponse.json({ success: true, captured });
   } catch (error: unknown) {
     const message = error instanceof Error ? error.message : 'Failed to confirm transaction';
     console.error('[transactions.confirm] error', error);

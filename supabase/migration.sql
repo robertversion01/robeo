@@ -343,7 +343,7 @@ CREATE POLICY "messages_insert_authenticated"
   ON public.messages
   FOR INSERT
   TO authenticated
-  WITH CHECK (auth.uid() = sender_id);
+  WITH CHECK (auth.uid() = sender_id OR auth.uid() = receiver_id);
 
 ALTER TABLE public.messages REPLICA IDENTITY FULL;
 

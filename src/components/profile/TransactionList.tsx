@@ -33,7 +33,8 @@ interface Transaction {
   status: string;
   created_at: string;
   updated_at: string;
-  payment_intent_id: string;
+  payment_intent_id?: string | null;
+  checkout_session_id?: string | null;
   fee?: number;
   product?: {
     id: string;
@@ -232,7 +233,11 @@ export default function TransactionList() {
       const response = await fetch('/api/transactions/confirm', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ transactionId: transaction.id, buyerId: user.id }),
+        body: JSON.stringify({
+          transactionId: transaction.id,
+          buyerId: user.id,
+          paymentIntentId: transaction.payment_intent_id?.trim() || undefined,
+        }),
       });
       const data = await response.json();
       if (!response.ok) {

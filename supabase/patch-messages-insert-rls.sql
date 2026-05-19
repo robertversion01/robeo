@@ -1,9 +1,8 @@
--- Futtasd a Supabase SQL Editorban, ha az eladó nem kap Realtime popupot / olvasatlan számot
--- a webhook által beszúrt üzenetekre (service_role INSERT + hiányzó SELECT policy).
+-- Futtasd a Supabase SQL Editorban, ha rendszerüzenetek / státusz értesítések INSERT 403-at adnak.
+-- Ok: a policy csak sender_id = auth.uid() volt, de a tranzakciós üzeneteknél a másik fél a küldő.
 
 ALTER TABLE public.messages ENABLE ROW LEVEL SECURITY;
 
--- Realtime postgres_changes: csak olyan sorokat küld, amit a feliratkozó SELECT-tel láthat.
 DROP POLICY IF EXISTS "messages_select_policy" ON public.messages;
 CREATE POLICY "messages_select_policy"
   ON public.messages
@@ -19,7 +18,6 @@ CREATE POLICY "messages_insert_authenticated"
   TO authenticated
   WITH CHECK (auth.uid() = sender_id OR auth.uid() = receiver_id);
 
--- Opcionális: teljes sor a Realtime UPDATE/DELETE-hez (INSERT-hez általában elég a policy).
 ALTER TABLE public.messages REPLICA IDENTITY FULL;
 
 GRANT SELECT, INSERT ON public.messages TO authenticated;

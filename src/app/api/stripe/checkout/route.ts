@@ -259,9 +259,12 @@ export async function POST(req: NextRequest) {
     };
 
     // If no seller Stripe account is available, process payment on platform account only.
+    const paymentIntentMetadata = { transactionId };
+
     if (sellerStripeAccountId) {
       checkoutSessionPayload.payment_intent_data = {
         capture_method: 'manual',
+        metadata: paymentIntentMetadata,
         application_fee_amount: buyerProtectionFee * 100, // Stripe uses cents
         transfer_data: {
           destination: sellerStripeAccountId,
@@ -270,6 +273,7 @@ export async function POST(req: NextRequest) {
     } else {
       checkoutSessionPayload.payment_intent_data = {
         capture_method: 'manual',
+        metadata: paymentIntentMetadata,
       };
       console.log('[checkout] No seller Stripe account, using platform-only payment intent');
     }

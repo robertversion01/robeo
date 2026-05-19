@@ -242,7 +242,9 @@ async function handlePaymentIntentSucceeded(event: Stripe.Event, db: any): Promi
   const pi = event.data.object as Stripe.PaymentIntent;
   const paymentIntentId = pi.id;
 
-  const { data: transaction, error: txErr } = await db
+  let transaction: TxRow | null = null;
+
+  const { data: byPi, error: txErr } = await db
     .from('transactions')
     .select(
       'id, buyer_id, seller_id, product_id, status, payment_intent_id, checkout_completed_notified_at'
@@ -251,12 +253,26 @@ async function handlePaymentIntentSucceeded(event: Stripe.Event, db: any): Promi
     .maybeSingle();
 
   if (txErr) throw new Error(`transactions select (PI): ${txErr.message}`);
+  transaction = byPi as TxRow | null;
+
+  if (!transaction && pi.metadata?.transactionId) {
+    const { data: byMeta, error: metaErr } = await db
+      .from('transactions')
+      .select(
+        'id, buyer_id, seller_id, product_id, status, payment_intent_id, checkout_completed_notified_at'
+      )
+      .eq('id', pi.metadata.transactionId)
+      .maybeSingle();
+    if (metaErr) throw new Error(`transactions select (metadata): ${metaErr.message}`);
+    transaction = byMeta as TxRow | null;
+  }
+
   if (!transaction) {
     console.warn(WEBHOOK_LOG, 'payment_intent.succeeded: no transaction for PI', paymentIntentId);
     return;
   }
 
-  await applyPaidTransactionEffects(db, transaction as TxRow, paymentIntentId);
+  await applyPaidTransactionEffects(db, transaction, paymentIntentId);
 }
 
 /** Ne írjuk felül a már „élő” vevői szállítási folyamatot */
