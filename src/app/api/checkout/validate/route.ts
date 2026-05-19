@@ -1,5 +1,10 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { calculateCheckoutTotal } from '@/lib/buyerProtection';
+import {
+  applyBundleDiscountToPrice,
+  bundleDiscountPercentForCount,
+  fetchSellerBundleDiscountSettings,
+} from '@/lib/bundleDiscount';
 import { getSupabaseAdminClient, getSupabaseClient } from '@/lib/supabase';
 
 export const dynamic = 'force-dynamic';
@@ -7,12 +12,13 @@ export const dynamic = 'force-dynamic';
 export async function POST(req: NextRequest) {
   try {
     const body = await req.json();
-    const { productId, offerId, buyerId, shippingCost, shippingMethod } = body as {
+    const { productId, offerId, buyerId, shippingCost, shippingMethod, bundleItemCount } = body as {
       productId?: string;
       offerId?: string;
       buyerId?: string;
       shippingCost?: number;
       shippingMethod?: string;
+      bundleItemCount?: number;
     };
 
     if ((!productId && !offerId) || !buyerId) {
@@ -108,6 +114,18 @@ export async function POST(req: NextRequest) {
       productPrice = Math.round(productData.price);
     }
 
+    const listPrice = productPrice;
+    const bundleCount = Math.min(10, Math.max(1, Math.round(bundleItemCount || 1)));
+    let bundleDiscountPercent = 0;
+    if (bundleCount > 1) {
+      const sellerBundle = await fetchSellerBundleDiscountSettings(supabase, productData.user_id);
+      if (sellerBundle.enabled) {
+        bundleDiscountPercent = bundleDiscountPercentForCount(sellerBundle.tiers, bundleCount);
+        productPrice = applyBundleDiscountToPrice(productPrice, bundleDiscountPercent);
+      }
+    }
+    const bundleDiscountAmount = Math.max(0, listPrice - productPrice);
+
     const normalizedShippingCost =
       typeof shippingCost === 'number' && Number.isFinite(shippingCost) && shippingCost > 0
         ? Math.round(shippingCost)
@@ -120,6 +138,10 @@ export async function POST(req: NextRequest) {
       message: 'Checkout azonosítók és árazás rendben.',
       pricing: {
         productPriceHuf: productPrice,
+        listPriceHuf: listPrice,
+        bundleDiscountPercent,
+        bundleDiscountAmountHuf: bundleDiscountAmount,
+        bundleItemCount: bundleCount,
         buyerProtectionFeeHuf: pricing.buyerProtectionFee,
         shippingCostHuf: pricing.shippingCost,
         totalHuf: pricing.total,

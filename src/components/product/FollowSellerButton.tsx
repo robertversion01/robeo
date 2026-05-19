@@ -8,9 +8,14 @@ import { toast } from 'sonner';
 type Props = {
   sellerId: string;
   sellerLabel?: string;
+  onFollowChange?: (following: boolean) => void;
 };
 
-export default function FollowSellerButton({ sellerId, sellerLabel = 'eladót' }: Props) {
+export default function FollowSellerButton({
+  sellerId,
+  sellerLabel = 'eladót',
+  onFollowChange,
+}: Props) {
   const [userId, setUserId] = useState<string | null>(null);
   const [following, setFollowing] = useState(false);
   const [busy, setBusy] = useState(false);
@@ -53,6 +58,7 @@ export default function FollowSellerButton({ sellerId, sellerLabel = 'eladót' }
           .eq('following_id', sellerId);
         if (error) throw error;
         setFollowing(false);
+        onFollowChange?.(false);
         toast.success('Kikövetted az eladót.');
       } else {
         const { error } = await supabase.from('follows').insert({
@@ -61,7 +67,28 @@ export default function FollowSellerButton({ sellerId, sellerLabel = 'eladót' }
         });
         if (error) throw error;
         setFollowing(true);
-        toast.success(`Követed az ${sellerLabel} — értesítünk új termékeiről.`);
+        onFollowChange?.(true);
+
+        const { data: profile } = await supabase
+          .from('profiles')
+          .select('full_name, name, email')
+          .eq('id', userId)
+          .maybeSingle();
+        const followerName =
+          profile?.full_name?.trim() ||
+          profile?.name?.trim() ||
+          profile?.email?.split('@')[0] ||
+          'Valaki';
+
+        await supabase.from('app_notifications').insert({
+          user_id: sellerId,
+          type: 'new_follower',
+          title: 'Új követő',
+          body: `${followerName} követni kezdett.`,
+          link: `/profile/${userId}`,
+        });
+
+        toast.success(`Követed: ${sellerLabel} — értesítünk új termékeiről.`);
       }
     } catch (e) {
       toast.error(e instanceof Error ? e.message : 'Nem sikerült.');
@@ -84,7 +111,7 @@ export default function FollowSellerButton({ sellerId, sellerLabel = 'eladót' }
       }`}
     >
       {following ? <UserCheck size={16} /> : <UserPlus size={16} />}
-      {following ? 'Követed' : 'Eladó követése'}
+      {following ? 'Követed' : 'Követés'}
     </button>
   );
 }

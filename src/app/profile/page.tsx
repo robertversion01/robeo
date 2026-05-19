@@ -15,7 +15,7 @@ import { formatPrice } from '@/lib/utils';
 import { getOptimizedImageUrl } from '@/lib/imageUtils';
 import type { Product } from '@/types';
 import { MAIN_TOP_PADDING } from '@/lib/layoutTokens';
-import { ChevronDown } from 'lucide-react';
+import { Bell, ChevronDown } from 'lucide-react';
 import { revalidateCatalog } from '@/app/actions/revalidateCatalog';
 import { notifyCatalogUpdated } from '@/lib/catalogRefresh';
 import { softDeleteAllUserProducts, softDeleteProduct } from '@/lib/productSoftDelete';
@@ -509,6 +509,17 @@ export default function ProfilePage() {
             </div>
           </div>
           <WalletBalanceCard userId={user?.id} />
+
+          <Link
+            href="/notifications"
+            className="mb-6 flex items-center justify-between rounded-xl border border-gray-200 bg-white px-4 py-3 hover:bg-gray-50 transition-colors"
+          >
+            <span className="flex items-center gap-2 text-sm font-semibold text-gray-900">
+              <Bell size={18} className="text-[#007782]" />
+              Értesítések
+            </span>
+            <span className="text-xs text-gray-500">Követések, új termékek →</span>
+          </Link>
 
           <BundleDiscountSettings userId={user?.id} />
 

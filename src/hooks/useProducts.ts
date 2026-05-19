@@ -5,6 +5,7 @@ import { supabase } from '@/lib/supabase';
 import { useBrowseSearch } from '@/context/BrowseContext';
 import type { Product } from '@/types';
 import { CATALOG_UPDATED_EVENT } from '@/lib/catalogRefresh';
+import { conditionMatchesFilter } from '@/lib/vintedCatalog';
 
 /** Csak böngészhető, megvásárolható termékek a főlistán. */
 function isListedProduct(status: string | null | undefined): boolean {
@@ -48,10 +49,12 @@ export function useProducts() {
   const [products, setProducts] = useState<Product[]>([]);
   const [loading, setLoading] = useState(true);
   const [selectedCategory, setSelectedCategory] = useState('all');
+  const [selectedMinPrice, setSelectedMinPrice] = useState(0);
   const [selectedMaxPrice, setSelectedMaxPrice] = useState<number>(0);
   const [selectedSort, setSelectedSort] = useState('newest');
   const [selectedBrand, setSelectedBrand] = useState('all');
   const [selectedSize, setSelectedSize] = useState('all');
+  const [selectedCondition, setSelectedCondition] = useState('all');
   const [favorites, setFavorites] = useState<Set<string>>(new Set());
   const [user, setUser] = useState<any>(null);
 
@@ -74,7 +77,8 @@ export function useProducts() {
         (max, product) => Math.max(max, Number(product.price) || 0),
         0
       );
-      setSelectedMaxPrice((prev) => (prev > 0 ? prev : maxPrice));
+      setSelectedMaxPrice((prev) => (prev > 0 ? prev : maxPrice || 0));
+      setSelectedMinPrice((prev) => prev);
     } catch (error) {
       console.error('Error fetching products:', error);
     } finally {
@@ -197,8 +201,16 @@ export function useProducts() {
       filtered = filtered.filter((p) => aliases.includes(normalizeCategory(p.category || '')));
     }
 
+    if (selectedMinPrice > 0) {
+      filtered = filtered.filter((p) => (Number(p.price) || 0) >= selectedMinPrice);
+    }
+
     if (selectedMaxPrice > 0) {
       filtered = filtered.filter((p) => (Number(p.price) || 0) <= selectedMaxPrice);
+    }
+
+    if (selectedCondition !== 'all') {
+      filtered = filtered.filter((p) => conditionMatchesFilter(p.condition, selectedCondition));
     }
 
     if (selectedBrand !== 'all') {
@@ -214,12 +226,49 @@ export function useProducts() {
     }
 
     return filtered;
-  }, [products, searchQuery, selectedCategory, selectedMaxPrice, selectedBrand, selectedSize]);
+  }, [
+    products,
+    searchQuery,
+    selectedCategory,
+    selectedMinPrice,
+    selectedMaxPrice,
+    selectedBrand,
+    selectedSize,
+    selectedCondition,
+  ]);
 
   const maxPriceLimit = useMemo(
     () => products.reduce((max, product) => Math.max(max, Number(product.price) || 0), 0),
-    [products]
+    [products],
   );
+
+  const activeFilterCount = useMemo(() => {
+    let n = 0;
+    if (selectedCategory !== 'all') n++;
+    if (selectedBrand !== 'all') n++;
+    if (selectedSize !== 'all') n++;
+    if (selectedCondition !== 'all') n++;
+    if (selectedMinPrice > 0) n++;
+    if (selectedMaxPrice > 0 && selectedMaxPrice < maxPriceLimit) n++;
+    return n;
+  }, [
+    selectedCategory,
+    selectedBrand,
+    selectedSize,
+    selectedCondition,
+    selectedMinPrice,
+    selectedMaxPrice,
+    maxPriceLimit,
+  ]);
+
+  const clearAllFilters = useCallback(() => {
+    setSelectedCategory('all');
+    setSelectedBrand('all');
+    setSelectedSize('all');
+    setSelectedCondition('all');
+    setSelectedMinPrice(0);
+    setSelectedMaxPrice(maxPriceLimit);
+  }, [maxPriceLimit]);
 
   return {
     allProducts: products,
@@ -229,9 +278,15 @@ export function useProducts() {
     setSearchQuery,
     selectedCategory,
     setSelectedCategory,
+    selectedMinPrice,
+    setSelectedMinPrice,
     selectedMaxPrice,
     setSelectedMaxPrice,
     maxPriceLimit,
+    selectedCondition,
+    setSelectedCondition,
+    activeFilterCount,
+    clearAllFilters,
     selectedSort,
     setSelectedSort,
     favorites,

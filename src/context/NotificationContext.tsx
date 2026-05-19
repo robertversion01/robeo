@@ -58,6 +58,7 @@ type NotificationContextValue = {
   hasUnread: boolean;
   refreshUnread: () => Promise<void>;
   markMessagesSeen: () => void;
+  markFeedSeen: () => Promise<void>;
   dismissOfferAlert: () => void;
 };
 
@@ -72,6 +73,7 @@ export function useNotifications(): NotificationContextValue {
       hasUnread: false,
       refreshUnread: async () => {},
       markMessagesSeen: () => {},
+      markFeedSeen: async () => {},
       dismissOfferAlert: () => {},
     };
   }
@@ -133,6 +135,19 @@ export function NotificationProvider({ children }: { children: ReactNode }) {
     setUnreadCount(0);
     window.dispatchEvent(new CustomEvent('messages:seen'));
   }, []);
+
+  const markFeedSeen = useCallback(async () => {
+    const uid = userIdRef.current;
+    if (!uid) return;
+    const now = new Date().toISOString();
+    await supabase
+      .from('app_notifications')
+      .update({ read_at: now })
+      .eq('user_id', uid)
+      .is('read_at', null);
+    setFeedUnreadCount(0);
+    await refreshUnread();
+  }, [refreshUnread]);
 
   const dismissOfferAlert = useCallback(() => setOfferAlert(null), []);
   const dismissSaleAlert = useCallback(() => {
@@ -253,7 +268,18 @@ export function NotificationProvider({ children }: { children: ReactNode }) {
       } = await supabase.auth.getUser();
       if (cancelled) return;
       setUserId(user?.id ?? null);
-      if (user?.id) await fetchUnreadCount(supabase, user.id).then(setUnreadCount);
+      if (user?.id) {
+        const [msgCount, feedRes] = await Promise.all([
+          fetchUnreadCount(supabase, user.id),
+          supabase
+            .from('app_notifications')
+            .select('id', { count: 'exact', head: true })
+            .eq('user_id', user.id)
+            .is('read_at', null),
+        ]);
+        setUnreadCount(msgCount);
+        setFeedUnreadCount(feedRes.count ?? 0);
+      }
     };
 
     initAuth();
@@ -416,6 +442,12 @@ export function NotificationProvider({ children }: { children: ReactNode }) {
     }
   }, [pathname, userId, markMessagesSeen]);
 
+  useEffect(() => {
+    if (pathname?.startsWith('/notifications') && userId) {
+      void markFeedSeen();
+    }
+  }, [pathname, userId, markFeedSeen]);
+
   const value = useMemo(
     () => ({
       unreadCount,
@@ -423,9 +455,10 @@ export function NotificationProvider({ children }: { children: ReactNode }) {
       hasUnread: unreadCount > 0 || feedUnreadCount > 0,
       refreshUnread,
       markMessagesSeen,
+      markFeedSeen,
       dismissOfferAlert,
     }),
-    [unreadCount, feedUnreadCount, refreshUnread, markMessagesSeen, dismissOfferAlert],
+    [unreadCount, feedUnreadCount, refreshUnread, markMessagesSeen, markFeedSeen, dismissOfferAlert],
   );
 
   return (

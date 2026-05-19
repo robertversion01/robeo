@@ -180,6 +180,7 @@ export default function CheckoutContent() {
   const shippingCost = SHIPPING_OPTIONS.find((s) => s.value === shippingMethod)?.cost || 0;
   const discountedProductPrice =
     bundleDiscountPercent > 0 ? applyBundleDiscountToPrice(amount, bundleDiscountPercent) : amount;
+  const bundleDiscountAmount = Math.max(0, Math.round(amount - discountedProductPrice));
   const { buyerProtectionFee, total } = calculateCheckoutTotal(discountedProductPrice, shippingCost);
   const walletCovers = useWallet ? Math.min(walletAvailable, total) : 0;
   const payWithCard = Math.max(0, total - walletCovers);
@@ -290,6 +291,7 @@ export default function CheckoutContent() {
         buyerId: user.id,
         shippingMethod,
         shippingCost,
+        bundleItemCount,
       };
 
       console.log('[checkout-ui] Running precheck with payload', payload);
@@ -368,7 +370,14 @@ export default function CheckoutContent() {
                        product?.category === 'shoes' ? 'Cipő' :
                        product?.category === 'accessories' ? 'Kiegészítők' : product?.category}
                     </div>
-                    <div className="text-accent font-bold text-lg mt-1">{amount.toLocaleString('hu-HU')} Ft</div>
+                    <div className="text-accent font-bold text-lg mt-1">
+                      {discountedProductPrice.toLocaleString('hu-HU')} Ft
+                      {bundleDiscountAmount > 0 ? (
+                        <span className="block text-xs text-gray-400 line-through font-normal">
+                          {amount.toLocaleString('hu-HU')} Ft
+                        </span>
+                      ) : null}
+                    </div>
                     {isDirectPurchase && (
                       <div className="text-[10px] text-gray-400 mt-0.5">Közvetlen vásárlás</div>
                     )}
@@ -428,13 +437,24 @@ export default function CheckoutContent() {
                 <h3 className="font-bold text-base mb-4">Összegzés</h3>
                 
                 <div className="space-y-3 text-sm">
+                  {bundleDiscountAmount > 0 ? (
+                    <div className="flex justify-between text-sm text-emerald-700">
+                      <span>Csomagkedvezmény</span>
+                      <span className="font-medium">
+                        −{bundleDiscountAmount.toLocaleString('hu-HU')} Ft
+                        <span className="block text-[10px] text-emerald-600 text-right">
+                          ({bundleDiscountPercent}% · {bundleItemCount} termék)
+                        </span>
+                      </span>
+                    </div>
+                  ) : null}
                   <div className="flex justify-between text-sm">
                     <span className="text-gray-600">Termék ára</span>
                     <span className="font-medium text-gray-900">
                       {discountedProductPrice.toLocaleString('hu-HU')} Ft
-                      {bundleDiscountPercent > 0 ? (
-                        <span className="block text-[10px] text-emerald-600">
-                          Csomagkedvezmény: −{bundleDiscountPercent}%
+                      {bundleDiscountAmount > 0 ? (
+                        <span className="block text-[10px] text-gray-400 line-through">
+                          {amount.toLocaleString('hu-HU')} Ft
                         </span>
                       ) : null}
                     </span>
@@ -446,7 +466,7 @@ export default function CheckoutContent() {
                     <span className="font-medium text-gray-900 text-right">
                       {buyerProtectionFee.toLocaleString('hu-HU')} Ft
                       <span className="block text-[10px] text-gray-400 font-normal">
-                        ({buyerProtectionFeeLabel(amount)})
+                        ({buyerProtectionFeeLabel(discountedProductPrice)})
                       </span>
                     </span>
                   </div>

@@ -4,7 +4,7 @@ import { useEffect, useRef, useState } from 'react';
 import { supabase } from '@/lib/supabase';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
-import { MessageCircle, Heart, User, Search, Plus, LogOut } from 'lucide-react';
+import { MessageCircle, Heart, User, Search, Plus, LogOut, Bell } from 'lucide-react';
 import { useBrowseSearch } from '@/context/BrowseContext';
 import { MessagesNavBadge } from '@/context/NotificationContext';
 import type { Product } from '@/types';
@@ -147,6 +147,10 @@ export default function Navbar({ searchQuery, onSearchChange }: NavbarProps) {
       <Link href="/upload" className="icon-btn text-gray-700" aria-label="Feltöltés">
         <Plus size={18} />
       </Link>
+      <Link href="/notifications" className="icon-btn text-gray-700 relative" aria-label="Értesítések">
+        <Bell size={18} />
+        <MessagesNavBadge />
+      </Link>
       <Link href="/messages" className="icon-btn text-gray-700 relative" aria-label="Üzenetek">
         <MessageCircle size={18} />
         <MessagesNavBadge />
@@ -172,6 +176,14 @@ export default function Navbar({ searchQuery, onSearchChange }: NavbarProps) {
             >
               <User size={15} />
               Profilom
+            </Link>
+            <Link
+              href="/notifications"
+              className="w-full min-h-9 flex items-center gap-2 px-3 py-2 rounded-lg text-sm text-gray-700 hover:bg-gray-100"
+              onClick={() => setShowProfileMenu(false)}
+            >
+              <Bell size={15} />
+              Értesítések
             </Link>
             <button
               type="button"

@@ -356,7 +356,10 @@ export default function ProductPage({ params }: { params: Promise<{ id: string }
                 {product.description}
               </div>
 
-              <div className="mb-4 rounded-xl border border-gray-200 bg-gray-50 p-3">
+              <Link
+                href={`/profile/${product.user_id}`}
+                className="mb-4 block rounded-xl border border-gray-200 bg-gray-50 p-3 hover:bg-gray-100/80 transition-colors"
+              >
                 <div className="flex items-center gap-3">
                   <div className="h-10 w-10 rounded-full bg-[#007782]/15 text-[#007782] flex items-center justify-center font-semibold">
                     {sellerInitial}
@@ -377,7 +380,7 @@ export default function ProductPage({ params }: { params: Promise<{ id: string }
                     </div>
                   </div>
                 </div>
-              </div>
+              </Link>
 
                <div className="fixed bottom-0 left-0 right-0 md:static mt-auto p-2 md:p-0 md:mt-4 bg-white backdrop-blur-md border-t border-gray-200 md:border-t-0 md:bg-transparent md:backdrop-blur-none md:space-y-3 space-y-1.5 shadow-lg md:shadow-none">
                 {isSold ? (
