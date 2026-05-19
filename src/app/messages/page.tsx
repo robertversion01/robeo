@@ -7,6 +7,7 @@ import Link from 'next/link';
 import OffersList from '@/components/product/OffersList';
 import { toast } from 'sonner';
 import { isUuid } from '@/lib/validators';
+import { buildOfferInsertRow } from '@/lib/offers';
 import { MAIN_TOP_PADDING } from '@/lib/layoutTokens';
 
 interface Message {
@@ -312,13 +313,14 @@ export default function MessagesPage() {
 
     setOfferSending(true);
     try {
-      const { error: offerErr } = await supabase.from('offers').insert({
-        product_id: latestProductMessage.product_id,
-        buyer_id: user.id,
-        seller_id: selectedConversation,
-        offered_price: amount,
-        status: 'pending',
-      });
+      const { error: offerErr } = await supabase.from('offers').insert(
+        buildOfferInsertRow({
+          productId: latestProductMessage.product_id,
+          buyerId: user.id,
+          sellerId: selectedConversation,
+          offeredPriceHuf: amount,
+        }),
+      );
 
       if (offerErr) {
         if (offerErr.code === '23505') {

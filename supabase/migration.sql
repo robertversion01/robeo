@@ -15,6 +15,8 @@ ALTER TABLE public.products ADD COLUMN IF NOT EXISTS favorite_count INTEGER DEFA
 ALTER TABLE public.products ADD COLUMN IF NOT EXISTS featured_until TIMESTAMPTZ;
 
 -- 2. offers tábla - hiányzó oszlopok hozzáadása
+-- Megjegyzés: régi sémán a `price` NOT NULL; az app `offered_price`-ot is tölt.
+ALTER TABLE public.offers ADD COLUMN IF NOT EXISTS offered_price INTEGER;
 ALTER TABLE public.offers ADD COLUMN IF NOT EXISTS message TEXT;
 ALTER TABLE public.offers ADD COLUMN IF NOT EXISTS shipping_method TEXT;
 ALTER TABLE public.offers ADD COLUMN IF NOT EXISTS shipping_cost INTEGER DEFAULT 0;
@@ -293,6 +295,25 @@ CREATE TRIGGER trg_enforce_offer_minimum_60_percent
 BEFORE INSERT OR UPDATE OF offered_price, product_id ON public.offers
 FOR EACH ROW
 EXECUTE FUNCTION public.enforce_offer_minimum_60_percent();
+
+-- 13/c Legacy `price` ↔ `offered_price` szinkron (INSERT/UPDATE)
+CREATE OR REPLACE FUNCTION public.sync_offer_price_columns()
+RETURNS trigger AS $$
+BEGIN
+  IF NEW.offered_price IS NOT NULL AND (NEW.price IS NULL OR NEW.price = 0) THEN
+    NEW.price := NEW.offered_price;
+  ELSIF NEW.price IS NOT NULL AND (NEW.offered_price IS NULL OR NEW.offered_price = 0) THEN
+    NEW.offered_price := NEW.price;
+  END IF;
+  RETURN NEW;
+END;
+$$ LANGUAGE plpgsql;
+
+DROP TRIGGER IF EXISTS trg_sync_offer_price_columns ON public.offers;
+CREATE TRIGGER trg_sync_offer_price_columns
+BEFORE INSERT OR UPDATE ON public.offers
+FOR EACH ROW
+EXECUTE FUNCTION public.sync_offer_price_columns();
 
 -- 14. Üzenetek média támogatása
 ALTER TABLE IF EXISTS public.messages

@@ -197,6 +197,7 @@ export default function OffersList() {
         .update({
           status: 'countered',
           offered_price: counterPrice,
+          price: counterPrice,
           updated_at: new Date().toISOString(),
         })
         .eq('id', offer.id);

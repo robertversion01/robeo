@@ -5,6 +5,7 @@ import { supabase } from '@/lib/supabase';
 import { toast } from 'sonner';
 import { X, Send } from 'lucide-react';
 import { isUuid } from '@/lib/validators';
+import { buildOfferInsertRow, formatSupabaseError } from '@/lib/offers';
 
 interface OfferModalProps {
   isOpen: boolean;
@@ -102,18 +103,38 @@ export default function OfferModal({
         return;
       }
 
-      const { error } = await supabase.from('offers').insert({
-        product_id: productId,
-        buyer_id: user.id,
-        seller_id: sellerId,
-        offered_price: price,
+      let resolvedSellerId = sellerId;
+      if (!isUuid(resolvedSellerId)) {
+        const { data: productRow } = await supabase
+          .from('products')
+          .select('user_id')
+          .eq('id', productId)
+          .maybeSingle();
+        resolvedSellerId = productRow?.user_id ?? '';
+      }
+
+      if (!isUuid(resolvedSellerId)) {
+        toast.error('Nem található az eladó. Frissítsd az oldalt, majd próbáld újra.');
+        return;
+      }
+
+      const offerRow = buildOfferInsertRow({
+        productId,
+        buyerId: user.id,
+        sellerId: resolvedSellerId,
+        offeredPriceHuf: price,
         message: message.trim() || null,
-        status: 'pending',
       });
+
+      const { error } = await supabase.from('offers').insert(offerRow);
 
       if (error) {
         if (error.code === '23505') {
           toast.error('Már küldtél ajánlatot erre a termékre!');
+        } else if (error.code === '23514' || error.message?.includes('60%')) {
+          toast.error(
+            `Az ajánlat túl alacsony. Minimum: ${minimumOffer.toLocaleString('hu-HU')} Ft.`,
+          );
         } else {
           throw error;
         }
@@ -121,7 +142,7 @@ export default function OfferModal({
         try {
           await supabase.from('messages').insert({
             sender_id: user.id,
-            receiver_id: sellerId,
+            receiver_id: resolvedSellerId,
             content: `🔔 Új ajánlat érkezett: ${price.toLocaleString('hu-HU')} Ft`,
             product_id: productId,
             is_system_message: true,
@@ -136,7 +157,13 @@ export default function OfferModal({
         onCloseRef.current();
       }
     } catch (error: unknown) {
-      const msg = error instanceof Error ? error.message : 'Ismeretlen hiba';
+      const msg =
+        error && typeof error === 'object' && 'message' in error
+          ? formatSupabaseError(error as { message?: string; details?: string; hint?: string })
+          : error instanceof Error
+            ? error.message
+            : 'Ismeretlen hiba';
+      console.error('[OfferModal] insert failed', error);
       toast.error('Hiba az ajánlat küldése közben: ' + msg);
     } finally {
       setLoading(false);
