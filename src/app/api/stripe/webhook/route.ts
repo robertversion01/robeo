@@ -3,10 +3,8 @@ import { revalidatePath } from 'next/cache';
 import { NextRequest, NextResponse } from 'next/server';
 import { getStripeInstance } from '@/lib/stripe-client';
 import { insertChatSystemMessage } from '@/lib/chatMessages';
+import { buildPurchaseSellerMessage } from '@/lib/saleNotifications';
 import { getSupabaseAdminClient } from '@/lib/supabase';
-
-const PURCHASE_SELLER_MESSAGE =
-  '🎉 Rendszerüzenet: A terméket sikeresen kifizették! Kedves Eladó, kérjük készítsd össze a csomagot a szállításhoz.';
 
 export const dynamic = 'force-dynamic';
 
@@ -143,10 +141,9 @@ async function applyPaidTransactionEffects(
         'Nincs cím';
     }
 
-    let sellerMessage = PURCHASE_SELLER_MESSAGE;
-    if (buyerAddress && buyerAddress !== 'Nincs megadva') {
-      sellerMessage += `\n\n📦 Vevő szállítási címe: ${buyerAddress}`;
-    }
+    const sellerMessage = buildPurchaseSellerMessage(
+      buyerAddress !== 'Nincs megadva' ? buyerAddress : undefined,
+    );
 
     const messageResult = await insertChatSystemMessage(db, {
       senderId: transaction.buyer_id,

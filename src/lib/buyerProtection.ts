@@ -1,13 +1,19 @@
 /**
  * Vinted HU-stílusú vevővédelmi díj (v1 kanonikus).
- * - 5% a termék / ajánlati árára
- * - minimum 200 Ft
- * - maximum 5000 Ft
+ * - fix 280 Ft
+ * - + 5% a termék / ajánlati árára
  */
+const BUYER_PROTECTION_BASE_HUF = 280;
+
 export function calculateBuyerProtection(priceHuf: number): number {
   const base = Math.max(0, Math.round(priceHuf));
-  const fee = Math.round(base * 0.05);
-  return Math.max(200, Math.min(5000, fee));
+  const percentPart = Math.round(base * 0.05);
+  return BUYER_PROTECTION_BASE_HUF + percentPart;
+}
+
+export function buyerProtectionFeeLabel(priceHuf: number): string {
+  const percentPart = Math.round(Math.max(0, priceHuf) * 0.05);
+  return `280 Ft + 5% (${percentPart.toLocaleString('hu-HU')} Ft)`;
 }
 
 export function calculateCheckoutTotal(

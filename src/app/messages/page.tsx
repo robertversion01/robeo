@@ -10,6 +10,8 @@ import { isUuid } from '@/lib/validators';
 import { buildOfferInsertRow } from '@/lib/offers';
 import { insertChatSystemMessage } from '@/lib/chatMessages';
 import { MAIN_TOP_PADDING } from '@/lib/layoutTokens';
+import ChatTransactionPanel from '@/components/messages/ChatTransactionPanel';
+import PriceBreakdown from '@/components/product/PriceBreakdown';
 import type { RealtimeChannel } from '@supabase/supabase-js';
 
 interface Message {
@@ -39,7 +41,8 @@ export default function MessagesPage() {
   const [newMessage, setNewMessage] = useState('');
   const [showOfferModal, setShowOfferModal] = useState(false);
   const [offerAmount, setOfferAmount] = useState('');
-  const [offerMeta, setOfferMeta] = useState<{ min: number; title: string } | null>(null);
+  const [offerMeta, setOfferMeta] = useState<{ min: number; title: string; listPrice: number } | null>(null);
+  const [activeProductId, setActiveProductId] = useState<string | null>(null);
   const [offerSending, setOfferSending] = useState(false);
   const [loading, setLoading] = useState(true);
   const [uploadingImage, setUploadingImage] = useState(false);
@@ -209,6 +212,7 @@ export default function MessagesPage() {
       setOfferMeta({
         min: Math.ceil(price * 0.6),
         title: data.name || 'Termék',
+        listPrice: price,
       });
     })();
     return () => {
@@ -280,12 +284,16 @@ export default function MessagesPage() {
       .order('created_at', { ascending: true });
 
     if (error) return;
-    setMessages((data as Message[]) || []);
+    const list = (data as Message[]) || [];
+    setMessages(list);
+    const latestWithProduct = [...list].reverse().find((m) => m.product_id);
+    setActiveProductId(latestWithProduct?.product_id ?? null);
   };
 
   const closeConversation = () => {
     setSelectedConversation(null);
     setMessages([]);
+    setActiveProductId(null);
   };
 
   const sendMessage = async (e: React.FormEvent) => {
@@ -452,6 +460,13 @@ export default function MessagesPage() {
               className="mt-4 w-full input-base min-h-12 rounded-xl text-center text-lg font-semibold tabular-nums focus:ring-[#007782] focus:border-[#007782]"
             />
 
+            {offerAmount && Number(offerAmount) > 0 && (
+              <div className="mt-4 rounded-xl border border-gray-200 bg-gray-50 p-3">
+                <p className="text-xs font-medium text-gray-600 mb-2">Becsült fizetendő (vevővédelemmel)</p>
+                <PriceBreakdown price={Number(offerAmount)} />
+              </div>
+            )}
+
             <div className="flex gap-3 mt-5">
               <button
                 type="button"
@@ -537,6 +552,16 @@ export default function MessagesPage() {
                   </div>
                   <span className="font-medium truncate">{selectedEmail}</span>
                 </div>
+
+                {user?.id && selectedConversation && (
+                  <ChatTransactionPanel
+                    userId={user.id}
+                    otherUserId={selectedConversation}
+                    productId={activeProductId}
+                    userEmail={user.email}
+                  />
+                )}
+
                 {/* Messages */}
                 <div className="flex-1 overflow-y-auto p-4 md:p-6 space-y-4">
                   {messages.map((msg) => {

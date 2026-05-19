@@ -1,4 +1,4 @@
-import { calculateBuyerProtection } from '@/lib/buyerProtection';
+import { buyerProtectionFeeLabel, calculateBuyerProtection } from '@/lib/buyerProtection';
 
 interface PriceBreakdownProps {
   price: number;
@@ -23,9 +23,19 @@ export default function PriceBreakdown({ price, shippingCost, className = '' }: 
       <div className="flex justify-between text-sm">
         <span className="text-gray-600 flex items-center gap-1">
           Vevővédelem
-          <span className="text-[10px] text-gray-400 cursor-help" title="5% a termék árára (min. 200 Ft, max. 5000 Ft)">ⓘ</span>
+          <span
+            className="text-[10px] text-gray-400 cursor-help"
+            title="280 Ft fix díj + 5% a termék árára (Vinted HU)"
+          >
+            ⓘ
+          </span>
         </span>
-        <span className="text-gray-800 font-medium">{protectionFee.toLocaleString('hu-HU')} Ft</span>
+        <span className="text-gray-800 font-medium text-right">
+          {protectionFee.toLocaleString('hu-HU')} Ft
+          <span className="block text-[10px] text-gray-400 font-normal">
+            ({buyerProtectionFeeLabel(price)})
+          </span>
+        </span>
       </div>
 
       {/* Szállítási költség (ha van) */}

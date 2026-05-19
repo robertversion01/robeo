@@ -7,6 +7,7 @@ import { X, Send } from 'lucide-react';
 import { isUuid } from '@/lib/validators';
 import { buildOfferInsertRow, formatSupabaseError } from '@/lib/offers';
 import { insertChatSystemMessage } from '@/lib/chatMessages';
+import PriceBreakdown from '@/components/product/PriceBreakdown';
 
 interface OfferModalProps {
   isOpen: boolean;
@@ -240,6 +241,13 @@ export default function OfferModal({
                 ))}
               </div>
             </div>
+
+            {price > 0 && (
+              <div className="rounded-xl border border-gray-200 bg-gray-50/80 p-3">
+                <p className="text-xs font-medium text-gray-600 mb-2">Ha elfogadják — becsült fizetendő</p>
+                <PriceBreakdown price={price} />
+              </div>
+            )}
 
             <div>
               <label htmlFor="offer-msg" className="block text-sm font-medium text-gray-700 mb-1.5">

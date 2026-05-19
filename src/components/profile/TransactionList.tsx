@@ -8,12 +8,11 @@ import { toast } from 'sonner';
 import { CheckCircle, Truck, Package, Clock, AlertCircle, CreditCard, Undo2, Loader2 } from 'lucide-react';
 import Link from 'next/link';
 import ReviewForm from '@/components/review/ReviewForm';
-import { insertChatSystemMessage } from '@/lib/chatMessages';
+import { notifyTransactionStatusBothParties } from '@/lib/shippingNotifications';
 import {
   SHIPPING_SIMULATION_DELAY_MS,
   TX_STATUS,
   TX_STATUS_LABELS,
-  TX_STATUS_MESSAGES,
   canBuyerConfirmReceipt,
   canSellerMarkShipped,
   isTerminalStatus,
@@ -62,30 +61,6 @@ export default function TransactionList() {
     );
   }, []);
 
-  const notifyStatusChange = useCallback(
-    async (
-      transaction: Transaction,
-      status: string,
-      senderId: string,
-      receiverId: string,
-    ) => {
-      const template = TX_STATUS_MESSAGES[status];
-      if (!template) return;
-      const productName = transaction.product?.name || 'a termék';
-      const content = template.includes('Termék')
-        ? template.replace('Termék', productName)
-        : template;
-
-      await insertChatSystemMessage(supabase, {
-        senderId,
-        receiverId,
-        content,
-        productId: transaction.product_id,
-      });
-    },
-    [],
-  );
-
   const updateStatusInDb = useCallback(async (transactionId: string, status: string) => {
     const { error } = await supabase
       .from('transactions')
@@ -117,12 +92,7 @@ export default function TransactionList() {
           try {
             await updateStatusInDb(transaction.id, nextStatus);
             patchTransactionLocal(transaction.id, nextStatus);
-            await notifyStatusChange(
-              transaction,
-              nextStatus,
-              sellerId,
-              transaction.buyer_id,
-            );
+            await notifyTransactionStatusBothParties(supabase, transaction, nextStatus);
 
             if (nextStatus === TX_STATUS.ATVETELRE_VAR) {
               clearSimulationTimers(transaction.id);
@@ -140,7 +110,7 @@ export default function TransactionList() {
       ];
       simulationTimersRef.current.set(transaction.id, timers);
     },
-    [clearSimulationTimers, notifyStatusChange, patchTransactionLocal, updateStatusInDb],
+    [clearSimulationTimers, patchTransactionLocal, updateStatusInDb],
   );
 
   const loadTransactions = useCallback(async () => {
@@ -274,7 +244,7 @@ export default function TransactionList() {
 
       await updateStatusInDb(transaction.id, TX_STATUS.FELADVA);
       patchTransactionLocal(transaction.id, TX_STATUS.FELADVA);
-      await notifyStatusChange(transaction, TX_STATUS.FELADVA, user.id, transaction.buyer_id);
+      await notifyTransactionStatusBothParties(supabase, transaction, TX_STATUS.FELADVA);
 
       toast.success('Csomag feladva — a szállítás automatikusan frissül.');
       scheduleShippingSimulation(transaction, user.id);
@@ -314,12 +284,7 @@ export default function TransactionList() {
       }
 
       patchTransactionLocal(transaction.id, TX_STATUS.SIKERESEN_ATVEVE);
-      await notifyStatusChange(
-        transaction,
-        TX_STATUS.SIKERESEN_ATVEVE,
-        user.id,
-        transaction.seller_id,
-      );
+      await notifyTransactionStatusBothParties(supabase, transaction, TX_STATUS.SIKERESEN_ATVEVE);
 
       toast.success('Köszönjük! A pénz felszabadult az eladó számára.');
       void loadTransactions();

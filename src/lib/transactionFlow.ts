@@ -61,9 +61,22 @@ export const TX_STATUS_LABELS: Record<string, string> = {
 };
 
 export const TX_STATUS_MESSAGES: Record<string, string> = {
-  feladva: '📦 Az eladó feladta a csomagot. Hamarosan útnak indul (Foxpost szimuláció).',
-  uton: '🚚 A csomag úton van — a futárszolgálat szállítja.',
+  feladva:
+    '📦 Az eladó feladta a „{product}” csomagját. Hamarosan útnak indul (Foxpost szimuláció).',
+  uton: '🚚 A „{product}” csomagod úton van — a futárszolgálat szállítja.',
   atvetelre_var:
-    '📬 A csomag megérkezett az átvételi pontra / címre. Vevő: erősítsd meg, ha minden rendben!',
-  sikeresen_atveve: '✅ A vevő megerősítette az átvételt. A pénz felszabadult az eladónak.',
+    '📬 A „{product}” megérkezett az átvételi pontra / címre. Vevő: erősítsd meg, ha minden rendben!',
+  sikeresen_atveve:
+    '✅ A vevő megerősítette a „{product}” átvételét. A pénz felszabadult az eladónak.',
+};
+
+/** Eladói rendszerüzenetek (ugyanazon státuszokhoz). */
+export const TX_STATUS_MESSAGES_SELLER: Record<string, string> = {
+  feladva:
+    '📦 Te jelölted feladottnak a „{product}” csomagot. A futár hamarosan átveszi (Foxpost).',
+  uton: '🚚 A „{product}” csomagod úton van a vevő felé.',
+  atvetelre_var:
+    '📬 A „{product}” megérkezett a vevőhöz — várakozás az átvétel megerősítésére.',
+  sikeresen_atveve:
+    '✅ A vevő átvette a „{product}” terméket. A pénz hamarosan megérkezik a számládra.',
 };

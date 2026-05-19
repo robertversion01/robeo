@@ -18,6 +18,8 @@ import {
   writeLastSeenAt,
 } from '@/lib/unreadNotifications';
 import OfferNotificationPopup from '@/components/notifications/OfferNotificationPopup';
+import SaleNotificationPopup from '@/components/notifications/SaleNotificationPopup';
+import { isSaleSystemMessage } from '@/lib/saleNotifications';
 import { toast } from 'sonner';
 
 /**
@@ -31,6 +33,12 @@ export type IncomingOfferAlert = {
   productId: string;
   productName: string;
   amountHuf: number;
+};
+
+export type IncomingSaleAlert = {
+  productId: string;
+  productName: string;
+  messageId?: string;
 };
 
 type NotificationContextValue = {
@@ -81,6 +89,7 @@ export function NotificationProvider({ children }: { children: ReactNode }) {
   const [userId, setUserId] = useState<string | null>(null);
   const [unreadCount, setUnreadCount] = useState(0);
   const [offerAlert, setOfferAlert] = useState<IncomingOfferAlert | null>(null);
+  const [saleAlert, setSaleAlert] = useState<IncomingSaleAlert | null>(null);
   const userIdRef = useRef<string | null>(null);
   userIdRef.current = userId;
 
@@ -103,6 +112,7 @@ export function NotificationProvider({ children }: { children: ReactNode }) {
   }, []);
 
   const dismissOfferAlert = useCallback(() => setOfferAlert(null), []);
+  const dismissSaleAlert = useCallback(() => setSaleAlert(null), []);
 
   const showOfferAlert = useCallback(
     async (row: Record<string, unknown>) => {
@@ -140,6 +150,47 @@ export function NotificationProvider({ children }: { children: ReactNode }) {
     [refreshUnread],
   );
 
+  const showSaleAlert = useCallback(
+    async (row: Record<string, unknown>) => {
+      const uid = userIdRef.current;
+      if (!uid || row.receiver_id !== uid) return;
+
+      const content = String(row.content ?? '');
+      const messageType = row.message_type as string | undefined;
+      if (!isSaleSystemMessage(content, messageType)) return;
+
+      const productId = String(row.product_id ?? '');
+      let productName = 'a terméked';
+      if (productId) {
+        const { data: product } = await supabase
+          .from('products')
+          .select('name')
+          .eq('id', productId)
+          .maybeSingle();
+        if (product?.name) productName = product.name;
+      }
+
+      setSaleAlert({
+        productId,
+        productName,
+        messageId: row.id ? String(row.id) : undefined,
+      });
+      void refreshUnread();
+
+      toast.success(`Gratulálunk! Eladtad: ${productName}!`, {
+        description: 'Készítsd össze a csomagot és töltsd le a címkét.',
+        duration: 8000,
+      });
+
+      window.dispatchEvent(
+        new CustomEvent('sale:completed', {
+          detail: { productId, productName },
+        }),
+      );
+    },
+    [refreshUnread],
+  );
+
   useEffect(() => {
     let cancelled = false;
 
@@ -162,6 +213,7 @@ export function NotificationProvider({ children }: { children: ReactNode }) {
       if (!id) {
         setUnreadCount(0);
         setOfferAlert(null);
+        setSaleAlert(null);
       } else {
         void fetchUnreadCount(supabase, id).then(setUnreadCount);
       }
@@ -201,7 +253,9 @@ export function NotificationProvider({ children }: { children: ReactNode }) {
           table: 'messages',
           filter: `receiver_id=eq.${userId}`,
         },
-        () => {
+        (payload) => {
+          const row = payload.new as Record<string, unknown>;
+          void showSaleAlert(row);
           void refreshUnread();
         },
       )
@@ -249,7 +303,7 @@ export function NotificationProvider({ children }: { children: ReactNode }) {
       window.removeEventListener('messages:seen', onSeen);
       window.removeEventListener('offers:updated', onOffersUpdated);
     };
-  }, [userId, refreshUnread, showOfferAlert]);
+  }, [userId, refreshUnread, showOfferAlert, showSaleAlert]);
 
   useEffect(() => {
     if (pathname?.startsWith('/messages') && userId) {
@@ -271,6 +325,7 @@ export function NotificationProvider({ children }: { children: ReactNode }) {
   return (
     <NotificationContext.Provider value={value}>
       {children}
+      <SaleNotificationPopup alert={saleAlert} onDismiss={dismissSaleAlert} />
       <OfferNotificationPopup alert={offerAlert} onDismiss={dismissOfferAlert} />
     </NotificationContext.Provider>
   );

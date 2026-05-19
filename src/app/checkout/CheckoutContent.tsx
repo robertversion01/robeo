@@ -6,7 +6,7 @@ import { useSearchParams, useRouter } from 'next/navigation';
 import { toast } from 'sonner';
 import { ArrowLeft, ShieldCheck } from 'lucide-react';
 import ShippingSelector from '@/components/product/ShippingSelector';
-import { calculateCheckoutTotal } from '@/lib/buyerProtection';
+import { buyerProtectionFeeLabel, calculateCheckoutTotal } from '@/lib/buyerProtection';
 import { MAIN_TOP_PADDING } from '@/lib/layoutTokens';
 
 export default function CheckoutContent() {
@@ -358,11 +358,14 @@ export default function CheckoutContent() {
                     </span>
                   </div>
                   <div className="flex justify-between text-sm">
-                    <span className="text-gray-600" title="5% a termék árára (min. 200 Ft, max. 5000 Ft)">
+                    <span className="text-gray-600" title="280 Ft + 5% a termék árára (Vinted HU)">
                       Vevővédelem
                     </span>
-                    <span className="font-medium text-gray-900">
+                    <span className="font-medium text-gray-900 text-right">
                       {buyerProtectionFee.toLocaleString('hu-HU')} Ft
+                      <span className="block text-[10px] text-gray-400 font-normal">
+                        ({buyerProtectionFeeLabel(amount)})
+                      </span>
                     </span>
                   </div>
                   <div className="flex justify-between text-sm">
