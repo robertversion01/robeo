@@ -1,32 +1,30 @@
 'use client';
 
-import { useEffect, useState, useMemo, useCallback } from 'react';
+import {
+  useEffect,
+  useState,
+  useMemo,
+  useCallback,
+  useRef,
+  type Dispatch,
+  type SetStateAction,
+} from 'react';
 import { supabase } from '@/lib/supabase';
 import { useBrowseSearch } from '@/context/BrowseContext';
 import type { Product } from '@/types';
 import { CATALOG_UPDATED_EVENT } from '@/lib/catalogRefresh';
 import { conditionMatchesFilter } from '@/lib/vintedCatalog';
+import {
+  type CatalogFilterState,
+  productMatchesCategory,
+  serializeCatalogFilters,
+  conditionDbValues,
+} from '@/lib/catalogFilters';
 
 /** Csak böngészhető, megvásárolható termékek a főlistán. */
 function isListedProduct(status: string | null | undefined): boolean {
   if (status === 'sold' || status === 'deleted') return false;
   return status === 'active' || status == null;
-}
-
-const CATEGORY_ALIASES: Record<string, string[]> = {
-  clothing: ['clothing', 'ruhazat', 'ruházat', 'clothes'],
-  shoes: ['shoes', 'cipo', 'cipő', 'shoe'],
-  accessories: ['accessories', 'kiegeszitok', 'kiegészítők', 'accessory'],
-  electronics: ['electronics', 'elektronika', 'electronic'],
-  other: ['other', 'egyeb', 'egyéb'],
-};
-
-function normalizeCategory(value: string) {
-  return value
-    .toLowerCase()
-    .normalize('NFD')
-    .replace(/[\u0300-\u036f]/g, '')
-    .trim();
 }
 
 const SORT_OPTIONS = [
@@ -48,52 +46,169 @@ export function useProducts() {
   const { searchQuery, setSearchQuery } = useBrowseSearch();
   const [products, setProducts] = useState<Product[]>([]);
   const [loading, setLoading] = useState(true);
+  const [filterRevision, setFilterRevision] = useState(0);
   const [selectedCategory, setSelectedCategory] = useState('all');
   const [selectedMinPrice, setSelectedMinPrice] = useState(0);
   const [selectedMaxPrice, setSelectedMaxPrice] = useState<number>(0);
+  const [maxPriceLimit, setMaxPriceLimit] = useState(0);
   const [selectedSort, setSelectedSort] = useState('newest');
   const [selectedBrand, setSelectedBrand] = useState('all');
   const [selectedSize, setSelectedSize] = useState('all');
   const [selectedCondition, setSelectedCondition] = useState('all');
   const [favorites, setFavorites] = useState<Set<string>>(new Set());
   const [user, setUser] = useState<any>(null);
+  const fetchGenRef = useRef(0);
+
+  const catalogFilters: CatalogFilterState = useMemo(
+    () => ({
+      category: selectedCategory,
+      brand: selectedBrand,
+      size: selectedSize,
+      condition: selectedCondition,
+      minPrice: selectedMinPrice,
+      maxPrice: selectedMaxPrice,
+      sort: selectedSort,
+      search: searchQuery,
+    }),
+    [
+      selectedCategory,
+      selectedBrand,
+      selectedSize,
+      selectedCondition,
+      selectedMinPrice,
+      selectedMaxPrice,
+      selectedSort,
+      searchQuery,
+    ],
+  );
+
+  const filterKey = useMemo(() => serializeCatalogFilters(catalogFilters), [catalogFilters]);
+
+  const bumpFilterRevision = useCallback(() => {
+    setFilterRevision((n) => n + 1);
+  }, []);
+
+  const wrapFilterSetter = useCallback(
+    <T,>(setter: Dispatch<SetStateAction<T>>) =>
+      (value: SetStateAction<T>) => {
+        setter(value);
+        bumpFilterRevision();
+      },
+    [bumpFilterRevision],
+  );
+
+  const setSelectedCategoryWrapped = wrapFilterSetter(setSelectedCategory);
+  const setSelectedBrandWrapped = wrapFilterSetter(setSelectedBrand);
+  const setSelectedSizeWrapped = wrapFilterSetter(setSelectedSize);
+  const setSelectedConditionWrapped = wrapFilterSetter(setSelectedCondition);
+  const setSelectedMinPriceWrapped = wrapFilterSetter(setSelectedMinPrice);
+  const setSelectedMaxPriceWrapped = wrapFilterSetter(setSelectedMaxPrice);
+  const setSelectedSortWrapped = wrapFilterSetter(setSelectedSort);
 
   const fetchProducts = useCallback(async () => {
-    try {
-      const sortConfig = SORT_OPTIONS.find((s) => s.id === selectedSort)!;
+    const generation = ++fetchGenRef.current;
+    setLoading(true);
 
-      const { data, error } = await supabase
+    try {
+      const sortConfig = SORT_OPTIONS.find((s) => s.id === catalogFilters.sort) ?? SORT_OPTIONS[0];
+
+      let query = supabase
         .from('products')
         .select('*')
-        .or('status.eq.active,status.is.null')
-        .order(sortConfig.column, { ascending: sortConfig.order === 'asc' });
+        .or('status.eq.active,status.is.null');
 
+      if (catalogFilters.brand !== 'all') {
+        query = query.ilike('brand', catalogFilters.brand);
+      }
+
+      if (catalogFilters.size !== 'all') {
+        query = query.ilike('size', catalogFilters.size);
+      }
+
+      if (catalogFilters.condition !== 'all') {
+        const condValues = conditionDbValues(catalogFilters.condition);
+        if (condValues.length === 1) {
+          query = query.eq('condition', condValues[0]);
+        } else if (condValues.length > 1) {
+          query = query.in('condition', condValues);
+        }
+      }
+
+      if (catalogFilters.minPrice > 0) {
+        query = query.gte('price', catalogFilters.minPrice);
+      }
+
+      if (catalogFilters.maxPrice > 0) {
+        query = query.lte('price', catalogFilters.maxPrice);
+      }
+
+      query = query.order(sortConfig.column, { ascending: sortConfig.order === 'asc' });
+
+      const { data, error } = await query;
       if (error) throw error;
-      const fetchedProducts = ((data || []) as Product[]).filter((p) =>
-        isListedProduct(p.status),
-      );
-      setProducts(fetchedProducts);
-      const maxPrice = fetchedProducts.reduce(
+      if (generation !== fetchGenRef.current) return;
+
+      let fetched = ((data || []) as Product[]).filter((p) => isListedProduct(p.status));
+
+      if (catalogFilters.category !== 'all') {
+        fetched = fetched.filter((p) =>
+          productMatchesCategory(p.category, catalogFilters.category),
+        );
+      }
+
+      if (catalogFilters.condition !== 'all') {
+        fetched = fetched.filter((p) =>
+          conditionMatchesFilter(p.condition, catalogFilters.condition),
+        );
+      }
+
+      if (catalogFilters.search.trim()) {
+        const q = catalogFilters.search.trim().toLowerCase();
+        fetched = fetched.filter((p) => {
+          const brand = (p.brand || '').toLowerCase();
+          return (
+            p.name.toLowerCase().includes(q) ||
+            p.description.toLowerCase().includes(q) ||
+            brand.includes(q)
+          );
+        });
+      }
+
+      setProducts(fetched);
+
+      const maxPrice = fetched.reduce(
         (max, product) => Math.max(max, Number(product.price) || 0),
-        0
+        0,
       );
-      setSelectedMaxPrice((prev) => (prev > 0 ? prev : maxPrice || 0));
-      setSelectedMinPrice((prev) => prev);
+      setMaxPriceLimit(maxPrice);
+      setSelectedMaxPrice((prev) => {
+        if (prev <= 0) return maxPrice;
+        if (maxPrice > 0 && prev > maxPrice) return maxPrice;
+        return prev;
+      });
     } catch (error) {
       console.error('Error fetching products:', error);
+      if (generation === fetchGenRef.current) {
+        setProducts([]);
+      }
     } finally {
-      setLoading(false);
+      if (generation === fetchGenRef.current) {
+        setLoading(false);
+      }
     }
-  }, [selectedSort]);
+  }, [catalogFilters, filterKey]);
 
   useEffect(() => {
-    fetchProducts();
-    checkUserAndFavorites();
-  }, [fetchProducts]);
+    void fetchProducts();
+  }, [fetchProducts, filterKey, filterRevision]);
+
+  useEffect(() => {
+    void checkUserAndFavorites();
+  }, []);
 
   useEffect(() => {
     const onCatalogRefresh = () => {
-      fetchProducts();
+      void fetchProducts();
     };
     window.addEventListener(CATALOG_UPDATED_EVENT, onCatalogRefresh);
     return () => window.removeEventListener(CATALOG_UPDATED_EVENT, onCatalogRefresh);
@@ -101,7 +216,7 @@ export function useProducts() {
 
   useEffect(() => {
     const onProductChange = () => {
-      fetchProducts();
+      void fetchProducts();
     };
 
     const channel = supabase
@@ -125,17 +240,19 @@ export function useProducts() {
 
   const checkUserAndFavorites = async () => {
     try {
-      const { data: { user } } = await supabase.auth.getUser();
-      setUser(user);
+      const {
+        data: { user: authUser },
+      } = await supabase.auth.getUser();
+      setUser(authUser);
 
-      if (user) {
+      if (authUser) {
         const { data } = await supabase
           .from('favorites')
           .select('product_id')
-          .eq('user_id', user.id);
+          .eq('user_id', authUser.id);
 
         if (data) {
-          setFavorites(new Set(data.map(f => f.product_id)));
+          setFavorites(new Set(data.map((f) => f.product_id)));
         }
       }
     } catch (error) {
@@ -148,9 +265,8 @@ export function useProducts() {
     if (!user) return;
 
     const isFav = favorites.has(productId);
-    
-    // Optimistic update
-    setFavorites(prev => {
+
+    setFavorites((prev) => {
       const next = new Set(prev);
       isFav ? next.delete(productId) : next.add(productId);
       return next;
@@ -164,83 +280,19 @@ export function useProducts() {
           .eq('user_id', user.id)
           .eq('product_id', productId);
       } else {
-        await supabase
-          .from('favorites')
-          .insert({
-            user_id: user.id,
-            product_id: productId
-          });
+        await supabase.from('favorites').insert({
+          user_id: user.id,
+          product_id: productId,
+        });
       }
-    } catch (error) {
-      // Rollback on error
-      setFavorites(prev => {
+    } catch {
+      setFavorites((prev) => {
         const next = new Set(prev);
         isFav ? next.add(productId) : next.delete(productId);
         return next;
       });
     }
   };
-
-  const filteredProducts = useMemo(() => {
-    let filtered = [...products];
-
-    if (searchQuery.trim()) {
-      const q = searchQuery.toLowerCase().trim();
-      filtered = filtered.filter((p) => {
-        const brand = (p.brand || '').toLowerCase();
-        return (
-          p.name.toLowerCase().includes(q) ||
-          p.description.toLowerCase().includes(q) ||
-          brand.includes(q)
-        );
-      });
-    }
-
-    if (selectedCategory !== 'all') {
-      const aliases = CATEGORY_ALIASES[selectedCategory] || [selectedCategory];
-      filtered = filtered.filter((p) => aliases.includes(normalizeCategory(p.category || '')));
-    }
-
-    if (selectedMinPrice > 0) {
-      filtered = filtered.filter((p) => (Number(p.price) || 0) >= selectedMinPrice);
-    }
-
-    if (selectedMaxPrice > 0) {
-      filtered = filtered.filter((p) => (Number(p.price) || 0) <= selectedMaxPrice);
-    }
-
-    if (selectedCondition !== 'all') {
-      filtered = filtered.filter((p) => conditionMatchesFilter(p.condition, selectedCondition));
-    }
-
-    if (selectedBrand !== 'all') {
-      filtered = filtered.filter(
-        (p) => (p.brand || '').toLowerCase() === selectedBrand.toLowerCase(),
-      );
-    }
-
-    if (selectedSize !== 'all') {
-      filtered = filtered.filter(
-        (p) => (p.size || '').toLowerCase() === selectedSize.toLowerCase(),
-      );
-    }
-
-    return filtered;
-  }, [
-    products,
-    searchQuery,
-    selectedCategory,
-    selectedMinPrice,
-    selectedMaxPrice,
-    selectedBrand,
-    selectedSize,
-    selectedCondition,
-  ]);
-
-  const maxPriceLimit = useMemo(
-    () => products.reduce((max, product) => Math.max(max, Number(product.price) || 0), 0),
-    [products],
-  );
 
   const activeFilterCount = useMemo(() => {
     let n = 0;
@@ -268,35 +320,37 @@ export function useProducts() {
     setSelectedCondition('all');
     setSelectedMinPrice(0);
     setSelectedMaxPrice(maxPriceLimit);
-  }, [maxPriceLimit]);
+    bumpFilterRevision();
+  }, [maxPriceLimit, bumpFilterRevision]);
 
   return {
     allProducts: products,
-    products: filteredProducts,
+    products,
     loading,
+    filterKey: `${filterKey}:${filterRevision}`,
     searchQuery,
     setSearchQuery,
     selectedCategory,
-    setSelectedCategory,
+    setSelectedCategory: setSelectedCategoryWrapped,
     selectedMinPrice,
-    setSelectedMinPrice,
+    setSelectedMinPrice: setSelectedMinPriceWrapped,
     selectedMaxPrice,
-    setSelectedMaxPrice,
+    setSelectedMaxPrice: setSelectedMaxPriceWrapped,
     maxPriceLimit,
     selectedCondition,
-    setSelectedCondition,
+    setSelectedCondition: setSelectedConditionWrapped,
     activeFilterCount,
     clearAllFilters,
     selectedSort,
-    setSelectedSort,
+    setSelectedSort: setSelectedSortWrapped,
     favorites,
     toggleFavorite,
     sortOptions: SORT_OPTIONS,
     categories: CATEGORIES,
     selectedBrand,
-    setSelectedBrand,
+    setSelectedBrand: setSelectedBrandWrapped,
     selectedSize,
-    setSelectedSize,
+    setSelectedSize: setSelectedSizeWrapped,
     user,
   };
 }

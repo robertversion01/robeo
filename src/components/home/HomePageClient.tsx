@@ -33,6 +33,7 @@ export default function HomePageClient() {
     setSelectedCondition,
     activeFilterCount,
     clearAllFilters,
+    filterKey,
   } = useProducts();
   const isGuest = !user;
 
@@ -73,7 +74,7 @@ export default function HomePageClient() {
         loading={loading}
         favorites={favorites}
         onToggleFavorite={toggleFavorite}
-        transitionKey={`${selectedCategory}-${selectedBrand}-${selectedSize}-${selectedCondition}-${selectedMinPrice}-${selectedMaxPrice}-${selectedSort}`}
+        transitionKey={filterKey}
       />
     </>
   );

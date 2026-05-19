@@ -1,9 +1,10 @@
 'use client';
 
 import { useCallback, useEffect, useState } from 'react';
-import { Wallet, ArrowDownToLine } from 'lucide-react';
+import { Wallet, ArrowDownToLine, Loader2 } from 'lucide-react';
 import { supabase } from '@/lib/supabase';
 import { formatPrice } from '@/lib/utils';
+import { toast } from 'sonner';
 import type { WalletRow } from '@/lib/wallet';
 
 type Props = {
@@ -19,6 +20,8 @@ const EMPTY_WALLET: Pick<WalletRow, 'available_balance' | 'pending_balance' | 'c
 export default function WalletBalanceCard({ userId }: Props) {
   const [wallet, setWallet] = useState(EMPTY_WALLET);
   const [loading, setLoading] = useState(true);
+  const [connectOnboarded, setConnectOnboarded] = useState(false);
+  const [busy, setBusy] = useState(false);
 
   const loadWallet = useCallback(async () => {
     if (!userId) {
@@ -27,11 +30,18 @@ export default function WalletBalanceCard({ userId }: Props) {
       return;
     }
 
-    const { data, error } = await supabase
-      .from('wallets')
-      .select('available_balance, pending_balance, currency')
-      .eq('user_id', userId)
-      .maybeSingle();
+    const [{ data, error }, profileRes] = await Promise.all([
+      supabase
+        .from('wallets')
+        .select('available_balance, pending_balance, currency')
+        .eq('user_id', userId)
+        .maybeSingle(),
+      supabase
+        .from('profiles')
+        .select('stripe_connect_onboarded, connected_account_id, stripe_account_id')
+        .eq('id', userId)
+        .maybeSingle(),
+    ]);
 
     if (error) {
       console.warn('[WalletBalanceCard] load failed', error);
@@ -42,6 +52,13 @@ export default function WalletBalanceCard({ userId }: Props) {
       pending_balance: data?.pending_balance ?? 0,
       currency: data?.currency ?? 'HUF',
     });
+    setConnectOnboarded(
+      Boolean(
+        profileRes.data?.stripe_connect_onboarded ||
+          profileRes.data?.connected_account_id ||
+          profileRes.data?.stripe_account_id,
+      ),
+    );
     setLoading(false);
   }, [userId]);
 
@@ -72,6 +89,87 @@ export default function WalletBalanceCard({ userId }: Props) {
       void supabase.removeChannel(channel);
     };
   }, [userId, loadWallet]);
+
+  useEffect(() => {
+    if (typeof window === 'undefined') return;
+    const params = new URLSearchParams(window.location.search);
+    if (params.get('connect') === 'success') {
+      toast.success('Bankszámla csatlakoztatva! Most már kifizetheted az egyenleged.');
+      params.delete('connect');
+      const q = params.toString();
+      window.history.replaceState({}, '', `${window.location.pathname}${q ? `?${q}` : ''}`);
+      void loadWallet();
+    }
+  }, [loadWallet]);
+
+  const startOnboarding = async () => {
+    if (!userId) return;
+    setBusy(true);
+    try {
+      const {
+        data: { user },
+      } = await supabase.auth.getUser();
+      const res = await fetch('/api/stripe-connect/onboarding', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ userId, email: user?.email }),
+      });
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.error || 'Onboarding sikertelen');
+      if (data.url) {
+        window.location.href = data.url;
+        return;
+      }
+      if (data.onboarded) {
+        setConnectOnboarded(true);
+        toast.success('A bankszámla már csatlakoztatva van.');
+      }
+    } catch (e) {
+      toast.error(e instanceof Error ? e.message : 'Nem sikerült az onboarding.');
+    } finally {
+      setBusy(false);
+    }
+  };
+
+  const cashOut = async () => {
+    if (!userId) return;
+    if (wallet.available_balance < 1) {
+      toast.error('Nincs kifizethető egyenleg.');
+      return;
+    }
+
+    if (!connectOnboarded) {
+      toast.info('Előbb csatlakoztasd a bankszámládat a Stripe-on.');
+      await startOnboarding();
+      return;
+    }
+
+    setBusy(true);
+    try {
+      const res = await fetch('/api/stripe-connect/cashout', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ userId }),
+      });
+      const data = await res.json();
+
+      if (data.error === 'connect_required' || data.error === 'connect_incomplete') {
+        await startOnboarding();
+        return;
+      }
+
+      if (!res.ok) throw new Error(data.message || data.error || 'Kifizetés sikertelen');
+
+      toast.success(
+        `Kifizetés elindítva: ${Number(data.amountHuf || wallet.available_balance).toLocaleString('hu-HU')} Ft`,
+      );
+      await loadWallet();
+    } catch (e) {
+      toast.error(e instanceof Error ? e.message : 'Kifizetés sikertelen.');
+    } finally {
+      setBusy(false);
+    }
+  };
 
   if (!userId) return null;
 
@@ -114,18 +212,21 @@ export default function WalletBalanceCard({ userId }: Props) {
         </div>
       </div>
 
+      {!connectOnboarded ? (
+        <p className="text-xs text-amber-700 mb-2">
+          A kifizetéshez egyszeri bankszámla-ellenőrzés szükséges (Stripe Connect).
+        </p>
+      ) : null}
+
       <button
         type="button"
-        disabled
-        title="Hamarosan: Stripe Connect kifizetés"
-        className="w-full inline-flex items-center justify-center gap-2 rounded-xl border-2 border-dashed border-gray-300 bg-gray-50 px-4 py-3 text-sm font-semibold text-gray-400 cursor-not-allowed"
+        disabled={busy || loading}
+        onClick={() => void cashOut()}
+        className="w-full inline-flex items-center justify-center gap-2 rounded-xl bg-[#007782] hover:bg-[#006670] disabled:opacity-60 px-4 py-3 text-sm font-semibold text-white transition-colors"
       >
-        <ArrowDownToLine size={18} aria-hidden />
+        {busy ? <Loader2 size={18} className="animate-spin" /> : <ArrowDownToLine size={18} />}
         Kifizetés bankszámlára
       </button>
-      <p className="text-center text-[11px] text-gray-400 mt-2">
-        A kifizetés hamarosan Stripe Connecttel érkezik.
-      </p>
     </section>
   );
 }

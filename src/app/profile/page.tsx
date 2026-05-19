@@ -21,6 +21,7 @@ import { notifyCatalogUpdated } from '@/lib/catalogRefresh';
 import { softDeleteAllUserProducts, softDeleteProduct } from '@/lib/productSoftDelete';
 import WalletBalanceCard from '@/components/profile/WalletBalanceCard';
 import BundleDiscountSettings from '@/components/profile/BundleDiscountSettings';
+import AdminReportedItems from '@/components/admin/AdminReportedItems';
 
 export default function ProfilePage() {
   const [products, setProducts] = useState<Product[]>([]);
@@ -594,6 +595,7 @@ export default function ProfilePage() {
                   ))}
                 </div>
               )}
+              <AdminReportedItems />
               </div>
             </details>
           ) : null}

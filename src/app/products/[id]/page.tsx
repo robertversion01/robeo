@@ -10,6 +10,7 @@ import { Star, ZoomIn, ZoomOut } from 'lucide-react';
 import { getOptimizedImageUrl, getProductImages, shouldLazyLoad } from '@/lib/imageUtils';
 import { fetchSellerDisplayProfile, getSellerDisplayName } from '@/lib/sellerProfile';
 import OfferModal from '@/components/product/OfferModal';
+import ReportProductModal from '@/components/product/ReportProductModal';
 import type { Product } from '@/types';
 import { MAIN_TOP_PADDING } from '@/lib/layoutTokens';
 
@@ -29,6 +30,7 @@ export default function ProductPage({ params }: { params: Promise<{ id: string }
   const [messageText, setMessageText] = useState('');
   const [sendingMessage, setSendingMessage] = useState(false);
   const [acceptedOffer, setAcceptedOffer] = useState<{ id: string; offered_price: number } | null>(null);
+  const [showReportModal, setShowReportModal] = useState(false);
   const router = useRouter();
 
   useEffect(() => {
@@ -306,7 +308,16 @@ export default function ProductPage({ params }: { params: Promise<{ id: string }
                 {categoryLabels[product.category] || product.category}
               </div>
               
-              <h1 className="text-xl md:text-2xl font-bold mb-2">{product.name}</h1>
+              <div className="flex items-start justify-between gap-2 mb-2">
+                <h1 className="text-xl md:text-2xl font-bold flex-1">{product.name}</h1>
+                <button
+                  type="button"
+                  onClick={() => setShowReportModal(true)}
+                  className="text-xs text-gray-400 hover:text-red-600 underline shrink-0 mt-1"
+                >
+                  Termék jelentése
+                </button>
+              </div>
 
               <div className="mb-3">
                 <FollowSellerButton sellerId={product.user_id} />
@@ -439,6 +450,13 @@ export default function ProductPage({ params }: { params: Promise<{ id: string }
           </div>
         </div>
       </main>
+
+      <ReportProductModal
+        productId={product.id}
+        productName={product.name}
+        open={showReportModal}
+        onClose={() => setShowReportModal(false)}
+      />
     </div>
   );
 }

@@ -28,7 +28,7 @@ export default function ProductGrid({
     setVisible(false);
     const frame = window.requestAnimationFrame(() => setVisible(true));
     return () => window.cancelAnimationFrame(frame);
-  }, [transitionKey, products.length]);
+  }, [transitionKey]);
 
   if (loading) {
     return <ProductGridSkeleton />;
@@ -47,7 +47,7 @@ export default function ProductGrid({
   return (
     <AnimatePresence mode="wait">
       <motion.div
-        key={`${transitionKey}-${products.length}`}
+        key={transitionKey}
         initial={{ opacity: 0 }}
         animate={{ opacity: visible ? 1 : 0 }}
         exit={{ opacity: 0 }}
