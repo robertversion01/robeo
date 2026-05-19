@@ -2,7 +2,7 @@
 
 import Link from 'next/link';
 import { X, PartyPopper } from 'lucide-react';
-import type { IncomingSaleAlert } from '@/context/NotificationContext';
+import type { IncomingSaleAlert } from '@/lib/saleNotifications';
 
 type Props = {
   alert: IncomingSaleAlert | null;

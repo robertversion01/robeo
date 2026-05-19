@@ -11,6 +11,7 @@ import ReviewForm from '@/components/review/ReviewForm';
 import { MAIN_TOP_PADDING } from '@/lib/layoutTokens';
 import { revalidateCatalog } from '@/app/actions/revalidateCatalog';
 import { notifyCatalogUpdated } from '@/lib/catalogRefresh';
+import { emitSaleCompletedBroadcast } from '@/lib/globalEvents';
 
 const CheckoutSuccessContent = dynamic(() => Promise.resolve(CheckoutSuccessContentComponent), {
   ssr: false,
@@ -75,6 +76,26 @@ function CheckoutSuccessContentComponent() {
         }
         notifyCatalogUpdated();
         router.refresh();
+
+        const salePayload = {
+          sellerId: transactionData.seller_id as string,
+          buyerId: transactionData.buyer_id as string,
+          productId: productData.id as string,
+          productName: (productData.name as string) || 'Termék',
+          transactionId: transactionData.id as string,
+        };
+
+        try {
+          await emitSaleCompletedBroadcast(supabase, salePayload);
+        } catch (broadcastErr) {
+          console.warn('[checkout-success] sale broadcast failed', broadcastErr);
+        }
+
+        if (typeof window !== 'undefined') {
+          window.dispatchEvent(
+            new CustomEvent('robeo:sale-broadcast', { detail: salePayload }),
+          );
+        }
 
         if (!purchaseToastShown) {
           toast.success('Sikeres vásárlás! A rendelésed rögzítve lett.');

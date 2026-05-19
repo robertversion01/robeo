@@ -328,6 +328,25 @@ ALTER TABLE IF EXISTS public.messages
 ALTER TABLE IF EXISTS public.messages
   ADD COLUMN IF NOT EXISTS is_system_message BOOLEAN DEFAULT false;
 
+ALTER TABLE IF EXISTS public.messages ENABLE ROW LEVEL SECURITY;
+
+DROP POLICY IF EXISTS "messages_select_policy" ON public.messages;
+CREATE POLICY "messages_select_policy"
+  ON public.messages
+  FOR SELECT
+  TO authenticated
+  USING (auth.uid() = sender_id OR auth.uid() = receiver_id);
+
+DROP POLICY IF EXISTS "messages_insert_policy" ON public.messages;
+DROP POLICY IF EXISTS "messages_insert_authenticated" ON public.messages;
+CREATE POLICY "messages_insert_authenticated"
+  ON public.messages
+  FOR INSERT
+  TO authenticated
+  WITH CHECK (auth.uid() = sender_id);
+
+ALTER TABLE public.messages REPLICA IDENTITY FULL;
+
 -- 15. Chat média storage bucket + policy
 INSERT INTO storage.buckets (id, name, public)
 VALUES ('chat-media', 'chat-media', true)

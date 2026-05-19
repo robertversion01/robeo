@@ -1,6 +1,12 @@
 /** Webhook / Realtime: eladói sikeres eladás felismerése. */
 export const SALE_NOTIFICATION_MARKER = '[ROBEO_SALE]';
 
+export type IncomingSaleAlert = {
+  productId: string;
+  productName: string;
+  messageId?: string;
+};
+
 export const PURCHASE_SELLER_MESSAGE_BODY =
   '🎉 Rendszerüzenet: A terméket sikeresen kifizették! Kedves Eladó, kérjük készítsd össze a csomagot a szállításhoz.';
 

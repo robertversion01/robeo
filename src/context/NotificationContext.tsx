@@ -19,7 +19,20 @@ import {
 } from '@/lib/unreadNotifications';
 import OfferNotificationPopup from '@/components/notifications/OfferNotificationPopup';
 import SaleNotificationPopup from '@/components/notifications/SaleNotificationPopup';
-import { isSaleSystemMessage } from '@/lib/saleNotifications';
+import {
+  isSaleSystemMessage,
+  type IncomingSaleAlert,
+} from '@/lib/saleNotifications';
+import {
+  buildSaleAlertPayload,
+  dispatchSaleCompletedDomEvent,
+} from '@/lib/presentSaleNotification';
+import {
+  emitSaleCompletedBroadcast,
+  ROBEO_GLOBAL_EVENTS_CHANNEL,
+  SALE_COMPLETED_BROADCAST_EVENT,
+  type SaleCompletedBroadcastPayload,
+} from '@/lib/globalEvents';
 import { toast } from 'sonner';
 
 /**
@@ -35,11 +48,7 @@ export type IncomingOfferAlert = {
   amountHuf: number;
 };
 
-export type IncomingSaleAlert = {
-  productId: string;
-  productName: string;
-  messageId?: string;
-};
+export type { IncomingSaleAlert } from '@/lib/saleNotifications';
 
 type NotificationContextValue = {
   unreadCount: number;
@@ -92,6 +101,7 @@ export function NotificationProvider({ children }: { children: ReactNode }) {
   const [saleAlert, setSaleAlert] = useState<IncomingSaleAlert | null>(null);
   const userIdRef = useRef<string | null>(null);
   userIdRef.current = userId;
+  const recentSaleRef = useRef<{ productId: string; at: number } | null>(null);
 
   const refreshUnread = useCallback(async () => {
     const uid = userIdRef.current;
@@ -150,6 +160,28 @@ export function NotificationProvider({ children }: { children: ReactNode }) {
     [refreshUnread],
   );
 
+  const presentSaleNotification = useCallback(
+    (alert: IncomingSaleAlert) => {
+      const now = Date.now();
+      if (
+        recentSaleRef.current?.productId === alert.productId &&
+        now - recentSaleRef.current.at < 20_000
+      ) {
+        return;
+      }
+      recentSaleRef.current = { productId: alert.productId, at: now };
+
+      setSaleAlert(alert);
+      void refreshUnread();
+      toast.success(`Gratulálunk! Eladtad: ${alert.productName}!`, {
+        description: 'Készítsd össze a csomagot és töltsd le a címkét.',
+        duration: 8000,
+      });
+      dispatchSaleCompletedDomEvent(alert.productId, alert.productName);
+    },
+    [refreshUnread],
+  );
+
   const showSaleAlert = useCallback(
     async (row: Record<string, unknown>) => {
       const uid = userIdRef.current;
@@ -170,25 +202,22 @@ export function NotificationProvider({ children }: { children: ReactNode }) {
         if (product?.name) productName = product.name;
       }
 
-      setSaleAlert({
-        productId,
-        productName,
-        messageId: row.id ? String(row.id) : undefined,
-      });
-      void refreshUnread();
-
-      toast.success(`Gratulálunk! Eladtad: ${productName}!`, {
-        description: 'Készítsd össze a csomagot és töltsd le a címkét.',
-        duration: 8000,
-      });
-
-      window.dispatchEvent(
-        new CustomEvent('sale:completed', {
-          detail: { productId, productName },
-        }),
+      presentSaleNotification(
+        buildSaleAlertPayload(productId, productName, row.id ? String(row.id) : undefined),
       );
     },
-    [refreshUnread],
+    [presentSaleNotification],
+  );
+
+  const handleSaleBroadcast = useCallback(
+    (payload: SaleCompletedBroadcastPayload) => {
+      const uid = userIdRef.current;
+      if (!uid || payload.sellerId !== uid) return;
+      presentSaleNotification(
+        buildSaleAlertPayload(payload.productId, payload.productName, payload.transactionId),
+      );
+    },
+    [presentSaleNotification],
   );
 
   useEffect(() => {
@@ -292,18 +321,36 @@ export function NotificationProvider({ children }: { children: ReactNode }) {
         }
       });
 
+    const globalChannel = supabase
+      .channel(ROBEO_GLOBAL_EVENTS_CHANNEL)
+      .on(
+        'broadcast',
+        { event: SALE_COMPLETED_BROADCAST_EVENT },
+        ({ payload }) => {
+          handleSaleBroadcast(payload as SaleCompletedBroadcastPayload);
+        },
+      )
+      .subscribe();
+
     const onSeen = () => void refreshUnread();
     const onOffersUpdated = () => void refreshUnread();
+    const onLocalSaleBroadcast = (e: Event) => {
+      const detail = (e as CustomEvent<SaleCompletedBroadcastPayload>).detail;
+      if (detail) handleSaleBroadcast(detail);
+    };
 
     window.addEventListener('messages:seen', onSeen);
     window.addEventListener('offers:updated', onOffersUpdated);
+    window.addEventListener('robeo:sale-broadcast', onLocalSaleBroadcast);
 
     return () => {
       supabase.removeChannel(channel);
+      supabase.removeChannel(globalChannel);
       window.removeEventListener('messages:seen', onSeen);
       window.removeEventListener('offers:updated', onOffersUpdated);
+      window.removeEventListener('robeo:sale-broadcast', onLocalSaleBroadcast);
     };
-  }, [userId, refreshUnread, showOfferAlert, showSaleAlert]);
+  }, [userId, refreshUnread, showOfferAlert, showSaleAlert, handleSaleBroadcast]);
 
   useEffect(() => {
     if (pathname?.startsWith('/messages') && userId) {
