@@ -5,6 +5,7 @@ import { supabase } from '@/lib/supabase';
 import { toast } from 'sonner';
 import { X, Plus, ArrowUp, ArrowDown } from 'lucide-react';
 import CustomSelect from '@/components/ui/CustomSelect';
+import { VINTED_BRANDS, VINTED_CATEGORIES, sizesForCategory } from '@/lib/vintedCatalog';
 import { MAIN_TOP_PADDING } from '@/lib/layoutTokens';
 import { revalidateCatalog } from '@/app/actions/revalidateCatalog';
 import { notifyCatalogUpdated } from '@/lib/catalogRefresh';
@@ -23,6 +24,7 @@ export default function UploadPage() {
     category: '',
     condition: '',
     brand: '',
+    size: '',
   });
   const [images, setImages] = useState<UploadedImage[]>([]);
   const [loading, setLoading] = useState(false);
@@ -122,6 +124,9 @@ export default function UploadPage() {
       if (!user) {
         throw new Error('Kérlek először jelentkezz be!');
       }
+      if (!formData.brand || !formData.size) {
+        throw new Error('Márka és méret kötelező.');
+      }
 
       let imageUrls: string[] = [];
 
@@ -140,6 +145,7 @@ export default function UploadPage() {
           category: formData.category,
           condition: formData.condition,
           brand: formData.brand,
+          size: formData.size || null,
           image_url: imageUrls[0] || null,
           images: imageUrls,
           user_id: user.id,
@@ -162,6 +168,7 @@ export default function UploadPage() {
         category: '',
         condition: '',
         brand: '',
+        size: '',
       });
       setImages([]);
 
@@ -234,31 +241,38 @@ export default function UploadPage() {
               <div>
                 <label className="block mb-2 font-medium text-gray-700">Kategória</label>
                 <CustomSelect
-                  options={[
-                    { value: 'clothing', label: 'Ruházat' },
-                    { value: 'shoes', label: 'Cipő' },
-                    { value: 'accessories', label: 'Kiegészítők' },
-                    { value: 'electronics', label: 'Elektronika' },
-                    { value: 'other', label: 'Egyéb' },
-                  ]}
+                  options={VINTED_CATEGORIES.map((c) => ({ value: c.id, label: c.label }))}
                   value={formData.category}
-                  onChange={(val) => handleInputChange({ target: { name: 'category', value: val } } as any)}
+                  onChange={(val) => {
+                    setFormData((prev) => ({ ...prev, category: val, size: '' }));
+                  }}
                   placeholder="Válassz kategóriát"
                 />
               </div>
             </div>
 
-            {/* Brand and Condition row */}
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+            {/* Brand, size, condition */}
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
               <div>
-                <label className="block mb-2 font-medium text-gray-700">Márka</label>
-                <input
-                  type="text"
-                  name="brand"
+                <label className="block mb-2 font-medium text-gray-700">Márka *</label>
+                <CustomSelect
+                  options={VINTED_BRANDS.map((b) => ({ value: b, label: b }))}
                   value={formData.brand}
-                  onChange={handleInputChange}
-                  className="input-base focus:outline-none focus:ring-1 focus:ring-[#007782]"
-                  placeholder="pl. Nike, Adidas, Apple"
+                  onChange={(val) => setFormData((prev) => ({ ...prev, brand: val }))}
+                  placeholder="Válassz márkát"
+                />
+              </div>
+
+              <div>
+                <label className="block mb-2 font-medium text-gray-700">Méret *</label>
+                <CustomSelect
+                  options={sizesForCategory(formData.category || 'clothing').map((s) => ({
+                    value: s,
+                    label: s,
+                  }))}
+                  value={formData.size}
+                  onChange={(val) => setFormData((prev) => ({ ...prev, size: val }))}
+                  placeholder="Válassz méretet"
                 />
               </div>
 

@@ -50,6 +50,8 @@ export function useProducts() {
   const [selectedCategory, setSelectedCategory] = useState('all');
   const [selectedMaxPrice, setSelectedMaxPrice] = useState<number>(0);
   const [selectedSort, setSelectedSort] = useState('newest');
+  const [selectedBrand, setSelectedBrand] = useState('all');
+  const [selectedSize, setSelectedSize] = useState('all');
   const [favorites, setFavorites] = useState<Set<string>>(new Set());
   const [user, setUser] = useState<any>(null);
 
@@ -199,8 +201,20 @@ export function useProducts() {
       filtered = filtered.filter((p) => (Number(p.price) || 0) <= selectedMaxPrice);
     }
 
+    if (selectedBrand !== 'all') {
+      filtered = filtered.filter(
+        (p) => (p.brand || '').toLowerCase() === selectedBrand.toLowerCase(),
+      );
+    }
+
+    if (selectedSize !== 'all') {
+      filtered = filtered.filter(
+        (p) => (p.size || '').toLowerCase() === selectedSize.toLowerCase(),
+      );
+    }
+
     return filtered;
-  }, [products, searchQuery, selectedCategory, selectedMaxPrice]);
+  }, [products, searchQuery, selectedCategory, selectedMaxPrice, selectedBrand, selectedSize]);
 
   const maxPriceLimit = useMemo(
     () => products.reduce((max, product) => Math.max(max, Number(product.price) || 0), 0),
@@ -224,6 +238,10 @@ export function useProducts() {
     toggleFavorite,
     sortOptions: SORT_OPTIONS,
     categories: CATEGORIES,
-    user
+    selectedBrand,
+    setSelectedBrand,
+    selectedSize,
+    setSelectedSize,
+    user,
   };
 }

@@ -3,6 +3,7 @@
 import { useEffect, useState, use } from 'react';
 import { supabase } from '@/lib/supabase';
 import Link from 'next/link';
+import FollowSellerButton from '@/components/product/FollowSellerButton';
 import { useRouter } from 'next/navigation';
 import { toast } from 'sonner';
 import { Star, ZoomIn, ZoomOut } from 'lucide-react';
@@ -306,6 +307,10 @@ export default function ProductPage({ params }: { params: Promise<{ id: string }
               </div>
               
               <h1 className="text-xl md:text-2xl font-bold mb-2">{product.name}</h1>
+
+              <div className="mb-3">
+                <FollowSellerButton sellerId={product.user_id} />
+              </div>
               
               <div className="text-accent font-bold text-2xl mb-3">{product.price.toLocaleString()} Ft</div>
 

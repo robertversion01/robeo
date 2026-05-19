@@ -20,6 +20,7 @@ import { revalidateCatalog } from '@/app/actions/revalidateCatalog';
 import { notifyCatalogUpdated } from '@/lib/catalogRefresh';
 import { softDeleteAllUserProducts, softDeleteProduct } from '@/lib/productSoftDelete';
 import WalletBalanceCard from '@/components/profile/WalletBalanceCard';
+import BundleDiscountSettings from '@/components/profile/BundleDiscountSettings';
 
 export default function ProfilePage() {
   const [products, setProducts] = useState<Product[]>([]);
@@ -508,6 +509,8 @@ export default function ProfilePage() {
             </div>
           </div>
           <WalletBalanceCard userId={user?.id} />
+
+          <BundleDiscountSettings userId={user?.id} />
 
           <p className="text-gray-500 text-sm mb-5 ml-0">Saját feltöltött termékeim</p>
 

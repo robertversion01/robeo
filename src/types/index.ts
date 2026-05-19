@@ -22,7 +22,7 @@ export interface Product {
   user_id: string;
   status: 'active' | 'sold' | 'deleted' | 'reserved' | 'shipped' | 'delivered';
   featured_until?: string | null;
-  size?: string;
+  size?: string | null;
   color?: string;
   transaction_id?: string;
   created_at: string;

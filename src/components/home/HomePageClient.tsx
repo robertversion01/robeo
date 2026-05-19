@@ -23,6 +23,10 @@ export default function HomePageClient() {
     selectedSort,
     setSelectedSort,
     sortOptions,
+    selectedBrand,
+    setSelectedBrand,
+    selectedSize,
+    setSelectedSize,
   } = useProducts();
   const isGuest = !user;
 
@@ -50,6 +54,10 @@ export default function HomePageClient() {
                 sortOptions={sortOptions}
                 selectedSort={selectedSort}
                 onSortChange={setSelectedSort}
+                selectedBrand={selectedBrand}
+                onBrandChange={setSelectedBrand}
+                selectedSize={selectedSize}
+                onSizeChange={setSelectedSize}
               />
             </div>
 

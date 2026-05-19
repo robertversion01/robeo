@@ -2,10 +2,8 @@ import type Stripe from 'stripe';
 import { revalidatePath } from 'next/cache';
 import { NextRequest, NextResponse } from 'next/server';
 import { getStripeInstance } from '@/lib/stripe-client';
-import { insertChatSystemMessage } from '@/lib/chatMessages';
-import { buildPurchaseSellerMessage } from '@/lib/saleNotifications';
+import { applyPaidTransactionEffects } from '@/lib/completePurchase';
 import { getSupabaseAdminClient } from '@/lib/supabase';
-import { creditSellerPendingForTransaction } from '@/lib/wallet';
 
 export const dynamic = 'force-dynamic';
 
@@ -87,100 +85,6 @@ type TxRow = {
   wallet_pending_credited_at?: string | null;
   wallet_released_at?: string | null;
 };
-
-async function applyPaidTransactionEffects(
-  db: any,
-  transaction: TxRow,
-  paymentIntentId: string | null
-): Promise<void> {
-  const needsStatusUpdate = transaction.status !== 'fizetve';
-  const alreadyNotified = Boolean(transaction.checkout_completed_notified_at);
-
-  if (needsStatusUpdate) {
-    const { error } = await db
-      .from('transactions')
-      .update({
-        status: 'fizetve',
-        payment_intent_id: paymentIntentId ?? transaction.payment_intent_id ?? null,
-      })
-      .eq('id', transaction.id);
-
-    if (error) throw new Error(`transactions update: ${error.message}`);
-  }
-
-  // Sikeres fizetés után a termék ne maradjon vásárolható (checkout success kliens RLS miatt gyakran kimarad).
-  const { error: productSoldErr } = await db
-    .from('products')
-    .update({ status: 'sold' })
-    .eq('id', transaction.product_id)
-    .in('status', ['active', 'reserved']);
-
-  if (productSoldErr) {
-    throw new Error(`products sold update: ${productSoldErr.message}`);
-  }
-
-  if (!alreadyNotified) {
-    const { data: buyerProfile, error: profileErr } = await db
-      .from('profiles')
-      .select(
-        'full_name, name, email, location, address, city, postal_code, address_line1, address_line2'
-      )
-      .eq('id', transaction.buyer_id)
-      .maybeSingle();
-
-    if (profileErr) {
-      console.error(WEBHOOK_LOG, 'profiles select failed', profileErr);
-      throw new Error(`profiles select: ${profileErr.message}`);
-    }
-
-    let buyerAddress = 'Nincs megadva';
-
-    if (buyerProfile) {
-      buyerAddress =
-        [
-          buyerProfile.location,
-          buyerProfile.address,
-          buyerProfile.address_line1,
-          buyerProfile.city,
-          buyerProfile.postal_code,
-        ]
-          .filter(Boolean)
-          .join(', ') ||
-        buyerProfile.email ||
-        'Nincs cím';
-    }
-
-    const sellerMessage = buildPurchaseSellerMessage(
-      buyerAddress !== 'Nincs megadva' ? buyerAddress : undefined,
-    );
-
-    const messageResult = await insertChatSystemMessage(db, {
-      senderId: transaction.buyer_id,
-      receiverId: transaction.seller_id,
-      content: sellerMessage,
-      productId: transaction.product_id,
-    });
-
-    if (!messageResult.ok) {
-      throw new Error(`messages insert: ${messageResult.error}`);
-    }
-
-    const { error: notifyErr } = await db
-      .from('transactions')
-      .update({
-        checkout_completed_notified_at: new Date().toISOString(),
-      })
-      .eq('id', transaction.id);
-
-    if (notifyErr) throw new Error(`transactions notify timestamp: ${notifyErr.message}`);
-  }
-
-  await creditSellerPendingForTransaction(db, transaction);
-
-  revalidatePath('/');
-  revalidatePath('/favorites');
-  revalidatePath('/profile');
-}
 
 async function handleCheckoutSessionCompleted(event: Stripe.Event, db: any): Promise<void> {
   const session = event.data.object as Stripe.Checkout.Session;

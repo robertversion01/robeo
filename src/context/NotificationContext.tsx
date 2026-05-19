@@ -54,6 +54,7 @@ export type { IncomingSaleAlert } from '@/lib/saleNotifications';
 
 type NotificationContextValue = {
   unreadCount: number;
+  feedUnreadCount: number;
   hasUnread: boolean;
   refreshUnread: () => Promise<void>;
   markMessagesSeen: () => void;
@@ -67,6 +68,7 @@ export function useNotifications(): NotificationContextValue {
   if (!ctx) {
     return {
       unreadCount: 0,
+      feedUnreadCount: 0,
       hasUnread: false,
       refreshUnread: async () => {},
       markMessagesSeen: () => {},
@@ -99,6 +101,7 @@ export function NotificationProvider({ children }: { children: ReactNode }) {
   const pathname = usePathname();
   const [userId, setUserId] = useState<string | null>(null);
   const [unreadCount, setUnreadCount] = useState(0);
+  const [feedUnreadCount, setFeedUnreadCount] = useState(0);
   const [offerAlert, setOfferAlert] = useState<IncomingOfferAlert | null>(null);
   const [saleAlert, setSaleAlert] = useState<IncomingSaleAlert | null>(null);
   const userIdRef = useRef<string | null>(null);
@@ -111,8 +114,16 @@ export function NotificationProvider({ children }: { children: ReactNode }) {
       setUnreadCount(0);
       return;
     }
-    const count = await fetchUnreadCount(supabase, uid);
-    setUnreadCount(count);
+    const [msgCount, feedRes] = await Promise.all([
+      fetchUnreadCount(supabase, uid),
+      supabase
+        .from('app_notifications')
+        .select('id', { count: 'exact', head: true })
+        .eq('user_id', uid)
+        .is('read_at', null),
+    ]);
+    setUnreadCount(msgCount);
+    setFeedUnreadCount(feedRes.count ?? 0);
   }, []);
 
   const markMessagesSeen = useCallback(() => {
@@ -338,6 +349,35 @@ export function NotificationProvider({ children }: { children: ReactNode }) {
         }
       });
 
+    const feedChannel = supabase
+      .channel(`robeo-feed-notifications-${userId}`)
+      .on(
+        'postgres_changes',
+        {
+          event: 'INSERT',
+          schema: 'public',
+          table: 'app_notifications',
+          filter: `user_id=eq.${userId}`,
+        },
+        (payload) => {
+          const row = payload.new as { title?: string; body?: string; link?: string };
+          void refreshUnread();
+          toast.info(row.title || 'Új értesítés', {
+            description: row.body,
+            duration: 6000,
+            action: row.link
+              ? {
+                  label: 'Megnyitás',
+                  onClick: () => {
+                    window.location.href = row.link!;
+                  },
+                }
+              : undefined,
+          });
+        },
+      )
+      .subscribe();
+
     const globalChannel = supabase
       .channel(ROBEO_GLOBAL_EVENTS_CHANNEL)
       .on(
@@ -362,6 +402,7 @@ export function NotificationProvider({ children }: { children: ReactNode }) {
 
     return () => {
       supabase.removeChannel(channel);
+      supabase.removeChannel(feedChannel);
       supabase.removeChannel(globalChannel);
       window.removeEventListener('messages:seen', onSeen);
       window.removeEventListener('offers:updated', onOffersUpdated);
@@ -378,12 +419,13 @@ export function NotificationProvider({ children }: { children: ReactNode }) {
   const value = useMemo(
     () => ({
       unreadCount,
-      hasUnread: unreadCount > 0,
+      feedUnreadCount,
+      hasUnread: unreadCount > 0 || feedUnreadCount > 0,
       refreshUnread,
       markMessagesSeen,
       dismissOfferAlert,
     }),
-    [unreadCount, refreshUnread, markMessagesSeen, dismissOfferAlert],
+    [unreadCount, feedUnreadCount, refreshUnread, markMessagesSeen, dismissOfferAlert],
   );
 
   return (

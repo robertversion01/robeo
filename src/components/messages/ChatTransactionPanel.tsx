@@ -48,7 +48,9 @@ export default function ChatTransactionPanel({
     try {
       const { data, error } = await supabase
         .from('transactions')
-        .select('id, status, product_id, buyer_id, seller_id')
+        .select(
+          'id, status, product_id, buyer_id, seller_id, foxpost_terminal_id, foxpost_terminal_name, foxpost_terminal_address',
+        )
         .eq('product_id', productId)
         .or(
           `and(buyer_id.eq.${userId},seller_id.eq.${otherUserId}),and(buyer_id.eq.${otherUserId},seller_id.eq.${userId})`,
@@ -134,6 +136,11 @@ export default function ChatTransactionPanel({
       transactionId: transaction.id,
       productName: transaction.productName || 'Termék',
       sellerEmail: userEmail || undefined,
+      foxpostTerminalId: (transaction as { foxpost_terminal_id?: string }).foxpost_terminal_id,
+      foxpostTerminalName: (transaction as { foxpost_terminal_name?: string }).foxpost_terminal_name,
+      foxpostTerminalAddress: (transaction as { foxpost_terminal_address?: string })
+        .foxpost_terminal_address,
+      buyerAddress: (transaction as { foxpost_terminal_address?: string }).foxpost_terminal_address,
     });
     setLabelDownloaded(true);
     toast.success('Foxpost címke letöltve. Most már jelölheted „Csomag feladva”-ként!');

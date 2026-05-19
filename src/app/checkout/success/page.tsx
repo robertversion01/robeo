@@ -38,7 +38,8 @@ function CheckoutSuccessContentComponent() {
 
   useEffect(() => {
     const sessionId = searchParams.get('session_id');
-    if (!sessionId) {
+    const transactionId = searchParams.get('transaction_id');
+    if (!sessionId && !transactionId) {
       setError('Hiányzó tranzakció azonosító');
       setLoading(false);
       return;
@@ -51,11 +52,13 @@ function CheckoutSuccessContentComponent() {
 
     const fetchTransactionDetails = async () => {
       try {
-        const { data: transactionData, error: transactionError } = await supabase
-          .from('transactions')
-          .select('*')
-          .eq('checkout_session_id', sessionId)
-          .single();
+        let query = supabase.from('transactions').select('*');
+        if (sessionId) {
+          query = query.eq('checkout_session_id', sessionId);
+        } else if (transactionId) {
+          query = query.eq('id', transactionId);
+        }
+        const { data: transactionData, error: transactionError } = await query.single();
 
         if (transactionError || !transactionData) {
           throw new Error('Transaction not found');

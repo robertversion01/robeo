@@ -5,6 +5,9 @@ export type FoxpostLabelInput = {
   buyerName?: string;
   buyerAddress?: string;
   sellerEmail?: string;
+  foxpostTerminalId?: string;
+  foxpostTerminalName?: string;
+  foxpostTerminalAddress?: string;
 };
 
 const LABEL_DOWNLOADED_PREFIX = 'robeo_foxpost_label_';
@@ -39,10 +42,20 @@ export function downloadFoxpostLabelStub(input: FoxpostLabelInput): void {
   <p class="muted">ROBEO stub szállítási címke — nyomtasd PDF-be vagy vidd a csomagpontra.</p>
   <div class="barcode">*${input.transactionId.slice(0, 8).toUpperCase()}*</div>
   <h1>${escapeHtml(input.productName)}</h1>
+  ${
+    input.foxpostTerminalName || input.foxpostTerminalAddress
+      ? `<div class="box" style="border-color:#e85d04;background:#fff7ed">
+    <strong>🦊 Foxpost automata (átvétel)</strong><br/>
+    ${escapeHtml(input.foxpostTerminalName || '')}<br/>
+    ${escapeHtml(input.foxpostTerminalAddress || '')}<br/>
+    <span class="muted">Automata ID: ${escapeHtml(input.foxpostTerminalId || '—')}</span>
+  </div>`
+      : ''
+  }
   <div class="box">
     <strong>Címzett</strong><br/>
     ${escapeHtml(input.buyerName || 'Vevő')}<br/>
-    ${escapeHtml(input.buyerAddress || 'Cím a profilban / chatben')}
+    ${escapeHtml(input.buyerAddress || input.foxpostTerminalAddress || 'Cím a profilban / chatben')}
   </div>
   <div class="box">
     <strong>Feladó</strong><br/>

@@ -1,6 +1,12 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { randomUUID } from 'crypto';
 import { calculateCheckoutTotal } from '@/lib/buyerProtection';
+import {
+  applyBundleDiscountToPrice,
+  bundleDiscountPercentForCount,
+  parseBundleTiers,
+} from '@/lib/bundleDiscount';
+import { foxpostTerminalAddress } from '@/lib/foxpostTerminal';
 import { getStripeInstance } from '@/lib/stripe-client';
 import { getSupabaseAdminClient, getSupabaseClient } from '@/lib/supabase';
 
@@ -22,12 +28,27 @@ export async function POST(req: NextRequest) {
     }
 
     const body = await req.json();
-    const { productId, offerId, buyerId, shippingCost, shippingMethod } = body as {
+    const {
+      productId,
+      offerId,
+      buyerId,
+      shippingCost,
+      shippingMethod,
+      bundleItemCount,
+      foxpostTerminal,
+    } = body as {
       productId?: string;
       offerId?: string;
       buyerId?: string;
       shippingCost?: number;
       shippingMethod?: string;
+      bundleItemCount?: number;
+      foxpostTerminal?: {
+        operator_id?: string;
+        place_id?: number;
+        name?: string;
+        address?: string;
+      } | null;
     };
 
     console.log('[checkout] Incoming payload', {
@@ -216,8 +237,23 @@ export async function POST(req: NextRequest) {
     // Pre-generate transaction id so it can be attached to Stripe metadata too.
     const transactionId = randomUUID();
 
-    const productPrice =
+    let productPrice =
       negotiatedPrice !== null ? negotiatedPrice : Math.round(product.price);
+
+    const { data: sellerBundleProfile } = await supabase
+      .from('profiles')
+      .select('bundle_discount_enabled, bundle_discount_tiers')
+      .eq('id', sellerId)
+      .maybeSingle();
+
+    const bundleCount = Math.min(10, Math.max(1, Math.round(bundleItemCount || 1)));
+    let bundleDiscountPercent = 0;
+    if (bundleCount > 1 && sellerBundleProfile?.bundle_discount_enabled) {
+      const tiers = parseBundleTiers(sellerBundleProfile.bundle_discount_tiers);
+      bundleDiscountPercent = bundleDiscountPercentForCount(tiers, bundleCount);
+      productPrice = applyBundleDiscountToPrice(productPrice, bundleDiscountPercent);
+    }
+
     const normalizedShippingCost =
       typeof shippingCost === 'number' && Number.isFinite(shippingCost) && shippingCost > 0
         ? Math.round(shippingCost)
@@ -297,6 +333,12 @@ export async function POST(req: NextRequest) {
           status: 'payment_pending',
           checkout_session_id: session.id,
           payment_intent_id: (session.payment_intent as string) || null,
+          payment_provider: 'stripe',
+          bundle_item_count: bundleCount,
+          bundle_discount_percent: bundleDiscountPercent,
+          foxpost_terminal_id: foxpostTerminal?.operator_id || (foxpostTerminal?.place_id ? String(foxpostTerminal.place_id) : null),
+          foxpost_terminal_name: foxpostTerminal?.name || null,
+          foxpost_terminal_address: foxpostTerminal ? foxpostTerminalAddress(foxpostTerminal) : null,
         })
         .select('id')
         .single();

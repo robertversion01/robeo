@@ -1,5 +1,7 @@
 'use client';
 
+import { VINTED_BRANDS, CLOTHING_SIZES, SHOE_SIZES } from '@/lib/vintedCatalog';
+
 interface FiltersProps {
   categories: { id: string; label: string }[];
   selectedCategory: string;
@@ -10,7 +12,13 @@ interface FiltersProps {
   sortOptions: { id: string; label: string }[];
   selectedSort: string;
   onSortChange: (id: string) => void;
+  selectedBrand: string;
+  onBrandChange: (id: string) => void;
+  selectedSize: string;
+  onSizeChange: (id: string) => void;
 }
+
+const ALL_SIZES = Array.from(new Set([...CLOTHING_SIZES, ...SHOE_SIZES]));
 
 export default function Filters({
   categories,
@@ -22,6 +30,10 @@ export default function Filters({
   sortOptions,
   selectedSort,
   onSortChange,
+  selectedBrand,
+  onBrandChange,
+  selectedSize,
+  onSizeChange,
 }: FiltersProps) {
   return (
     <div className="space-y-3 pb-3">
@@ -58,6 +70,40 @@ export default function Filters({
           </select>
         </label>
       </div>
+
+      <div className="flex flex-col sm:flex-row gap-2">
+        <label className="flex-1 text-xs text-gray-600">
+          <span className="block mb-1 font-medium">Márka</span>
+          <select
+            value={selectedBrand}
+            onChange={(e) => onBrandChange(e.target.value)}
+            className="w-full h-9 rounded-lg border border-gray-300 bg-white px-2 text-sm"
+          >
+            <option value="all">Összes márka</option>
+            {VINTED_BRANDS.map((b) => (
+              <option key={b} value={b}>
+                {b}
+              </option>
+            ))}
+          </select>
+        </label>
+        <label className="flex-1 text-xs text-gray-600">
+          <span className="block mb-1 font-medium">Méret</span>
+          <select
+            value={selectedSize}
+            onChange={(e) => onSizeChange(e.target.value)}
+            className="w-full h-9 rounded-lg border border-gray-300 bg-white px-2 text-sm"
+          >
+            <option value="all">Összes méret</option>
+            {ALL_SIZES.map((s) => (
+              <option key={s} value={s}>
+                {s}
+              </option>
+            ))}
+          </select>
+        </label>
+      </div>
+
       <div className="px-0.5">
         <div className="flex items-center justify-between text-xs text-gray-500 mb-1">
           <span>Max. ár</span>
