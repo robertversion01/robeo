@@ -96,6 +96,17 @@ async function applyPaidTransactionEffects(
     if (error) throw new Error(`transactions update: ${error.message}`);
   }
 
+  // Sikeres fizetés után a termék ne maradjon vásárolható (checkout success kliens RLS miatt gyakran kimarad).
+  const { error: productSoldErr } = await db
+    .from('products')
+    .update({ status: 'sold' })
+    .eq('id', transaction.product_id)
+    .in('status', ['active', 'reserved']);
+
+  if (productSoldErr) {
+    throw new Error(`products sold update: ${productSoldErr.message}`);
+  }
+
   if (!alreadyNotified) {
     const { data: buyerProfile, error: profileErr } = await db
       .from('profiles')

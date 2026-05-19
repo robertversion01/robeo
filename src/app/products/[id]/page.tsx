@@ -170,8 +170,9 @@ export default function ProductPage({ params }: { params: Promise<{ id: string }
 
   const sellerInitial = sellerDisplayName.charAt(0).toUpperCase() || 'E';
   const urgencySeed = product.id.split('').reduce((acc, char) => acc + char.charCodeAt(0), 0);
+  const isSold = product.status === 'sold';
   const inCartCount = 2 + (urgencySeed % 7);
-  const showLastPiece = urgencySeed % 2 === 0;
+  const showLastPiece = !isSold && urgencySeed % 2 === 0;
 
   const handleImageTouchStart = (event: React.TouchEvent<HTMLDivElement>) => {
     setTouchStartX(event.touches[0]?.clientX ?? null);
@@ -309,14 +310,22 @@ export default function ProductPage({ params }: { params: Promise<{ id: string }
               <div className="text-accent font-bold text-2xl mb-3">{product.price.toLocaleString()} Ft</div>
 
               <div className="mb-3 space-y-1.5">
-                <div className="inline-flex items-center rounded-full bg-orange-100 px-2.5 py-1 text-xs font-semibold text-orange-700">
-                  Mar {inCartCount} ember kosaraban van
-                </div>
-                {showLastPiece ? (
-                  <div className="inline-flex items-center rounded-full bg-red-100 px-2.5 py-1 text-xs font-semibold text-red-700">
-                    Utolso darab ezen az aron!
+                {isSold ? (
+                  <div className="inline-flex items-center rounded-full bg-gray-100 px-3 py-1.5 text-sm font-semibold text-gray-600 border border-gray-200">
+                    Eladva
                   </div>
-                ) : null}
+                ) : (
+                  <>
+                    <div className="inline-flex items-center rounded-full bg-orange-100 px-2.5 py-1 text-xs font-semibold text-orange-700">
+                      Mar {inCartCount} ember kosaraban van
+                    </div>
+                    {showLastPiece ? (
+                      <div className="inline-flex items-center rounded-full bg-red-100 px-2.5 py-1 text-xs font-semibold text-red-700">
+                        Utolso darab ezen az aron!
+                      </div>
+                    ) : null}
+                  </>
+                )}
               </div>
               
               {/* Product Attributes */}
@@ -366,42 +375,57 @@ export default function ProductPage({ params }: { params: Promise<{ id: string }
               </div>
 
                <div className="fixed bottom-0 left-0 right-0 md:static mt-auto p-2 md:p-0 md:mt-4 bg-white backdrop-blur-md border-t border-gray-200 md:border-t-0 md:bg-transparent md:backdrop-blur-none md:space-y-3 space-y-1.5 shadow-lg md:shadow-none">
-                 <button 
-                  onClick={async () => {
-                    const { data: { user } } = await supabase.auth.getUser();
-                    if (!user) {
-                      router.push('/auth');
-                      return;
-                    }
-                    if (product.user_id === user.id) {
-                      toast.error('A saját termékedet nem vásárolhatod meg.');
-                      return;
-                    }
-                    router.push(
-                      acceptedOffer
-                        ? `/checkout?offer=${acceptedOffer.id}`
-                        : `/checkout?id=${id}`,
-                    );
+                {isSold ? (
+                  <button
+                    type="button"
+                    disabled
+                    className="w-full min-h-11 rounded-xl border border-gray-200 bg-gray-100 text-gray-500 font-semibold text-sm cursor-not-allowed"
+                  >
+                    Eladva
+                  </button>
+                ) : (
+                  <>
+                    <button
+                      type="button"
+                      onClick={async () => {
+                        const { data: { user } } = await supabase.auth.getUser();
+                        if (!user) {
+                          router.push('/auth');
+                          return;
+                        }
+                        if (product.user_id === user.id) {
+                          toast.error('A saját termékedet nem vásárolhatod meg.');
+                          return;
+                        }
+                        router.push(
+                          acceptedOffer
+                            ? `/checkout?offer=${acceptedOffer.id}`
+                            : `/checkout?id=${id}`,
+                        );
+                      }}
+                      className="w-full btn-base btn-primary"
+                    >
+                      {acceptedOffer ? 'Vásárlás alkudott áron' : 'Vásárlás'}
+                    </button>
+                    <button
+                      type="button"
+                      onClick={openOfferModal}
+                      className="w-full btn-base btn-secondary"
+                    >
+                      Ajánlatot teszek
+                    </button>
+                  </>
+                )}
+                <button
+                  type="button"
+                  onClick={() => {
+                    setMessageText(`Szia! Erdeklodnek a ${product.name} irant.`);
+                    setShowMessageModal(true);
                   }}
-                   className="w-full btn-base btn-primary"
-                 >
-                  {acceptedOffer ? 'Vásárlás alkudott áron' : 'Vásárlás'}
-                 </button>
-                  <button 
-                    onClick={openOfferModal}
-                    className="w-full btn-base btn-secondary"
-                  >
-                    Ajánlatot teszek
-                  </button>
-                  <button 
-                    onClick={() => {
-                      setMessageText(`Szia! Erdeklodnek a ${product.name} irant.`);
-                      setShowMessageModal(true);
-                    }}
-                    className="w-full btn-base btn-secondary"
-                  >
-                    Üzenet az eladónak
-                  </button>
+                  className="w-full btn-base btn-secondary"
+                >
+                  Üzenet az eladónak
+                </button>
                </div>
             </div>
           </div>
