@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import { Suspense, useEffect, useState } from 'react';
 import { supabase } from '@/lib/supabase';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
@@ -565,7 +565,9 @@ export default function ProfilePage() {
           {/* Tranzakciók */}
           <div className="mb-8">
             <h2 className="text-xl font-bold mb-4">💰 Tranzakcióim</h2>
-            <TransactionList />
+            <Suspense fallback={<div className="text-sm text-gray-500 py-4">Tranzakciók betöltése…</div>}>
+              <TransactionList />
+            </Suspense>
           </div>
 
           {/* Beérkező ajánlatok */}

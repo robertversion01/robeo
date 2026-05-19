@@ -1,7 +1,7 @@
 'use client';
 
 import Link from 'next/link';
-import { X, PartyPopper, ExternalLink, MessageCircle } from 'lucide-react';
+import { X, PartyPopper, ExternalLink, MessageCircle, Truck } from 'lucide-react';
 import type { IncomingSaleAlert } from '@/lib/saleNotifications';
 import { isUuid } from '@/lib/validators';
 
@@ -18,6 +18,7 @@ export default function SaleNotificationPopup({ alert, onDismiss }: Props) {
   const messagesHref = alert.buyerId
     ? `/messages?with=${encodeURIComponent(alert.buyerId)}`
     : '/messages';
+  const profileHref = '/profile?tab=selling';
 
   return (
     <div
@@ -54,9 +55,28 @@ export default function SaleNotificationPopup({ alert, onDismiss }: Props) {
         )}
         !
       </h2>
-      <p className="mt-2 text-sm text-gray-600">
-        Készítsd össze a csomagot, töltsd le a Foxpost címkét az üzenetekben, majd jelöld feladottnak.
-      </p>
+
+      <ul className="mt-3 space-y-2 text-sm text-gray-700">
+        <li>
+          <Link
+            href={messagesHref}
+            onClick={onDismiss}
+            className="font-semibold text-[#007782] underline underline-offset-2 hover:text-[#006670]"
+          >
+            1. Foxpost címke letöltése (üzenetek) →
+          </Link>
+        </li>
+        <li>
+          <Link
+            href={profileHref}
+            onClick={onDismiss}
+            className="inline-flex items-center gap-1 font-semibold text-[#007782] underline underline-offset-2 hover:text-[#006670]"
+          >
+            <Truck size={14} />
+            2. Csomag feladva jelzése (profil / Eladásaim) →
+          </Link>
+        </li>
+      </ul>
 
       <div className="mt-4 flex flex-col gap-2 sm:flex-row sm:flex-wrap">
         <Link
@@ -65,16 +85,24 @@ export default function SaleNotificationPopup({ alert, onDismiss }: Props) {
           className="flex-1 inline-flex items-center justify-center gap-2 rounded-xl bg-[#007782] px-3 py-2.5 text-sm font-semibold text-white hover:bg-[#006670] min-w-[8rem]"
         >
           <MessageCircle size={16} />
-          Üzenetek
+          Címke & chat
+        </Link>
+        <Link
+          href={profileHref}
+          onClick={onDismiss}
+          className="flex-1 inline-flex items-center justify-center gap-2 rounded-xl border-2 border-[#007782] bg-white px-3 py-2.5 text-sm font-semibold text-[#007782] hover:bg-[#007782]/5 min-w-[8rem]"
+        >
+          <Truck size={16} />
+          Csomag feladva
         </Link>
         {productHref ? (
           <Link
             href={productHref}
             onClick={onDismiss}
-            className="flex-1 inline-flex items-center justify-center gap-2 rounded-xl border-2 border-[#007782] bg-white px-3 py-2.5 text-sm font-semibold text-[#007782] hover:bg-[#007782]/5 min-w-[8rem]"
+            className="flex-1 inline-flex items-center justify-center gap-2 rounded-xl border border-gray-200 px-3 py-2.5 text-sm font-medium text-gray-700 hover:bg-gray-50 min-w-[8rem]"
           >
             <ExternalLink size={16} />
-            Termék megtekintése
+            Termék
           </Link>
         ) : null}
         <button

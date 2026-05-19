@@ -1,6 +1,7 @@
 'use client';
 
 import { useState, useEffect, useRef, useCallback } from 'react';
+import { useSearchParams } from 'next/navigation';
 import { supabase } from '@/lib/supabase';
 import { formatPrice } from '@/lib/utils';
 import { getOptimizedImageUrl } from '@/lib/imageUtils';
@@ -50,9 +51,17 @@ interface Transaction {
 }
 
 export default function TransactionList() {
+  const searchParams = useSearchParams();
   const [transactions, setTransactions] = useState<Transaction[]>([]);
   const [loading, setLoading] = useState(true);
   const [activeTab, setActiveTab] = useState<'buying' | 'selling'>('buying');
+
+  useEffect(() => {
+    const tab = searchParams.get('tab');
+    if (tab === 'selling' || tab === 'buying') {
+      setActiveTab(tab);
+    }
+  }, [searchParams]);
   const [reviewedTransactions, setReviewedTransactions] = useState<Set<string>>(new Set());
   const [actingId, setActingId] = useState<string | null>(null);
   const [simulatingIds, setSimulatingIds] = useState<Set<string>>(new Set());

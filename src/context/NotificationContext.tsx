@@ -10,10 +10,11 @@ import {
   useState,
   type ReactNode,
 } from 'react';
-import Link from 'next/link';
 import { usePathname } from 'next/navigation';
-import { claimSalePopupSlot } from '@/lib/salePopupDedupe';
-import { isUuid } from '@/lib/validators';
+import {
+  getSaleNotificationDedupeKey,
+  tryConsumeSaleNotificationSlot,
+} from '@/lib/salePopupDedupe';
 import { supabase } from '@/lib/supabase';
 import {
   fetchUnreadCount,
@@ -22,14 +23,12 @@ import {
 } from '@/lib/unreadNotifications';
 import OfferNotificationPopup from '@/components/notifications/OfferNotificationPopup';
 import SaleNotificationPopup from '@/components/notifications/SaleNotificationPopup';
+import SaleToastContent from '@/components/notifications/SaleToastContent';
 import {
   isSaleSystemMessage,
   type IncomingSaleAlert,
 } from '@/lib/saleNotifications';
-import {
-  buildSaleAlertPayload,
-  dispatchSaleCompletedDomEvent,
-} from '@/lib/presentSaleNotification';
+import { buildSaleAlertPayload } from '@/lib/presentSaleNotification';
 import {
   emitSaleCompletedBroadcast,
   ROBEO_GLOBAL_EVENTS_CHANNEL,
@@ -103,6 +102,7 @@ export function NotificationProvider({ children }: { children: ReactNode }) {
   const [offerAlert, setOfferAlert] = useState<IncomingOfferAlert | null>(null);
   const [saleAlert, setSaleAlert] = useState<IncomingSaleAlert | null>(null);
   const userIdRef = useRef<string | null>(null);
+  const activeSaleDedupeKeyRef = useRef<string | null>(null);
   userIdRef.current = userId;
 
   const refreshUnread = useCallback(async () => {
@@ -124,7 +124,10 @@ export function NotificationProvider({ children }: { children: ReactNode }) {
   }, []);
 
   const dismissOfferAlert = useCallback(() => setOfferAlert(null), []);
-  const dismissSaleAlert = useCallback(() => setSaleAlert(null), []);
+  const dismissSaleAlert = useCallback(() => {
+    setSaleAlert(null);
+    activeSaleDedupeKeyRef.current = null;
+  }, []);
 
   const showOfferAlert = useCallback(
     async (row: Record<string, unknown>) => {
@@ -164,35 +167,24 @@ export function NotificationProvider({ children }: { children: ReactNode }) {
 
   const presentSaleNotification = useCallback(
     (alert: IncomingSaleAlert) => {
-      if (!claimSalePopupSlot(alert.productId)) {
+      const dedupeKey = getSaleNotificationDedupeKey(alert);
+      if (!tryConsumeSaleNotificationSlot(dedupeKey)) {
         return;
       }
+
+      if (activeSaleDedupeKeyRef.current === dedupeKey) {
+        return;
+      }
+      activeSaleDedupeKeyRef.current = dedupeKey;
 
       setSaleAlert(alert);
       void refreshUnread();
 
-      const productHref =
-        alert.productId && isUuid(alert.productId) ? `/products/${alert.productId}` : null;
-
       toast.success('Gratulálunk! Sikeres eladás', {
-        description: productHref ? (
-          <span className="text-sm text-gray-700">
-            Becsomagolandó:{' '}
-            <Link
-              href={productHref}
-              className="font-semibold text-[#007782] underline underline-offset-2"
-            >
-              {alert.productName}
-            </Link>
-            {' — töltsd le a Foxpost címkét az üzenetekben, majd jelöld „Csomag feladva”-ként.'}
-          </span>
-        ) : (
-          `Eladtad: ${alert.productName}. Töltsd le a címkét az üzenetekben.`
-        ),
+        id: `sale-toast-${dedupeKey}`,
+        description: <SaleToastContent alert={alert} />,
         duration: 9000,
       });
-
-      dispatchSaleCompletedDomEvent(alert.productId, alert.productName, alert.buyerId);
     },
     [refreshUnread],
   );
@@ -305,7 +297,11 @@ export function NotificationProvider({ children }: { children: ReactNode }) {
         },
         (payload) => {
           const row = payload.new as Record<string, unknown>;
-          void showSaleAlert(row);
+          const content = String(row.content ?? '');
+          const messageType = row.message_type as string | undefined;
+          if (isSaleSystemMessage(content, messageType)) {
+            void showSaleAlert(row);
+          }
           void refreshUnread();
         },
       )
