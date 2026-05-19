@@ -6,6 +6,7 @@ import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import { MessageCircle, Heart, User, Search, Plus, LogOut } from 'lucide-react';
 import { useBrowseSearch } from '@/context/BrowseContext';
+import { MessagesNavBadge } from '@/context/NotificationContext';
 import type { Product } from '@/types';
 
 interface NavbarProps {
@@ -17,7 +18,6 @@ export default function Navbar({ searchQuery, onSearchChange }: NavbarProps) {
   const browse = useBrowseSearch();
   const [user, setUser] = useState<any>(null);
   const [loading, setLoading] = useState(true);
-  const [hasUnreadMessages, setHasUnreadMessages] = useState(false);
   const [showProfileMenu, setShowProfileMenu] = useState(false);
   const [liveResults, setLiveResults] = useState<
     Array<Pick<Product, 'id' | 'name' | 'category' | 'brand'>>
@@ -32,52 +32,11 @@ export default function Navbar({ searchQuery, onSearchChange }: NavbarProps) {
   const hideOnAuth = pathname === '/auth';
 
   useEffect(() => {
-    const checkUnreadMessages = async (currentUserId: string) => {
-      const lastSeen =
-        localStorage.getItem(`messages_last_seen_at_${currentUserId}`) ||
-        '1970-01-01T00:00:00.000Z';
-      const [
-        { data: messageData, error: messageError },
-        { data: sellerOfferData, error: sellerOfferError },
-        { data: buyerCounterData, error: buyerCounterError },
-      ] = await Promise.all([
-        supabase
-          .from('messages')
-          .select('id')
-          .eq('receiver_id', currentUserId)
-          .gt('created_at', lastSeen)
-          .limit(1),
-        supabase
-          .from('offers')
-          .select('id')
-          .eq('seller_id', currentUserId)
-          .eq('status', 'pending')
-          .gt('created_at', lastSeen)
-          .limit(1),
-        supabase
-          .from('offers')
-          .select('id')
-          .eq('buyer_id', currentUserId)
-          .eq('status', 'countered')
-          .gt('updated_at', lastSeen)
-          .limit(1),
-      ]);
-
-      if (!messageError && !sellerOfferError && !buyerCounterError) {
-        setHasUnreadMessages(
-          (messageData || []).length > 0 ||
-            (sellerOfferData || []).length > 0 ||
-            (buyerCounterData || []).length > 0,
-        );
-      }
-    };
-
     supabase.auth
       .getUser()
       .then(({ data: { user: authUser } }) => {
         setUser(authUser);
         setLoading(false);
-        if (authUser?.id) checkUnreadMessages(authUser.id);
       })
       .catch((error) => {
         console.error('Navbar auth init error:', error);
@@ -89,47 +48,8 @@ export default function Navbar({ searchQuery, onSearchChange }: NavbarProps) {
       data: { subscription },
     } = supabase.auth.onAuthStateChange((_event, session) => {
       setUser(session?.user || null);
-      if (session?.user?.id) {
-        checkUnreadMessages(session.user.id);
-      } else {
-        setHasUnreadMessages(false);
-      }
     });
 
-    const channel = supabase
-      .channel(`navbar-unread-messages-${Date.now()}`)
-      .on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'messages' }, async (payload: any) => {
-        const {
-          data: { user: currentUser },
-        } = await supabase.auth.getUser();
-        if (currentUser?.id && payload?.new?.receiver_id === currentUser.id) {
-          setHasUnreadMessages(true);
-        }
-      })
-      .on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'offers' }, async (payload: any) => {
-        const {
-          data: { user: currentUser },
-        } = await supabase.auth.getUser();
-        if (currentUser?.id && payload?.new?.seller_id === currentUser.id) {
-          setHasUnreadMessages(true);
-        }
-      })
-      .on('postgres_changes', { event: 'UPDATE', schema: 'public', table: 'offers' }, async (payload: any) => {
-        const {
-          data: { user: currentUser },
-        } = await supabase.auth.getUser();
-        const row = payload?.new;
-        if (currentUser?.id && row?.buyer_id === currentUser.id && row?.status === 'countered') {
-          setHasUnreadMessages(true);
-        }
-      })
-      .subscribe();
-
-    const handleSeen = () => {
-      supabase.auth.getUser().then(({ data: { user: currentUser } }) => {
-        if (currentUser?.id) checkUnreadMessages(currentUser.id);
-      });
-    };
     const closeOnOutsidePointer = (event: PointerEvent) => {
       const targetNode = event.target as Node | null;
       if (!targetNode) return;
@@ -138,15 +58,10 @@ export default function Navbar({ searchQuery, onSearchChange }: NavbarProps) {
       setShowProfileMenu(false);
       setShowLiveResults(false);
     };
-    window.addEventListener('messages:seen', handleSeen as EventListener);
-    window.addEventListener('offers:updated', handleSeen as EventListener);
     window.addEventListener('pointerdown', closeOnOutsidePointer);
 
     return () => {
       subscription.unsubscribe();
-      supabase.removeChannel(channel);
-      window.removeEventListener('messages:seen', handleSeen as EventListener);
-      window.removeEventListener('offers:updated', handleSeen as EventListener);
       window.removeEventListener('pointerdown', closeOnOutsidePointer);
     };
   }, []);
@@ -234,9 +149,7 @@ export default function Navbar({ searchQuery, onSearchChange }: NavbarProps) {
       </Link>
       <Link href="/messages" className="icon-btn text-gray-700 relative" aria-label="Üzenetek">
         <MessageCircle size={18} />
-        {hasUnreadMessages ? (
-          <span className="absolute top-1 right-1 h-2.5 w-2.5 rounded-full bg-red-500 border border-white" />
-        ) : null}
+        <MessagesNavBadge />
       </Link>
       <Link href="/favorites" className="icon-btn text-gray-700" aria-label="Kedvencek">
         <Heart size={18} />

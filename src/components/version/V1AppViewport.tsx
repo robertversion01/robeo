@@ -4,6 +4,7 @@ import { useEffect, useState } from 'react';
 import { usePathname } from 'next/navigation';
 import Navbar from '@/components/layout/Navbar';
 import BottomNav from '@/components/layout/BottomNav';
+import { NotificationProvider } from '@/context/NotificationContext';
 import { supabase } from '@/lib/supabase';
 import { cn } from '@/lib/utils';
 
@@ -43,7 +44,7 @@ export default function V1AppViewport({ children }: { children: React.ReactNode 
   const showMobileBottomPad = loggedIn && !bottomNavSuppressedPath(pathname);
 
   return (
-    <>
+    <NotificationProvider>
       <Navbar />
       <div
         className={cn('min-h-0 flex-1', showMobileBottomPad && MOBILE_BOTTOM_NAV_PAD)}
@@ -51,6 +52,6 @@ export default function V1AppViewport({ children }: { children: React.ReactNode 
         {children}
       </div>
       <BottomNav />
-    </>
+    </NotificationProvider>
   );
 }

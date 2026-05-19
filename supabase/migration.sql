@@ -1,5 +1,9 @@
 -- ============================================================
 -- ROBEO 1.5 - Adatbázis szinkron migráció
+--
+-- Realtime (élő ajánlat / üzenet): Supabase Dashboard → Database →
+-- Replication → supabase_realtime → add `offers`, `messages`.
+-- SQL: supabase/patch-realtime-replication.sql
 -- Dátum: 2026-05-07
 -- Leírás: kanonikus migrációs forrás (schema + RLS + indexek)
 -- ============================================================

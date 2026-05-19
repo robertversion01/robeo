@@ -6,6 +6,7 @@ import { usePathname } from 'next/navigation';
 import { Home, MessageCircle, Heart, User, Plus } from 'lucide-react';
 import { supabase } from '@/lib/supabase';
 import { cn } from '@/lib/utils';
+import { MessagesNavBadge } from '@/context/NotificationContext';
 
 type NavItem = {
   href: string;
@@ -101,16 +102,20 @@ export default function BottomNav() {
               </Link>
             );
           }
+          const isMessages = href === '/messages';
           return (
             <Link
               key={href}
               href={href}
               className={cn(
-                'flex min-w-0 flex-1 flex-col items-center justify-center gap-0.5 py-1 transition-colors',
+                'relative flex min-w-0 flex-1 flex-col items-center justify-center gap-0.5 py-1 transition-colors',
                 active ? 'text-[#007782]' : 'text-gray-500 hover:text-gray-800',
               )}
             >
               <Icon size={22} strokeWidth={active ? 2.25 : 1.85} className="shrink-0" />
+              {isMessages ? (
+                <MessagesNavBadge className="top-0 right-[calc(50%-18px)] h-2.5 w-2.5" />
+              ) : null}
               <span
                 className={cn(
                   'text-[10px] font-semibold leading-none',
