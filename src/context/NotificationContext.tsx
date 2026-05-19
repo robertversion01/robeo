@@ -177,7 +177,7 @@ export function NotificationProvider({ children }: { children: ReactNode }) {
         description: 'Készítsd össze a csomagot és töltsd le a címkét.',
         duration: 8000,
       });
-      dispatchSaleCompletedDomEvent(alert.productId, alert.productName);
+      dispatchSaleCompletedDomEvent(alert.productId, alert.productName, alert.buyerId);
     },
     [refreshUnread],
   );
@@ -203,7 +203,10 @@ export function NotificationProvider({ children }: { children: ReactNode }) {
       }
 
       presentSaleNotification(
-        buildSaleAlertPayload(productId, productName, row.id ? String(row.id) : undefined),
+        buildSaleAlertPayload(productId, productName, {
+          messageId: row.id ? String(row.id) : undefined,
+          buyerId: String(row.sender_id ?? ''),
+        }),
       );
     },
     [presentSaleNotification],
@@ -214,7 +217,10 @@ export function NotificationProvider({ children }: { children: ReactNode }) {
       const uid = userIdRef.current;
       if (!uid || payload.sellerId !== uid) return;
       presentSaleNotification(
-        buildSaleAlertPayload(payload.productId, payload.productName, payload.transactionId),
+        buildSaleAlertPayload(payload.productId, payload.productName, {
+          messageId: payload.transactionId,
+          buyerId: payload.buyerId,
+        }),
       );
     },
     [presentSaleNotification],

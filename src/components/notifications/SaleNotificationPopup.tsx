@@ -1,8 +1,9 @@
 'use client';
 
 import Link from 'next/link';
-import { X, PartyPopper } from 'lucide-react';
+import { X, PartyPopper, ExternalLink, MessageCircle } from 'lucide-react';
 import type { IncomingSaleAlert } from '@/lib/saleNotifications';
+import { isUuid } from '@/lib/validators';
 
 type Props = {
   alert: IncomingSaleAlert | null;
@@ -11,6 +12,12 @@ type Props = {
 
 export default function SaleNotificationPopup({ alert, onDismiss }: Props) {
   if (!alert) return null;
+
+  const hasProduct = Boolean(alert.productId && isUuid(alert.productId));
+  const productHref = hasProduct ? `/products/${alert.productId}` : null;
+  const messagesHref = alert.buyerId
+    ? `/messages?with=${encodeURIComponent(alert.buyerId)}`
+    : '/messages';
 
   return (
     <div
@@ -34,24 +41,46 @@ export default function SaleNotificationPopup({ alert, onDismiss }: Props) {
       </p>
       <h2 id="sale-alert-title" className="mt-1 pr-8 text-base font-bold text-gray-900 leading-snug">
         Gratulálunk! Eladtad a következőt:{' '}
-        <span className="text-[#007782]">{alert.productName}</span>!
+        {productHref ? (
+          <Link
+            href={productHref}
+            onClick={onDismiss}
+            className="text-[#007782] underline underline-offset-2 hover:text-[#006670]"
+          >
+            {alert.productName}
+          </Link>
+        ) : (
+          <span className="text-[#007782]">{alert.productName}</span>
+        )}
+        !
       </h2>
       <p className="mt-2 text-sm text-gray-600">
         Készítsd össze a csomagot, töltsd le a Foxpost címkét az üzenetekben, majd jelöld feladottnak.
       </p>
 
-      <div className="mt-4 flex gap-2">
+      <div className="mt-4 flex flex-col gap-2 sm:flex-row sm:flex-wrap">
         <Link
-          href="/messages"
+          href={messagesHref}
           onClick={onDismiss}
-          className="flex-1 inline-flex items-center justify-center gap-2 rounded-xl bg-[#007782] px-3 py-2.5 text-sm font-semibold text-white hover:bg-[#006670]"
+          className="flex-1 inline-flex items-center justify-center gap-2 rounded-xl bg-[#007782] px-3 py-2.5 text-sm font-semibold text-white hover:bg-[#006670] min-w-[8rem]"
         >
+          <MessageCircle size={16} />
           Üzenetek
         </Link>
+        {productHref ? (
+          <Link
+            href={productHref}
+            onClick={onDismiss}
+            className="flex-1 inline-flex items-center justify-center gap-2 rounded-xl border-2 border-[#007782] bg-white px-3 py-2.5 text-sm font-semibold text-[#007782] hover:bg-[#007782]/5 min-w-[8rem]"
+          >
+            <ExternalLink size={16} />
+            Termék megtekintése
+          </Link>
+        ) : null}
         <button
           type="button"
           onClick={onDismiss}
-          className="rounded-xl border border-gray-200 px-3 py-2.5 text-sm font-medium text-gray-700 hover:bg-gray-50"
+          className="rounded-xl border border-gray-200 px-3 py-2.5 text-sm font-medium text-gray-700 hover:bg-gray-50 sm:flex-none"
         >
           Később
         </button>

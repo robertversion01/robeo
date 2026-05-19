@@ -1,8 +1,8 @@
 'use client';
 
-import { useEffect, useState, useRef } from 'react';
+import { Suspense, useCallback, useEffect, useState, useRef } from 'react';
 import { supabase } from '@/lib/supabase';
-import { useRouter } from 'next/navigation';
+import { useRouter, useSearchParams } from 'next/navigation';
 import Link from 'next/link';
 import OffersList from '@/components/product/OffersList';
 import { toast } from 'sonner';
@@ -12,6 +12,11 @@ import { insertChatSystemMessage } from '@/lib/chatMessages';
 import { MAIN_TOP_PADDING } from '@/lib/layoutTokens';
 import ChatTransactionPanel from '@/components/messages/ChatTransactionPanel';
 import PriceBreakdown from '@/components/product/PriceBreakdown';
+import {
+  buildConversationsFromMessages,
+  type ConversationRow,
+  type MessageRow,
+} from '@/lib/conversationList';
 import type { RealtimeChannel } from '@supabase/supabase-js';
 
 interface Message {
@@ -25,16 +30,23 @@ interface Message {
   media_url?: string | null;
 }
 
-interface Conversation {
-  user_id: string;
-  email: string;
-  last_message: string;
-  last_message_time: string;
+export default function MessagesPage() {
+  return (
+    <Suspense
+      fallback={
+        <div className="min-h-screen flex items-center justify-center bg-white">
+          <div className="animate-spin h-10 w-10 border-4 border-[#007782] border-t-transparent rounded-full" />
+        </div>
+      }
+    >
+      <MessagesPageContent />
+    </Suspense>
+  );
 }
 
-export default function MessagesPage() {
+function MessagesPageContent() {
   const [user, setUser] = useState<any>(null);
-  const [conversations, setConversations] = useState<Conversation[]>([]);
+  const [conversations, setConversations] = useState<ConversationRow[]>([]);
   const [selectedConversation, setSelectedConversation] = useState<string | null>(null);
   const [selectedEmail, setSelectedEmail] = useState<string>('');
   const [messages, setMessages] = useState<Message[]>([]);
@@ -52,6 +64,8 @@ export default function MessagesPage() {
   const selectedEmailRef = useRef<string>('');
   const userIdRef = useRef<string | null>(null);
   const router = useRouter();
+  const searchParams = useSearchParams();
+  const openWithHandledRef = useRef<string | null>(null);
 
   useEffect(() => {
     checkUser();
@@ -61,11 +75,80 @@ export default function MessagesPage() {
     userIdRef.current = user?.id ?? null;
   }, [user?.id]);
 
+  const loadConversations = useCallback(async () => {
+    const {
+      data: { user: authUser },
+    } = await supabase.auth.getUser();
+    if (!authUser?.id) return;
+
+    const { data, error } = await supabase
+      .from('messages')
+      .select('id, sender_id, receiver_id, content, created_at, product_id, message_type')
+      .or(`sender_id.eq.${authUser.id},receiver_id.eq.${authUser.id}`)
+      .order('created_at', { ascending: false });
+
+    if (error) {
+      console.error('[messages] loadConversations failed', error);
+      return;
+    }
+
+    const rows = (data || []) as MessageRow[];
+    const otherIds = Array.from(
+      new Set(
+        rows.flatMap((msg) =>
+          msg.sender_id === authUser.id ? [msg.receiver_id] : [msg.sender_id],
+        ),
+      ),
+    ).filter((id) => id && id !== authUser.id);
+
+    const emailMap = new Map<string, string>();
+    if (otherIds.length > 0) {
+      const { data: userData } = await supabase
+        .from('profiles')
+        .select('id, email')
+        .in('id', otherIds);
+      (userData as Array<{ id: string; email: string }> | null)?.forEach((u) =>
+        emailMap.set(u.id, u.email),
+      );
+    }
+
+    setConversations(buildConversationsFromMessages(rows, authUser.id, emailMap));
+  }, []);
+
+  const loadConversation = useCallback(
+    async (otherUserId: string, email?: string) => {
+      const {
+        data: { user: authUser },
+      } = await supabase.auth.getUser();
+      if (!authUser?.id) return;
+
+      setSelectedConversation(otherUserId);
+      setSelectedEmail(email || '');
+      const { data, error } = await supabase
+        .from('messages')
+        .select('*')
+        .or(
+          `and(sender_id.eq.${authUser.id},receiver_id.eq.${otherUserId}),and(sender_id.eq.${otherUserId},receiver_id.eq.${authUser.id})`,
+        )
+        .order('created_at', { ascending: true });
+
+      if (error) {
+        console.error('[messages] loadConversation failed', error);
+        return;
+      }
+      const list = (data as Message[]) || [];
+      setMessages(list);
+      const latestWithProduct = [...list].reverse().find((m) => m.product_id);
+      setActiveProductId(latestWithProduct?.product_id ?? null);
+    },
+    [],
+  );
+
   useEffect(() => {
     if (!user?.id) return;
     localStorage.setItem(`messages_last_seen_at_${user.id}`, new Date().toISOString());
     window.dispatchEvent(new CustomEvent('messages:seen'));
-    loadConversations();
+    void loadConversations();
 
     const uid = user.id;
     let channel: RealtimeChannel | null = null;
@@ -97,33 +180,50 @@ export default function MessagesPage() {
       }
     };
 
+    const onMessageInsert = (payload: { new: Message }) => {
+      const newMsg = payload.new;
+      const myId = userIdRef.current;
+      const activeId = selectedConversationRef.current;
+      if (!myId) return;
+
+      const isMine = newMsg.sender_id === myId || newMsg.receiver_id === myId;
+      if (!isMine) return;
+
+      if (activeId) {
+        const inThread =
+          (newMsg.sender_id === myId && newMsg.receiver_id === activeId) ||
+          (newMsg.sender_id === activeId && newMsg.receiver_id === myId);
+        if (inThread) {
+          setMessages((prev) => {
+            if (prev.some((m) => m.id === newMsg.id)) return prev;
+            return [...prev, newMsg];
+          });
+        }
+      }
+      void loadConversations();
+    };
+
     channel = supabase
       .channel(`robeo-messages-thread-${uid}`)
       .on(
         'postgres_changes',
-        { event: 'INSERT', schema: 'public', table: 'messages' },
-        (payload) => {
-          const newMsg = payload.new as Message;
-          const myId = userIdRef.current;
-          const activeId = selectedConversationRef.current;
-          if (!myId) return;
-
-          const isMine = newMsg.sender_id === myId || newMsg.receiver_id === myId;
-          if (!isMine) return;
-
-          if (activeId) {
-            const inThread =
-              (newMsg.sender_id === myId && newMsg.receiver_id === activeId) ||
-              (newMsg.sender_id === activeId && newMsg.receiver_id === myId);
-            if (inThread) {
-              setMessages((prev) => {
-                if (prev.some((m) => m.id === newMsg.id)) return prev;
-                return [...prev, newMsg];
-              });
-            }
-          }
-          void loadConversations();
+        {
+          event: 'INSERT',
+          schema: 'public',
+          table: 'messages',
+          filter: `receiver_id=eq.${uid}`,
         },
+        (payload) => onMessageInsert(payload as { new: Message }),
+      )
+      .on(
+        'postgres_changes',
+        {
+          event: 'INSERT',
+          schema: 'public',
+          table: 'messages',
+          filter: `sender_id=eq.${uid}`,
+        },
+        (payload) => onMessageInsert(payload as { new: Message }),
       )
       .on(
         'postgres_changes',
@@ -165,13 +265,36 @@ export default function MessagesPage() {
       void loadConversations();
       reloadActiveThread();
     };
+    const onSaleCompleted = () => {
+      void loadConversations();
+    };
+    const onSaleBroadcast = () => {
+      void loadConversations();
+    };
+
     window.addEventListener('offers:updated', onOffersUpdated);
+    window.addEventListener('sale:completed', onSaleCompleted);
+    window.addEventListener('robeo:sale-broadcast', onSaleBroadcast);
 
     return () => {
       window.removeEventListener('offers:updated', onOffersUpdated);
+      window.removeEventListener('sale:completed', onSaleCompleted);
+      window.removeEventListener('robeo:sale-broadcast', onSaleBroadcast);
       if (channel) supabase.removeChannel(channel);
     };
-  }, [user?.id]);
+  }, [user?.id, loadConversations, loadConversation]);
+
+  useEffect(() => {
+    const withUserId = searchParams.get('with');
+    if (!withUserId || !user?.id || conversations.length === 0) return;
+    if (openWithHandledRef.current === withUserId) return;
+
+    const conv = conversations.find((c) => c.user_id === withUserId);
+    if (conv) {
+      openWithHandledRef.current = withUserId;
+      void loadConversation(conv.user_id, conv.email);
+    }
+  }, [searchParams, user?.id, conversations, loadConversation]);
 
   useEffect(() => {
     scrollToBottom();
@@ -232,62 +355,6 @@ export default function MessagesPage() {
     }
     setUser(user);
     setLoading(false);
-  };
-
-  const loadConversations = async () => {
-    const { data, error } = await supabase
-      .from('messages')
-      .select('*')
-      .or(`sender_id.eq.${user.id},receiver_id.eq.${user.id}`)
-      .order('created_at', { ascending: false });
-
-    if (error) return;
-
-    // Group by conversation
-    const convMap = new Map<string, Message>();
-    (data as Message[] | null)?.forEach((msg: Message) => {
-      const otherUser = msg.sender_id === user.id ? msg.receiver_id : msg.sender_id;
-      if (!convMap.has(otherUser)) {
-        convMap.set(otherUser, msg);
-      }
-    });
-
-    // Get user emails from auth.users
-    const userIds = Array.from(convMap.keys());
-    const { data: userData } = await supabase
-      .from('profiles')
-      .select('id, email')
-      .in('id', userIds);
-
-    const emailMap = new Map<string, string>();
-    (userData as Array<{ id: string; email: string }> | null)?.forEach((u) =>
-      emailMap.set(u.id, u.email)
-    );
-
-    const convList: Conversation[] = Array.from(convMap.entries()).map(([user_id, msg]) => ({
-      user_id,
-      email: emailMap.get(user_id) || 'Felhasználó',
-      last_message: msg.content,
-      last_message_time: msg.created_at
-    }));
-
-    setConversations(convList);
-  };
-
-  const loadConversation = async (otherUserId: string, email?: string) => {
-    setSelectedConversation(otherUserId);
-    setSelectedEmail(email || '');
-    const { data, error } = await supabase
-      .from('messages')
-      .select('*')
-      .or(`and(sender_id.eq.${user.id},receiver_id.eq.${otherUserId}),and(sender_id.eq.${otherUserId},receiver_id.eq.${user.id})`)
-      .order('created_at', { ascending: true });
-
-    if (error) return;
-    const list = (data as Message[]) || [];
-    setMessages(list);
-    const latestWithProduct = [...list].reverse().find((m) => m.product_id);
-    setActiveProductId(latestWithProduct?.product_id ?? null);
   };
 
   const closeConversation = () => {
@@ -514,7 +581,7 @@ export default function MessagesPage() {
                     onClick={() => loadConversation(conv.user_id, conv.email)}
                     className={`w-full text-left p-5 border-b border-gray-100 hover:bg-gray-50 transition-colors ${
                       selectedConversation === conv.user_id ? 'bg-gray-50' : ''
-                    }`}
+                    } ${conv.is_sale_thread ? 'bg-emerald-50/60 hover:bg-emerald-50' : ''}`}
                   >
                     <div className="flex items-center gap-3">
                       <div className="w-10 h-10 rounded-full bg-[#007782]/10 flex items-center justify-center text-[#007782] font-bold">

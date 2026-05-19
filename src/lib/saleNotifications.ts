@@ -5,6 +5,8 @@ export type IncomingSaleAlert = {
   productId: string;
   productName: string;
   messageId?: string;
+  /** Vevő user id — üzenetek deep link (`/messages?with=`). */
+  buyerId?: string;
 };
 
 export const PURCHASE_SELLER_MESSAGE_BODY =
