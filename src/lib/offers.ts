@@ -35,6 +35,24 @@ export function buildOfferInsertRow(input: {
   return row;
 }
 
+export type OfferStatus = 'pending' | 'accepted' | 'rejected' | 'countered';
+
+export function buildOfferStatusUpdate(
+  status: OfferStatus,
+  options?: { offeredPriceHuf?: number },
+): Record<string, string | number> {
+  const patch: Record<string, string | number> = {
+    status,
+    updated_at: new Date().toISOString(),
+  };
+  if (options?.offeredPriceHuf !== undefined) {
+    const amount = Math.max(1, Math.round(options.offeredPriceHuf));
+    patch.offered_price = amount;
+    patch.price = amount;
+  }
+  return patch;
+}
+
 export function formatSupabaseError(error: {
   message?: string;
   details?: string;

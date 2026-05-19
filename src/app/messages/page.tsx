@@ -8,7 +8,9 @@ import OffersList from '@/components/product/OffersList';
 import { toast } from 'sonner';
 import { isUuid } from '@/lib/validators';
 import { buildOfferInsertRow } from '@/lib/offers';
+import { insertChatSystemMessage } from '@/lib/chatMessages';
 import { MAIN_TOP_PADDING } from '@/lib/layoutTokens';
+import type { RealtimeChannel } from '@supabase/supabase-js';
 
 interface Message {
   id: string;
@@ -45,6 +47,7 @@ export default function MessagesPage() {
   const fileInputRef = useRef<HTMLInputElement>(null);
   const selectedConversationRef = useRef<string | null>(null);
   const selectedEmailRef = useRef<string>('');
+  const userIdRef = useRef<string | null>(null);
   const router = useRouter();
 
   useEffect(() => {
@@ -52,16 +55,120 @@ export default function MessagesPage() {
   }, []);
 
   useEffect(() => {
-    if (!user) return;
+    userIdRef.current = user?.id ?? null;
+  }, [user?.id]);
+
+  useEffect(() => {
+    if (!user?.id) return;
     localStorage.setItem(`messages_last_seen_at_${user.id}`, new Date().toISOString());
     window.dispatchEvent(new CustomEvent('messages:seen'));
     loadConversations();
-    subscribeToMessages();
+
+    const uid = user.id;
+    let channel: RealtimeChannel | null = null;
+
+    const reloadActiveThread = () => {
+      const activeId = selectedConversationRef.current;
+      if (activeId) {
+        void loadConversation(activeId, selectedEmailRef.current);
+      }
+    };
+
+    const onOfferRealtime = (payload: { eventType: string; new: Record<string, unknown> }) => {
+      const offer = payload.new;
+      if (!offer) return;
+
+      void loadConversations();
+      reloadActiveThread();
+      window.dispatchEvent(new CustomEvent('offers:updated'));
+
+      const myId = userIdRef.current;
+      if (!myId || payload.eventType !== 'UPDATE' || offer.buyer_id !== myId) return;
+
+      if (offer.status === 'accepted') {
+        toast.success('Az eladó elfogadta az ajánlatod — fizetés az üzenetekben.');
+      } else if (offer.status === 'rejected') {
+        toast.info('Az eladó elutasította az ajánlatod.');
+      } else if (offer.status === 'countered') {
+        toast.success('Ellenajánlat érkezett az eladótól.');
+      }
+    };
+
+    channel = supabase
+      .channel(`robeo-messages-thread-${uid}`)
+      .on(
+        'postgres_changes',
+        { event: 'INSERT', schema: 'public', table: 'messages' },
+        (payload) => {
+          const newMsg = payload.new as Message;
+          const myId = userIdRef.current;
+          const activeId = selectedConversationRef.current;
+          if (!myId) return;
+
+          const isMine = newMsg.sender_id === myId || newMsg.receiver_id === myId;
+          if (!isMine) return;
+
+          if (activeId) {
+            const inThread =
+              (newMsg.sender_id === myId && newMsg.receiver_id === activeId) ||
+              (newMsg.sender_id === activeId && newMsg.receiver_id === myId);
+            if (inThread) {
+              setMessages((prev) => {
+                if (prev.some((m) => m.id === newMsg.id)) return prev;
+                return [...prev, newMsg];
+              });
+            }
+          }
+          void loadConversations();
+        },
+      )
+      .on(
+        'postgres_changes',
+        {
+          event: 'UPDATE',
+          schema: 'public',
+          table: 'offers',
+          filter: `seller_id=eq.${uid}`,
+        },
+        (payload) => onOfferRealtime(payload as { eventType: string; new: Record<string, unknown> }),
+      )
+      .on(
+        'postgres_changes',
+        {
+          event: 'UPDATE',
+          schema: 'public',
+          table: 'offers',
+          filter: `buyer_id=eq.${uid}`,
+        },
+        (payload) => onOfferRealtime(payload as { eventType: string; new: Record<string, unknown> }),
+      )
+      .on(
+        'postgres_changes',
+        {
+          event: 'INSERT',
+          schema: 'public',
+          table: 'offers',
+          filter: `seller_id=eq.${uid}`,
+        },
+        () => {
+          void loadConversations();
+          reloadActiveThread();
+          window.dispatchEvent(new CustomEvent('offers:updated'));
+        },
+      )
+      .subscribe();
+
+    const onOffersUpdated = () => {
+      void loadConversations();
+      reloadActiveThread();
+    };
+    window.addEventListener('offers:updated', onOffersUpdated);
 
     return () => {
-      supabase.removeAllChannels();
+      window.removeEventListener('offers:updated', onOffersUpdated);
+      if (channel) supabase.removeChannel(channel);
     };
-  }, [user]);
+  }, [user?.id]);
 
   useEffect(() => {
     scrollToBottom();
@@ -121,50 +228,6 @@ export default function MessagesPage() {
     }
     setUser(user);
     setLoading(false);
-  };
-
-  const subscribeToMessages = () => {
-    const channel = supabase.channel('messages')
-      .on('postgres_changes', {
-        event: 'INSERT',
-        schema: 'public',
-        table: 'messages',
-      }, (payload: any) => {
-        const newMsg = payload.new as Message;
-        const activeId = selectedConversationRef.current;
-        if (!activeId || !user?.id) {
-          loadConversations();
-          return;
-        }
-        const inThread =
-          (newMsg.sender_id === user.id && newMsg.receiver_id === activeId) ||
-          (newMsg.sender_id === activeId && newMsg.receiver_id === user.id);
-        if (inThread) {
-          setMessages((prev) => [...prev, newMsg]);
-        }
-        loadConversations();
-      })
-      .on('postgres_changes', {
-        event: '*',
-        schema: 'public',
-        table: 'offers',
-      }, async (payload: any) => {
-        const { data: { user: currentUser } } = await supabase.auth.getUser();
-        if (!currentUser?.id) return;
-        const offer = payload.new;
-        if (!offer) return;
-        if (offer.buyer_id === currentUser.id || offer.seller_id === currentUser.id) {
-          loadConversations();
-          const activeConversationId = selectedConversationRef.current;
-          if (activeConversationId) {
-            loadConversation(activeConversationId, selectedEmailRef.current);
-          }
-          if (payload.eventType === 'UPDATE' && offer.status === 'countered') {
-            toast.success('Ellenajánlat érkezett, frissítve a beszélgetés.');
-          }
-        }
-      })
-      .subscribe();
   };
 
   const loadConversations = async () => {
@@ -331,13 +394,11 @@ export default function MessagesPage() {
         return;
       }
 
-      await supabase.from('messages').insert({
-        sender_id: user.id,
-        receiver_id: selectedConversation,
-        content: `💡 Ajánlat: ${amount.toLocaleString('hu-HU')} Ft`,
-        product_id: latestProductMessage.product_id,
-        message_type: 'system',
-        is_system_message: true,
+      await insertChatSystemMessage(supabase, {
+        senderId: user.id,
+        receiverId: selectedConversation,
+        content: `Ajánlat: ${amount.toLocaleString('hu-HU')} Ft`,
+        productId: latestProductMessage.product_id,
       });
 
       toast.success('Ajánlat elküldve.');

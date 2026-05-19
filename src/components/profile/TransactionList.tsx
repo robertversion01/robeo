@@ -161,7 +161,7 @@ export default function TransactionList() {
               receiver_id: receiverId,
               content: message,
               product_id: transaction.product_id,
-              is_system_message: true
+              message_type: 'system',
             });
         }
       }

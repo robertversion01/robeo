@@ -132,7 +132,6 @@ async function applyPaidTransactionEffects(
       receiver_id: transaction.seller_id,
       content: `✅ Eladtad a terméket! Itt a vevő címe: ${buyerAddress}`,
       product_id: transaction.product_id,
-      is_system_message: true,
       message_type: 'system',
     });
 
@@ -307,7 +306,6 @@ async function handlePaymentIntentPaymentFailed(event: Stripe.Event, db: any): P
       receiver_id: transaction.seller_id,
       content: `❌ A vevő fizetése nem sikerült${detail}. A vevő újrapróbálhatja a fizetést (checkout / termék oldal).`,
       product_id: transaction.product_id,
-      is_system_message: true,
       message_type: 'system',
     },
     {
@@ -315,7 +313,6 @@ async function handlePaymentIntentPaymentFailed(event: Stripe.Event, db: any): P
       receiver_id: transaction.buyer_id,
       content: `❌ A fizetésed nem sikerült${detail}. Ellenőrizd a kártyát és az egyenleget, majd próbáld újra a fizetést.`,
       product_id: transaction.product_id,
-      is_system_message: true,
       message_type: 'system',
     },
   ]);
@@ -377,7 +374,6 @@ async function handleChargeRefunded(event: Stripe.Event, db: any): Promise<void>
       receiver_id: transaction.seller_id,
       content: `💸 Visszatérítés történt a vevőnek: ${amountPart}. A banktól függően 5–10 munkanap alatt jelenhet meg.`,
       product_id: transaction.product_id,
-      is_system_message: true,
       message_type: 'system',
     },
     {
@@ -385,7 +381,6 @@ async function handleChargeRefunded(event: Stripe.Event, db: any): Promise<void>
       receiver_id: transaction.buyer_id,
       content: `💸 Visszatérítésed feldolgozva: ${amountPart}. A számládon néhány napon belül megjelenhet.`,
       product_id: transaction.product_id,
-      is_system_message: true,
       message_type: 'system',
     },
   ]);

@@ -324,6 +324,10 @@ ALTER TABLE IF EXISTS public.messages
   ADD COLUMN IF NOT EXISTS message_type TEXT DEFAULT 'text',
   ADD COLUMN IF NOT EXISTS media_url TEXT;
 
+-- Rendszerüzenetek: a kliens message_type = 'system' értéket használ (is_system_message opcionális).
+ALTER TABLE IF EXISTS public.messages
+  ADD COLUMN IF NOT EXISTS is_system_message BOOLEAN DEFAULT false;
+
 -- 15. Chat média storage bucket + policy
 INSERT INTO storage.buckets (id, name, public)
 VALUES ('chat-media', 'chat-media', true)

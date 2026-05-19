@@ -8,6 +8,7 @@ import { Check, X, Clock, ExternalLink, Loader2 } from 'lucide-react';
 import Link from 'next/link';
 import { getOptimizedImageUrl } from '@/lib/imageUtils';
 import { OFFER_LABELS_SELLER, offerBadgeClass } from '@/lib/offerUi';
+import { sellerSendCounterOffer, sellerSetOfferStatus } from '@/lib/offerActions';
 
 interface Offer {
   id: string;
@@ -112,6 +113,16 @@ export default function OffersList() {
     };
   }, [loadOffers]);
 
+  useEffect(() => {
+    const onOffersUpdated = () => {
+      supabase.auth.getUser().then(({ data: { user: u } }) => {
+        if (u?.id) loadOffers(u.id).catch(() => setOffers([]));
+      });
+    };
+    window.addEventListener('offers:updated', onOffersUpdated);
+    return () => window.removeEventListener('offers:updated', onOffersUpdated);
+  }, [loadOffers]);
+
   const updateOfferStatus = async (offerId: string, status: 'accepted' | 'rejected') => {
     if (status === 'rejected') {
       const ok = window.confirm(
@@ -125,42 +136,49 @@ export default function OffersList() {
 
     setActingOfferId(offerId);
     try {
-      const { error } = await supabase.from('offers').update({ status }).eq('id', offerId);
-
-      if (error) throw error;
-
       const {
         data: { user },
       } = await supabase.auth.getUser();
-      if (!user) return;
-
-      if (status === 'accepted') {
-        await supabase.from('messages').insert({
-          sender_id: user.id,
-          receiver_id: currentOffer.buyer_id,
-          content: `✅ Ajánlatod elfogadva! Fizess itt: ${window.location.origin}/checkout?offer=${offerId}`,
-          product_id: currentOffer.product.id,
-          is_system_message: true,
-          message_type: 'system',
-        });
-      } else {
-        await supabase.from('messages').insert({
-          sender_id: user.id,
-          receiver_id: currentOffer.buyer_id,
-          content: `❌ Ajánlatod elutasítva: ${currentOffer.product.name}`,
-          product_id: currentOffer.product.id,
-          is_system_message: true,
-          message_type: 'system',
-        });
+      if (!user) {
+        toast.error('Jelentkezz be az ajánlat kezeléséhez.');
+        return;
       }
 
-      toast.success(
-        status === 'accepted'
-          ? 'Ajánlat elfogadva — a vevő megkapta a fizetési linket.'
-          : 'Ajánlat elutasítva.'
-      );
+      const baseUrl =
+        process.env.NEXT_PUBLIC_BASE_URL?.replace(/\/$/, '') ||
+        (typeof window !== 'undefined' ? window.location.origin : '');
+
+      const result = await sellerSetOfferStatus(supabase, {
+        offerId,
+        status,
+        sellerId: user.id,
+        buyerId: currentOffer.buyer_id,
+        productId: currentOffer.product.id,
+        productName: currentOffer.product.name,
+        checkoutBaseUrl: baseUrl,
+      });
+
+      if (!result.ok) {
+        toast.error('Hiba: ' + result.error);
+        return;
+      }
+
+      if (result.messageWarning) {
+        toast.warning(
+          status === 'accepted'
+            ? 'Ajánlat elfogadva, de a chat értesítés nem ment ki: ' + result.messageWarning
+            : 'Ajánlat elutasítva, de a chat értesítés nem ment ki: ' + result.messageWarning,
+        );
+      } else {
+        toast.success(
+          status === 'accepted'
+            ? 'Ajánlat elfogadva — a vevő azonnal látja az üzenetekben.'
+            : 'Ajánlat elutasítva — a vevő értesítést kapott.',
+        );
+      }
 
       setOffers((prev) => prev.map((o) => (o.id === offerId ? { ...o, status } : o)));
+      await loadOffers(user.id);
     } catch (error: unknown) {
       const msg = error instanceof Error ? error.message : 'Ismeretlen hiba';
       toast.error('Hiba: ' + msg);
@@ -192,33 +210,32 @@ export default function OffersList() {
       } = await supabase.auth.getUser();
       if (!user) return;
 
-      const { error } = await supabase
-        .from('offers')
-        .update({
-          status: 'countered',
-          offered_price: counterPrice,
-          price: counterPrice,
-          updated_at: new Date().toISOString(),
-        })
-        .eq('id', offer.id);
-
-      if (error) throw error;
-
-      await supabase.from('messages').insert({
-        sender_id: user.id,
-        receiver_id: offer.buyer_id,
-        content: `🔁 Ellenajánlat: ${counterPrice.toLocaleString('hu-HU')} Ft — ${offer.product.name}`,
-        product_id: offer.product.id,
-        is_system_message: true,
-        message_type: 'system',
+      const result = await sellerSendCounterOffer(supabase, {
+        offerId: offer.id,
+        sellerId: user.id,
+        buyerId: offer.buyer_id,
+        productId: offer.product.id,
+        productName: offer.product.name,
+        counterPriceHuf: counterPrice,
       });
 
-      toast.success('Ellenajánlat elküldve — a vevőnek meg kell erősítenie.');
+      if (!result.ok) {
+        toast.error('Hiba: ' + result.error);
+        return;
+      }
+
+      if (result.messageWarning) {
+        toast.warning('Ellenajánlat mentve, de a chat értesítés nem ment ki: ' + result.messageWarning);
+      } else {
+        toast.success('Ellenajánlat elküldve — a vevő azonnal látja az üzenetekben.');
+      }
+
       setOffers((prev) =>
         prev.map((o) =>
           o.id === offer.id ? { ...o, status: 'countered', offered_price: counterPrice } : o
-        )
+        ),
       );
+      await loadOffers(user.id);
     } catch (error: unknown) {
       const msg = error instanceof Error ? error.message : 'Ismeretlen hiba';
       toast.error('Hiba: ' + msg);

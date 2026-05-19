@@ -8,6 +8,8 @@ import { toast } from 'sonner';
 import { Check, Clock, ExternalLink, Loader2, RefreshCw } from 'lucide-react';
 import { getOptimizedImageUrl } from '@/lib/imageUtils';
 import { OFFER_LABELS_BUYER, offerBadgeClass } from '@/lib/offerUi';
+import { buildOfferStatusUpdate } from '@/lib/offers';
+import { insertChatSystemMessage } from '@/lib/chatMessages';
 
 type ProductJoin = {
   id: string;
@@ -119,10 +121,7 @@ export default function BuyerOffersList() {
     try {
       const { error } = await supabase
         .from('offers')
-        .update({
-          status: 'accepted',
-          updated_at: new Date().toISOString(),
-        })
+        .update(buildOfferStatusUpdate('accepted'))
         .eq('id', offerId);
 
       if (error) throw error;
@@ -134,14 +133,13 @@ export default function BuyerOffersList() {
         data: { user },
       } = await supabase.auth.getUser();
       if (user && row?.seller_id && product?.id) {
-        await supabase.from('messages').insert({
-          sender_id: user.id,
-          receiver_id: row.seller_id,
-          content: `✅ Elfogadtam az ellenajánlatot (${row.offered_price.toLocaleString('hu-HU')} Ft).`,
-          product_id: product.id,
-          is_system_message: true,
-          message_type: 'system',
+        await insertChatSystemMessage(supabase, {
+          senderId: user.id,
+          receiverId: row.seller_id,
+          content: `Elfogadtam az ellenajánlatot (${row.offered_price.toLocaleString('hu-HU')} Ft).`,
+          productId: product.id,
         });
+        window.dispatchEvent(new CustomEvent('offers:updated'));
       }
 
       toast.success('Ellenajánlat elfogadva — most már fizethetsz.');

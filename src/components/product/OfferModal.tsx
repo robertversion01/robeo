@@ -6,6 +6,7 @@ import { toast } from 'sonner';
 import { X, Send } from 'lucide-react';
 import { isUuid } from '@/lib/validators';
 import { buildOfferInsertRow, formatSupabaseError } from '@/lib/offers';
+import { insertChatSystemMessage } from '@/lib/chatMessages';
 
 interface OfferModalProps {
   isOpen: boolean;
@@ -139,17 +140,14 @@ export default function OfferModal({
           throw error;
         }
       } else {
-        try {
-          await supabase.from('messages').insert({
-            sender_id: user.id,
-            receiver_id: resolvedSellerId,
-            content: `🔔 Új ajánlat érkezett: ${price.toLocaleString('hu-HU')} Ft`,
-            product_id: productId,
-            is_system_message: true,
-            message_type: 'system',
-          });
-        } catch {
-          // Nem kritikus
+        const notify = await insertChatSystemMessage(supabase, {
+          senderId: user.id,
+          receiverId: resolvedSellerId,
+          content: `Új ajánlat érkezett: ${price.toLocaleString('hu-HU')} Ft`,
+          productId,
+        });
+        if (!notify.ok) {
+          console.warn('[OfferModal] seller notify message failed', notify.error);
         }
 
         toast.success('Ajánlat elküldve. Az eladó értesítést kap az üzenetekben.');

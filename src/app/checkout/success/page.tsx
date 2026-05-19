@@ -96,7 +96,7 @@ function CheckoutSuccessContentComponent() {
             receiver_id: transactionData.seller_id,
             content: `🎉 Sikeres vásárlás! A "${productData.name}" termék kifizetése megtörtént. A pénz letétben van, amíg a termék meg nem érkezik.`,
             product_id: transactionData.product_id,
-            is_system_message: true
+            message_type: 'system',
           });
 
         if (!purchaseToastShown) {
