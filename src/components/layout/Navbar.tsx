@@ -33,7 +33,9 @@ export default function Navbar({ searchQuery, onSearchChange }: NavbarProps) {
 
   useEffect(() => {
     const checkUnreadMessages = async (currentUserId: string) => {
-      const lastSeen = localStorage.getItem(`messages_last_seen_at_${currentUserId}`) || '1970-01-01T00:00:00.000Z';
+      const lastSeen =
+        localStorage.getItem(`messages_last_seen_at_${currentUserId}`) ||
+        '1970-01-01T00:00:00.000Z';
       const [
         { data: messageData, error: messageError },
         { data: sellerOfferData, error: sellerOfferError },
@@ -65,19 +67,17 @@ export default function Navbar({ searchQuery, onSearchChange }: NavbarProps) {
         setHasUnreadMessages(
           (messageData || []).length > 0 ||
             (sellerOfferData || []).length > 0 ||
-            (buyerCounterData || []).length > 0
+            (buyerCounterData || []).length > 0,
         );
       }
     };
 
-    // Check current session
-    supabase.auth.getUser()
-      .then(({ data: { user } }) => {
-        setUser(user);
+    supabase.auth
+      .getUser()
+      .then(({ data: { user: authUser } }) => {
+        setUser(authUser);
         setLoading(false);
-        if (user?.id) {
-          checkUnreadMessages(user.id);
-        }
+        if (authUser?.id) checkUnreadMessages(authUser.id);
       })
       .catch((error) => {
         console.error('Navbar auth init error:', error);
@@ -85,8 +85,9 @@ export default function Navbar({ searchQuery, onSearchChange }: NavbarProps) {
         setLoading(false);
       });
 
-    // Listen for auth state changes
-    const { data: { subscription } } = supabase.auth.onAuthStateChange((event, session) => {
+    const {
+      data: { subscription },
+    } = supabase.auth.onAuthStateChange((_event, session) => {
       setUser(session?.user || null);
       if (session?.user?.id) {
         checkUnreadMessages(session.user.id);
@@ -95,42 +96,33 @@ export default function Navbar({ searchQuery, onSearchChange }: NavbarProps) {
       }
     });
 
-    const channel = supabase.channel(`navbar-unread-messages-${Date.now()}`)
-      .on(
-        'postgres_changes',
-        { event: 'INSERT', schema: 'public', table: 'messages' },
-        async (payload: any) => {
-          const { data: { user: currentUser } } = await supabase.auth.getUser();
-          if (currentUser?.id && payload?.new?.receiver_id === currentUser.id) {
-            setHasUnreadMessages(true);
-          }
+    const channel = supabase
+      .channel(`navbar-unread-messages-${Date.now()}`)
+      .on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'messages' }, async (payload: any) => {
+        const {
+          data: { user: currentUser },
+        } = await supabase.auth.getUser();
+        if (currentUser?.id && payload?.new?.receiver_id === currentUser.id) {
+          setHasUnreadMessages(true);
         }
-      )
-      .on(
-        'postgres_changes',
-        { event: 'INSERT', schema: 'public', table: 'offers' },
-        async (payload: any) => {
-          const { data: { user: currentUser } } = await supabase.auth.getUser();
-          if (currentUser?.id && payload?.new?.seller_id === currentUser.id) {
-            setHasUnreadMessages(true);
-          }
+      })
+      .on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'offers' }, async (payload: any) => {
+        const {
+          data: { user: currentUser },
+        } = await supabase.auth.getUser();
+        if (currentUser?.id && payload?.new?.seller_id === currentUser.id) {
+          setHasUnreadMessages(true);
         }
-      )
-      .on(
-        'postgres_changes',
-        { event: 'UPDATE', schema: 'public', table: 'offers' },
-        async (payload: any) => {
-          const { data: { user: currentUser } } = await supabase.auth.getUser();
-          const row = payload?.new;
-          if (
-            currentUser?.id &&
-            row?.buyer_id === currentUser.id &&
-            row?.status === 'countered'
-          ) {
-            setHasUnreadMessages(true);
-          }
+      })
+      .on('postgres_changes', { event: 'UPDATE', schema: 'public', table: 'offers' }, async (payload: any) => {
+        const {
+          data: { user: currentUser },
+        } = await supabase.auth.getUser();
+        const row = payload?.new;
+        if (currentUser?.id && row?.buyer_id === currentUser.id && row?.status === 'countered') {
+          setHasUnreadMessages(true);
         }
-      )
+      })
       .subscribe();
 
     const handleSeen = () => {
@@ -174,15 +166,7 @@ export default function Navbar({ searchQuery, onSearchChange }: NavbarProps) {
         .limit(8);
 
       if (!error) {
-        setLiveResults(
-          (data || []) as Array<Pick<Product, 'id' | 'name' | 'category' | 'brand'>>
-        );
-      } else {
-        console.warn('[NavbarDebug] Live search query failed', {
-          query,
-          error: error.message,
-          code: error.code,
-        });
+        setLiveResults((data || []) as Array<Pick<Product, 'id' | 'name' | 'category' | 'brand'>>);
       }
     }, 220);
 
@@ -190,11 +174,8 @@ export default function Navbar({ searchQuery, onSearchChange }: NavbarProps) {
   }, [resolvedSearchQuery]);
 
   const onNavbarSearchChange = (value: string) => {
-    if (onSearchChange) {
-      onSearchChange(value);
-    } else {
-      browse.setSearchQuery(value);
-    }
+    if (onSearchChange) onSearchChange(value);
+    else browse.setSearchQuery(value);
     setShowLiveResults(true);
   };
 
@@ -203,18 +184,12 @@ export default function Navbar({ searchQuery, onSearchChange }: NavbarProps) {
     window.location.href = '/';
   };
 
-  if (hideOnGuestHome || hideOnAuth) {
-    return null;
-  }
+  if (hideOnGuestHome || hideOnAuth) return null;
 
   const loggedIn = Boolean(user);
-  const mobileSearchStack = loggedIn && !loading;
 
   const searchField = (
-    <div
-      ref={searchContainerRef}
-      className={`relative z-[10000] pointer-events-auto ${mobileSearchStack ? 'w-full' : ''}`}
-    >
+    <div ref={searchContainerRef} className="relative z-[10000] min-w-0 flex-1 pointer-events-auto">
       <Search className="absolute left-2.5 top-1/2 -translate-y-1/2 text-gray-400" size={14} />
       <input
         id="search-input"
@@ -224,11 +199,10 @@ export default function Navbar({ searchQuery, onSearchChange }: NavbarProps) {
         value={resolvedSearchQuery}
         onFocus={() => setShowLiveResults(true)}
         onChange={(e) => onNavbarSearchChange(e.target.value)}
-        className="w-full min-w-0 shrink h-10 sm:h-9 pl-8 pr-3 bg-gray-100 rounded-full text-sm border border-gray-200 focus:outline-none focus:ring-1 focus:ring-[#007782] pointer-events-auto"
+        className="w-full h-9 pl-8 pr-3 bg-gray-100 rounded-full text-sm border border-gray-200 focus:outline-none focus:ring-1 focus:ring-[#007782]"
       />
-
       {showLiveResults && resolvedSearchQuery.trim().length >= 2 ? (
-        <div className="absolute left-0 right-0 top-11 sm:top-10 z-[9999] rounded-xl border border-gray-200 bg-white shadow-lg overflow-hidden pointer-events-auto">
+        <div className="absolute left-0 right-0 top-10 z-[9999] rounded-xl border border-gray-200 bg-white shadow-lg overflow-hidden">
           {liveResults.length === 0 ? (
             <div className="px-3 py-2.5 text-xs text-gray-500">Nincs találat.</div>
           ) : (
@@ -253,168 +227,98 @@ export default function Navbar({ searchQuery, onSearchChange }: NavbarProps) {
     </div>
   );
 
+  const desktopActions = loggedIn ? (
+    <>
+      <Link href="/upload" className="icon-btn text-gray-700" aria-label="Feltöltés">
+        <Plus size={18} />
+      </Link>
+      <Link href="/messages" className="icon-btn text-gray-700 relative" aria-label="Üzenetek">
+        <MessageCircle size={18} />
+        {hasUnreadMessages ? (
+          <span className="absolute top-1 right-1 h-2.5 w-2.5 rounded-full bg-red-500 border border-white" />
+        ) : null}
+      </Link>
+      <Link href="/favorites" className="icon-btn text-gray-700" aria-label="Kedvencek">
+        <Heart size={18} />
+      </Link>
+      <div ref={profileMenuRef} className="relative z-[10000]">
+        <button
+          type="button"
+          onClick={() => setShowProfileMenu((prev) => !prev)}
+          className="icon-btn text-[#007782]"
+          aria-label="Profil menü"
+        >
+          <User size={18} />
+        </button>
+        {showProfileMenu ? (
+          <div className="absolute right-0 top-10 w-44 card-base shadow-md p-1 z-[9999]">
+            <Link
+              href="/profile"
+              className="w-full min-h-9 flex items-center gap-2 px-3 py-2 rounded-lg text-sm text-gray-700 hover:bg-gray-100"
+              onClick={() => setShowProfileMenu(false)}
+            >
+              <User size={15} />
+              Profilom
+            </Link>
+            <button
+              type="button"
+              onClick={handleSignOut}
+              className="w-full min-h-9 flex items-center gap-2 px-3 py-2 rounded-lg text-sm text-red-600 hover:bg-red-50"
+            >
+              <LogOut size={15} />
+              Kijelentkezés
+            </button>
+          </div>
+        ) : null}
+      </div>
+    </>
+  ) : loading ? (
+    <div className="w-20 h-9 animate-pulse bg-gray-100 rounded-full" />
+  ) : (
+    <>
+      <Link
+        href="/auth?view=sign_up"
+        className="h-8 rounded-full bg-[#007782] px-2.5 text-xs font-semibold text-white inline-flex items-center"
+      >
+        Regisztráció
+      </Link>
+      <Link
+        href="/auth?view=sign_in"
+        className="h-8 rounded-full border border-gray-300 px-2.5 text-xs font-semibold text-gray-700 inline-flex items-center"
+      >
+        Belépés
+      </Link>
+    </>
+  );
+
   return (
-    <nav
-      className={`fixed top-0 left-0 right-0 z-[9999] bg-white border-b border-gray-200 shadow-sm overflow-visible w-full max-w-full pointer-events-auto ${
-        mobileSearchStack
-          ? 'flex flex-wrap items-center gap-x-2 gap-y-2 px-2 pt-2 pb-2 sm:h-11 sm:py-0 sm:flex-nowrap sm:px-3 sm:gap-2'
-          : `h-11 px-2 sm:px-3 flex items-center gap-1 sm:gap-2 ${isGuest ? 'justify-end' : 'justify-between'}`
-      }`}
-    >
+    <nav className="fixed top-0 left-0 right-0 z-[9999] h-11 bg-white border-b border-gray-200 shadow-sm">
       {showProfileMenu ? (
         <button
           type="button"
           aria-label="Profil menü bezárása"
           onClick={() => setShowProfileMenu(false)}
-          className="fixed inset-0 z-[9998] bg-black/20 cursor-default"
+          className="fixed inset-0 z-[9998] bg-black/20 cursor-default md:hidden"
         />
       ) : null}
-      {!isGuest && !mobileSearchStack ? (
-        <>
-          <Link
-            href="/"
-            className="text-sm font-semibold tracking-wide hover:text-[#007782] transition-colors flex-shrink-0 text-[#007782]"
-          >
-            ROBEO
-          </Link>
 
-          <div
-            className={`flex-1 min-w-0 basis-0 w-full shrink ${user ? 'max-w-md' : 'max-w-[36vw] sm:max-w-sm'}`}
-          >
-            {searchField}
-          </div>
-        </>
-      ) : null}
-      {!isGuest && mobileSearchStack ? (
-        <>
-          <Link
-            href="/"
-            className="order-1 shrink-0 text-sm font-semibold tracking-wide hover:text-[#007782] transition-colors text-[#007782]"
-          >
-            ROBEO
-          </Link>
-          <div className="order-2 ml-auto flex items-center gap-1 md:gap-2 shrink-0 sm:order-3 sm:ml-0">
-            <Link href="/upload" className="icon-btn text-gray-700">
-              <Plus size={16} className="text-gray-700" />
-            </Link>
-            <Link href="/messages" className="icon-btn text-gray-700 relative">
-              <MessageCircle size={16} className="text-gray-700" />
-              {hasUnreadMessages ? (
-                <span className="absolute top-1 right-1 h-2.5 w-2.5 rounded-full bg-red-500 border border-white" />
-              ) : null}
-            </Link>
-            <Link href="/favorites" className="icon-btn text-gray-700">
-              <Heart size={16} className="text-gray-700" />
-            </Link>
-            <div
-              ref={profileMenuRef}
-              className="relative z-[10000] pointer-events-auto overflow-visible"
-            >
-              <button
-                type="button"
-                onClick={(e) => {
-                  e.preventDefault();
-                  setShowProfileMenu((prev) => !prev);
-                }}
-                className="icon-btn text-[#007782] cursor-pointer pointer-events-auto"
-                aria-label="Profil menü"
-              >
-                <User size={16} className="text-[#007782] pointer-events-auto" />
-              </button>
-              {showProfileMenu ? (
-                <div className="absolute right-0 top-10 w-44 card-base shadow-md p-1 z-[9999] pointer-events-auto">
-                  <Link
-                    href="/profile"
-                    className="w-full min-h-9 flex items-center gap-2 px-3 py-2 rounded-lg text-sm text-gray-700 hover:bg-gray-100"
-                    onClick={() => setShowProfileMenu(false)}
-                  >
-                    <User size={15} />
-                    Profilom
-                  </Link>
-                  <button
-                    type="button"
-                    onClick={handleSignOut}
-                    className="w-full min-h-9 flex items-center gap-2 px-3 py-2 rounded-lg text-sm text-red-600 hover:bg-red-50"
-                  >
-                    <LogOut size={15} />
-                    Kijelentkezés
-                  </button>
-                </div>
-              ) : null}
-            </div>
-          </div>
-          <div className="order-3 w-full basis-full sm:order-2 sm:flex-1 sm:basis-auto min-w-0 max-w-full sm:max-w-md">
-            {searchField}
-          </div>
-        </>
-      ) : null}
+      <div className="mx-auto flex h-full max-w-6xl items-center gap-2 px-2 sm:px-3">
+        <Link
+          href="/"
+          className="shrink-0 text-sm font-semibold tracking-wide text-[#007782] hover:text-[#006670]"
+        >
+          ROBEO
+        </Link>
 
-      <div
-        className={`flex items-center gap-1 md:gap-2 shrink-0 ${mobileSearchStack ? 'hidden' : ''}`}
-      >
-        {loading ? (
-            <div className="w-20 h-9 animate-pulse bg-gray-100 rounded-full"></div>
-        ) : !user ? (
-          <>
-            <Link href="/auth?view=sign_up" className="h-8 rounded-full bg-[#007782] px-2 text-[11px] sm:px-2.5 sm:text-xs font-semibold text-white inline-flex items-center justify-center whitespace-nowrap shrink-0">
-              <span className="sm:hidden">Reg.</span>
-              <span className="hidden sm:inline">Regisztráció</span>
-            </Link>
-            <Link href="/auth?view=sign_in" className="h-8 rounded-full border border-gray-300 px-2 text-[11px] sm:px-2.5 sm:text-xs font-semibold text-gray-700 inline-flex items-center justify-center whitespace-nowrap shrink-0">
-              Belépés
-            </Link>
-          </>
-        ) : mobileSearchStack ? null : (
-          <>
-            <Link href="/upload" className="icon-btn text-gray-700">
-              <Plus size={16} className="text-gray-700" />
-            </Link>
-            <Link href="/messages" className="icon-btn text-gray-700 relative">
-              <MessageCircle size={16} className="text-gray-700" />
-              {hasUnreadMessages ? (
-                <span className="absolute top-1 right-1 h-2.5 w-2.5 rounded-full bg-red-500 border border-white" />
-              ) : null}
-            </Link>
-            <Link href="/favorites" className="icon-btn text-gray-700">
-              <Heart size={16} className="text-gray-700" />
-            </Link>
-            <div ref={profileMenuRef} className="relative z-[10000] pointer-events-auto overflow-visible">
-              <button
-                type="button"
-                onClick={(e) => {
-                  e.preventDefault();
-                  setShowProfileMenu((prev) => !prev);
-                }}
-                className="icon-btn text-[#007782] cursor-pointer pointer-events-auto"
-                aria-label="Profil menü"
-              >
-                <User size={16} className="text-[#007782] pointer-events-auto" />
-              </button>
-              {showProfileMenu ? (
-                <div
-                  className="absolute right-0 top-10 w-44 card-base shadow-md p-1 z-[9999] pointer-events-auto"
-                >
-                  <Link
-                    href="/profile"
-                    className="w-full min-h-9 flex items-center gap-2 px-3 py-2 rounded-lg text-sm text-gray-700 hover:bg-gray-100"
-                    onClick={() => setShowProfileMenu(false)}
-                  >
-                    <User size={15} />
-                    Profilom
-                  </Link>
-                  <button
-                    type="button"
-                    onClick={handleSignOut}
-                    className="w-full min-h-9 flex items-center gap-2 px-3 py-2 rounded-lg text-sm text-red-600 hover:bg-red-50"
-                  >
-                    <LogOut size={15} />
-                    Kijelentkezés
-                  </button>
-                </div>
-              ) : null}
-            </div>
-          </>
-        )}
+        {loggedIn || !isGuest ? searchField : null}
+
+        <div className={`hidden md:flex items-center gap-1 shrink-0 ${!loggedIn && isGuest ? 'ml-auto' : ''}`}>
+          {desktopActions}
+        </div>
+
+        {isGuest ? (
+          <div className="ml-auto flex md:hidden items-center gap-1 shrink-0">{desktopActions}</div>
+        ) : null}
       </div>
     </nav>
   );

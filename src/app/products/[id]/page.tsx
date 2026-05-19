@@ -7,6 +7,7 @@ import { useRouter } from 'next/navigation';
 import { toast } from 'sonner';
 import { Star, ZoomIn, ZoomOut } from 'lucide-react';
 import { getOptimizedImageUrl, getProductImages, shouldLazyLoad } from '@/lib/imageUtils';
+import { fetchSellerDisplayProfile, getSellerDisplayName } from '@/lib/sellerProfile';
 import OfferModal from '@/components/product/OfferModal';
 import type { Product } from '@/types';
 import { MAIN_TOP_PADDING } from '@/lib/layoutTokens';
@@ -18,7 +19,7 @@ export default function ProductPage({ params }: { params: Promise<{ id: string }
   const [selectedImageIndex, setSelectedImageIndex] = useState(0);
   const [isZoomed, setIsZoomed] = useState(false);
   const [touchStartX, setTouchStartX] = useState<number | null>(null);
-  const [sellerProfile, setSellerProfile] = useState<{ full_name?: string | null; email?: string | null } | null>(null);
+  const [sellerDisplayName, setSellerDisplayName] = useState('Eladó');
   const [sellerReviewSummary, setSellerReviewSummary] = useState<{ avg: number; count: number }>({ avg: 5, count: 0 });
   
   // Modal States
@@ -65,13 +66,8 @@ export default function ProductPage({ params }: { params: Promise<{ id: string }
         }
       }
 
-      const { data: sellerData } = await supabase
-        .from('profiles')
-        .select('full_name, email')
-        .eq('id', data.user_id)
-        .maybeSingle();
-
-      setSellerProfile((sellerData as { full_name?: string | null; email?: string | null }) || null);
+      const sellerProfile = await fetchSellerDisplayProfile(supabase, data.user_id);
+      setSellerDisplayName(getSellerDisplayName(sellerProfile));
 
       const { data: reviewData } = await supabase
         .from('reviews')
@@ -172,8 +168,7 @@ export default function ProductPage({ params }: { params: Promise<{ id: string }
     images: product.images || [],
   });
 
-  const sellerDisplayName = sellerProfile?.full_name || sellerProfile?.email?.split('@')[0] || 'Eladó';
-  const sellerInitial = sellerDisplayName?.charAt(0).toUpperCase() || 'E';
+  const sellerInitial = sellerDisplayName.charAt(0).toUpperCase() || 'E';
   const urgencySeed = product.id.split('').reduce((acc, char) => acc + char.charCodeAt(0), 0);
   const inCartCount = 2 + (urgencySeed % 7);
   const showLastPiece = urgencySeed % 2 === 0;
@@ -242,10 +237,6 @@ export default function ProductPage({ params }: { params: Promise<{ id: string }
       )}
 
       <main className={`${MAIN_TOP_PADDING} pb-24 px-0 md:px-6`}>
-        <Link href="/" className="inline-flex items-center gap-2 text-gray-500 hover:text-gray-900 mb-3 transition-colors px-3 md:px-0 md:mb-6">
-          ← Vissza a főoldalra
-        </Link>
-
         <div className="max-w-5xl mx-auto">
           <div className="grid grid-cols-1 md:grid-cols-2 md:gap-10">
             {/* Product Image Gallery */}

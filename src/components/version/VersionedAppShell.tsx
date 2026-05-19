@@ -1,25 +1,12 @@
 'use client';
 
-import { useAppVersion } from '@/context/AppVersionContext';
-import AppVersionToggle from '@/components/version/AppVersionToggle';
 import V1AppViewport from '@/components/version/V1AppViewport';
-import V2AppViewport from '@/components/version/V2AppViewport';
 
+/** Kanonikus v1 felület — v2 kapcsoló nélkül. */
 export default function VersionedAppShell({
   children,
 }: {
   children: React.ReactNode;
 }) {
-  const { version } = useAppVersion();
-
-  return (
-    <div className="relative flex w-full min-h-0 flex-1 flex-col">
-      <AppVersionToggle />
-      {version === 'v1' ? (
-        <V1AppViewport>{children}</V1AppViewport>
-      ) : (
-        <V2AppViewport />
-      )}
-    </div>
-  );
+  return <V1AppViewport>{children}</V1AppViewport>;
 }

@@ -2,10 +2,9 @@ export const APP_VERSION_STORAGE_KEY = 'robeo-ui-version';
 
 export type AppUiVersion = 'v1' | 'v2';
 
-/** v2 csak lokális fejlesztésben / explicit envvel — nem párhuzamos éles termék. */
+/** v2 előnézet kikapcsolva — csak explicit envvel (élesben soha). */
 export function isV2PreviewEnabled(): boolean {
-  if (process.env.NEXT_PUBLIC_ENABLE_V2_PREVIEW === 'true') return true;
-  return process.env.NODE_ENV === 'development';
+  return process.env.NEXT_PUBLIC_ENABLE_V2_PREVIEW === 'true';
 }
 
 export function readStoredAppVersion(): AppUiVersion {

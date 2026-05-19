@@ -61,6 +61,12 @@ CREATE POLICY "Users can update their own profile"
   ON public.profiles FOR UPDATE
   USING (auth.uid() = id);
 
+-- Eladó / chat partner megjelenítő adatok (termékoldal, üzenetek) — csak olvasás
+DROP POLICY IF EXISTS "Public can view seller profiles for marketplace" ON public.profiles;
+CREATE POLICY "Public can view seller profiles for marketplace"
+  ON public.profiles FOR SELECT
+  USING (true);
+
 -- 3/b Profiles — opcionális mezők (webhook / UI; régi DB-n ADD COLUMN IF NOT EXISTS)
 ALTER TABLE public.profiles ADD COLUMN IF NOT EXISTS full_name TEXT;
 ALTER TABLE public.profiles ADD COLUMN IF NOT EXISTS name TEXT;
