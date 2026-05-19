@@ -17,6 +17,7 @@ ALTER TABLE public.products ADD COLUMN IF NOT EXISTS images JSONB DEFAULT '[]'::
 ALTER TABLE public.products ADD COLUMN IF NOT EXISTS status TEXT DEFAULT 'active';
 ALTER TABLE public.products ADD COLUMN IF NOT EXISTS favorite_count INTEGER DEFAULT 0;
 ALTER TABLE public.products ADD COLUMN IF NOT EXISTS featured_until TIMESTAMPTZ;
+ALTER TABLE public.products ADD COLUMN IF NOT EXISTS updated_at TIMESTAMPTZ DEFAULT NOW();
 
 -- 2. offers tábla - hiányzó oszlopok hozzáadása
 -- Megjegyzés: régi sémán a `price` NOT NULL; az app `offered_price`-ot is tölt.
@@ -471,6 +472,7 @@ COMMENT ON POLICY "products_update_own" ON public.products IS
   'Csak a tulajdonos módosíthat (UPDATE); törlés = status = deleted (hard DELETE nincs engedélyezve kliensen).';
 
 -- Hard DELETE nem engedélyezett authenticated számára (nincs DELETE policy → tiltva).
+GRANT SELECT, INSERT, UPDATE ON public.products TO authenticated;
 
 -- 18. Reviews schema expansion for product-level buyer/seller feedback
 ALTER TABLE IF EXISTS public.reviews

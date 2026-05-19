@@ -16,7 +16,9 @@ import { getOptimizedImageUrl } from '@/lib/imageUtils';
 import type { Product } from '@/types';
 import { MAIN_TOP_PADDING } from '@/lib/layoutTokens';
 import { ChevronDown } from 'lucide-react';
+import { revalidateCatalog } from '@/app/actions/revalidateCatalog';
 import { notifyCatalogUpdated } from '@/lib/catalogRefresh';
+import { softDeleteAllUserProducts, softDeleteProduct } from '@/lib/productSoftDelete';
 
 export default function ProfilePage() {
   const [products, setProducts] = useState<Product[]>([]);
@@ -164,6 +166,18 @@ export default function ProfilePage() {
     }
   };
 
+  const refreshCatalogAndProfile = async (userId: string) => {
+    try {
+      await revalidateCatalog();
+    } catch (revalidateErr) {
+      console.warn('[profile] revalidateCatalog failed', revalidateErr);
+    }
+    notifyCatalogUpdated();
+    await loadUserProducts(userId);
+    setSoldProducts([]);
+    router.refresh();
+  };
+
   const confirmDeleteProduct = async () => {
     if (!deleteTarget) return;
     const productId = deleteTarget.id;
@@ -183,25 +197,19 @@ export default function ProfilePage() {
         return;
       }
 
-      const { error } = await supabase
-        .from('products')
-        .update({
-          status: 'deleted',
-          updated_at: new Date().toISOString(),
-        })
-        .eq('id', productId)
-        .eq('user_id', user.id);
-
-      if (error) throw error;
+      const result = await softDeleteProduct(supabase, productId, user.id);
+      if (!result.ok) throw new Error(result.error);
 
       toast.success('Hirdetés törölve. A termék többé nem látható a piactéren.');
       setStatsTick((t) => t + 1);
-      notifyCatalogUpdated();
+      await refreshCatalogAndProfile(user.id);
     } catch (error) {
       console.error('Error deleting product:', error);
       setProducts(snapshot);
       toast.error(
-        'A törlés nem sikerült (hálózat vagy jogosultság). Semmi sem változott a listádon.'
+        error instanceof Error
+          ? error.message
+          : 'A törlés nem sikerült (hálózat vagy jogosultság). Semmi sem változott a listádon.',
       );
     } finally {
       setDeleteBusy(false);
@@ -229,25 +237,25 @@ export default function ProfilePage() {
         return;
       }
 
-      const ids = snapshot.map((p) => p.id);
-      const { error } = await supabase
-        .from('products')
-        .update({
-          status: 'deleted',
-          updated_at: new Date().toISOString(),
-        })
-        .in('id', ids)
-        .eq('user_id', user.id);
+      const result = await softDeleteAllUserProducts(supabase, user.id);
+      if (!result.ok) throw new Error(result.error);
 
-      if (error) throw error;
-
-      toast.success('A kijelölt hirdetéseid törölve — nem látszanak a piactéren.');
+      toast.success(
+        result.count > 0
+          ? `${result.count} hirdetés törölve — nem látszanak a piactéren.`
+          : 'Nincs törlendő hirdetés.',
+      );
       setStatsTick((t) => t + 1);
-      notifyCatalogUpdated();
+      await refreshCatalogAndProfile(user.id);
+      if (typeof window !== 'undefined') {
+        window.location.reload();
+      }
     } catch (error) {
       console.error('Bulk delete error:', error);
       setProducts(snapshot);
-      toast.error('Az összes törlése nem sikerült. A listád változatlan.');
+      toast.error(
+        error instanceof Error ? error.message : 'Az összes törlése nem sikerült. A listád változatlan.',
+      );
     } finally {
       setBulkBusy(false);
     }
@@ -669,10 +677,12 @@ export default function ProfilePage() {
 
                     <button
                       type="button"
-                      onClick={() =>
-                        setDeleteTarget({ id: product.id, name: product.name })
-                      }
-                      className="absolute top-1.5 right-1.5 bg-red-500/90 hover:bg-red-500 text-white px-2 py-0.5 rounded text-[10px] transition-colors"
+                      onClick={(e) => {
+                        e.preventDefault();
+                        e.stopPropagation();
+                        setDeleteTarget({ id: product.id, name: product.name });
+                      }}
+                      className="absolute top-1.5 right-1.5 z-20 bg-red-500/90 hover:bg-red-500 text-white px-2 py-0.5 rounded text-[10px] transition-colors touch-manipulation"
                     >
                       Törlés
                     </button>
