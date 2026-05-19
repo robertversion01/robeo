@@ -38,7 +38,7 @@ export default function HomePageClient() {
   const isGuest = !user;
 
   const filterBar = (
-    <div className="sticky z-30 -mx-2 md:-mx-6 mb-1.5 border-b border-gray-200/90 bg-white/95 px-2 pt-1.5 pb-0 backdrop-blur-md supports-[backdrop-filter]:bg-white/80 md:px-6 shadow-sm top-[6.75rem] sm:top-11">
+    <div className="sticky z-40 -mx-2 md:-mx-6 mb-1.5 border-b border-gray-200/90 bg-white/95 px-2 pt-1.5 pb-0 backdrop-blur-md supports-[backdrop-filter]:bg-white/80 md:px-6 shadow-sm top-[6.75rem] sm:top-11">
       <Filters
         categories={categories}
         selectedCategory={selectedCategory}
