@@ -1,4 +1,51 @@
+import type { SupabaseClient } from '@supabase/supabase-js';
 import { DEFAULT_BUNDLE_TIERS, type BundleTier } from '@/lib/vintedCatalog';
+
+export type SellerBundleDiscountSettings = {
+  enabled: boolean;
+  tiers: BundleTier[];
+};
+
+const DEFAULT_SELLER_BUNDLE: SellerBundleDiscountSettings = {
+  enabled: false,
+  tiers: [...DEFAULT_BUNDLE_TIERS],
+};
+
+function isMissingProfileColumnError(error: { code?: string; message?: string } | null): boolean {
+  const msg = error?.message?.toLowerCase() ?? '';
+  return (
+    error?.code === '42703' ||
+    error?.code === 'PGRST204' ||
+    msg.includes('column') ||
+    msg.includes('does not exist')
+  );
+}
+
+/** Rugalmas lekérés — ha a patch még nincs futtatva, nem dob 400-at a checkout. */
+export async function fetchSellerBundleDiscountSettings(
+  supabase: SupabaseClient,
+  sellerId: string,
+): Promise<SellerBundleDiscountSettings> {
+  const { data, error } = await supabase
+    .from('profiles')
+    .select('bundle_discount_enabled, bundle_discount_tiers')
+    .eq('id', sellerId)
+    .maybeSingle();
+
+  if (!error) {
+    return {
+      enabled: Boolean(data?.bundle_discount_enabled),
+      tiers: parseBundleTiers(data?.bundle_discount_tiers),
+    };
+  }
+
+  if (isMissingProfileColumnError(error)) {
+    return DEFAULT_SELLER_BUNDLE;
+  }
+
+  console.warn('[bundleDiscount] profiles select failed', error.message);
+  return DEFAULT_SELLER_BUNDLE;
+}
 
 export function parseBundleTiers(raw: unknown): BundleTier[] {
   if (!Array.isArray(raw)) return [...DEFAULT_BUNDLE_TIERS];

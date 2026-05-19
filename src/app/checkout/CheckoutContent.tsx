@@ -11,7 +11,7 @@ import { buyerProtectionFeeLabel, calculateCheckoutTotal } from '@/lib/buyerProt
 import {
   applyBundleDiscountToPrice,
   bundleDiscountPercentForCount,
-  parseBundleTiers,
+  fetchSellerBundleDiscountSettings,
 } from '@/lib/bundleDiscount';
 import type { FoxpostTerminal } from '@/lib/foxpostTerminal';
 import { MAIN_TOP_PADDING } from '@/lib/layoutTokens';
@@ -117,20 +117,14 @@ export default function CheckoutContent() {
     buyerId: string,
     itemCount = bundleItemCount,
   ) => {
-    const [{ data: wallet }, { data: sellerProfile }] = await Promise.all([
+    const [{ data: wallet }, bundleSettings] = await Promise.all([
       supabaseClient.from('wallets').select('available_balance').eq('user_id', buyerId).maybeSingle(),
-      supabaseClient
-        .from('profiles')
-        .select('bundle_discount_enabled, bundle_discount_tiers')
-        .eq('id', sellerId)
-        .maybeSingle(),
+      fetchSellerBundleDiscountSettings(supabaseClient, sellerId),
     ]);
     setWalletAvailable(Math.max(0, Math.round(wallet?.available_balance || 0)));
-    const enabled = Boolean(sellerProfile?.bundle_discount_enabled);
-    setSellerBundleEnabled(enabled);
-    if (enabled) {
-      const tiers = parseBundleTiers(sellerProfile?.bundle_discount_tiers);
-      setBundleDiscountPercent(bundleDiscountPercentForCount(tiers, itemCount));
+    setSellerBundleEnabled(bundleSettings.enabled);
+    if (bundleSettings.enabled) {
+      setBundleDiscountPercent(bundleDiscountPercentForCount(bundleSettings.tiers, itemCount));
     } else {
       setBundleDiscountPercent(0);
     }

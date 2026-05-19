@@ -4,7 +4,7 @@ import { useEffect, useState } from 'react';
 import { supabase } from '@/lib/supabase';
 import { toast } from 'sonner';
 import { DEFAULT_BUNDLE_TIERS, type BundleTier } from '@/lib/vintedCatalog';
-import { parseBundleTiers } from '@/lib/bundleDiscount';
+import { fetchSellerBundleDiscountSettings } from '@/lib/bundleDiscount';
 
 type Props = {
   userId: string | null | undefined;
@@ -18,15 +18,9 @@ export default function BundleDiscountSettings({ userId }: Props) {
   useEffect(() => {
     if (!userId) return;
     void (async () => {
-      const { data } = await supabase
-        .from('profiles')
-        .select('bundle_discount_enabled, bundle_discount_tiers')
-        .eq('id', userId)
-        .maybeSingle();
-      if (data) {
-        setEnabled(Boolean(data.bundle_discount_enabled));
-        setTiers(parseBundleTiers(data.bundle_discount_tiers));
-      }
+      const settings = await fetchSellerBundleDiscountSettings(supabase, userId);
+      setEnabled(settings.enabled);
+      setTiers(settings.tiers);
     })();
   }, [userId]);
 

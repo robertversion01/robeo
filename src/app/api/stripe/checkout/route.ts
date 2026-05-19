@@ -4,7 +4,7 @@ import { calculateCheckoutTotal } from '@/lib/buyerProtection';
 import {
   applyBundleDiscountToPrice,
   bundleDiscountPercentForCount,
-  parseBundleTiers,
+  fetchSellerBundleDiscountSettings,
 } from '@/lib/bundleDiscount';
 import { foxpostTerminalAddress } from '@/lib/foxpostTerminal';
 import { getStripeInstance } from '@/lib/stripe-client';
@@ -240,17 +240,12 @@ export async function POST(req: NextRequest) {
     let productPrice =
       negotiatedPrice !== null ? negotiatedPrice : Math.round(product.price);
 
-    const { data: sellerBundleProfile } = await supabase
-      .from('profiles')
-      .select('bundle_discount_enabled, bundle_discount_tiers')
-      .eq('id', sellerId)
-      .maybeSingle();
+    const sellerBundle = await fetchSellerBundleDiscountSettings(supabase, sellerId);
 
     const bundleCount = Math.min(10, Math.max(1, Math.round(bundleItemCount || 1)));
     let bundleDiscountPercent = 0;
-    if (bundleCount > 1 && sellerBundleProfile?.bundle_discount_enabled) {
-      const tiers = parseBundleTiers(sellerBundleProfile.bundle_discount_tiers);
-      bundleDiscountPercent = bundleDiscountPercentForCount(tiers, bundleCount);
+    if (bundleCount > 1 && sellerBundle.enabled) {
+      bundleDiscountPercent = bundleDiscountPercentForCount(sellerBundle.tiers, bundleCount);
       productPrice = applyBundleDiscountToPrice(productPrice, bundleDiscountPercent);
     }
 

@@ -7,6 +7,7 @@ import {
   foxpostTerminalAddress,
   foxpostTerminalId,
   foxpostTerminalLabel,
+  isFoxpostAptFinderOrigin,
   parseFoxpostTerminalMessage,
   type FoxpostTerminal,
 } from '@/lib/foxpostTerminal';
@@ -21,7 +22,7 @@ export default function FoxpostTerminalPicker({ value, onChange }: Props) {
 
   const onMessage = useCallback(
     (event: MessageEvent) => {
-      if (event.origin !== 'https://cdn.foxpost.hu') return;
+      if (!isFoxpostAptFinderOrigin(event.origin)) return;
       const terminal = parseFoxpostTerminalMessage(event.data);
       if (!terminal) return;
       onChange(terminal);

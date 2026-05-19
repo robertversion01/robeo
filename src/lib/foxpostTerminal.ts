@@ -13,9 +13,19 @@ export type FoxpostTerminal = {
   variant?: string;
 };
 
+/** Hivatalos APT Finder beágyazás — /app/, nem index.html (az 404-et ad). */
 export const FOXPOST_APT_FINDER_URL =
   process.env.NEXT_PUBLIC_FOXPOST_APT_FINDER_URL ||
-  'https://cdn.foxpost.hu/apt-finder/v1/index.html';
+  'https://cdn.foxpost.hu/apt-finder/v1/app/?noHeader=1';
+
+export const FOXPOST_APT_FINDER_ORIGINS = [
+  'https://cdn.foxpost.hu',
+  'https://foxpost.hu',
+] as const;
+
+export function isFoxpostAptFinderOrigin(origin: string): boolean {
+  return (FOXPOST_APT_FINDER_ORIGINS as readonly string[]).includes(origin);
+}
 
 export function parseFoxpostTerminalMessage(data: unknown): FoxpostTerminal | null {
   if (!data) return null;

@@ -3,7 +3,7 @@ import { calculateCheckoutTotal } from '@/lib/buyerProtection';
 import {
   applyBundleDiscountToPrice,
   bundleDiscountPercentForCount,
-  parseBundleTiers,
+  fetchSellerBundleDiscountSettings,
 } from '@/lib/bundleDiscount';
 import { foxpostTerminalAddress, type FoxpostTerminal } from '@/lib/foxpostTerminal';
 
@@ -89,11 +89,10 @@ export async function resolveCheckout(
     throw new Error('A saját termékedet nem vásárolhatod meg.');
   }
 
-  const { data: sellerProfile } = await supabase
-    .from('profiles')
-    .select('email, stripe_account_id, bundle_discount_enabled, bundle_discount_tiers')
-    .eq('id', sellerId)
-    .maybeSingle();
+  const [{ data: sellerProfile }, sellerBundle] = await Promise.all([
+    supabase.from('profiles').select('email, stripe_account_id').eq('id', sellerId).maybeSingle(),
+    fetchSellerBundleDiscountSettings(supabase, sellerId),
+  ]);
 
   const { data: sellerUser } = await supabase
     .from('users')
@@ -115,9 +114,8 @@ export async function resolveCheckout(
   const bundleItemCount = Math.min(10, Math.max(1, Math.round(input.bundleItemCount || 1)));
   let bundleDiscountPercent = 0;
 
-  if (bundleItemCount > 1 && sellerProfile?.bundle_discount_enabled) {
-    const tiers = parseBundleTiers(sellerProfile.bundle_discount_tiers);
-    bundleDiscountPercent = bundleDiscountPercentForCount(tiers, bundleItemCount);
+  if (bundleItemCount > 1 && sellerBundle.enabled) {
+    bundleDiscountPercent = bundleDiscountPercentForCount(sellerBundle.tiers, bundleItemCount);
     basePrice = applyBundleDiscountToPrice(basePrice, bundleDiscountPercent);
   }
 
