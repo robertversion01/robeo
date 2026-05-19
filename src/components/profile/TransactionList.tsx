@@ -10,7 +10,11 @@ import Link from 'next/link';
 import ReviewForm from '@/components/review/ReviewForm';
 import { notifyTransactionStatusBothParties } from '@/lib/shippingNotifications';
 import {
-  SHIPPING_SIMULATION_DELAY_MS,
+  markPackageShipped,
+  clearShippingSimulation,
+  type ShippingTransaction,
+} from '@/lib/sellerShipping';
+import {
   TX_STATUS,
   TX_STATUS_LABELS,
   canBuyerConfirmReceipt,
@@ -52,7 +56,6 @@ export default function TransactionList() {
   const [reviewedTransactions, setReviewedTransactions] = useState<Set<string>>(new Set());
   const [actingId, setActingId] = useState<string | null>(null);
   const [simulatingIds, setSimulatingIds] = useState<Set<string>>(new Set());
-  const simulationTimersRef = useRef<Map<string, ReturnType<typeof setTimeout>[]>>(new Map());
   const userIdRef = useRef<string | null>(null);
 
   const patchTransactionLocal = useCallback((transactionId: string, status: string) => {
@@ -60,58 +63,6 @@ export default function TransactionList() {
       prev.map((t) => (t.id === transactionId ? { ...t, status, updated_at: new Date().toISOString() } : t)),
     );
   }, []);
-
-  const updateStatusInDb = useCallback(async (transactionId: string, status: string) => {
-    const { error } = await supabase
-      .from('transactions')
-      .update({ status, updated_at: new Date().toISOString() })
-      .eq('id', transactionId);
-    if (error) throw error;
-  }, []);
-
-  const clearSimulationTimers = useCallback((transactionId: string) => {
-    const timers = simulationTimersRef.current.get(transactionId);
-    if (timers) {
-      timers.forEach((t) => clearTimeout(t));
-      simulationTimersRef.current.delete(transactionId);
-    }
-    setSimulatingIds((prev) => {
-      const next = new Set(prev);
-      next.delete(transactionId);
-      return next;
-    });
-  }, []);
-
-  const scheduleShippingSimulation = useCallback(
-    (transaction: Transaction, sellerId: string) => {
-      clearSimulationTimers(transaction.id);
-      setSimulatingIds((prev) => new Set(prev).add(transaction.id));
-
-      const schedule = (delayMs: number, nextStatus: string) =>
-        setTimeout(async () => {
-          try {
-            await updateStatusInDb(transaction.id, nextStatus);
-            patchTransactionLocal(transaction.id, nextStatus);
-            await notifyTransactionStatusBothParties(supabase, transaction, nextStatus);
-
-            if (nextStatus === TX_STATUS.ATVETELRE_VAR) {
-              clearSimulationTimers(transaction.id);
-              toast.info('A csomag átvételre vár — a vevőnek kell megerősítenie.');
-            }
-          } catch (err) {
-            console.error('[shipping-simulation]', err);
-            clearSimulationTimers(transaction.id);
-          }
-        }, delayMs);
-
-      const timers = [
-        schedule(SHIPPING_SIMULATION_DELAY_MS, TX_STATUS.UTON),
-        schedule(SHIPPING_SIMULATION_DELAY_MS * 2, TX_STATUS.ATVETELRE_VAR),
-      ];
-      simulationTimersRef.current.set(transaction.id, timers);
-    },
-    [clearSimulationTimers, patchTransactionLocal, updateStatusInDb],
-  );
 
   const loadTransactions = useCallback(async () => {
     try {
@@ -190,13 +141,6 @@ export default function TransactionList() {
   }, [loadTransactions]);
 
   useEffect(() => {
-    return () => {
-      simulationTimersRef.current.forEach((timers) => timers.forEach((t) => clearTimeout(t)));
-      simulationTimersRef.current.clear();
-    };
-  }, []);
-
-  useEffect(() => {
     let channel: ReturnType<typeof supabase.channel> | null = null;
 
     const setup = async () => {
@@ -231,27 +175,30 @@ export default function TransactionList() {
     };
   }, [activeTab, loadTransactions]);
 
-  const markPackageShipped = async (transaction: Transaction) => {
+  const handleMarkPackageShipped = async (transaction: Transaction) => {
     setActingId(transaction.id);
+    setSimulatingIds((prev) => new Set(prev).add(transaction.id));
     try {
-      const {
-        data: { user },
-      } = await supabase.auth.getUser();
-      if (!user || user.id !== transaction.seller_id) {
-        toast.error('Csak az eladó jelölheti feladottnak a csomagot.');
-        return;
-      }
-
-      await updateStatusInDb(transaction.id, TX_STATUS.FELADVA);
-      patchTransactionLocal(transaction.id, TX_STATUS.FELADVA);
-      await notifyTransactionStatusBothParties(supabase, transaction, TX_STATUS.FELADVA);
-
+      await markPackageShipped(transaction as ShippingTransaction, (id, status) => {
+        patchTransactionLocal(id, status);
+        if (status === TX_STATUS.ATVETELRE_VAR) {
+          setSimulatingIds((prev) => {
+            const next = new Set(prev);
+            next.delete(id);
+            return next;
+          });
+        }
+      });
       toast.success('Csomag feladva — a szállítás automatikusan frissül.');
-      scheduleShippingSimulation(transaction, user.id);
     } catch (error) {
       console.error('markPackageShipped:', error);
-      toast.error('Nem sikerült frissíteni a státuszt.');
-      clearSimulationTimers(transaction.id);
+      toast.error(error instanceof Error ? error.message : 'Nem sikerült frissíteni a státuszt.');
+      clearShippingSimulation(transaction.id);
+      setSimulatingIds((prev) => {
+        const next = new Set(prev);
+        next.delete(transaction.id);
+        return next;
+      });
     } finally {
       setActingId(null);
     }
@@ -377,7 +324,7 @@ export default function TransactionList() {
         <button
           type="button"
           disabled={busy}
-          onClick={() => markPackageShipped(transaction)}
+          onClick={() => void handleMarkPackageShipped(transaction)}
           className="px-4 py-2 bg-[#007782] text-white text-sm font-semibold rounded-xl hover:bg-[#006670] transition-colors inline-flex items-center gap-2 disabled:opacity-50"
         >
           {busy ? <Loader2 className="h-4 w-4 animate-spin" /> : <Truck className="h-4 w-4" />}
@@ -425,6 +372,13 @@ export default function TransactionList() {
           Eladásaim
         </button>
       </div>
+
+      {activeTab === 'selling' && (
+        <p className="text-xs text-gray-600 mb-3 px-1 leading-snug">
+          Fizetés után: üzenetekben vagy itt töltsd le a Foxpost címkét, majd kattints a{' '}
+          <strong>Csomag feladva</strong> gombra.
+        </p>
+      )}
 
       {loading ? (
         <div className="flex justify-center py-8">

@@ -10,7 +10,10 @@ import {
   useState,
   type ReactNode,
 } from 'react';
+import Link from 'next/link';
 import { usePathname } from 'next/navigation';
+import { claimSalePopupSlot } from '@/lib/salePopupDedupe';
+import { isUuid } from '@/lib/validators';
 import { supabase } from '@/lib/supabase';
 import {
   fetchUnreadCount,
@@ -101,7 +104,6 @@ export function NotificationProvider({ children }: { children: ReactNode }) {
   const [saleAlert, setSaleAlert] = useState<IncomingSaleAlert | null>(null);
   const userIdRef = useRef<string | null>(null);
   userIdRef.current = userId;
-  const recentSaleRef = useRef<{ productId: string; at: number } | null>(null);
 
   const refreshUnread = useCallback(async () => {
     const uid = userIdRef.current;
@@ -162,21 +164,34 @@ export function NotificationProvider({ children }: { children: ReactNode }) {
 
   const presentSaleNotification = useCallback(
     (alert: IncomingSaleAlert) => {
-      const now = Date.now();
-      if (
-        recentSaleRef.current?.productId === alert.productId &&
-        now - recentSaleRef.current.at < 20_000
-      ) {
+      if (!claimSalePopupSlot(alert.productId)) {
         return;
       }
-      recentSaleRef.current = { productId: alert.productId, at: now };
 
       setSaleAlert(alert);
       void refreshUnread();
-      toast.success(`Gratulálunk! Eladtad: ${alert.productName}!`, {
-        description: 'Készítsd össze a csomagot és töltsd le a címkét.',
-        duration: 8000,
+
+      const productHref =
+        alert.productId && isUuid(alert.productId) ? `/products/${alert.productId}` : null;
+
+      toast.success('Gratulálunk! Sikeres eladás', {
+        description: productHref ? (
+          <span className="text-sm text-gray-700">
+            Becsomagolandó:{' '}
+            <Link
+              href={productHref}
+              className="font-semibold text-[#007782] underline underline-offset-2"
+            >
+              {alert.productName}
+            </Link>
+            {' — töltsd le a Foxpost címkét az üzenetekben, majd jelöld „Csomag feladva”-ként.'}
+          </span>
+        ) : (
+          `Eladtad: ${alert.productName}. Töltsd le a címkét az üzenetekben.`
+        ),
+        duration: 9000,
       });
+
       dispatchSaleCompletedDomEvent(alert.productId, alert.productName, alert.buyerId);
     },
     [refreshUnread],

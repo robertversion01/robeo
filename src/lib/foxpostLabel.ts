@@ -7,6 +7,18 @@ export type FoxpostLabelInput = {
   sellerEmail?: string;
 };
 
+const LABEL_DOWNLOADED_PREFIX = 'robeo_foxpost_label_';
+
+export function markFoxpostLabelDownloaded(transactionId: string): void {
+  if (typeof window === 'undefined' || !transactionId) return;
+  localStorage.setItem(`${LABEL_DOWNLOADED_PREFIX}${transactionId}`, '1');
+}
+
+export function hasFoxpostLabelDownloaded(transactionId: string): boolean {
+  if (typeof window === 'undefined' || !transactionId) return false;
+  return localStorage.getItem(`${LABEL_DOWNLOADED_PREFIX}${transactionId}`) === '1';
+}
+
 export function downloadFoxpostLabelStub(input: FoxpostLabelInput): void {
   const html = `<!DOCTYPE html>
 <html lang="hu">
@@ -41,13 +53,16 @@ export function downloadFoxpostLabelStub(input: FoxpostLabelInput): void {
 </body>
 </html>`;
 
-  const blob = new Blob([html], { type: 'text/html;charset=utf-8' });
+  const blob = new Blob([html], {
+    type: 'text/html;charset=utf-8',
+  });
   const url = URL.createObjectURL(blob);
   const a = document.createElement('a');
   a.href = url;
   a.download = `foxpost-cimke-${input.transactionId.slice(0, 8)}.html`;
   a.click();
   URL.revokeObjectURL(url);
+  markFoxpostLabelDownloaded(input.transactionId);
 }
 
 function escapeHtml(s: string): string {
