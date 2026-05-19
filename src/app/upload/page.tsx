@@ -1,7 +1,6 @@
 'use client';
 
 import { useState, useRef } from 'react';
-import { useRouter } from 'next/navigation';
 import { supabase } from '@/lib/supabase';
 import { toast } from 'sonner';
 import { X, Plus, ArrowUp, ArrowDown } from 'lucide-react';
@@ -17,7 +16,6 @@ interface UploadedImage {
 }
 
 export default function UploadPage() {
-  const router = useRouter();
   const [formData, setFormData] = useState({
     name: '',
     description: '',
@@ -156,7 +154,6 @@ export default function UploadPage() {
         console.warn('[upload] revalidateCatalog failed', revalidateErr);
       }
       notifyCatalogUpdated();
-      router.refresh();
 
       setFormData({
         name: '',
@@ -169,7 +166,8 @@ export default function UploadPage() {
       setImages([]);
 
       toast.success('Sikeres feltöltés!');
-      router.push('/');
+      window.location.href = '/';
+      return;
 
     } catch (error: any) {
       console.error('Error uploading product:', error);

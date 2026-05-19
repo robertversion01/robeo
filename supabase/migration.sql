@@ -415,13 +415,19 @@ USING (auth.uid() = user_id);
 ALTER TABLE IF EXISTS public.products ENABLE ROW LEVEL SECURITY;
 
 DROP POLICY IF EXISTS "products_select_public_active" ON public.products;
-CREATE POLICY "products_select_public_active"
+DROP POLICY IF EXISTS "Allow public read access for active products" ON public.products;
+CREATE POLICY "Allow public read access for active products"
 ON public.products
 FOR SELECT
 TO anon, authenticated
-USING (
-  COALESCE(status, 'active') <> 'deleted'
-);
+USING (status = 'active' OR status IS NULL);
+
+DROP POLICY IF EXISTS "products_select_own" ON public.products;
+CREATE POLICY "products_select_own"
+ON public.products
+FOR SELECT
+TO authenticated
+USING (auth.uid() = user_id);
 
 DROP POLICY IF EXISTS "products_insert_own" ON public.products;
 CREATE POLICY "products_insert_own"
@@ -436,8 +442,10 @@ TO authenticated
 USING (auth.uid() = user_id)
 WITH CHECK (auth.uid() = user_id);
 
-COMMENT ON POLICY "products_select_public_active" ON public.products IS
-  'Publikus lista / keresés: csak nem törölt (soft delete kiesik).';
+COMMENT ON POLICY "Allow public read access for active products" ON public.products IS
+  'Publikus főoldal / keresés: csak active vagy legacy null status.';
+COMMENT ON POLICY "products_select_own" ON public.products IS
+  'Profil: tulajdonos minden saját termékét látja (sold, deleted, stb.).';
 COMMENT ON POLICY "products_insert_own" ON public.products IS
   'Új termék: csak saját user_id-val.';
 COMMENT ON POLICY "products_update_own" ON public.products IS
