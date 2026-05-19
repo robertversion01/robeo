@@ -3,6 +3,7 @@ import type { SupabaseClient } from '@supabase/supabase-js';
 import { insertChatSystemMessage } from '@/lib/chatMessages';
 import { buildPurchaseSellerMessage } from '@/lib/saleNotifications';
 import { creditSellerPendingForTransaction } from '@/lib/wallet';
+import { fetchProfileRow } from '@/lib/supabaseResilience';
 
 export type PaidTransactionRow = {
   id: string;
@@ -55,17 +56,21 @@ export async function applyPaidTransactionEffects(
     let buyerAddress = options?.buyerAddressOverride || 'Nincs megadva';
 
     if (!options?.buyerAddressOverride) {
-      const { data: buyerProfile, error: profileErr } = await db
-        .from('profiles')
-        .select(
-          'full_name, name, email, location, address, city, postal_code, address_line1, address_line2',
-        )
-        .eq('id', transaction.buyer_id)
-        .maybeSingle();
-
-      if (profileErr) {
-        throw new Error(`profiles select: ${profileErr.message}`);
-      }
+      const buyerProfile = await fetchProfileRow<{
+        full_name?: string | null;
+        name?: string | null;
+        email?: string | null;
+        location?: string | null;
+        address?: string | null;
+        city?: string | null;
+        postal_code?: string | null;
+        address_line1?: string | null;
+        address_line2?: string | null;
+      }>(db, transaction.buyer_id, [
+        'email, name, location, address, city, postal_code, address_line1, address_line2',
+        'email, name',
+        'email',
+      ]);
 
       if (buyerProfile) {
         buyerAddress =

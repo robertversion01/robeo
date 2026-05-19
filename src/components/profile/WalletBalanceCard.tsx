@@ -6,6 +6,7 @@ import { supabase } from '@/lib/supabase';
 import { formatPrice } from '@/lib/utils';
 import { toast } from 'sonner';
 import type { WalletRow } from '@/lib/wallet';
+import { fetchProfileRow } from '@/lib/supabaseResilience';
 
 type Props = {
   userId: string | null | undefined;
@@ -30,17 +31,21 @@ export default function WalletBalanceCard({ userId }: Props) {
       return;
     }
 
-    const [{ data, error }, profileRes] = await Promise.all([
+    const [{ data, error }, profileRow] = await Promise.all([
       supabase
         .from('wallets')
         .select('available_balance, pending_balance, currency')
         .eq('user_id', userId)
         .maybeSingle(),
-      supabase
-        .from('profiles')
-        .select('stripe_connect_onboarded, connected_account_id, stripe_account_id')
-        .eq('id', userId)
-        .maybeSingle(),
+      fetchProfileRow<{
+        stripe_connect_onboarded?: boolean | null;
+        connected_account_id?: string | null;
+        stripe_account_id?: string | null;
+      }>(supabase, userId, [
+        'stripe_connect_onboarded, connected_account_id, stripe_account_id',
+        'connected_account_id, stripe_account_id',
+        'stripe_account_id',
+      ]),
     ]);
 
     if (error) {
@@ -54,9 +59,9 @@ export default function WalletBalanceCard({ userId }: Props) {
     });
     setConnectOnboarded(
       Boolean(
-        profileRes.data?.stripe_connect_onboarded ||
-          profileRes.data?.connected_account_id ||
-          profileRes.data?.stripe_account_id,
+        profileRow?.stripe_connect_onboarded ||
+          profileRow?.connected_account_id ||
+          profileRow?.stripe_account_id,
       ),
     );
     setLoading(false);

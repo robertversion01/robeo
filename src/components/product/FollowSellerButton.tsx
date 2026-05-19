@@ -4,6 +4,12 @@ import { useCallback, useEffect, useState } from 'react';
 import { supabase } from '@/lib/supabase';
 import { UserPlus, UserCheck } from 'lucide-react';
 import { toast } from 'sonner';
+import { fetchSellerDisplayProfile, getSellerDisplayName } from '@/lib/sellerProfile';
+import {
+  insertAppNotificationSafe,
+  isFollowingSeller,
+  setFollowSeller,
+} from '@/lib/supabaseResilience';
 
 type Props = {
   sellerId: string;
@@ -19,6 +25,7 @@ export default function FollowSellerButton({
   const [userId, setUserId] = useState<string | null>(null);
   const [following, setFollowing] = useState(false);
   const [busy, setBusy] = useState(false);
+  const [followsAvailable, setFollowsAvailable] = useState(true);
 
   const load = useCallback(async () => {
     const {
@@ -27,14 +34,13 @@ export default function FollowSellerButton({
     setUserId(user?.id ?? null);
     if (!user || user.id === sellerId) return;
 
-    const { data } = await supabase
-      .from('follows')
-      .select('follower_id')
-      .eq('follower_id', user.id)
-      .eq('following_id', sellerId)
-      .maybeSingle();
-
-    setFollowing(Boolean(data));
+    const isFollowing = await isFollowingSeller(supabase, user.id, sellerId);
+    if (isFollowing === null) {
+      setFollowsAvailable(false);
+      return;
+    }
+    setFollowing(isFollowing);
+    setFollowsAvailable(true);
   }, [sellerId]);
 
   useEffect(() => {
@@ -50,37 +56,23 @@ export default function FollowSellerButton({
 
     setBusy(true);
     try {
-      if (following) {
-        const { error } = await supabase
-          .from('follows')
-          .delete()
-          .eq('follower_id', userId)
-          .eq('following_id', sellerId);
-        if (error) throw error;
-        setFollowing(false);
-        onFollowChange?.(false);
-        toast.success('Kikövetted az eladót.');
-      } else {
-        const { error } = await supabase.from('follows').insert({
-          follower_id: userId,
-          following_id: sellerId,
-        });
-        if (error) throw error;
-        setFollowing(true);
-        onFollowChange?.(true);
+      const result = await setFollowSeller(supabase, userId, sellerId, !following);
+      if (!result.ok) {
+        if (result.error?.includes('nincs telepítve')) {
+          setFollowsAvailable(false);
+        }
+        throw new Error(result.error || 'Nem sikerült.');
+      }
 
-        const { data: profile } = await supabase
-          .from('profiles')
-          .select('full_name, name, email')
-          .eq('id', userId)
-          .maybeSingle();
-        const followerName =
-          profile?.full_name?.trim() ||
-          profile?.name?.trim() ||
-          profile?.email?.split('@')[0] ||
-          'Valaki';
+      const nextFollowing = !following;
+      setFollowing(nextFollowing);
+      onFollowChange?.(nextFollowing);
 
-        await supabase.from('app_notifications').insert({
+      if (nextFollowing) {
+        const profile = await fetchSellerDisplayProfile(supabase, userId);
+        const followerName = getSellerDisplayName(profile);
+
+        await insertAppNotificationSafe(supabase, {
           user_id: sellerId,
           type: 'new_follower',
           title: 'Új követő',
@@ -89,6 +81,8 @@ export default function FollowSellerButton({
         });
 
         toast.success(`Követed: ${sellerLabel} — értesítünk új termékeiről.`);
+      } else {
+        toast.success('Kikövetted az eladót.');
       }
     } catch (e) {
       toast.error(e instanceof Error ? e.message : 'Nem sikerült.');
@@ -98,6 +92,12 @@ export default function FollowSellerButton({
   };
 
   if (!userId || userId === sellerId) return null;
+
+  if (!followsAvailable) {
+    return (
+      <p className="text-xs text-gray-400">Követés hamarosan (adatbázis patch szükséges).</p>
+    );
+  }
 
   return (
     <button

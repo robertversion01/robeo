@@ -1,5 +1,6 @@
 import type { SupabaseClient } from '@supabase/supabase-js';
 import { DEFAULT_BUNDLE_TIERS, type BundleTier } from '@/lib/vintedCatalog';
+import { isMissingColumnError, isSupabaseSchemaError } from '@/lib/supabaseResilience';
 
 export type SellerBundleDiscountSettings = {
   enabled: boolean;
@@ -10,16 +11,6 @@ const DEFAULT_SELLER_BUNDLE: SellerBundleDiscountSettings = {
   enabled: false,
   tiers: [...DEFAULT_BUNDLE_TIERS],
 };
-
-function isMissingProfileColumnError(error: { code?: string; message?: string } | null): boolean {
-  const msg = error?.message?.toLowerCase() ?? '';
-  return (
-    error?.code === '42703' ||
-    error?.code === 'PGRST204' ||
-    msg.includes('column') ||
-    msg.includes('does not exist')
-  );
-}
 
 /** Rugalmas lekérés — ha a patch még nincs futtatva, nem dob 400-at a checkout. */
 export async function fetchSellerBundleDiscountSettings(
@@ -39,7 +30,7 @@ export async function fetchSellerBundleDiscountSettings(
     };
   }
 
-  if (isMissingProfileColumnError(error)) {
+  if (isMissingColumnError(error) || isSupabaseSchemaError(error)) {
     return DEFAULT_SELLER_BUNDLE;
   }
 

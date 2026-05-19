@@ -36,6 +36,10 @@ import {
   type SaleCompletedBroadcastPayload,
 } from '@/lib/globalEvents';
 import { toast } from 'sonner';
+import {
+  countUnreadAppNotifications,
+  markAllAppNotificationsReadSafe,
+} from '@/lib/supabaseResilience';
 
 /**
  * Supabase Dashboard → Database → Publications → supabase_realtime:
@@ -116,16 +120,12 @@ export function NotificationProvider({ children }: { children: ReactNode }) {
       setUnreadCount(0);
       return;
     }
-    const [msgCount, feedRes] = await Promise.all([
+    const [msgCount, feedCount] = await Promise.all([
       fetchUnreadCount(supabase, uid),
-      supabase
-        .from('app_notifications')
-        .select('id', { count: 'exact', head: true })
-        .eq('user_id', uid)
-        .eq('is_read', false),
+      countUnreadAppNotifications(supabase, uid),
     ]);
     setUnreadCount(msgCount);
-    setFeedUnreadCount(feedRes.count ?? 0);
+    setFeedUnreadCount(feedCount);
   }, []);
 
   const markMessagesSeen = useCallback(() => {
@@ -139,11 +139,7 @@ export function NotificationProvider({ children }: { children: ReactNode }) {
   const markFeedSeen = useCallback(async () => {
     const uid = userIdRef.current;
     if (!uid) return;
-    await supabase
-      .from('app_notifications')
-      .update({ is_read: true })
-      .eq('user_id', uid)
-      .eq('is_read', false);
+    await markAllAppNotificationsReadSafe(supabase, uid);
     setFeedUnreadCount(0);
     await refreshUnread();
   }, [refreshUnread]);
@@ -268,16 +264,12 @@ export function NotificationProvider({ children }: { children: ReactNode }) {
       if (cancelled) return;
       setUserId(user?.id ?? null);
       if (user?.id) {
-        const [msgCount, feedRes] = await Promise.all([
+        const [msgCount, feedCount] = await Promise.all([
           fetchUnreadCount(supabase, user.id),
-          supabase
-            .from('app_notifications')
-            .select('id', { count: 'exact', head: true })
-            .eq('user_id', user.id)
-            .eq('is_read', false),
+          countUnreadAppNotifications(supabase, user.id),
         ]);
         setUnreadCount(msgCount);
-        setFeedUnreadCount(feedRes.count ?? 0);
+        setFeedUnreadCount(feedCount);
       }
     };
 
