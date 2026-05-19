@@ -24,6 +24,11 @@ export default function CheckoutSuccessPage() {
 function CheckoutSuccessContentComponent() {
   const searchParams = useSearchParams();
   const router = useRouter();
+
+  const goToHome = () => {
+    notifyCatalogUpdated();
+    window.location.href = '/';
+  };
   const [loading, setLoading] = useState(true);
   const [transaction, setTransaction] = useState<any>(null);
   const [product, setProduct] = useState<any>(null);
@@ -127,16 +132,13 @@ function CheckoutSuccessContentComponent() {
         <div className="max-w-md w-full bg-white rounded-lg p-6 shadow-lg border border-gray-200 text-center">
           <h1 className="text-xl font-bold mb-4">Hiba történt</h1>
           <p className="text-gray-600 mb-6">{error}</p>
-          <Link
-            href="/"
+          <button
+            type="button"
+            onClick={goToHome}
             className="inline-flex items-center justify-center btn-base btn-primary"
-            onClick={() => {
-              notifyCatalogUpdated();
-              router.refresh();
-            }}
           >
             Vissza a főoldalra
-          </Link>
+          </button>
         </div>
       </div>
     );
@@ -238,16 +240,13 @@ function CheckoutSuccessContentComponent() {
                   Üzenetek megtekintése
                   <ArrowRight size={16} className="ml-1" />
                 </Link>
-                <Link
-                  href="/"
+                <button
+                  type="button"
+                  onClick={goToHome}
                   className="inline-flex items-center justify-center btn-base btn-secondary"
-                  onClick={() => {
-                    notifyCatalogUpdated();
-                    router.refresh();
-                  }}
                 >
                   Vissza a főoldalra
-                </Link>
+                </button>
               </div>
             </div>
           </div>

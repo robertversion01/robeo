@@ -15,6 +15,7 @@ import { formatPrice } from '@/lib/utils';
 import { getOptimizedImageUrl } from '@/lib/imageUtils';
 import type { Product } from '@/types';
 import { MAIN_TOP_PADDING } from '@/lib/layoutTokens';
+import { ChevronDown } from 'lucide-react';
 import { notifyCatalogUpdated } from '@/lib/catalogRefresh';
 
 export default function ProfilePage() {
@@ -510,9 +511,18 @@ export default function ProfilePage() {
           </div>
 
           {isAdmin ? (
-            <div className="mb-8 rounded-xl border border-gray-200 bg-gray-50 p-4">
+            <details className="group mb-8 rounded-xl border border-gray-200 bg-gray-50 overflow-hidden">
+              <summary className="flex cursor-pointer list-none items-center justify-between gap-2 px-4 py-3 text-sm font-medium text-gray-700 hover:bg-gray-100/80 [&::-webkit-details-marker]:hidden">
+                <span>🛠️ Adminisztrációs beállítások (Kattints a megnyitáshoz)</span>
+                <ChevronDown
+                  size={18}
+                  className="shrink-0 text-gray-500 transition-transform group-open:rotate-180"
+                  aria-hidden
+                />
+              </summary>
+              <div className="border-t border-gray-200 p-4">
               <div className="mb-3 flex flex-wrap items-center justify-between gap-2">
-                <h2 className="text-lg font-semibold">Admin - Kiemeles kezeles</h2>
+                <h2 className="text-base font-semibold text-gray-900">Kiemelés kezelése</h2>
                 <button
                   type="button"
                   onClick={runImageAuditAsAdmin}
@@ -523,7 +533,7 @@ export default function ProfilePage() {
                 </button>
               </div>
               {adminProducts.length === 0 ? (
-                <p className="text-sm text-gray-500">Nincs megjelenitheto termek.</p>
+                <p className="text-sm text-gray-500">Nincs megjeleníthető termék.</p>
               ) : (
                 <div className="space-y-2">
                   {adminProducts.map((item) => (
@@ -559,7 +569,8 @@ export default function ProfilePage() {
                   ))}
                 </div>
               )}
-            </div>
+              </div>
+            </details>
           ) : null}
 
           {/* Tranzakciók */}
