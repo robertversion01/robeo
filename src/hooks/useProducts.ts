@@ -94,14 +94,21 @@ export function useProducts() {
   }, [fetchProducts]);
 
   useEffect(() => {
+    const onProductChange = () => {
+      fetchProducts();
+    };
+
     const channel = supabase
       .channel('catalog-products')
       .on(
         'postgres_changes',
+        { event: 'INSERT', schema: 'public', table: 'products' },
+        onProductChange,
+      )
+      .on(
+        'postgres_changes',
         { event: 'UPDATE', schema: 'public', table: 'products' },
-        () => {
-          fetchProducts();
-        },
+        onProductChange,
       )
       .subscribe();
 

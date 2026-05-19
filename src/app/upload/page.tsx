@@ -1,11 +1,14 @@
 'use client';
 
 import { useState, useRef } from 'react';
+import { useRouter } from 'next/navigation';
 import { supabase } from '@/lib/supabase';
 import { toast } from 'sonner';
 import { X, Plus, ArrowUp, ArrowDown } from 'lucide-react';
 import CustomSelect from '@/components/ui/CustomSelect';
 import { MAIN_TOP_PADDING } from '@/lib/layoutTokens';
+import { revalidateCatalog } from '@/app/actions/revalidateCatalog';
+import { notifyCatalogUpdated } from '@/lib/catalogRefresh';
 
 interface UploadedImage {
   file: File;
@@ -14,6 +17,7 @@ interface UploadedImage {
 }
 
 export default function UploadPage() {
+  const router = useRouter();
   const [formData, setFormData] = useState({
     name: '',
     description: '',
@@ -139,13 +143,21 @@ export default function UploadPage() {
           condition: formData.condition,
           brand: formData.brand,
           image_url: imageUrls[0] || null,
-          images: imageUrls, // Store all images as JSON array
-          user_id: user.id
+          images: imageUrls,
+          user_id: user.id,
+          status: 'active',
         });
 
       if (error) throw error;
 
-      // Reset form
+      try {
+        await revalidateCatalog();
+      } catch (revalidateErr) {
+        console.warn('[upload] revalidateCatalog failed', revalidateErr);
+      }
+      notifyCatalogUpdated();
+      router.refresh();
+
       setFormData({
         name: '',
         description: '',
@@ -157,6 +169,7 @@ export default function UploadPage() {
       setImages([]);
 
       toast.success('Sikeres feltöltés!');
+      router.push('/');
 
     } catch (error: any) {
       console.error('Error uploading product:', error);

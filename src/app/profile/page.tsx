@@ -15,6 +15,7 @@ import { formatPrice } from '@/lib/utils';
 import { getOptimizedImageUrl } from '@/lib/imageUtils';
 import type { Product } from '@/types';
 import { MAIN_TOP_PADDING } from '@/lib/layoutTokens';
+import { notifyCatalogUpdated } from '@/lib/catalogRefresh';
 
 export default function ProfilePage() {
   const [products, setProducts] = useState<Product[]>([]);
@@ -194,7 +195,7 @@ export default function ProfilePage() {
 
       toast.success('Hirdetés törölve. A termék többé nem látható a piactéren.');
       setStatsTick((t) => t + 1);
-      window.dispatchEvent(new CustomEvent('products:updated'));
+      notifyCatalogUpdated();
     } catch (error) {
       console.error('Error deleting product:', error);
       setProducts(snapshot);
@@ -241,7 +242,7 @@ export default function ProfilePage() {
 
       toast.success('A kijelölt hirdetéseid törölve — nem látszanak a piactéren.');
       setStatsTick((t) => t + 1);
-      window.dispatchEvent(new CustomEvent('products:updated'));
+      notifyCatalogUpdated();
     } catch (error) {
       console.error('Bulk delete error:', error);
       setProducts(snapshot);
