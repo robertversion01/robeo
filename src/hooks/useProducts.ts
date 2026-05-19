@@ -4,6 +4,13 @@ import { useEffect, useState, useMemo, useCallback } from 'react';
 import { supabase } from '@/lib/supabase';
 import { useBrowseSearch } from '@/context/BrowseContext';
 import type { Product } from '@/types';
+import { CATALOG_UPDATED_EVENT } from '@/lib/catalogRefresh';
+
+/** Csak böngészhető, megvásárolható termékek a főlistán. */
+function isListedProduct(status: string | null | undefined): boolean {
+  if (status === 'sold' || status === 'deleted') return false;
+  return status === 'active' || status == null;
+}
 
 const CATEGORY_ALIASES: Record<string, string[]> = {
   clothing: ['clothing', 'ruhazat', 'ruházat', 'clothes'],
@@ -53,11 +60,13 @@ export function useProducts() {
       const { data, error } = await supabase
         .from('products')
         .select('*')
-        .or('status.is.null,status.neq.deleted')
+        .or('status.eq.active,status.is.null')
         .order(sortConfig.column, { ascending: sortConfig.order === 'asc' });
 
       if (error) throw error;
-      const fetchedProducts = (data || []) as Product[];
+      const fetchedProducts = ((data || []) as Product[]).filter((p) =>
+        isListedProduct(p.status),
+      );
       setProducts(fetchedProducts);
       const maxPrice = fetchedProducts.reduce(
         (max, product) => Math.max(max, Number(product.price) || 0),
@@ -80,8 +89,25 @@ export function useProducts() {
     const onCatalogRefresh = () => {
       fetchProducts();
     };
-    window.addEventListener('products:updated', onCatalogRefresh);
-    return () => window.removeEventListener('products:updated', onCatalogRefresh);
+    window.addEventListener(CATALOG_UPDATED_EVENT, onCatalogRefresh);
+    return () => window.removeEventListener(CATALOG_UPDATED_EVENT, onCatalogRefresh);
+  }, [fetchProducts]);
+
+  useEffect(() => {
+    const channel = supabase
+      .channel('catalog-products')
+      .on(
+        'postgres_changes',
+        { event: 'UPDATE', schema: 'public', table: 'products' },
+        () => {
+          fetchProducts();
+        },
+      )
+      .subscribe();
+
+    return () => {
+      void supabase.removeChannel(channel);
+    };
   }, [fetchProducts]);
 
   const checkUserAndFavorites = async () => {

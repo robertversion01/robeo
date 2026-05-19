@@ -1,7 +1,12 @@
 import type Stripe from 'stripe';
+import { revalidatePath } from 'next/cache';
 import { NextRequest, NextResponse } from 'next/server';
 import { getStripeInstance } from '@/lib/stripe-client';
+import { insertChatSystemMessage } from '@/lib/chatMessages';
 import { getSupabaseAdminClient } from '@/lib/supabase';
+
+const PURCHASE_SELLER_MESSAGE =
+  '🎉 Rendszerüzenet: A terméket sikeresen kifizették! Kedves Eladó, kérjük készítsd össze a csomagot a szállításhoz.';
 
 export const dynamic = 'force-dynamic';
 
@@ -138,15 +143,21 @@ async function applyPaidTransactionEffects(
         'Nincs cím';
     }
 
-    const { error: messageError } = await db.from('messages').insert({
-      sender_id: transaction.buyer_id,
-      receiver_id: transaction.seller_id,
-      content: `✅ Eladtad a terméket! Itt a vevő címe: ${buyerAddress}`,
-      product_id: transaction.product_id,
-      message_type: 'system',
+    let sellerMessage = PURCHASE_SELLER_MESSAGE;
+    if (buyerAddress && buyerAddress !== 'Nincs megadva') {
+      sellerMessage += `\n\n📦 Vevő szállítási címe: ${buyerAddress}`;
+    }
+
+    const messageResult = await insertChatSystemMessage(db, {
+      senderId: transaction.buyer_id,
+      receiverId: transaction.seller_id,
+      content: sellerMessage,
+      productId: transaction.product_id,
     });
 
-    if (messageError) throw new Error(`messages insert: ${messageError.message}`);
+    if (!messageResult.ok) {
+      throw new Error(`messages insert: ${messageResult.error}`);
+    }
 
     const { error: notifyErr } = await db
       .from('transactions')
@@ -157,6 +168,9 @@ async function applyPaidTransactionEffects(
 
     if (notifyErr) throw new Error(`transactions notify timestamp: ${notifyErr.message}`);
   }
+
+  revalidatePath('/');
+  revalidatePath('/favorites');
 }
 
 async function handleCheckoutSessionCompleted(event: Stripe.Event, db: any): Promise<void> {

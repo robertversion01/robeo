@@ -9,18 +9,17 @@ import dynamic from 'next/dynamic';
 import { toast } from 'sonner';
 import ReviewForm from '@/components/review/ReviewForm';
 import { MAIN_TOP_PADDING } from '@/lib/layoutTokens';
+import { revalidateCatalog } from '@/app/actions/revalidateCatalog';
+import { notifyCatalogUpdated } from '@/lib/catalogRefresh';
 
-// Use dynamic import with { ssr: false } to prevent server-side rendering
 const CheckoutSuccessContent = dynamic(() => Promise.resolve(CheckoutSuccessContentComponent), {
   ssr: false,
 });
 
-// Export the page component that uses dynamic import
 export default function CheckoutSuccessPage() {
   return <CheckoutSuccessContent />;
 }
 
-// The actual component that will be dynamically imported
 function CheckoutSuccessContentComponent() {
   const searchParams = useSearchParams();
   const router = useRouter();
@@ -39,7 +38,6 @@ function CheckoutSuccessContentComponent() {
       return;
     }
 
-    // Check if we're in a browser environment
     if (typeof window === 'undefined') {
       setLoading(false);
       return;
@@ -47,7 +45,6 @@ function CheckoutSuccessContentComponent() {
 
     const fetchTransactionDetails = async () => {
       try {
-        // Get the transaction from checkout session ID.
         const { data: transactionData, error: transactionError } = await supabase
           .from('transactions')
           .select('*')
@@ -68,57 +65,37 @@ function CheckoutSuccessContentComponent() {
           throw new Error('Product not found for transaction');
         }
 
-        const transactionWithRelations = {
-          ...transactionData,
-          product: productData,
-        };
-
-        setTransaction(transactionWithRelations);
+        setTransaction({ ...transactionData, product: productData });
         setProduct(productData);
 
-        // Update the transaction status to Vinted flow initial state
-        await supabase
-          .from('transactions')
-          .update({ status: 'fizetve' })
-          .eq('id', transactionData.id);
-
-        // Update the product status to 'sold'
-        await supabase
-          .from('products')
-          .update({ status: 'sold' })
-          .eq('id', transactionData.product_id);
-
-        // Send a system message to the seller
-        await supabase
-          .from('messages')
-          .insert({
-            sender_id: transactionData.buyer_id,
-            receiver_id: transactionData.seller_id,
-            content: `🎉 Sikeres vásárlás! A "${productData.name}" termék kifizetése megtörtént. A pénz letétben van, amíg a termék meg nem érkezik.`,
-            product_id: transactionData.product_id,
-            message_type: 'system',
-          });
+        try {
+          await revalidateCatalog();
+        } catch (revalidateErr) {
+          console.warn('[checkout-success] revalidateCatalog failed', revalidateErr);
+        }
+        notifyCatalogUpdated();
+        router.refresh();
 
         if (!purchaseToastShown) {
           toast.success('Sikeres vásárlás! A rendelésed rögzítve lett.');
           setPurchaseToastShown(true);
         }
-
-      } catch (err: any) {
+      } catch (err: unknown) {
         console.error('Error fetching transaction details:', err);
-        setError(err.message || 'An error occurred');
+        const message = err instanceof Error ? err.message : 'An error occurred';
+        setError(message);
       } finally {
         setLoading(false);
       }
     };
 
-    fetchTransactionDetails();
-  }, [searchParams, purchaseToastShown]);
+    void fetchTransactionDetails();
+  }, [searchParams, router, purchaseToastShown]);
 
   if (loading) {
     return (
       <div className="min-h-screen bg-white text-gray-900 flex items-center justify-center">
-        <div className="animate-spin h-10 w-10 border-4 border-accent border-t-transparent rounded-full"></div>
+        <div className="animate-spin h-10 w-10 border-4 border-accent border-t-transparent rounded-full" />
       </div>
     );
   }
@@ -129,9 +106,13 @@ function CheckoutSuccessContentComponent() {
         <div className="max-w-md w-full bg-white rounded-lg p-6 shadow-lg border border-gray-200 text-center">
           <h1 className="text-xl font-bold mb-4">Hiba történt</h1>
           <p className="text-gray-600 mb-6">{error}</p>
-          <Link 
+          <Link
             href="/"
             className="inline-flex items-center justify-center btn-base btn-primary"
+            onClick={() => {
+              notifyCatalogUpdated();
+              router.refresh();
+            }}
           >
             Vissza a főoldalra
           </Link>
@@ -156,13 +137,15 @@ function CheckoutSuccessContentComponent() {
                 <div className="flex items-center">
                   <div className="w-16 h-16 rounded-md overflow-hidden mr-3 bg-gray-100 flex-shrink-0">
                     {product.image_url ? (
-                      <img 
-                        src={product.image_url} 
+                      <img
+                        src={product.image_url}
                         alt={product.name}
                         className="w-full h-full object-cover"
                       />
                     ) : (
-                      <div className="w-full h-full flex items-center justify-center text-gray-400">📷</div>
+                      <div className="w-full h-full flex items-center justify-center text-gray-400">
+                        📷
+                      </div>
                     )}
                   </div>
                   <div>
@@ -182,10 +165,12 @@ function CheckoutSuccessContentComponent() {
                   </div>
                   <div>
                     <h3 className="font-medium text-gray-900">Fizetés megtörtént</h3>
-                    <p className="text-sm text-gray-600">A pénz biztonságos letétben van, amíg a termék meg nem érkezik.</p>
+                    <p className="text-sm text-gray-600">
+                      A pénz biztonságos letétben van, amíg a termék meg nem érkezik.
+                    </p>
                   </div>
                 </div>
-                
+
                 <div className="flex items-start">
                   <div className="bg-gray-100 p-2 rounded-full mr-3">
                     <Package className="text-gray-500" size={18} />
@@ -195,7 +180,7 @@ function CheckoutSuccessContentComponent() {
                     <p className="text-sm text-gray-600">Az eladó hamarosan feladja a terméket.</p>
                   </div>
                 </div>
-                
+
                 <div className="flex items-start">
                   <div className="bg-gray-100 p-2 rounded-full mr-3">
                     <Truck className="text-gray-500" size={18} />
@@ -225,16 +210,20 @@ function CheckoutSuccessContentComponent() {
                 </div>
               ) : null}
               <div className="flex flex-col sm:flex-row gap-3 justify-center">
-                <Link 
+                <Link
                   href="/messages"
                   className="inline-flex items-center justify-center btn-base btn-primary"
                 >
                   Üzenetek megtekintése
                   <ArrowRight size={16} className="ml-1" />
                 </Link>
-                <Link 
+                <Link
                   href="/"
                   className="inline-flex items-center justify-center btn-base btn-secondary"
+                  onClick={() => {
+                    notifyCatalogUpdated();
+                    router.refresh();
+                  }}
                 >
                   Vissza a főoldalra
                 </Link>
