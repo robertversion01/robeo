@@ -122,7 +122,7 @@ export function NotificationProvider({ children }: { children: ReactNode }) {
         .from('app_notifications')
         .select('id', { count: 'exact', head: true })
         .eq('user_id', uid)
-        .is('read_at', null),
+        .eq('is_read', false),
     ]);
     setUnreadCount(msgCount);
     setFeedUnreadCount(feedRes.count ?? 0);
@@ -139,12 +139,11 @@ export function NotificationProvider({ children }: { children: ReactNode }) {
   const markFeedSeen = useCallback(async () => {
     const uid = userIdRef.current;
     if (!uid) return;
-    const now = new Date().toISOString();
     await supabase
       .from('app_notifications')
-      .update({ read_at: now })
+      .update({ is_read: true })
       .eq('user_id', uid)
-      .is('read_at', null);
+      .eq('is_read', false);
     setFeedUnreadCount(0);
     await refreshUnread();
   }, [refreshUnread]);
@@ -275,7 +274,7 @@ export function NotificationProvider({ children }: { children: ReactNode }) {
             .from('app_notifications')
             .select('id', { count: 'exact', head: true })
             .eq('user_id', user.id)
-            .is('read_at', null),
+            .eq('is_read', false),
         ]);
         setUnreadCount(msgCount);
         setFeedUnreadCount(feedRes.count ?? 0);

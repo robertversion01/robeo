@@ -6,9 +6,13 @@ export type AppNotificationRow = {
   title: string;
   body: string | null;
   link: string | null;
-  read_at: string | null;
+  is_read: boolean;
   created_at: string;
 };
+
+export function isNotificationUnread(row: Pick<AppNotificationRow, 'is_read'>): boolean {
+  return !row.is_read;
+}
 
 export async function fetchAppNotifications(
   supabase: SupabaseClient,
@@ -17,7 +21,7 @@ export async function fetchAppNotifications(
 ): Promise<AppNotificationRow[]> {
   const { data, error } = await supabase
     .from('app_notifications')
-    .select('id, type, title, body, link, read_at, created_at')
+    .select('id, type, title, body, link, is_read, created_at')
     .eq('user_id', userId)
     .order('created_at', { ascending: false })
     .limit(limit);
@@ -33,20 +37,16 @@ export async function markAllAppNotificationsRead(
   supabase: SupabaseClient,
   userId: string,
 ): Promise<void> {
-  const now = new Date().toISOString();
   await supabase
     .from('app_notifications')
-    .update({ read_at: now })
+    .update({ is_read: true })
     .eq('user_id', userId)
-    .is('read_at', null);
+    .eq('is_read', false);
 }
 
 export async function markAppNotificationRead(
   supabase: SupabaseClient,
   notificationId: string,
 ): Promise<void> {
-  await supabase
-    .from('app_notifications')
-    .update({ read_at: new Date().toISOString() })
-    .eq('id', notificationId);
+  await supabase.from('app_notifications').update({ is_read: true }).eq('id', notificationId);
 }

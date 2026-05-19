@@ -6,6 +6,7 @@ import { Bell, CheckCheck } from 'lucide-react';
 import { supabase } from '@/lib/supabase';
 import {
   fetchAppNotifications,
+  isNotificationUnread,
   markAllAppNotificationsRead,
   markAppNotificationRead,
   type AppNotificationRow,
@@ -78,17 +79,15 @@ export default function AppNotificationsFeed() {
   const markAllRead = async () => {
     if (!userId) return;
     await markAllAppNotificationsRead(supabase, userId);
-    setItems((prev) => prev.map((n) => ({ ...n, read_at: n.read_at || new Date().toISOString() })));
+    setItems((prev) => prev.map((n) => ({ ...n, is_read: true })));
     await refreshUnread();
   };
 
   const openNotification = async (row: AppNotificationRow) => {
-    if (!row.read_at) {
+    if (isNotificationUnread(row)) {
       await markAppNotificationRead(supabase, row.id);
       setItems((prev) =>
-        prev.map((n) =>
-          n.id === row.id ? { ...n, read_at: new Date().toISOString() } : n,
-        ),
+        prev.map((n) => (n.id === row.id ? { ...n, is_read: true } : n)),
       );
       await refreshUnread();
     }
@@ -115,7 +114,7 @@ export default function AppNotificationsFeed() {
             <Bell size={22} className="text-[#007782]" />
             Értesítések
           </h1>
-          {items.some((n) => !n.read_at) ? (
+          {items.some((n) => isNotificationUnread(n)) ? (
             <button
               type="button"
               onClick={() => void markAllRead()}
@@ -134,12 +133,13 @@ export default function AppNotificationsFeed() {
         ) : (
           <ul className="space-y-2">
             {items.map((n) => {
+              const unread = isNotificationUnread(n);
               const inner = (
                 <div
                   className={`rounded-xl border p-4 transition-colors ${
-                    n.read_at
-                      ? 'border-gray-200 bg-white'
-                      : 'border-[#007782]/30 bg-[#007782]/5'
+                    unread
+                      ? 'border-[#007782]/30 bg-[#007782]/5'
+                      : 'border-gray-200 bg-white'
                   }`}
                 >
                   <p className="font-semibold text-gray-900 text-sm">{n.title}</p>
@@ -155,7 +155,11 @@ export default function AppNotificationsFeed() {
                       {inner}
                     </Link>
                   ) : (
-                    <button type="button" className="w-full text-left" onClick={() => void openNotification(n)}>
+                    <button
+                      type="button"
+                      className="w-full text-left"
+                      onClick={() => void openNotification(n)}
+                    >
                       {inner}
                     </button>
                   )}

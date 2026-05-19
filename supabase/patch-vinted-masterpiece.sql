@@ -56,6 +56,7 @@ CREATE TABLE IF NOT EXISTS public.app_notifications (
   title TEXT NOT NULL,
   body TEXT,
   link TEXT,
+  is_read BOOLEAN NOT NULL DEFAULT false,
   read_at TIMESTAMPTZ,
   created_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
 );
