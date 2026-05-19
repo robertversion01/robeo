@@ -5,6 +5,7 @@ import { getStripeInstance } from '@/lib/stripe-client';
 import { insertChatSystemMessage } from '@/lib/chatMessages';
 import { buildPurchaseSellerMessage } from '@/lib/saleNotifications';
 import { getSupabaseAdminClient } from '@/lib/supabase';
+import { creditSellerPendingForTransaction } from '@/lib/wallet';
 
 export const dynamic = 'force-dynamic';
 
@@ -69,14 +70,22 @@ function isStripeEventRowProcessed(row: {
   return row.processed === true || Boolean(row.processed_at);
 }
 
+const TX_WALLET_SELECT =
+  'id, buyer_id, seller_id, product_id, status, amount, fee, shipping_cost, payment_intent_id, checkout_completed_notified_at, wallet_pending_credited_at, wallet_released_at';
+
 type TxRow = {
   id: string;
   buyer_id: string;
   seller_id: string;
   product_id: string;
   status: string;
+  amount: number;
+  fee?: number | null;
+  shipping_cost?: number | null;
   payment_intent_id: string | null;
   checkout_completed_notified_at: string | null;
+  wallet_pending_credited_at?: string | null;
+  wallet_released_at?: string | null;
 };
 
 async function applyPaidTransactionEffects(
@@ -166,8 +175,11 @@ async function applyPaidTransactionEffects(
     if (notifyErr) throw new Error(`transactions notify timestamp: ${notifyErr.message}`);
   }
 
+  await creditSellerPendingForTransaction(db, transaction);
+
   revalidatePath('/');
   revalidatePath('/favorites');
+  revalidatePath('/profile');
 }
 
 async function handleCheckoutSessionCompleted(event: Stripe.Event, db: any): Promise<void> {
@@ -224,9 +236,7 @@ async function handleCheckoutSessionCompleted(event: Stripe.Event, db: any): Pro
 
   const { data: transaction, error: txErr } = await db
     .from('transactions')
-    .select(
-      'id, buyer_id, seller_id, product_id, status, payment_intent_id, checkout_completed_notified_at'
-    )
+    .select(TX_WALLET_SELECT)
     .eq('checkout_session_id', checkoutSessionId)
     .maybeSingle();
 
@@ -246,9 +256,7 @@ async function handlePaymentIntentSucceeded(event: Stripe.Event, db: any): Promi
 
   const { data: byPi, error: txErr } = await db
     .from('transactions')
-    .select(
-      'id, buyer_id, seller_id, product_id, status, payment_intent_id, checkout_completed_notified_at'
-    )
+    .select(TX_WALLET_SELECT)
     .eq('payment_intent_id', paymentIntentId)
     .maybeSingle();
 
@@ -258,9 +266,7 @@ async function handlePaymentIntentSucceeded(event: Stripe.Event, db: any): Promi
   if (!transaction && pi.metadata?.transactionId) {
     const { data: byMeta, error: metaErr } = await db
       .from('transactions')
-      .select(
-        'id, buyer_id, seller_id, product_id, status, payment_intent_id, checkout_completed_notified_at'
-      )
+      .select(TX_WALLET_SELECT)
       .eq('id', pi.metadata.transactionId)
       .maybeSingle();
     if (metaErr) throw new Error(`transactions select (metadata): ${metaErr.message}`);

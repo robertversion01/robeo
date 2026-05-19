@@ -1,6 +1,14 @@
 // Közös TypeScript típusok a teljes projekthez
 import { TransactionStatus, StripeAccount, Transaction } from './stripe';
 
+export interface Wallet {
+  user_id: string;
+  available_balance: number;
+  pending_balance: number;
+  currency: string;
+  updated_at: string;
+}
+
 export interface Product {
   id: string;
   name: string;

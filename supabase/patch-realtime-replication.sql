@@ -5,6 +5,7 @@
 ALTER PUBLICATION supabase_realtime ADD TABLE public.offers;
 ALTER PUBLICATION supabase_realtime ADD TABLE public.messages;
 ALTER PUBLICATION supabase_realtime ADD TABLE public.transactions;
+ALTER PUBLICATION supabase_realtime ADD TABLE public.wallets;
 
 -- Ha „already member” hibát kapsz, a tábla már be van kapcsolva — rendben.
 --

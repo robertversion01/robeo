@@ -6,6 +6,7 @@ import {
   capturePaymentIntentSafe,
   resolveTransactionPaymentIntentId,
 } from '@/lib/transactionPaymentIntent';
+import { creditSellerPendingForTransaction, releaseSellerWalletForTransaction } from '@/lib/wallet';
 
 export const dynamic = 'force-dynamic';
 
@@ -23,9 +24,7 @@ export async function POST(req: NextRequest) {
     }
 
     const stripe = getStripeInstance();
-    const supabase = (getSupabaseAdminClient() || getSupabaseClient()) as ReturnType<
-      typeof getSupabaseAdminClient
-    >;
+    const supabase = getSupabaseAdminClient() ?? getSupabaseClient();
     if (!supabase) {
       return NextResponse.json({ error: 'Service unavailable' }, { status: 500 });
     }
@@ -33,7 +32,7 @@ export async function POST(req: NextRequest) {
     const { data: transaction, error: transactionError } = await supabase
       .from('transactions')
       .select(
-        'id, buyer_id, seller_id, payment_intent_id, checkout_session_id, status, product_id',
+        'id, buyer_id, seller_id, payment_intent_id, checkout_session_id, status, product_id, amount, fee, shipping_cost, wallet_pending_credited_at, wallet_released_at',
       )
       .eq('id', transactionId)
       .single();
@@ -96,6 +95,35 @@ export async function POST(req: NextRequest) {
 
     if (updateError) {
       return NextResponse.json({ error: updateError.message }, { status: 500 });
+    }
+
+    try {
+      const walletTx = {
+        id: transaction.id,
+        seller_id: transaction.seller_id,
+        amount: transaction.amount,
+        fee: transaction.fee,
+        shipping_cost: transaction.shipping_cost,
+        wallet_pending_credited_at: transaction.wallet_pending_credited_at,
+        wallet_released_at: transaction.wallet_released_at,
+      };
+
+      if (!transaction.wallet_pending_credited_at) {
+        await creditSellerPendingForTransaction(supabase, walletTx);
+      }
+
+      await releaseSellerWalletForTransaction(supabase, walletTx);
+    } catch (walletErr) {
+      console.error('[transactions.confirm] wallet release failed', walletErr);
+      return NextResponse.json(
+        {
+          error:
+            walletErr instanceof Error
+              ? walletErr.message
+              : 'A tranzakció lezáródott, de az egyenleg frissítése sikertelen.',
+        },
+        { status: 500 },
+      );
     }
 
     return NextResponse.json({ success: true, captured });

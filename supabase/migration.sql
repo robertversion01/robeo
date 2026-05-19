@@ -34,12 +34,27 @@ CREATE TABLE IF NOT EXISTS public.profiles (
   updated_at TIMESTAMPTZ DEFAULT NOW()
 );
 
--- 4. Trigger: új regisztrációnál automatikusan hozza létre a profilt
+-- 3/b Wallets (Vinted belső egyenleg)
+CREATE TABLE IF NOT EXISTS public.wallets (
+  user_id UUID PRIMARY KEY REFERENCES auth.users(id) ON DELETE CASCADE,
+  available_balance INTEGER NOT NULL DEFAULT 0 CHECK (available_balance >= 0),
+  pending_balance INTEGER NOT NULL DEFAULT 0 CHECK (pending_balance >= 0),
+  currency TEXT NOT NULL DEFAULT 'HUF',
+  updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
+);
+
+-- 4. Trigger: új regisztrációnál profil + pénztárca
 CREATE OR REPLACE FUNCTION public.handle_new_user()
 RETURNS TRIGGER AS $$
 BEGIN
   INSERT INTO public.profiles (id, email, created_at)
-  VALUES (NEW.id, NEW.email, NEW.created_at);
+  VALUES (NEW.id, NEW.email, NEW.created_at)
+  ON CONFLICT (id) DO NOTHING;
+
+  INSERT INTO public.wallets (user_id)
+  VALUES (NEW.id)
+  ON CONFLICT (user_id) DO NOTHING;
+
   RETURN NEW;
 END;
 $$ LANGUAGE plpgsql SECURITY DEFINER;
@@ -479,3 +494,23 @@ ALTER TABLE IF EXISTS public.reviews
   ADD COLUMN IF NOT EXISTS product_id UUID,
   ADD COLUMN IF NOT EXISTS seller_id UUID,
   ADD COLUMN IF NOT EXISTS buyer_id UUID;
+
+-- 19. Wallets RLS + tranzakció wallet mezők — RPC-k: supabase/patch-wallet-schema.sql
+ALTER TABLE public.transactions
+  ADD COLUMN IF NOT EXISTS wallet_pending_credited_at TIMESTAMPTZ,
+  ADD COLUMN IF NOT EXISTS wallet_released_at TIMESTAMPTZ;
+
+INSERT INTO public.wallets (user_id)
+SELECT id FROM auth.users
+ON CONFLICT (user_id) DO NOTHING;
+
+ALTER TABLE public.wallets ENABLE ROW LEVEL SECURITY;
+
+DROP POLICY IF EXISTS "wallets_select_own" ON public.wallets;
+CREATE POLICY "wallets_select_own"
+  ON public.wallets FOR SELECT TO authenticated
+  USING (auth.uid() = user_id);
+
+GRANT SELECT ON public.wallets TO authenticated;
+
+-- RPC: supabase/patch-wallet-schema.sql (credit_wallet_pending, release_wallet_pending_to_available)
