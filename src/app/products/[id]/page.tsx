@@ -376,11 +376,22 @@ export default function ProductPage({ params }: { params: Promise<{ id: string }
 
                <div className="fixed bottom-0 left-0 right-0 md:static mt-auto p-2 md:p-0 md:mt-4 bg-white backdrop-blur-md border-t border-gray-200 md:border-t-0 md:bg-transparent md:backdrop-blur-none md:space-y-3 space-y-1.5 shadow-lg md:shadow-none">
                  <button 
-                  onClick={() =>
-                    acceptedOffer
-                      ? router.push(`/checkout?offer=${acceptedOffer.id}`)
-                      : router.push(`/checkout?id=${id}`)
-                  }
+                  onClick={async () => {
+                    const { data: { user } } = await supabase.auth.getUser();
+                    if (!user) {
+                      router.push('/auth');
+                      return;
+                    }
+                    if (product.user_id === user.id) {
+                      toast.error('A saját termékedet nem vásárolhatod meg.');
+                      return;
+                    }
+                    router.push(
+                      acceptedOffer
+                        ? `/checkout?offer=${acceptedOffer.id}`
+                        : `/checkout?id=${id}`,
+                    );
+                  }}
                    className="w-full btn-base btn-primary"
                  >
                   {acceptedOffer ? 'Vásárlás alkudott áron' : 'Vásárlás'}

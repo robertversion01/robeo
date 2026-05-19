@@ -130,7 +130,17 @@ export default function MessagesPage() {
         table: 'messages',
       }, (payload: any) => {
         const newMsg = payload.new as Message;
-        setMessages(prev => [...prev, newMsg]);
+        const activeId = selectedConversationRef.current;
+        if (!activeId || !user?.id) {
+          loadConversations();
+          return;
+        }
+        const inThread =
+          (newMsg.sender_id === user.id && newMsg.receiver_id === activeId) ||
+          (newMsg.sender_id === activeId && newMsg.receiver_id === user.id);
+        if (inThread) {
+          setMessages((prev) => [...prev, newMsg]);
+        }
         loadConversations();
       })
       .on('postgres_changes', {
@@ -203,7 +213,6 @@ export default function MessagesPage() {
       .from('messages')
       .select('*')
       .or(`and(sender_id.eq.${user.id},receiver_id.eq.${otherUserId}),and(sender_id.eq.${otherUserId},receiver_id.eq.${user.id})`)
-      .is('is_system_message', false)
       .order('created_at', { ascending: true });
 
     if (error) return;
@@ -467,8 +476,42 @@ export default function MessagesPage() {
                 </div>
                 {/* Messages */}
                 <div className="flex-1 overflow-y-auto p-4 md:p-6 space-y-4">
-                  {messages.map(msg => (
-                    <div 
+                  {messages.map((msg) => {
+                    const isSystem =
+                      msg.message_type === 'system' ||
+                      (msg as { is_system_message?: boolean }).is_system_message;
+                    const checkoutMatch = msg.content.match(/(\/checkout\?offer=[a-f0-9-]+)/i);
+
+                    if (isSystem) {
+                      return (
+                        <div key={msg.id} className="flex justify-center px-2">
+                          <div className="max-w-md rounded-xl border border-[#007782]/20 bg-[#007782]/5 px-4 py-2.5 text-center text-sm text-gray-700">
+                            {checkoutMatch ? (
+                              <>
+                                {msg.content.split(checkoutMatch[0])[0]}
+                                <Link
+                                  href={checkoutMatch[1]}
+                                  className="font-semibold text-[#007782] underline underline-offset-2"
+                                >
+                                  Fizetés indítása
+                                </Link>
+                              </>
+                            ) : (
+                              msg.content
+                            )}
+                            <div className="mt-1 text-[10px] text-gray-400">
+                              {new Date(msg.created_at).toLocaleTimeString('hu-HU', {
+                                hour: '2-digit',
+                                minute: '2-digit',
+                              })}
+                            </div>
+                          </div>
+                        </div>
+                      );
+                    }
+
+                    return (
+                    <div
                       key={msg.id}
                       className={`flex ${msg.sender_id === user.id ? 'justify-end' : 'justify-start'}`}
                     >
@@ -489,7 +532,8 @@ export default function MessagesPage() {
                         </div>
                       </div>
                     </div>
-                  ))}
+                    );
+                  })}
                   <div ref={messagesEndRef} />
                 </div>
 

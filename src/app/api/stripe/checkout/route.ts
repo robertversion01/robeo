@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { randomUUID } from 'crypto';
+import { calculateCheckoutTotal } from '@/lib/buyerProtection';
 import { getStripeInstance } from '@/lib/stripe-client';
 import { getSupabaseAdminClient, getSupabaseClient } from '@/lib/supabase';
 
@@ -172,6 +173,13 @@ export async function POST(req: NextRequest) {
 
     // Try to fetch seller from `users` first, then fallback to `profiles`.
     const sellerId = product.user_id;
+
+    if (sellerId === buyerId) {
+      return NextResponse.json(
+        { error: 'A saját termékedet nem vásárolhatod meg.' },
+        { status: 400 },
+      );
+    }
     const { data: sellerDataFromUsers, error: sellerUsersError } = await supabase
       .from('users')
       .select('stripe_account_id, email')
@@ -208,17 +216,16 @@ export async function POST(req: NextRequest) {
     // Pre-generate transaction id so it can be attached to Stripe metadata too.
     const transactionId = randomUUID();
 
-    // Official HU Vinted-style buyer protection fee: fixed 280 HUF + 5% of alapár (ajánlat / közvetlen vásárlás)
     const productPrice =
       negotiatedPrice !== null ? negotiatedPrice : Math.round(product.price);
-    const fixedBuyerProtectionFee = 280;
-    const variableBuyerProtectionFee = Math.round(productPrice * 0.05);
-    const buyerProtectionFee = fixedBuyerProtectionFee + variableBuyerProtectionFee;
     const normalizedShippingCost =
       typeof shippingCost === 'number' && Number.isFinite(shippingCost) && shippingCost > 0
         ? Math.round(shippingCost)
         : 0;
-    const totalAmount = productPrice + buyerProtectionFee + normalizedShippingCost;
+    const { buyerProtectionFee, total: totalAmount } = calculateCheckoutTotal(
+      productPrice,
+      normalizedShippingCost,
+    );
     
     const checkoutSessionPayload: any = {
       payment_method_types: ['card'],

@@ -1,18 +1,9 @@
+import { calculateBuyerProtection } from '@/lib/buyerProtection';
+
 interface PriceBreakdownProps {
   price: number;
   shippingCost?: number;
   className?: string;
-}
-
-/**
- * Vinted-stílusú vevővédelmi díj kalkuláció:
- * - 5% a termék árára
- * - Minimum 200 Ft
- * - Maximum 5000 Ft
- */
-function calculateBuyerProtection(price: number): number {
-  const fee = Math.round(price * 0.05);
-  return Math.max(200, Math.min(5000, fee));
 }
 
 export default function PriceBreakdown({ price, shippingCost, className = '' }: PriceBreakdownProps) {
@@ -65,4 +56,4 @@ export default function PriceBreakdown({ price, shippingCost, className = '' }: 
   );
 }
 
-export { calculateBuyerProtection };
+export { calculateBuyerProtection } from '@/lib/buyerProtection';

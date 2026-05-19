@@ -15,21 +15,35 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "Vinted - Vásárolj, adj el és cserélj használt ruhákat",
-  description: "Vásárolj és adj el használt ruhákat, kiegészítőket, kozmetikumokat és még sok mást. Vinted a legjobb hely, ahol eladhatod a már nem használt dolgaidat és új kincseket találhatsz.",
-  keywords: ["másodkéz", "használt ruházat", "cipő", "divat", "vásárlás", "eladás", "piac", "vinted", "fenntartható", "magyar"],
-  authors: [{ name: "Vinted" }],
+  title: "ROBEO — Vásárolj és adj el használt ruhákat",
+  description:
+    "Biztonságos másodkéz piactér Magyarországon. Böngéssz, alkudj, fizess vevővédelemmel és válassz szállítási módot.",
+  keywords: [
+    "robeo",
+    "másodkéz",
+    "használt ruházat",
+    "cipő",
+    "divat",
+    "vásárlás",
+    "eladás",
+    "piac",
+    "fenntartható",
+    "magyar",
+  ],
+  authors: [{ name: "ROBEO" }],
   openGraph: {
-    title: "Vinted - Vásárolj, adj el és cserélj használt ruhákat",
-    description: "Vásárolj és adj el használt ruhákat, kiegészítőket, kozmetikumokat és még sok mást.",
+    title: "ROBEO — Vásárolj és adj el használt ruhákat",
+    description:
+      "Biztonságos másodkéz piactér: ajánlatok, chat, Foxpost és Packeta szállítás, Stripe fizetés.",
     type: "website",
     locale: "hu_HU",
-    siteName: "Vinted"
+    siteName: "ROBEO",
   },
   twitter: {
     card: "summary_large_image",
-    title: "Vinted - Vásárolj, adj el és cserélj használt ruhákat",
-    description: "Vásárolj és adj el használt ruhákat, kiegészítőket, kozmetikumokat és még sok mást."
+    title: "ROBEO — Vásárolj és adj el használt ruhákat",
+    description:
+      "Biztonságos másodkéz piactér Magyarországon. Böngéssz, alkudj, fizess vevővédelemmel.",
   },
   robots: {
     index: true,

@@ -6,6 +6,7 @@ import { useSearchParams, useRouter } from 'next/navigation';
 import { toast } from 'sonner';
 import { ArrowLeft, ShieldCheck } from 'lucide-react';
 import ShippingSelector from '@/components/product/ShippingSelector';
+import { calculateCheckoutTotal } from '@/lib/buyerProtection';
 import { MAIN_TOP_PADDING } from '@/lib/layoutTokens';
 
 export default function CheckoutContent() {
@@ -124,6 +125,12 @@ export default function CheckoutContent() {
       return;
     }
 
+    if (productData.user_id === user.id) {
+      toast.error('A saját termékedet nem vásárolhatod meg.');
+      router.push(`/products/${productId}`);
+      return;
+    }
+
     setIsDirectPurchase(true);
     setProduct(productData);
     setAmount(productData.price);
@@ -137,10 +144,7 @@ export default function CheckoutContent() {
   ];
 
   const shippingCost = shippingOptions.find(s => s.value === shippingMethod)?.cost || 0;
-  const fixedBuyerProtectionFee = 280;
-  const variableBuyerProtectionFee = Math.round(amount * 0.05);
-  const buyerProtectionFee = fixedBuyerProtectionFee + variableBuyerProtectionFee;
-  const total = amount + buyerProtectionFee + shippingCost;
+  const { buyerProtectionFee, total } = calculateCheckoutTotal(amount, shippingCost);
 
   const processPayment = async () => {
     try {
@@ -232,6 +236,8 @@ export default function CheckoutContent() {
         productId: product?.id || productId,
         offerId,
         buyerId: user.id,
+        shippingMethod,
+        shippingCost,
       };
 
       console.log('[checkout-ui] Running precheck with payload', payload);
@@ -255,7 +261,12 @@ export default function CheckoutContent() {
       }
 
       console.info('[checkout-ui] Precheck success', data);
-      toast.success('Előellenőrzés sikeres: Offer/Product/Buyer ID rendben.');
+      const totalHuf = data?.pricing?.totalHuf;
+      toast.success(
+        totalHuf != null
+          ? `Előellenőrzés OK — végösszeg: ${Number(totalHuf).toLocaleString('hu-HU')} Ft`
+          : 'Előellenőrzés sikeres: azonosítók és árazás rendben.',
+      );
     } catch (error: any) {
       toast.error(`Előellenőrzés hiba: ${error?.message || 'Ismeretlen hiba'}`);
     } finally {
@@ -347,8 +358,8 @@ export default function CheckoutContent() {
                     </span>
                   </div>
                   <div className="flex justify-between text-sm">
-                    <span className="text-gray-600">
-                      Vevővédelmi díj ({fixedBuyerProtectionFee.toLocaleString('hu-HU')} Ft + {variableBuyerProtectionFee.toLocaleString('hu-HU')} Ft)
+                    <span className="text-gray-600" title="5% a termék árára (min. 200 Ft, max. 5000 Ft)">
+                      Vevővédelem
                     </span>
                     <span className="font-medium text-gray-900">
                       {buyerProtectionFee.toLocaleString('hu-HU')} Ft

@@ -40,6 +40,7 @@ export default function AuthPage() {
           password,
         });
         if (error) throw error;
+        toast.success('Sikeres bejelentkezés!');
         router.push('/');
       } else {
         // Signup
