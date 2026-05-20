@@ -1,11 +1,17 @@
 'use client';
 
-import { useEffect, useMemo, useRef, type CSSProperties } from 'react';
+import { useEffect, useMemo, useRef, useState, type CSSProperties } from 'react';
 import Link from 'next/link';
 import { motion, useReducedMotion } from 'framer-motion';
 import { useTranslation } from 'react-i18next';
 import { formatPrice } from '@/lib/utils';
 import GuestLandingHeader from '@/components/home/GuestLandingHeader';
+import {
+  hasHeroImage,
+  isValidHeroTile,
+  normalizeHeroImageUrl,
+  normalizePrimaryHeroImageUrl,
+} from '@/lib/landingHeroImages';
 import type { Product } from '@/types';
 
 interface VintedHeroProps {
@@ -44,36 +50,8 @@ const TILE_HEIGHTS = [
 const FLOAT_SECONDS_BASE = 4.8;
 const COLUMN_TRAVEL_PX = [118, 136, 124, 142, 128, 132];
 
-function isNonEmptyImageUrl(value: unknown): value is string {
-  return typeof value === 'string' && value.trim().length > 0;
-}
-
-/** Csak image_url vagy images[0] esetén kerülhet a hero poolba */
-function hasHeroImage(product: Product): boolean {
-  if (isNonEmptyImageUrl(product.image_url)) return true;
-  return Array.isArray(product.images) && isNonEmptyImageUrl(product.images[0]);
-}
-
 function primaryImageUrl(product: Product): string | null {
-  if (isNonEmptyImageUrl(product.image_url)) return product.image_url.trim();
-  if (Array.isArray(product.images) && isNonEmptyImageUrl(product.images[0])) {
-    return product.images[0].trim();
-  }
-  return null;
-}
-
-function collectImageUrls(product: HeroProduct): string[] {
-  const urls: string[] = [];
-  const push = (url: string | null | undefined) => {
-    if (!isNonEmptyImageUrl(url)) return;
-    const trimmed = url.trim();
-    if (!urls.includes(trimmed)) urls.push(trimmed);
-  };
-  push(product.image_url);
-  if (Array.isArray(product.images)) {
-    for (const img of product.images) push(img);
-  }
-  return urls;
+  return normalizePrimaryHeroImageUrl(product);
 }
 
 function getFeaturedProducts(products: Product[]): HeroProduct[] {
@@ -104,54 +82,39 @@ function buildHeroProductPool(products: Product[]): HeroProduct[] {
   return pool;
 }
 
-/** Több kép / termék → sűrű tile lista (ugyanaz a termék link, több vizuális variáns) */
+/** Csak elsődleges (image_url / images[0]) kép — nincs másodlagos images[] a hero-ban */
 function buildHeroTiles(pool: HeroProduct[]): HeroTile[] {
-  if (pool.length === 0) return [];
-
   const tiles: HeroTile[] = [];
 
   for (const product of pool) {
     if (!hasHeroImage(product)) continue;
-    const urls = collectImageUrls(product);
-    if (urls.length === 0) continue;
-    const cap = Math.max(1, Math.min(3, urls.length));
-    for (let i = 0; i < cap; i += 1) {
-      tiles.push({
-        product,
-        imageUrl: urls[i],
-        tileKey: `${product.id}-img-${i}`,
-      });
-    }
+    const imageUrl = normalizePrimaryHeroImageUrl(product);
+    if (!imageUrl) continue;
+
+    const tile: HeroTile = {
+      product,
+      imageUrl,
+      tileKey: `${product.id}-primary`,
+    };
+    if (isValidHeroTile(tile)) tiles.push(tile);
   }
 
-  let guard = 0;
-  while (tiles.length < Math.min(pool.length * 2, 96) && guard < 12) {
-    for (const product of pool) {
-      const url = primaryImageUrl(product);
-      if (!url) continue;
-      tiles.push({
-        product,
-        imageUrl: url,
-        tileKey: `${product.id}-fill-${tiles.length}`,
-      });
-      if (tiles.length >= 96) break;
-    }
-    guard += 1;
-  }
-
-  return tiles;
+  return tiles.filter(isValidHeroTile);
 }
 
 function repeatTiles(tiles: HeroTile[], repeats: number): HeroTile[] {
-  if (tiles.length === 0) return [];
+  const valid = tiles.filter(isValidHeroTile);
+  if (valid.length === 0) return [];
+
   const out: HeroTile[] = [];
   for (let r = 0; r < repeats; r += 1) {
-    for (let i = 0; i < tiles.length; i += 1) {
-      const tile = tiles[i];
-      out.push({
+    for (let i = 0; i < valid.length; i += 1) {
+      const tile = valid[i];
+      const copy: HeroTile = {
         ...tile,
         tileKey: `${tile.tileKey}-loop-${r}-${i}`,
-      });
+      };
+      if (isValidHeroTile(copy)) out.push(copy);
     }
   }
   return out;
@@ -166,15 +129,22 @@ function distributeColumns<T>(items: T[], columnCount: number): T[][] {
 }
 
 function fillColumnTiles(tiles: HeroTile[], minTiles: number): HeroTile[] {
-  if (tiles.length === 0) return [];
+  const valid = tiles.filter(isValidHeroTile);
+  if (valid.length === 0) return [];
+
   const out: HeroTile[] = [];
   let i = 0;
   while (out.length < minTiles) {
-    const source = tiles[i % tiles.length];
-    out.push({
+    const source = valid[i % valid.length];
+    if (!isValidHeroTile(source)) {
+      i += 1;
+      continue;
+    }
+    const copy: HeroTile = {
       ...source,
       tileKey: `${source.tileKey}-col-${out.length}`,
-    });
+    };
+    if (isValidHeroTile(copy)) out.push(copy);
     i += 1;
   }
   return out;
@@ -189,6 +159,11 @@ function HeroImageTile({
   heightClass: string;
   priority?: boolean;
 }) {
+  const [loadFailed, setLoadFailed] = useState(false);
+
+  if (!isValidHeroTile(tile) || loadFailed) return null;
+  if (!normalizeHeroImageUrl(tile.imageUrl)) return null;
+
   return (
     <Link
       href={`/products/${tile.product.id}`}
@@ -196,10 +171,12 @@ function HeroImageTile({
     >
       <img
         src={tile.imageUrl}
-        alt={tile.product.name}
+        alt=""
+        role="presentation"
         className="h-full w-full object-cover"
         loading={priority ? 'eager' : 'lazy'}
         decoding="async"
+        onError={() => setLoadFailed(true)}
       />
     </Link>
   );
@@ -238,7 +215,7 @@ function FloatingMasonryColumn({
             } as CSSProperties)
       }
     >
-      {tiles.map((tile, idx) => (
+      {tiles.filter(isValidHeroTile).map((tile, idx) => (
         <HeroImageTile
           key={tile.tileKey}
           tile={tile}
@@ -275,10 +252,12 @@ export default function VintedHero({
   const masonryColumns = useMemo(() => {
     const looped = repeatTiles(heroTiles, LANDING_HERO_LOOP_REPEATS);
     const distributed = distributeColumns(looped, LANDING_HERO_COLUMN_COUNT);
-    return distributed.map((col) => fillColumnTiles(col, LANDING_HERO_MIN_TILES_PER_COLUMN));
+    return distributed
+      .map((col) => fillColumnTiles(col, LANDING_HERO_MIN_TILES_PER_COLUMN))
+      .map((col) => col.filter(isValidHeroTile));
   }, [heroTiles]);
 
-  const heroTileCount = useMemo(
+  const renderableTileCount = useMemo(
     () => masonryColumns.reduce((sum, col) => sum + col.length, 0),
     [masonryColumns],
   );
@@ -342,11 +321,12 @@ export default function VintedHero({
       <section
         className="landing-hero-shell relative h-[100dvh] min-h-[100dvh] max-h-[100dvh] w-full overflow-hidden bg-[#0f1a1d] text-white"
         data-hero-pool-size={heroProductPool.length}
-        data-hero-tile-count={heroTileCount}
+        data-hero-tile-count={renderableTileCount}
+        data-hero-valid-sources={heroTiles.length}
       >
         <GuestLandingHeader />
 
-        {heroProductPool.length === 0 ? (
+        {renderableTileCount === 0 ? (
           <div className="flex h-full items-center justify-center px-4 py-10 text-center text-sm text-gray-300">
             {t('landing.hero.empty')}
           </div>
@@ -354,15 +334,18 @@ export default function VintedHero({
           <>
             <div className="landing-hero-masonry absolute inset-0 z-0 overflow-hidden">
               <div className="landing-masonry-grid grid w-full grid-cols-3 gap-0.5 px-1 pt-[2.85rem] sm:gap-1 sm:px-1.5 md:grid-cols-4 md:gap-1 md:px-2 lg:grid-cols-5 lg:gap-1.5 lg:px-3 xl:grid-cols-6 xl:px-3.5">
-                {masonryColumns.map((colTiles, colIndex) => (
-                  <FloatingMasonryColumn
-                    key={`masonry-col-${colIndex}`}
-                    colIndex={colIndex}
-                    tiles={colTiles}
-                    reducedMotion={!!reducedMotion}
-                    hiddenClass={columnVisibilityClass(colIndex)}
-                  />
-                ))}
+                {masonryColumns.map((colTiles, colIndex) => {
+                  if (colTiles.length === 0) return null;
+                  return (
+                    <FloatingMasonryColumn
+                      key={`masonry-col-${colIndex}`}
+                      colIndex={colIndex}
+                      tiles={colTiles}
+                      reducedMotion={!!reducedMotion}
+                      hiddenClass={columnVisibilityClass(colIndex)}
+                    />
+                  );
+                })}
               </div>
             </div>
 
