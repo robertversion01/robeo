@@ -1,7 +1,7 @@
 import type { SupabaseClient } from '@supabase/supabase-js';
-import { insertAppNotificationSafe } from '@/lib/supabaseResilience';
 import type { PriceDropHit } from '@/lib/priceWatch';
 import { loadUserPreferences } from '@/lib/userPreferences';
+import { routeMarketplaceNotification } from '@/lib/notificationChannels';
 
 const DEDUPE_KEY = 'robeo_price_drop_notified_v1';
 
@@ -33,14 +33,14 @@ export async function notifyPriceDropsIfEnabled(
   for (const hit of hits) {
     const key = `${hit.productId}:${hit.newPrice}`;
     if (dedupe[key]) continue;
-    const ok = await insertAppNotificationSafe(supabase, {
-      user_id: userId,
+    const routed = await routeMarketplaceNotification(supabase, {
+      userId,
       type: 'price_drop',
       title: 'Árcsökkenés',
       body: `${hit.productName}: ${hit.oldPrice} → ${hit.newPrice} Ft`,
       link: `/products/${hit.productId}`,
     });
-    if (ok) dedupe[key] = Date.now();
+    if (routed.inApp) dedupe[key] = Date.now();
   }
   writeDedupe(dedupe);
 }

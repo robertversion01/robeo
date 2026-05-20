@@ -1,12 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { randomUUID } from 'crypto';
 import { calculateCheckoutTotal } from '@/lib/buyerProtection';
-import {
-  applyBundleDiscountToPrice,
-  bundleDiscountPercentForCount,
-  fetchSellerBundleDiscountSettings,
-} from '@/lib/bundleDiscount';
-import { foxpostTerminalAddress } from '@/lib/foxpostTerminal';
+import { applyBundleDiscountToPrice } from '@/lib/bundleDiscount';
 import { getStripeInstance } from '@/lib/stripe-client';
 import { getSupabaseAdminClient, getSupabaseClient } from '@/lib/supabase';
 
@@ -30,39 +25,41 @@ export async function POST(req: NextRequest) {
     const body = await req.json();
     const {
       productId,
+      productIds,
       offerId,
       buyerId,
       shippingCost,
       shippingMethod,
-      bundleItemCount,
-      foxpostTerminal,
+      bundleDiscountPercent,
     } = body as {
       productId?: string;
+      productIds?: string[];
       offerId?: string;
       buyerId?: string;
       shippingCost?: number;
       shippingMethod?: string;
-      bundleItemCount?: number;
-      foxpostTerminal?: {
-        operator_id?: string;
-        place_id?: number;
-        name?: string;
-        address?: string;
-      } | null;
+      bundleDiscountPercent?: number;
     };
+
+    const bundleIds = Array.isArray(productIds)
+      ? productIds.map(String).filter(Boolean)
+      : [];
+    const isBundleCheckout = bundleIds.length >= 2 && !offerId;
 
     console.log('[checkout] Incoming payload', {
       productId,
+      productIds: bundleIds,
       offerId,
       buyerId,
       shippingCost,
       shippingMethod,
+      isBundleCheckout,
     });
 
-    if ((!productId && !offerId) || !buyerId) {
+    if ((!productId && !offerId && bundleIds.length < 2) || !buyerId) {
       return NextResponse.json(
         {
-          error: 'Product ID (or Offer ID) and buyer ID are required',
+          error: 'Product ID (or Offer ID, or 2+ productIds) and buyer ID are required',
         },
         { status: 400 }
       );
@@ -237,18 +234,8 @@ export async function POST(req: NextRequest) {
     // Pre-generate transaction id so it can be attached to Stripe metadata too.
     const transactionId = randomUUID();
 
-    let productPrice =
+    const productPrice =
       negotiatedPrice !== null ? negotiatedPrice : Math.round(product.price);
-
-    const sellerBundle = await fetchSellerBundleDiscountSettings(supabase, sellerId);
-
-    const bundleCount = Math.min(10, Math.max(1, Math.round(bundleItemCount || 1)));
-    let bundleDiscountPercent = 0;
-    if (bundleCount > 1 && sellerBundle.enabled) {
-      bundleDiscountPercent = bundleDiscountPercentForCount(sellerBundle.tiers, bundleCount);
-      productPrice = applyBundleDiscountToPrice(productPrice, bundleDiscountPercent);
-    }
-
     const normalizedShippingCost =
       typeof shippingCost === 'number' && Number.isFinite(shippingCost) && shippingCost > 0
         ? Math.round(shippingCost)
@@ -290,12 +277,9 @@ export async function POST(req: NextRequest) {
     };
 
     // If no seller Stripe account is available, process payment on platform account only.
-    const paymentIntentMetadata = { transactionId };
-
     if (sellerStripeAccountId) {
       checkoutSessionPayload.payment_intent_data = {
         capture_method: 'manual',
-        metadata: paymentIntentMetadata,
         application_fee_amount: buyerProtectionFee * 100, // Stripe uses cents
         transfer_data: {
           destination: sellerStripeAccountId,
@@ -304,7 +288,6 @@ export async function POST(req: NextRequest) {
     } else {
       checkoutSessionPayload.payment_intent_data = {
         capture_method: 'manual',
-        metadata: paymentIntentMetadata,
       };
       console.log('[checkout] No seller Stripe account, using platform-only payment intent');
     }
@@ -328,12 +311,6 @@ export async function POST(req: NextRequest) {
           status: 'payment_pending',
           checkout_session_id: session.id,
           payment_intent_id: (session.payment_intent as string) || null,
-          payment_provider: 'stripe',
-          bundle_item_count: bundleCount,
-          bundle_discount_percent: bundleDiscountPercent,
-          foxpost_terminal_id: foxpostTerminal?.operator_id || (foxpostTerminal?.place_id ? String(foxpostTerminal.place_id) : null),
-          foxpost_terminal_name: foxpostTerminal?.name || null,
-          foxpost_terminal_address: foxpostTerminal ? foxpostTerminalAddress(foxpostTerminal) : null,
         })
         .select('id')
         .single();
@@ -363,4 +340,151 @@ export async function POST(req: NextRequest) {
       { status: 500 }
     );
   }
+}
+
+async function handleBundleCheckout(ctx: {
+  stripe: NonNullable<ReturnType<typeof getStripeInstance>>;
+  supabase: any;
+  bundleIds: string[];
+  buyerId: string;
+  shippingCost?: number;
+  shippingMethod?: string;
+  bundleDiscountPercent?: number;
+}) {
+  const { stripe, supabase, bundleIds, buyerId, shippingCost, shippingMethod, bundleDiscountPercent } =
+    ctx;
+
+  const uniqueIds = [...new Set(bundleIds)].slice(0, 8);
+  const { data: productsData, error: productsError } = await supabase
+    .from('products')
+    .select('id, user_id, name, description, image_url, price')
+    .in('id', uniqueIds);
+
+  if (productsError || !productsData || productsData.length !== uniqueIds.length) {
+    return NextResponse.json({ error: 'Egy vagy több termék nem található.' }, { status: 404 });
+  }
+
+  const products = productsData as Array<{
+    id: string;
+    user_id: string;
+    name: string;
+    description?: string | null;
+    image_url?: string | null;
+    price: number;
+  }>;
+
+  const sellerIds = new Set(products.map((p) => p.user_id));
+  if (sellerIds.size !== 1) {
+    return NextResponse.json(
+      { error: 'Csomag vásárlásnál minden terméknek ugyanattól az eladótól kell származnia.' },
+      { status: 400 },
+    );
+  }
+
+  const sellerId = products[0].user_id;
+  if (sellerId === buyerId) {
+    return NextResponse.json({ error: 'A saját termékedet nem vásárolhatod meg.' }, { status: 400 });
+  }
+
+  const subtotal = products.reduce((sum, p) => sum + Math.round(p.price), 0);
+  const pct = Math.min(50, Math.max(0, Math.round(bundleDiscountPercent || 0)));
+  const productPrice = applyBundleDiscountToPrice(subtotal, pct);
+  const normalizedShippingCost =
+    typeof shippingCost === 'number' && Number.isFinite(shippingCost) && shippingCost > 0
+      ? Math.round(shippingCost)
+      : 0;
+  const { buyerProtectionFee, total: totalAmount } = calculateCheckoutTotal(
+    productPrice,
+    normalizedShippingCost,
+  );
+
+  const { data: sellerDataFromUsers } = await supabase
+    .from('users')
+    .select('stripe_account_id, email')
+    .eq('id', sellerId)
+    .single();
+
+  let sellerData = sellerDataFromUsers;
+  if (!sellerData) {
+    const { data: sellerDataFromProfiles } = await supabase
+      .from('profiles')
+      .select('stripe_account_id, email')
+      .eq('id', sellerId)
+      .single();
+    sellerData = sellerDataFromProfiles;
+  }
+
+  const fallbackStripeAccountId = process.env.FALLBACK_STRIPE_ACCOUNT_ID || '';
+  const sellerStripeAccountId =
+    sellerData?.stripe_account_id || fallbackStripeAccountId || null;
+  const sellerEmail = sellerData?.email || 'fallback-seller@robeo.local';
+  const transactionId = randomUUID();
+  const primaryProductId = products[0].id;
+  const bundleLabel = `ROBEO csomag (${products.length} termék)`;
+
+  const checkoutSessionPayload: any = {
+    payment_method_types: ['card'],
+    line_items: [
+      {
+        price_data: {
+          currency: 'huf',
+          product_data: {
+            name: bundleLabel,
+            description: products.map((p) => p.name).join(', ').substring(0, 255),
+            images: products[0].image_url ? [products[0].image_url] : [],
+          },
+          unit_amount: totalAmount * 100,
+        },
+        quantity: 1,
+      },
+    ],
+    mode: 'payment',
+    success_url: `${process.env.NEXT_PUBLIC_BASE_URL}/checkout/success?session_id={CHECKOUT_SESSION_ID}&bundle=1`,
+    cancel_url: `${process.env.NEXT_PUBLIC_BASE_URL}/checkout?bundle=1`,
+    metadata: {
+      productId: primaryProductId,
+      productIds: uniqueIds.join(','),
+      bundle: 'true',
+      bundleDiscountPercent: String(pct),
+      offerId: '',
+      buyerId,
+      sellerId,
+      sellerEmail,
+      shippingMethod: shippingMethod || '',
+      transactionId,
+      type: 'escrow_payment',
+    },
+  };
+
+  if (sellerStripeAccountId) {
+    checkoutSessionPayload.payment_intent_data = {
+      capture_method: 'manual',
+      application_fee_amount: buyerProtectionFee * 100,
+      transfer_data: { destination: sellerStripeAccountId },
+    };
+  } else {
+    checkoutSessionPayload.payment_intent_data = { capture_method: 'manual' };
+  }
+
+  const session = await stripe.checkout.sessions.create(checkoutSessionPayload);
+
+  try {
+    await supabase.from('transactions').insert({
+      id: transactionId,
+      product_id: primaryProductId,
+      buyer_id: buyerId,
+      seller_id: sellerId,
+      amount: totalAmount,
+      fee: buyerProtectionFee,
+      shipping_method: shippingMethod || null,
+      shipping_cost: normalizedShippingCost,
+      status: 'payment_pending',
+      checkout_session_id: session.id,
+      payment_intent_id: (session.payment_intent as string) || null,
+    });
+  } catch {
+    /* non-blocking */
+  }
+
+  return NextResponse.json({ url: session.url, bundle: true, itemCount: products.length });
 }

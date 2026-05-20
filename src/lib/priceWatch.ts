@@ -50,12 +50,14 @@ export type PriceDropHit = {
   newPrice: number;
 };
 
-export function detectPriceDrops(
+export function detectPriceDropsFromWatches(
+  watches: PriceWatchEntry[],
   products: Array<{ id: string; name: string; price: number }>,
+  options?: { persist?: boolean },
 ): PriceDropHit[] {
-  const watches = readAll().filter((w) => w.alertEnabled);
+  const active = watches.filter((w) => w.alertEnabled);
   const hits: PriceDropHit[] = [];
-  for (const w of watches) {
+  for (const w of active) {
     const p = products.find((x) => x.id === w.productId);
     if (!p) continue;
     if (p.price < w.lastPrice) {
@@ -65,13 +67,21 @@ export function detectPriceDrops(
         oldPrice: w.lastPrice,
         newPrice: p.price,
       });
-      upsertPriceWatch({
-        productId: p.id,
-        productName: p.name,
-        lastPrice: p.price,
-        alertEnabled: w.alertEnabled,
-      });
+      if (options?.persist !== false && typeof window !== 'undefined') {
+        upsertPriceWatch({
+          productId: p.id,
+          productName: p.name,
+          lastPrice: p.price,
+          alertEnabled: w.alertEnabled,
+        });
+      }
     }
   }
   return hits;
+}
+
+export function detectPriceDrops(
+  products: Array<{ id: string; name: string; price: number }>,
+): PriceDropHit[] {
+  return detectPriceDropsFromWatches(readAll(), products);
 }

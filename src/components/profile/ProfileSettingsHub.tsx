@@ -12,6 +12,12 @@ import {
   type NotificationChannelPrefs,
   type UserPreferenceBundle,
 } from '@/lib/userPreferences';
+import {
+  DEFAULT_DELIVERY_PREFS,
+  loadDeliveryPrefs,
+  saveDeliveryPrefs,
+  type NotificationDeliveryPrefs,
+} from '@/lib/notificationChannels';
 
 type Props = {
   userId?: string;
@@ -101,13 +107,18 @@ function ChannelToggle({
 export default function ProfileSettingsHub({ userId }: Props) {
   const { t } = useTranslation();
   const [prefs, setPrefs] = useState<UserPreferenceBundle>(DEFAULT_USER_PREFS);
+  const [delivery, setDelivery] = useState<NotificationDeliveryPrefs>(DEFAULT_DELIVERY_PREFS);
   const [saving, setSaving] = useState(false);
   const [loaded, setLoaded] = useState(false);
 
   const refresh = useCallback(async () => {
     if (!userId) return;
-    const p = await loadUserPreferences(supabase);
+    const [p, d] = await Promise.all([
+      loadUserPreferences(supabase),
+      loadDeliveryPrefs(supabase),
+    ]);
     setPrefs(p);
+    setDelivery(d);
     setLoaded(true);
   }, [userId]);
 
@@ -162,6 +173,13 @@ export default function ProfileSettingsHub({ userId }: Props) {
             onChange={(styles) => void persist({ ...prefs, feed: { ...prefs.feed, styles } })}
             placeholder={t('settings.personalisation.stylesPlaceholder')}
           />
+          <TagInput
+            label={t('settings.personalisation.conditions')}
+            hint={t('settings.personalisation.conditionsHint')}
+            values={prefs.feed.conditions}
+            onChange={(conditions) => void persist({ ...prefs, feed: { ...prefs.feed, conditions } })}
+            placeholder={t('settings.personalisation.conditionsPlaceholder')}
+          />
         </div>
         {saving ? (
           <p className="mt-2 text-[11px] text-gray-400">{t('settings.saving')}</p>
@@ -201,6 +219,40 @@ export default function ProfileSettingsHub({ userId }: Props) {
             onChange={(savedSearches) => patchNotifications({ savedSearches })}
           />
         </div>
+      </ProfileSection>
+
+      <ProfileSection title={t('settings.delivery.title')}>
+        <p className="text-xs text-gray-500 mb-3">{t('settings.delivery.hint')}</p>
+        <div className="space-y-2">
+          <ChannelToggle
+            label={t('settings.delivery.push')}
+            checked={delivery.pushEnabled}
+            onChange={(pushEnabled) => {
+              const next = { ...delivery, pushEnabled };
+              setDelivery(next);
+              void saveDeliveryPrefs(supabase, next);
+            }}
+          />
+          <ChannelToggle
+            label={t('settings.delivery.email')}
+            checked={delivery.emailEnabled}
+            onChange={(emailEnabled) => {
+              const next = { ...delivery, emailEnabled };
+              setDelivery(next);
+              void saveDeliveryPrefs(supabase, next);
+            }}
+          />
+          <ChannelToggle
+            label={t('settings.delivery.digest')}
+            checked={delivery.emailDigest}
+            onChange={(emailDigest) => {
+              const next = { ...delivery, emailDigest };
+              setDelivery(next);
+              void saveDeliveryPrefs(supabase, next);
+            }}
+          />
+        </div>
+        <p className="text-[11px] text-amber-700 mt-2">{t('settings.delivery.comingSoon')}</p>
       </ProfileSection>
 
       <ProfileSection title={t('settings.language.title')}>

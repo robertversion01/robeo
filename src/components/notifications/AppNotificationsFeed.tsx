@@ -3,6 +3,7 @@
 import { useCallback, useEffect, useMemo, useState } from 'react';
 import Link from 'next/link';
 import { Bell, CheckCheck } from 'lucide-react';
+import { getNotificationVisual } from '@/lib/notificationIcons';
 import { useTranslation } from 'react-i18next';
 import { supabase } from '@/lib/supabase';
 import {
@@ -46,16 +47,25 @@ function notificationCategory(row: AppNotificationRow): Exclude<FilterId, 'all' 
   const type = (row.type || '').toLowerCase();
   const title = (row.title || '').toLowerCase();
   const body = (row.body || '').toLowerCase();
+  if (type.includes('saved_search') || title.includes('mentett keresés')) return 'saved_search';
+  if (type.includes('bundle') || title.includes('csomag ajánlat')) return 'bundle';
   if (type.includes('favorite') || title.includes('kedvenc')) return 'favorites';
   if (
     type.includes('price') ||
-    title.includes('ár') ||
+    title.includes('árcsökkenés') ||
     body.includes('price') ||
     title.includes('price drop')
   ) {
     return 'price_drop';
   }
-  if (type.includes('follow') || title.includes('követ')) return 'followers';
+  if (
+    type.includes('follow') ||
+    type.includes('seller_new') ||
+    title.includes('követ') ||
+    title.includes('új termék')
+  ) {
+    return 'followers';
+  }
   if (type.includes('offer') || title.includes('ajánlat') || title.includes('offer')) return 'offers';
   if (type.includes('sale') || type.includes('sold') || title.includes('elad') || title.includes('sale')) {
     return 'sales';
@@ -219,6 +229,7 @@ export default function AppNotificationsFeed() {
           <ul className="space-y-2">
             {filteredItems.map((n) => {
               const unread = isNotificationUnread(n);
+              const { Icon, accentClass } = getNotificationVisual(n);
               const inner = (
                 <div
                   className={cn(
@@ -228,14 +239,29 @@ export default function AppNotificationsFeed() {
                       : 'border-gray-200 bg-white',
                   )}
                 >
-                  <div className="flex items-start gap-2">
+                  <div className="flex items-start gap-3">
+                    <span
+                      className={cn(
+                        'mt-0.5 flex h-9 w-9 shrink-0 items-center justify-center rounded-full',
+                        accentClass,
+                      )}
+                    >
+                      <Icon size={18} aria-hidden />
+                    </span>
+                    <div className="flex-1 min-w-0">
+                      <p className="font-semibold text-gray-900 text-sm">{n.title}</p>
+                      {n.body ? <p className="text-sm text-gray-600 mt-1">{n.body}</p> : null}
+                      <p className="text-[10px] text-gray-400 mt-2">
+                        {formatWhen(n.created_at, locale)}
+                      </p>
+                    </div>
                     {unread ? (
-                      <span className="mt-1.5 h-2 w-2 shrink-0 rounded-full bg-[#007782]" aria-hidden />
+                      <span
+                        className="mt-2 h-2 w-2 shrink-0 rounded-full bg-[#007782]"
+                        aria-hidden
+                      />
                     ) : null}
-                    <p className="font-semibold text-gray-900 text-sm flex-1">{n.title}</p>
                   </div>
-                  {n.body ? <p className="text-sm text-gray-600 mt-1">{n.body}</p> : null}
-                  <p className="text-[10px] text-gray-400 mt-2">{formatWhen(n.created_at, locale)}</p>
                 </div>
               );
 

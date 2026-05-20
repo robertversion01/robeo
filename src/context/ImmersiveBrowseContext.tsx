@@ -29,6 +29,9 @@ type ImmersiveBrowseContextValue = {
   /** Nav/tab bar rejtve (főleg mobil) */
   shellChromeHidden: boolean;
   revealChrome: () => void;
+  filterSheetOpen: boolean;
+  openFilterSheet: () => void;
+  closeFilterSheet: () => void;
 };
 
 const ImmersiveBrowseContext = createContext<ImmersiveBrowseContextValue>({
@@ -38,6 +41,9 @@ const ImmersiveBrowseContext = createContext<ImmersiveBrowseContextValue>({
   catalogChromeHidden: false,
   shellChromeHidden: false,
   revealChrome: () => {},
+  filterSheetOpen: false,
+  openFilterSheet: () => {},
+  closeFilterSheet: () => {},
 });
 
 export function useImmersiveBrowse() {
@@ -53,6 +59,7 @@ export function ImmersiveBrowseProvider({ children, loggedIn }: ProviderProps) {
   const pathname = usePathname();
   const enabled = isImmersiveBrowsePath(pathname, loggedIn);
   const [chromeHidden, setChromeHidden] = useState(false);
+  const [filterSheetOpen, setFilterSheetOpen] = useState(false);
   const [isMobile, setIsMobile] = useState(false);
   const lastYRef = useRef(0);
   const tickingRef = useRef(false);
@@ -103,6 +110,15 @@ export function ImmersiveBrowseProvider({ children, loggedIn }: ProviderProps) {
     window.scrollTo({ top: 0, behavior: 'smooth' });
   }, []);
 
+  const openFilterSheet = useCallback(() => {
+    setFilterSheetOpen(true);
+    setChromeHidden(false);
+  }, []);
+
+  const closeFilterSheet = useCallback(() => {
+    setFilterSheetOpen(false);
+  }, []);
+
   const value = useMemo<ImmersiveBrowseContextValue>(() => {
     const catalogChromeHidden = enabled && chromeHidden;
     const shellChromeHidden = enabled && chromeHidden && isMobile;
@@ -113,8 +129,19 @@ export function ImmersiveBrowseProvider({ children, loggedIn }: ProviderProps) {
       catalogChromeHidden,
       shellChromeHidden,
       revealChrome,
+      filterSheetOpen,
+      openFilterSheet,
+      closeFilterSheet,
     };
-  }, [enabled, chromeHidden, isMobile, revealChrome]);
+  }, [
+    enabled,
+    chromeHidden,
+    isMobile,
+    revealChrome,
+    filterSheetOpen,
+    openFilterSheet,
+    closeFilterSheet,
+  ]);
 
   return (
     <ImmersiveBrowseContext.Provider value={value}>{children}</ImmersiveBrowseContext.Provider>

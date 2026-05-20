@@ -8,14 +8,14 @@ import { cn } from '@/lib/utils';
 /** Lebegő „szűrők” gomb, ha a chrome el van rejtve scroll közben */
 export default function ImmersiveBrowseChrome() {
   const { t } = useTranslation();
-  const { enabled, catalogChromeHidden, revealChrome } = useImmersiveBrowse();
+  const { enabled, catalogChromeHidden, openFilterSheet } = useImmersiveBrowse();
 
   if (!enabled || !catalogChromeHidden) return null;
 
   return (
     <button
       type="button"
-      onClick={revealChrome}
+      onClick={openFilterSheet}
       className={cn(
         'fixed z-[9975] flex items-center gap-1.5 rounded-full border border-gray-200/90 bg-white/90 px-3 py-2 text-xs font-semibold text-gray-800 shadow-lg backdrop-blur-md',
         'bottom-[calc(4.25rem+env(safe-area-inset-bottom,0px))] right-3',

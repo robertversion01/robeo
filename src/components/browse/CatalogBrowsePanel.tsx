@@ -18,8 +18,12 @@ import { supabase } from '@/lib/supabase';
 import { DEFAULT_FEED_PREFS, loadUserPreferences } from '@/lib/userPreferences';
 import { rankFeedProducts } from '@/lib/feedRanking';
 import { useImmersiveBrowse } from '@/context/ImmersiveBrowseContext';
-import { listSavedSearchesLocal } from '@/lib/savedSearches';
+import { listSavedSearchesLocal, loadSavedSearchesMerged } from '@/lib/savedSearches';
 import { scanSavedSearchNewMatches } from '@/lib/savedSearchMatcher';
+import { runSavedSearchAlertScan } from '@/lib/savedSearchNotify';
+import { useMarketplaceBackgroundWorkers } from '@/hooks/useMarketplaceBackgroundWorkers';
+import { computeDiscoveryChips } from '@/lib/discoveryStats';
+import ImmersiveFilterSheet from '@/components/browse/ImmersiveFilterSheet';
 
 function sortLabelKey(id: string) {
   if (id === 'price_asc') return 'browse.sort.priceAsc';
@@ -105,7 +109,7 @@ function CatalogBrowsePanelInner({
   } = useProducts();
 
   useEffect(() => {
-    if (!user || !isFeed) return;
+    if (!user) return;
     let cancelled = false;
     void loadUserPreferences(supabase).then((p) => {
       if (!cancelled) setFeedPrefs(p.feed);
@@ -113,20 +117,35 @@ function CatalogBrowsePanelInner({
     return () => {
       cancelled = true;
     };
-  }, [user, isFeed]);
+  }, [user]);
+
+  useMarketplaceBackgroundWorkers({
+    products,
+    enabled: Boolean(user),
+  });
 
   useEffect(() => {
-    if (!isSearch || products.length === 0) return;
+    if (products.length === 0 || !user) return;
     const saved = listSavedSearchesLocal();
     if (saved.length === 0) return;
     scanSavedSearchNewMatches(saved, products);
-  }, [isSearch, products, filterKey]);
+    if (isSearch) {
+      void loadSavedSearchesMerged(supabase).then((merged) => {
+        void runSavedSearchAlertScan(supabase, user.id, merged, products);
+      });
+    }
+  }, [isSearch, products, filterKey, user]);
 
   const catalogProducts = useMemo(() => {
     const base = filterProductsWithValidImages(products);
     if (isFeed && user) return rankFeedProducts(base, feedPrefs);
     return base;
   }, [products, isFeed, user, feedPrefs]);
+
+  const discoveryChips = useMemo(
+    () => computeDiscoveryChips(catalogProducts),
+    [catalogProducts],
+  );
 
   const catalogFilters: CatalogFilterState = useMemo(
     () => ({
@@ -199,7 +218,19 @@ function CatalogBrowsePanelInner({
         ) : null}
 
         {isFeed ? (
-          <div className="mb-2 -mx-2 px-2 md:-mx-0 md:px-0">
+          <div className="mb-2 -mx-2 px-2 md:-mx-0 md:px-0 space-y-2">
+            <BrowseDiscoveryRails
+              browsePath={browsePath}
+              brandChips={discoveryChips.topBrands}
+              sizeChips={discoveryChips.topSizes}
+              prefBrands={feedPrefs.brands}
+              compact
+              onBrandPick={(brand) => setSelectedBrand(brand)}
+              onSizePick={(size) => setSelectedSize(size)}
+              onConditionPick={(condition) => setSelectedCondition(condition)}
+              onSortPick={(sort) => setSelectedSort(sort)}
+              onMaxPricePick={(max) => setSelectedMaxPrice(max)}
+            />
             <CategoryQuickChips
               categories={categories}
               selectedCategory={selectedCategory}
@@ -281,6 +312,33 @@ function CatalogBrowsePanelInner({
         favorites={favorites}
         onToggleFavorite={toggleFavorite}
         transitionKey={filterKey}
+      />
+
+      <ImmersiveFilterSheet
+        catalogFilters={catalogFilters}
+        activeFilterCount={activeFilterCount}
+        onApply={() => {}}
+        filtersProps={{
+          categories,
+          selectedCategory,
+          onCategoryChange: setSelectedCategory,
+          selectedBrand,
+          onBrandChange: setSelectedBrand,
+          selectedSize,
+          onSizeChange: setSelectedSize,
+          selectedCondition,
+          onConditionChange: setSelectedCondition,
+          selectedMinPrice,
+          selectedMaxPrice,
+          maxPriceLimit,
+          onMinPriceChange: setSelectedMinPrice,
+          onMaxPriceChange: setSelectedMaxPrice,
+          sortOptions: localizedSortOptions,
+          selectedSort,
+          onSortChange: setSelectedSort,
+          activeFilterCount,
+          onClearAll: clearAllFilters,
+        }}
       />
     </div>
   );

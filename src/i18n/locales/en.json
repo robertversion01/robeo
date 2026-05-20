@@ -93,10 +93,17 @@
       "conditionNew": "New",
       "conditionLikeNew": "Like new",
       "conditionGood": "Good",
+      "price": "By price",
+      "forYou": "For you",
+      "under3k": "Under 3,000 Ft",
+      "under10k": "Under 10,000 Ft",
+      "under20k": "Under 20,000 Ft",
       "tip": "Tip: use the Search tab for precise filters — Home feed is personalised."
     },
     "immersive": {
-      "showFilters": "Filters"
+      "showFilters": "Filters",
+      "filterSheetTitle": "Filters & sort",
+      "applyFilters": "Apply"
     },
     "feed": {
       "default": "Fresh listings from the community — browse, filter, save favorites.",
@@ -143,6 +150,16 @@
     "report": "Report",
     "shareCopied": "Link copied to clipboard",
     "shareFailed": "Could not share"
+  },
+  "pdp": {
+    "moreFromSeller": "More from this seller",
+    "viewCloset": "Closet",
+    "priceDropped": "{{from}} → {{to}} Ft",
+    "priceDroppedShort": "Price drop"
+  },
+  "closet": {
+    "pageTitle": "Seller closet",
+    "hint": "Pick multiple items for one bundle checkout — discount on quantity."
   },
   "profile": {
     "title": "My profile",
@@ -238,7 +255,10 @@
       "sizesPlaceholder": "Size",
       "styles": "Style / category",
       "stylesHint": "e.g. streetwear, vintage",
-      "stylesPlaceholder": "Style"
+      "stylesPlaceholder": "Style",
+      "conditions": "Condition preference",
+      "conditionsHint": "e.g. new, good, satisfactory",
+      "conditionsPlaceholder": "Condition"
     },
     "notifications": {
       "title": "Notification channels",
@@ -248,6 +268,14 @@
       "messages": "Messages",
       "followers": "Followers & new listings",
       "savedSearches": "Saved search alerts"
+    },
+    "delivery": {
+      "title": "Push & email (preview)",
+      "hint": "In-app notifications always work. Push and email connect in a later release.",
+      "push": "Push notifications",
+      "email": "Email notifications",
+      "digest": "Daily email digest",
+      "comingSoon": "External channels arrive next round (FCM / email provider)."
     },
     "language": {
       "title": "Language"
@@ -265,7 +293,9 @@
     "memberSince": "Member since {{date}}",
     "responseFast": "Replies quickly",
     "responseNormal": "Active seller",
-    "responseNew": "New on marketplace"
+    "responseNew": "New on marketplace",
+    "trustScore": "Trust score: {{score}}",
+    "active": "Active seller"
   },
   "trust": {
     "compactTitle": "Safe shopping",
@@ -281,7 +311,9 @@
       "add": "Bundle",
       "added": "Added",
       "summary": "{{count}} items · {{percent}}% off → {{total}} (save {{savings}})",
-      "viewSeller": "Seller shop"
+      "viewSeller": "Seller shop",
+      "viewCloset": "Full closet",
+      "checkout": "Pay bundle"
     },
     "offer": {
       "title": "Bundle offer",
@@ -434,9 +466,35 @@
       "rateLimit": "Too many requests. Try again later."
     }
   },
+  "chatOffer": {
+    "accept": "Accept",
+    "reject": "Decline",
+    "acceptCounter": "Accept {{price}} Ft",
+    "accepted": "Offer accepted",
+    "rejected": "Offer declined",
+    "failed": "Action failed",
+    "missingOffer": "Offer not found",
+    "closed": "Closed",
+    "panelTitle": "Offer: {{price}} Ft",
+    "acceptedCounterMsg": "I accepted the counter-offer.",
+    "status": {
+      "pending": "Waiting for seller",
+      "countered": "Counter-offer — your move",
+      "accepted": "Accepted — pay now"
+    }
+  },
   "upload": {
     "title": "List an item",
     "subtitle": "Sell your pre-loved items to the community",
+    "ai": {
+      "cta": "AI copy suggest (Ollama)",
+      "hint": "Local llama3 — Hungarian title & description in marketplace tone.",
+      "loading": "Generating…",
+      "success": "Text inserted — review before publishing.",
+      "failed": "AI unavailable: {{reason}}",
+      "offline": "Start Ollama (localhost:11434) and pull the llama3 model.",
+      "needBasics": "Pick category and brand first."
+    },
     "name": "Item name",
     "namePlaceholder": "e.g. Nike Air Max 270",
     "description": "Description",
@@ -518,6 +576,15 @@
       "close": "Close",
       "changeTerminal": "Choose another locker",
       "terminalId": "Locker ID: {{id}}"
+    },
+    "bundle": {
+      "title": "Bundle checkout",
+      "summaryTitle": "Bundle summary",
+      "subtotal": "{{count}} items",
+      "discount": "Bundle discount ({{percent}}%)",
+      "hint": "One shipment, one payment — same seller.",
+      "needTwoItems": "At least 2 items required for bundle checkout.",
+      "addAnother": "Add another item →"
     },
     "directPurchase": "Direct purchase",
     "termsHint": "By paying you accept the purchase terms.",

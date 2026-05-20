@@ -8,6 +8,8 @@ import { ChevronDown, ChevronLeft } from 'lucide-react';
 import OffersList from '@/components/product/OffersList';
 import ChatProductSummary from '@/components/messages/ChatProductSummary';
 import ChatTransactionPanel from '@/components/messages/ChatTransactionPanel';
+import ChatOfferActions from '@/components/messages/ChatOfferActions';
+import ChatBuyerOffersPanel from '@/components/messages/ChatBuyerOffersPanel';
 import {
   buildConversationsFromMessages,
   type MessageRow,
@@ -562,6 +564,12 @@ export default function MessagesPage() {
                             ) : (
                               msg.content
                             )}
+                            <ChatOfferActions
+                              content={msg.content}
+                              viewerId={user.id}
+                              otherUserId={selectedConversation!}
+                              productId={msg.product_id}
+                            />
                             <div className="mt-1 text-[10px] text-gray-400">
                               {new Date(msg.created_at).toLocaleTimeString(timeLocale, {
                                 hour: '2-digit',

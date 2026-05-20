@@ -93,10 +93,17 @@
       "conditionNew": "Új",
       "conditionLikeNew": "Újszerű",
       "conditionGood": "Jó",
+      "price": "Ár szerint",
+      "forYou": "Neked ajánlott",
+      "under3k": "3 000 Ft alatt",
+      "under10k": "10 000 Ft alatt",
+      "under20k": "20 000 Ft alatt",
       "tip": "Tipp: a Keresés tabon szűrj pontosabban — a főoldalon a feed személyre szabott."
     },
     "immersive": {
-      "showFilters": "Szűrők"
+      "showFilters": "Szűrők",
+      "filterSheetTitle": "Szűrők és rendezés",
+      "applyFilters": "Alkalmaz"
     },
     "feed": {
       "default": "Friss hirdetések a közösségtől — böngéssz, szűrj, ments kedvenceket.",
@@ -143,6 +150,16 @@
     "report": "Jelentés",
     "shareCopied": "Link a vágólapra másolva",
     "shareFailed": "Megosztás sikertelen"
+  },
+  "pdp": {
+    "moreFromSeller": "Több ettől az eladótól",
+    "viewCloset": "Szekrény",
+    "priceDropped": "{{from}} → {{to}} Ft",
+    "priceDroppedShort": "Árcsökkenés"
+  },
+  "closet": {
+    "pageTitle": "Eladó szekrénye",
+    "hint": "Válassz több tételt egy csomag vásárláshoz — kedvezmény több darabnál."
   },
   "profile": {
     "title": "Profilom",
@@ -245,7 +262,10 @@
       "sizesPlaceholder": "Méret",
       "styles": "Stílus / kategória",
       "stylesHint": "Pl. streetwear, vintage",
-      "stylesPlaceholder": "Stílus"
+      "stylesPlaceholder": "Stílus",
+      "conditions": "Állapot preferencia",
+      "conditionsHint": "Pl. new, good, satisfactory",
+      "conditionsPlaceholder": "Állapot"
     },
     "notifications": {
       "title": "Értesítési csatornák",
@@ -255,6 +275,14 @@
       "messages": "Üzenetek",
       "followers": "Követők és új hirdetések",
       "savedSearches": "Mentett keresés riasztások"
+    },
+    "delivery": {
+      "title": "Push és e-mail (előkészítve)",
+      "hint": "Az in-app értesítések mindig működnek. Push és e-mail később kapcsolható.",
+      "push": "Push értesítések",
+      "email": "E-mail értesítések",
+      "digest": "Napi összefoglaló e-mail",
+      "comingSoon": "A külső csatornák integrációja a következő körben érkezik (FCM / e-mail szolgáltató)."
     },
     "language": {
       "title": "Nyelv"
@@ -272,7 +300,9 @@
     "memberSince": "Tag {{date}} óta",
     "responseFast": "Gyorsan válaszol",
     "responseNormal": "Aktív eladó",
-    "responseNew": "Új eladó a piactéren"
+    "responseNew": "Új eladó a piactéren",
+    "trustScore": "Bizalmi pont: {{score}}",
+    "active": "Aktív eladó"
   },
   "trust": {
     "compactTitle": "Biztonságos vásárlás",
@@ -288,7 +318,9 @@
       "add": "Csomag",
       "added": "Benne",
       "summary": "{{count}} tétel · {{percent}}% kedvezmény → {{total}} (megtakarítás {{savings}})",
-      "viewSeller": "Eladó boltja"
+      "viewSeller": "Eladó boltja",
+      "viewCloset": "Teljes szekrény",
+      "checkout": "Csomag fizetése"
     },
     "offer": {
       "title": "Csomag ajánlat",
@@ -385,9 +417,35 @@
       "rateLimit": "Túl sok kérés. Próbáld újra később."
     }
   },
+  "chatOffer": {
+    "accept": "Elfogadom",
+    "reject": "Elutasítom",
+    "acceptCounter": "Elfogadás {{price}} Ft",
+    "accepted": "Ajánlat elfogadva",
+    "rejected": "Ajánlat elutasítva",
+    "failed": "Nem sikerült",
+    "missingOffer": "Ajánlat nem található",
+    "closed": "Lezárva",
+    "panelTitle": "Ajánlat: {{price}} Ft",
+    "acceptedCounterMsg": "Elfogadtam az ellenajánlatot.",
+    "status": {
+      "pending": "Várakozik az eladóra",
+      "countered": "Ellenajánlat — válasz szükséges",
+      "accepted": "Elfogadva — fizethetsz"
+    }
+  },
   "upload": {
     "title": "Termék feltöltése",
     "subtitle": "Add el használt cuccaidat a közösségnek",
+    "ai": {
+      "cta": "AI szöveg javaslat (Ollama)",
+      "hint": "Llama3 helyben — cím és leírás magyarul, Vinted stílusban.",
+      "loading": "Generálás…",
+      "success": "Szöveg beillesztve — ellenőrizd, majd publikálj!",
+      "failed": "AI nem elérhető: {{reason}}",
+      "offline": "Indítsd az Ollamát (localhost:11434) és töltsd le a llama3 modellt.",
+      "needBasics": "Előbb válaszd ki a kategóriát és márkát."
+    },
     "name": "Termék neve",
     "namePlaceholder": "pl. Nike Air Max 270",
     "description": "Leírás",
@@ -469,6 +527,15 @@
       "close": "Bezárás",
       "changeTerminal": "Másik automata",
       "terminalId": "Automata ID: {{id}}"
+    },
+    "bundle": {
+      "title": "Csomag vásárlás",
+      "summaryTitle": "Csomag összegzés",
+      "subtotal": "{{count}} termék",
+      "discount": "Csomag kedvezmény ({{percent}}%)",
+      "hint": "Egy szállítással, egy fizetéssel — ugyanattól az eladótól.",
+      "needTwoItems": "Legalább 2 termék kell a csomag fizetéshez.",
+      "addAnother": "Még egy tétel hozzáadása →"
     },
     "directPurchase": "Közvetlen vásárlás",
     "termsHint": "A fizetés gombra kattintva elfogadod a vásárlási feltételeket.",

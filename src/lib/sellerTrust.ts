@@ -7,9 +7,30 @@ export type SellerTrustSignals = {
   avgRating: number | null;
   reviewCount: number;
   followers: number;
+  /** 0–100 heurisztikus bizalmi pont (frontend) */
+  trustScore: number;
+  activeSeller: boolean;
   /** Frontend becslés — nincs külön DB mező */
   responseLabelKey: 'sellerTrust.responseFast' | 'sellerTrust.responseNormal' | 'sellerTrust.responseNew';
 };
+
+export function computeTrustScore(input: {
+  verified: boolean;
+  listingsCount: number;
+  reviewCount: number;
+  avgRating: number | null;
+  followers: number;
+}): number {
+  let score = 40;
+  if (input.verified) score += 15;
+  score += Math.min(20, input.listingsCount * 2);
+  if (input.avgRating != null && input.reviewCount > 0) {
+    score += Math.round((input.avgRating / 5) * 20);
+    score += Math.min(10, input.reviewCount);
+  }
+  score += Math.min(10, Math.floor(input.followers / 5));
+  return Math.max(0, Math.min(100, score));
+}
 
 export async function fetchSellerTrustSignals(
   supabase: SupabaseClient,
@@ -47,6 +68,14 @@ export async function fetchSellerTrustSignals(
     responseLabelKey = 'sellerTrust.responseNormal';
   }
 
+  const trustScore = computeTrustScore({
+    verified,
+    listingsCount,
+    reviewCount,
+    avgRating,
+    followers,
+  });
+
   return {
     verified,
     memberSince: created || null,
@@ -54,6 +83,8 @@ export async function fetchSellerTrustSignals(
     avgRating,
     reviewCount,
     followers,
+    trustScore,
+    activeSeller: listingsCount >= 1,
     responseLabelKey,
   };
 }

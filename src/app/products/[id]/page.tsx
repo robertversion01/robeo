@@ -15,10 +15,13 @@ import ProductShareReportBar from '@/components/product/ProductShareReportBar';
 import OfferModal from '@/components/product/OfferModal';
 import SellerBundleHint from '@/components/product/SellerBundleHint';
 import SellerClosetBundle from '@/components/product/SellerClosetBundle';
+import SellerMoreListings from '@/components/product/SellerMoreListings';
+import PriceHistoryBadge from '@/components/product/PriceHistoryBadge';
 import TrustSafetyBlock from '@/components/trust/TrustSafetyBlock';
 import SellerTrustPanel from '@/components/profile/SellerTrustPanel';
 import BundleOfferModal from '@/components/product/BundleOfferModal';
 import type { Product } from '@/types';
+import { recordPriceSnapshot } from '@/lib/priceHistory';
 import { MAIN_TOP_PADDING, MOBILE_PAGE_BOTTOM_CLASS } from '@/lib/layoutTokens';
 
 export default function ProductPage({ params }: { params: Promise<{ id: string }> }) {
@@ -89,6 +92,7 @@ export default function ProductPage({ params }: { params: Promise<{ id: string }
 
       if (error) throw error;
       setProduct(data);
+      void recordPriceSnapshot(supabase, data.id, data.price);
       setSelectedImageIndex(0);
 
       const { data: { user } } = await supabase.auth.getUser();
@@ -379,16 +383,27 @@ export default function ProductPage({ params }: { params: Promise<{ id: string }
               
               <h1 className="text-xl md:text-2xl font-bold mb-2">{product.name}</h1>
               
-              <div className="text-[#007782] font-bold text-2xl mb-3">{product.price.toLocaleString()} Ft</div>
+              <div className="flex flex-wrap items-center gap-2 mb-3">
+                <div className="text-[#007782] font-bold text-2xl">
+                  {product.price.toLocaleString()} Ft
+                </div>
+                <PriceHistoryBadge productId={product.id} currentPrice={product.price} />
+              </div>
 
               <SellerBundleHint sellerId={product.user_id} />
               <TrustSafetyBlock variant="compact" className="mb-3" />
               {viewerId && viewerId !== product.user_id ? (
-                <SellerClosetBundle
-                  sellerId={product.user_id}
-                  currentProductId={product.id}
-                  onBundleOffer={() => setShowBundleOfferModal(true)}
-                />
+                <>
+                  <SellerMoreListings
+                    sellerId={product.user_id}
+                    excludeProductId={product.id}
+                  />
+                  <SellerClosetBundle
+                    sellerId={product.user_id}
+                    currentProductId={product.id}
+                    onBundleOffer={() => setShowBundleOfferModal(true)}
+                  />
+                </>
               ) : null}
               
               <div className="flex flex-wrap gap-2 mb-3">

@@ -63,6 +63,14 @@ export default function SellerTrustPanel({ sellerId, className }: Props) {
       <span className="rounded-full border border-gray-200 bg-white px-2.5 py-1 text-xs text-gray-600">
         {t('sellerTrust.listings', { count: signals.listingsCount })}
       </span>
+      <span className="rounded-full border border-[#007782]/25 bg-[#007782]/5 px-2.5 py-1 text-xs font-semibold text-[#007782]">
+        {t('sellerTrust.trustScore', { score: signals.trustScore })}
+      </span>
+      {signals.activeSeller ? (
+        <span className="rounded-full border border-emerald-200 bg-emerald-50 px-2.5 py-1 text-xs font-medium text-emerald-800">
+          {t('sellerTrust.active')}
+        </span>
+      ) : null}
     </div>
   );
 }

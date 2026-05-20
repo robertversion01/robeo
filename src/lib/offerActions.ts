@@ -91,3 +91,42 @@ export async function sellerSendCounterOffer(
     messageWarning: msg.ok ? undefined : msg.error,
   };
 }
+
+/** Vevő: ellenajánlat elutasítása. */
+export async function buyerRejectCounterOffer(
+  supabase: SupabaseClient,
+  input: {
+    offerId: string;
+    buyerId: string;
+    sellerId: string;
+    productId: string;
+    productName: string;
+  },
+): Promise<OfferActionResult> {
+  const { error: updateError } = await supabase
+    .from('offers')
+    .update(buildOfferStatusUpdate('rejected'))
+    .eq('id', input.offerId)
+    .eq('buyer_id', input.buyerId);
+
+  if (updateError) {
+    return { ok: false, error: formatSupabaseError(updateError) };
+  }
+
+  const msg = await insertChatSystemMessage(supabase, {
+    senderId: input.buyerId,
+    receiverId: input.sellerId,
+    content: `A vevő elutasította az ellenajánlatot (${input.productName}).`,
+    productId: input.productId,
+  });
+
+  if (typeof window !== 'undefined') {
+    window.dispatchEvent(new CustomEvent('offers:updated'));
+  }
+
+  return {
+    ok: true,
+    status: 'rejected',
+    messageWarning: msg.ok ? undefined : msg.error,
+  };
+}

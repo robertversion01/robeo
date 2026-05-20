@@ -13,6 +13,9 @@ import { revalidateCatalog } from '@/app/actions/revalidateCatalog';
 import { notifyCatalogUpdated } from '@/lib/catalogRefresh';
 import { clearUploadDraft, loadUploadDraft, saveUploadDraft } from '@/lib/uploadDraft';
 import { cn } from '@/lib/utils';
+import { suggestListingCopy } from '@/lib/uploadListingAi';
+import { isOllamaReachable } from '@/lib/ollamaClient';
+import { Sparkles } from 'lucide-react';
 
 const STEPS = ['photos', 'category', 'brand', 'condition', 'price', 'details'] as const;
 type StepId = (typeof STEPS)[number];
@@ -51,10 +54,47 @@ export default function UploadWizard() {
   const [images, setImages] = useState<UploadedImage[]>([]);
   const [loading, setLoading] = useState(false);
   const [draftRestored, setDraftRestored] = useState(false);
+  const [aiLoading, setAiLoading] = useState(false);
+  const [ollamaOk, setOllamaOk] = useState<boolean | null>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   const stepId = STEPS[stepIndex];
   const progress = ((stepIndex + 1) / STEPS.length) * 100;
+
+  useEffect(() => {
+    if (stepId !== 'details') return;
+    void isOllamaReachable().then(setOllamaOk);
+  }, [stepId]);
+
+  const runAiSuggest = async () => {
+    if (!formData.category || !formData.brand) {
+      toast.error(t('upload.ai.needBasics'));
+      return;
+    }
+    setAiLoading(true);
+    try {
+      const res = await suggestListingCopy({
+        category: formData.category,
+        brand: formData.brand,
+        size: formData.size,
+        condition: formData.condition,
+        price: formData.price,
+        imageCount: images.length,
+      });
+      if (!res.ok) {
+        toast.error(t('upload.ai.failed', { reason: res.error }));
+        return;
+      }
+      setFormData((p) => ({
+        ...p,
+        name: res.data.name,
+        description: res.data.description,
+      }));
+      toast.success(t('upload.ai.success'));
+    } finally {
+      setAiLoading(false);
+    }
+  };
 
   const persistDraft = useCallback(() => {
     saveUploadDraft({
@@ -389,6 +429,21 @@ export default function UploadWizard() {
 
           {stepId === 'details' && (
             <div className="space-y-4">
+              <div className="rounded-xl border border-[#007782]/20 bg-[#007782]/5 p-3">
+                <p className="text-xs text-gray-600 mb-2">{t('upload.ai.hint')}</p>
+                <button
+                  type="button"
+                  disabled={aiLoading || ollamaOk === false}
+                  onClick={() => void runAiSuggest()}
+                  className="inline-flex items-center gap-2 rounded-full bg-[#007782] px-4 py-2 text-xs font-semibold text-white disabled:opacity-50"
+                >
+                  <Sparkles size={14} />
+                  {aiLoading ? t('upload.ai.loading') : t('upload.ai.cta')}
+                </button>
+                {ollamaOk === false ? (
+                  <p className="text-[11px] text-amber-700 mt-2">{t('upload.ai.offline')}</p>
+                ) : null}
+              </div>
               <div>
                 <label className="block text-sm font-medium mb-2">{t('upload.name')}</label>
                 <input

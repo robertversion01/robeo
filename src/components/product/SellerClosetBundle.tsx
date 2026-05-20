@@ -137,10 +137,16 @@ export default function SellerClosetBundle({ sellerId, currentProductId, onBundl
           </p>
           <div className="mt-2 flex flex-wrap gap-2">
             <Link
-              href={`/profile/${sellerId}`}
+              href="/checkout?bundle=1"
+              className="rounded-full bg-[#007782] px-3 py-1 text-xs font-semibold text-white"
+            >
+              {t('bundle.closet.checkout')}
+            </Link>
+            <Link
+              href={`/profile/${sellerId}/closet`}
               className="inline-block font-semibold text-[#007782] hover:underline text-xs"
             >
-              {t('bundle.closet.viewSeller')} →
+              {t('bundle.closet.viewCloset')} →
             </Link>
             {onBundleOffer ? (
               <button

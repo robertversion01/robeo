@@ -10,6 +10,7 @@ import { getOptimizedImageUrl } from '@/lib/imageUtils';
 import { OFFER_LABELS_BUYER, offerBadgeClass } from '@/lib/offerUi';
 import { buildOfferStatusUpdate } from '@/lib/offers';
 import { insertChatSystemMessage } from '@/lib/chatMessages';
+import { buyerRejectCounterOffer } from '@/lib/offerActions';
 
 type ProductJoin = {
   id: string;
@@ -115,6 +116,35 @@ export default function BuyerOffersList() {
       if (channel) supabase.removeChannel(channel);
     };
   }, [loadOffers]);
+
+  const rejectSellerCounter = async (offer: BuyerOfferRow) => {
+    const product =
+      offer.product && !Array.isArray(offer.product) ? offer.product : null;
+    if (!product) return;
+    setActingOfferId(offer.id);
+    try {
+      const {
+        data: { user },
+      } = await supabase.auth.getUser();
+      if (!user) return;
+      const res = await buyerRejectCounterOffer(supabase, {
+        offerId: offer.id,
+        buyerId: user.id,
+        sellerId: offer.seller_id,
+        productId: product.id,
+        productName: product.name,
+      });
+      if (!res.ok) throw new Error(res.error);
+      toast.success('Ellenajánlat elutasítva.');
+      setOffers((prev) =>
+        prev.map((o) => (o.id === offer.id ? { ...o, status: 'rejected' } : o)),
+      );
+    } catch (e: unknown) {
+      toast.error(e instanceof Error ? e.message : 'Hiba');
+    } finally {
+      setActingOfferId(null);
+    }
+  };
 
   const acceptSellerCounter = async (offerId: string) => {
     setActingOfferId(offerId);
@@ -249,17 +279,27 @@ export default function BuyerOffersList() {
 
               <div className="flex flex-col gap-2 sm:items-end sm:justify-center">
                 {offer.status === 'countered' && (
-                  <button
-                    type="button"
-                    disabled={busy(offer.id)}
-                    onClick={() => acceptSellerCounter(offer.id)}
-                    className="btn-base btn-primary min-h-10 px-4 text-sm rounded-xl w-full sm:w-auto inline-flex items-center justify-center gap-2"
-                  >
-                    {busy(offer.id) ? (
-                      <Loader2 className="h-4 w-4 animate-spin" />
-                    ) : null}
-                    Ellenajánlat elfogadása
-                  </button>
+                  <>
+                    <button
+                      type="button"
+                      disabled={busy(offer.id)}
+                      onClick={() => acceptSellerCounter(offer.id)}
+                      className="btn-base btn-primary min-h-10 px-4 text-sm rounded-xl w-full sm:w-auto inline-flex items-center justify-center gap-2"
+                    >
+                      {busy(offer.id) ? (
+                        <Loader2 className="h-4 w-4 animate-spin" />
+                      ) : null}
+                      Ellenajánlat elfogadása
+                    </button>
+                    <button
+                      type="button"
+                      disabled={busy(offer.id)}
+                      onClick={() => void rejectSellerCounter(offer)}
+                      className="btn-base btn-secondary min-h-10 px-4 text-sm rounded-xl w-full sm:w-auto"
+                    >
+                      Elutasítás
+                    </button>
+                  </>
                 )}
 
                 {offer.status === 'accepted' && (

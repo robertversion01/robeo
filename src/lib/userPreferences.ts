@@ -4,6 +4,7 @@ export type FeedPreferences = {
   brands: string[];
   sizes: string[];
   styles: string[];
+  conditions: string[];
 };
 
 export type NotificationChannelPrefs = {
@@ -26,6 +27,7 @@ export const DEFAULT_FEED_PREFS: FeedPreferences = {
   brands: [],
   sizes: [],
   styles: [],
+  conditions: [],
 };
 
 export const DEFAULT_NOTIFICATION_PREFS: NotificationChannelPrefs = {
@@ -49,6 +51,7 @@ function normalizeFeed(raw: unknown): FeedPreferences {
     brands: Array.isArray(o.brands) ? o.brands.map(String).filter(Boolean) : [],
     sizes: Array.isArray(o.sizes) ? o.sizes.map(String).filter(Boolean) : [],
     styles: Array.isArray(o.styles) ? o.styles.map(String).filter(Boolean) : [],
+    conditions: Array.isArray(o.conditions) ? o.conditions.map(String).filter(Boolean) : [],
   };
 }
 
