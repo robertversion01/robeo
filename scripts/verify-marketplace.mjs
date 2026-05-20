@@ -102,12 +102,15 @@ async function main() {
   }
 
   const prod = process.env.PROD_URL || 'https://robeo.vercel.app';
-  try {
-    const res = await fetch(`${prod}/api/health/marketplace`);
-    const text = await res.text();
-    ok('Production health endpoint', res.ok, `HTTP ${res.status} ${text.slice(0, 120)}`);
-  } catch (e) {
-    ok('Production health endpoint', false, e.message);
+  for (const path of ['/api/marketplace-health', '/api/health/marketplace']) {
+    try {
+      const res = await fetch(`${prod}${path}`);
+      const text = await res.text();
+      ok(`Production health ${path}`, res.ok, `HTTP ${res.status} ${text.slice(0, 120)}`);
+      if (res.ok) break;
+    } catch (e) {
+      ok(`Production health ${path}`, false, e.message);
+    }
   }
 
   const failed = checks.filter((c) => !c.pass).length;
