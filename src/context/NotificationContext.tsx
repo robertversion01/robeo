@@ -98,8 +98,18 @@ export function MessagesNavBadge({
 }: {
   className?: string;
 }) {
-  const { hasUnread } = useNotifications();
-  if (!hasUnread) return null;
+  const { unreadCount } = useNotifications();
+  if (unreadCount <= 0) return null;
+  return <MessagesBadgeDot className={className} />;
+}
+
+export function FeedNavBadge({
+  className = 'top-0.5 right-0.5 h-2.5 w-2.5',
+}: {
+  className?: string;
+}) {
+  const { feedUnreadCount } = useNotifications();
+  if (feedUnreadCount <= 0) return null;
   return <MessagesBadgeDot className={className} />;
 }
 

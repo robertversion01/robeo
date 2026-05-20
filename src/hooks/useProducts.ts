@@ -314,6 +314,7 @@ export function useProducts() {
   ]);
 
   const clearAllFilters = useCallback(() => {
+    setSearchQuery('');
     setSelectedCategory('all');
     setSelectedBrand('all');
     setSelectedSize('all');
@@ -321,7 +322,7 @@ export function useProducts() {
     setSelectedMinPrice(0);
     setSelectedMaxPrice(maxPriceLimit);
     bumpFilterRevision();
-  }, [maxPriceLimit, bumpFilterRevision]);
+  }, [maxPriceLimit, bumpFilterRevision, setSearchQuery]);
 
   return {
     allProducts: products,

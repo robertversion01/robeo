@@ -11,7 +11,86 @@
     },
     "catalog": {
       "loading": "Betöltés...",
-      "results": "{{count}} találat"
+      "results": "{{count}} találat",
+      "title": "Böngéssz a kínálatban"
     }
+  },
+  "nav": {
+    "home": "Főoldal",
+    "search": "Keresés",
+    "favorites": "Kedvencek",
+    "upload": "Feltöltés",
+    "messages": "Üzenetek",
+    "notifications": "Értesítések",
+    "profile": "Profil",
+    "register": "Regisztráció",
+    "login": "Belépés",
+    "signOut": "Kijelentkezés",
+    "myProfile": "Profilom",
+    "searchPlaceholder": "Keress márkákra, ruhákra..."
+  },
+  "browse": {
+    "search": {
+      "placeholder": "Mit keresel?",
+      "noResults": "Nincs találat.",
+      "seeAll": "Összes találat: „{{query}}”",
+      "scrollToCatalog": "Keresés a kínálatban"
+    },
+    "categories": {
+      "label": "Kategóriák",
+      "all": "Összes",
+      "clothing": "Ruházat",
+      "shoes": "Cipő",
+      "accessories": "Kiegészítők",
+      "electronics": "Elektronika",
+      "other": "Egyéb"
+    },
+    "filters": {
+      "category": "Kategória",
+      "allCategories": "Összes kategória",
+      "brand": "Márka",
+      "allBrands": "Összes márka",
+      "size": "Méret",
+      "allSizes": "Összes méret",
+      "condition": "Állapot",
+      "allConditions": "Összes állapot",
+      "price": "Ár",
+      "priceRange": "Ártartomány",
+      "anyPrice": "Bármely ár",
+      "under5k": "5 000 Ft alatt",
+      "5k15k": "5 000 – 15 000 Ft",
+      "15k30k": "15 000 – 30 000 Ft",
+      "over30k": "30 000 Ft felett",
+      "min": "Min.",
+      "max": "Max.",
+      "sort": "Rendezés",
+      "clear": "Törlés",
+      "clearAll": "Szűrők törlése ({{count}})"
+    },
+    "sort": {
+      "newest": "Legújabb előre",
+      "priceAsc": "Legolcsóbb előre",
+      "priceDesc": "Legdrágább előre"
+    },
+    "saved": {
+      "title": "Mentett keresések",
+      "saveCurrent": "Keresés mentése",
+      "remove": "Mentett keresés törlése",
+      "emptyHint": "Mentsd el a szűrőket, és egy kattintással visszatérhetsz hozzájuk."
+    },
+    "feed": {
+      "default": "Friss hirdetések a közösségtől — böngéssz, szűrj, ments kedvenceket.",
+      "favoritesHint": "{{count}} kedvenc terméked van — hasonló ajánlatok a listában.",
+      "categoryHint": "Most a(z) {{category}} kategóriát böngészed.",
+      "trendingBrands": "Népszerű most: {{brands}}"
+    }
+  },
+  "favorites": {
+    "title": "Kedvencek",
+    "empty": "Még nincs kedvenc terméked.",
+    "browse": "Böngéssz a kínálatban"
+  },
+  "notifications": {
+    "title": "Értesítések"
   }
 }

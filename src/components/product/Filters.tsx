@@ -1,8 +1,9 @@
 'use client';
 
-import { useCallback, useEffect, useId, useLayoutEffect, useRef, useState } from 'react';
+import { useCallback, useEffect, useId, useLayoutEffect, useMemo, useRef, useState } from 'react';
 import { createPortal } from 'react-dom';
 import { ChevronDown, X } from 'lucide-react';
+import { useTranslation } from 'react-i18next';
 import {
   VINTED_BRANDS,
   VINTED_CONDITIONS,
@@ -34,29 +35,26 @@ export interface FiltersProps {
   activeFilterCount?: number;
 }
 
-function buildCategoryOptions(categories: { id: string; label: string }[]) {
+function buildCategoryOptions(
+  categories: { id: string; label: string }[],
+  allLabel: string,
+) {
   return [
-    { id: 'all', label: 'Összes kategória' },
+    { id: 'all', label: allLabel },
     ...categories.filter((c) => c.id !== 'all').map((c) => ({ id: c.id, label: c.label })),
   ];
 }
 
-const BRAND_OPTIONS = [
-  { id: 'all', label: 'Összes márka' },
-  ...VINTED_BRANDS.map((b) => ({ id: b, label: b })),
-];
+const BRAND_OPTIONS = VINTED_BRANDS.map((b) => ({ id: b, label: b }));
 
-const CONDITION_OPTIONS = [
-  { id: 'all', label: 'Összes állapot' },
-  ...VINTED_CONDITIONS.map((c) => ({ id: c.id, label: c.label })),
-];
+const CONDITION_OPTIONS = VINTED_CONDITIONS.map((c) => ({ id: c.id, label: c.label }));
 
-const PRICE_PRESETS = [
-  { id: 'all', label: 'Bármely ár', min: 0, max: 0 },
-  { id: 'under5k', label: '5 000 Ft alatt', min: 0, max: 5000 },
-  { id: '5k-15k', label: '5 000 – 15 000 Ft', min: 5000, max: 15000 },
-  { id: '15k-30k', label: '15 000 – 30 000 Ft', min: 15000, max: 30000 },
-  { id: '30k+', label: '30 000 Ft felett', min: 30000, max: 0 },
+const PRICE_PRESET_KEYS = [
+  { id: 'all', labelKey: 'browse.filters.anyPrice', min: 0, max: 0 },
+  { id: 'under5k', labelKey: 'browse.filters.under5k', min: 0, max: 5000 },
+  { id: '5k-15k', labelKey: 'browse.filters.5k15k', min: 5000, max: 15000 },
+  { id: '15k-30k', labelKey: 'browse.filters.15k30k', min: 15000, max: 30000 },
+  { id: '30k+', labelKey: 'browse.filters.over30k', min: 30000, max: 0 },
 ] as const;
 
 const PANEL = {
@@ -88,6 +86,7 @@ export default function Filters({
   onClearAll,
   activeFilterCount = 0,
 }: FiltersProps) {
+  const { t, i18n } = useTranslation();
   const [openPanelId, setOpenPanelId] = useState<string | null>(null);
   const priceBtnRef = useRef<HTMLButtonElement>(null);
   const pricePanelRef = useRef<HTMLDivElement>(null);
@@ -97,19 +96,39 @@ export default function Filters({
   const [mounted, setMounted] = useState(false);
   const priceInstanceId = useId();
 
-  const categoryOptions = buildCategoryOptions(categories);
+  const pricePresets = useMemo(
+    () => PRICE_PRESET_KEYS.map((p) => ({ ...p, label: t(p.labelKey) })),
+    [t],
+  );
 
-  const sizeOptions = (() => {
+  const categoryOptions = useMemo(
+    () => buildCategoryOptions(categories, t('browse.filters.allCategories')),
+    [categories, t],
+  );
+
+  const brandOptions = useMemo(
+    () => [{ id: 'all', label: t('browse.filters.allBrands') }, ...BRAND_OPTIONS],
+    [t],
+  );
+
+  const conditionOptions = useMemo(
+    () => [{ id: 'all', label: t('browse.filters.allConditions') }, ...CONDITION_OPTIONS],
+    [t],
+  );
+
+  const sizeOptions = useMemo(() => {
     const sizes =
       selectedCategory === 'all'
         ? Array.from(new Set([...CLOTHING_SIZES, ...SHOE_SIZES]))
         : [...sizesForCategory(selectedCategory)];
-    return [{ id: 'all', label: 'Összes méret' }, ...sizes.map((s) => ({ id: s, label: s }))];
-  })();
+    return [{ id: 'all', label: t('browse.filters.allSizes') }, ...sizes.map((s) => ({ id: s, label: s }))];
+  }, [selectedCategory, t]);
+
+  const locale = i18n.language?.startsWith('en') ? 'en-HU' : 'hu-HU';
 
   const pricePresetId = (() => {
     if (selectedMinPrice === 0 && selectedMaxPrice >= maxPriceLimit) return 'all';
-    const match = PRICE_PRESETS.find(
+    const match = pricePresets.find(
       (p) =>
         p.id !== 'all' &&
         p.min === selectedMinPrice &&
@@ -118,17 +137,15 @@ export default function Filters({
     return match?.id ?? 'custom';
   })();
 
-  const priceOpen = openPanelId === PANEL.price;
-
   const priceLabel =
     pricePresetId === 'all'
-      ? 'Ár'
+      ? t('browse.filters.price')
       : pricePresetId === 'custom'
-        ? `${selectedMinPrice.toLocaleString('hu-HU')} – ${selectedMaxPrice.toLocaleString('hu-HU')} Ft`
-        : PRICE_PRESETS.find((p) => p.id === pricePresetId)?.label ?? 'Ár';
+        ? `${selectedMinPrice.toLocaleString(locale)} – ${selectedMaxPrice.toLocaleString(locale)} Ft`
+        : pricePresets.find((p) => p.id === pricePresetId)?.label ?? t('browse.filters.price');
 
   const applyPricePreset = (presetId: string) => {
-    const preset = PRICE_PRESETS.find((p) => p.id === presetId);
+    const preset = pricePresets.find((p) => p.id === presetId);
     if (!preset || preset.id === 'all') {
       onMinPriceChange(0);
       onMaxPriceChange(maxPriceLimit);
@@ -137,6 +154,8 @@ export default function Filters({
     onMinPriceChange(preset.min);
     onMaxPriceChange(preset.max > 0 ? preset.max : maxPriceLimit);
   };
+
+  const priceOpen = openPanelId === PANEL.price;
 
   const updatePriceCoords = useCallback(() => {
     const btn = priceBtnRef.current;
@@ -199,9 +218,9 @@ export default function Filters({
         className="fixed z-[10050] w-64 max-w-[calc(100vw-16px)] rounded-xl border border-gray-200 bg-white p-3 shadow-xl"
         style={{ top: priceCoords.top, left: priceCoords.left, minWidth: priceCoords.minWidth }}
       >
-        <p className="text-xs font-semibold text-gray-700 mb-2">Ártartomány</p>
+        <p className="text-xs font-semibold text-gray-700 mb-2">{t('browse.filters.priceRange')}</p>
         <div className="space-y-1 mb-3">
-          {PRICE_PRESETS.map((p) => (
+          {pricePresets.map((p) => (
             <button
               key={p.id}
               type="button"
@@ -219,7 +238,7 @@ export default function Filters({
         </div>
         <div className="space-y-2 text-xs text-gray-600">
           <label className="block">
-            Min. ({selectedMinPrice.toLocaleString('hu-HU')} Ft)
+            {t('browse.filters.min')} ({selectedMinPrice.toLocaleString(locale)} Ft)
             <input
               type="range"
               min={0}
@@ -231,7 +250,7 @@ export default function Filters({
             />
           </label>
           <label className="block">
-            Max. ({selectedMaxPrice.toLocaleString('hu-HU')} Ft)
+            {t('browse.filters.max')} ({selectedMaxPrice.toLocaleString(locale)} Ft)
             <input
               type="range"
               min={0}
@@ -253,7 +272,7 @@ export default function Filters({
           panelId={PANEL.category}
           openPanelId={openPanelId}
           onOpenPanelChange={setOpenPanelId}
-          label="Kategória"
+          label={t('browse.filters.category')}
           options={categoryOptions}
           value={selectedCategory}
           onChange={onCategoryChange}
@@ -262,8 +281,8 @@ export default function Filters({
           panelId={PANEL.brand}
           openPanelId={openPanelId}
           onOpenPanelChange={setOpenPanelId}
-          label="Márka"
-          options={BRAND_OPTIONS}
+          label={t('browse.filters.brand')}
+          options={brandOptions}
           value={selectedBrand}
           onChange={onBrandChange}
         />
@@ -271,7 +290,7 @@ export default function Filters({
           panelId={PANEL.size}
           openPanelId={openPanelId}
           onOpenPanelChange={setOpenPanelId}
-          label="Méret"
+          label={t('browse.filters.size')}
           options={sizeOptions}
           value={selectedSize}
           onChange={onSizeChange}
@@ -280,8 +299,8 @@ export default function Filters({
           panelId={PANEL.condition}
           openPanelId={openPanelId}
           onOpenPanelChange={setOpenPanelId}
-          label="Állapot"
-          options={CONDITION_OPTIONS}
+          label={t('browse.filters.condition')}
+          options={conditionOptions}
           value={selectedCondition}
           onChange={onConditionChange}
         />
@@ -330,7 +349,7 @@ export default function Filters({
             className="inline-flex h-9 items-center gap-1 rounded-full border border-gray-300 px-3 text-xs text-gray-600 hover:bg-gray-50 shrink-0"
           >
             <X size={14} />
-            Törlés ({activeFilterCount})
+            {t('browse.filters.clearAll', { count: activeFilterCount })}
           </button>
         ) : null}
       </div>

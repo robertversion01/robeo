@@ -11,7 +11,86 @@
     },
     "catalog": {
       "loading": "Loading...",
-      "results": "{{count}} results"
+      "results": "{{count}} results",
+      "title": "Browse the catalog"
     }
+  },
+  "nav": {
+    "home": "Home",
+    "search": "Search",
+    "favorites": "Favorites",
+    "upload": "List item",
+    "messages": "Inbox",
+    "notifications": "Notifications",
+    "profile": "Profile",
+    "register": "Sign up",
+    "login": "Log in",
+    "signOut": "Sign out",
+    "myProfile": "My profile",
+    "searchPlaceholder": "Search brands, items..."
+  },
+  "browse": {
+    "search": {
+      "placeholder": "What are you looking for?",
+      "noResults": "No results.",
+      "seeAll": "See all results for “{{query}}”",
+      "scrollToCatalog": "Search catalog"
+    },
+    "categories": {
+      "label": "Categories",
+      "all": "All",
+      "clothing": "Clothing",
+      "shoes": "Shoes",
+      "accessories": "Accessories",
+      "electronics": "Electronics",
+      "other": "Other"
+    },
+    "filters": {
+      "category": "Category",
+      "allCategories": "All categories",
+      "brand": "Brand",
+      "allBrands": "All brands",
+      "size": "Size",
+      "allSizes": "All sizes",
+      "condition": "Condition",
+      "allConditions": "All conditions",
+      "price": "Price",
+      "priceRange": "Price range",
+      "anyPrice": "Any price",
+      "under5k": "Under 5,000 Ft",
+      "5k15k": "5,000 – 15,000 Ft",
+      "15k30k": "15,000 – 30,000 Ft",
+      "over30k": "Over 30,000 Ft",
+      "min": "Min.",
+      "max": "Max.",
+      "sort": "Sort",
+      "clear": "Clear",
+      "clearAll": "Clear filters ({{count}})"
+    },
+    "sort": {
+      "newest": "Newest first",
+      "priceAsc": "Price: low to high",
+      "priceDesc": "Price: high to low"
+    },
+    "saved": {
+      "title": "Saved searches",
+      "saveCurrent": "Save search",
+      "remove": "Remove saved search",
+      "emptyHint": "Save your filters and return to them with one tap."
+    },
+    "feed": {
+      "default": "Fresh listings from the community — browse, filter, save favorites.",
+      "favoritesHint": "You have {{count}} favorites — similar items may appear below.",
+      "categoryHint": "Browsing {{category}} right now.",
+      "trendingBrands": "Popular now: {{brands}}"
+    }
+  },
+  "favorites": {
+    "title": "Favorites",
+    "empty": "No favorites yet.",
+    "browse": "Browse catalog"
+  },
+  "notifications": {
+    "title": "Notifications"
   }
 }
