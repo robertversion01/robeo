@@ -3,17 +3,12 @@
 import { useEffect, useState } from 'react';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
-import { Home, MessageCircle, Search, User, Plus, LogIn, Bell } from 'lucide-react';
+import { Home, MessageCircle, Search, User, Plus, LogIn } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 import { supabase } from '@/lib/supabase';
 import { cn } from '@/lib/utils';
-import { FeedNavBadge, MessagesNavBadge } from '@/context/NotificationContext';
-
-const AUTH_PATHS = ['/auth', '/login', '/register'];
-
-function isAuthPath(pathname: string) {
-  return AUTH_PATHS.some((p) => pathname === p || pathname.startsWith(`${p}/`));
-}
+import { MessagesNavBadge } from '@/context/NotificationContext';
+import { shouldShowMobileBottomNav } from '@/lib/navVisibility';
 
 export default function MobileShellNav() {
   const { t } = useTranslation();
@@ -41,9 +36,7 @@ export default function MobileShellNav() {
   }, []);
 
   if (loggedIn === null) return null;
-  if (isAuthPath(pathname)) return null;
-  if (loggedIn && pathname.startsWith('/messages')) return null;
-  if (pathname.startsWith('/checkout') || pathname.startsWith('/upload')) return null;
+  if (!shouldShowMobileBottomNav(pathname, loggedIn)) return null;
 
   if (!loggedIn) {
     return (
@@ -159,16 +152,6 @@ export default function MobileShellNav() {
             </Link>
           );
         })}
-      </div>
-      <div className="flex justify-center border-t border-gray-100 py-1">
-        <Link
-          href="/notifications"
-          className="relative inline-flex items-center gap-1.5 rounded-full px-3 py-1 text-[10px] font-semibold text-gray-600 hover:bg-gray-50"
-        >
-          <Bell size={14} className="shrink-0" />
-          {t('nav.notifications')}
-          <FeedNavBadge className="top-0 right-1 h-2 w-2" />
-        </Link>
       </div>
     </nav>
   );

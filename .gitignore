@@ -40,6 +40,16 @@ yarn-error.log*
 # supabase local temp metadata
 supabase/.temp/
 
+# legacy frontend + local backend (not part of Next.js app)
+frontend/node_modules/
+frontend/dist/
+backend/Postgres.local.env
+backend/*.local.env
+
+# Cursor agent helper scripts (local only)
+_cursor_*.ps1
+_cursor_*.txt
+
 # typescript
 *.tsbuildinfo
 next-env.d.ts
