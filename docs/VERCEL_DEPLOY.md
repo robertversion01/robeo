@@ -115,3 +115,29 @@ curl -H "Authorization: Bearer $CRON_SECRET" \
 Várható: `{"ok":true,"mode":"cron",...}`
 
 GitHub: **Actions → Saved Search Scan (hourly) → Run workflow** (secret után).
+
+## 6. CRON_SECRET rotáció
+
+Új secret generálás + Vercel + GitHub + lokál `.env.local` + production redeploy:
+
+```bash
+npm run rotate:cron-secret
+```
+
+Előfeltétel: `vercel login`, git push hitelesítés (GitHub token a credential helperből).
+
+Rotáció után a **régi secret azonnal érvénytelen**. Ellenőrzés:
+
+```bash
+curl -H "Authorization: Bearer $CRON_SECRET" \
+  https://robeo.vercel.app/api/marketplace-health
+```
+
+→ `cronSecret: true` a JSON-ban.
+
+Worker auth teszt (401 = rossz secret; 500 = auth OK, app/DB hiba):
+
+```bash
+curl -H "Authorization: Bearer $CRON_SECRET" \
+  https://robeo.vercel.app/api/workers/saved-search-scan
+```
