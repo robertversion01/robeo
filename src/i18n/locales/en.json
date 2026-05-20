@@ -80,13 +80,25 @@
       "saveCurrent": "Save search",
       "syncing": "Saving…",
       "remove": "Remove saved search",
-      "emptyHint": "Save your filters and return to them with one tap."
+      "emptyHint": "Save your filters and return to them with one tap.",
+      "alertToggle": "Toggle alert",
+      "alertOn": "Alerts on",
+      "alertOff": "Alerts off"
+    },
+    "discovery": {
+      "brands": "Popular brands",
+      "condition": "By condition",
+      "conditionNew": "New",
+      "conditionLikeNew": "Like new",
+      "conditionGood": "Good",
+      "tip": "Tip: use the Search tab for precise filters — Home feed is personalised."
     },
     "feed": {
       "default": "Fresh listings from the community — browse, filter, save favorites.",
       "favoritesHint": "You have {{count}} favorites — similar items may appear below.",
       "categoryHint": "Browsing {{category}} right now.",
-      "trendingBrands": "Popular now: {{brands}}"
+      "trendingBrands": "Popular now: {{brands}}",
+      "tunePrefs": "Tune preferences"
     }
   },
   "product": {
@@ -200,7 +212,57 @@
     "filterOffers": "Offers",
     "filterSales": "Sales",
     "filterOther": "Other",
+    "filterFavorites": "Favorites",
+    "filterPriceDrop": "Price drops",
+    "filterFollowers": "Followers",
     "filterUnread": "Unread ({{count}})"
+  },
+  "settings": {
+    "saving": "Saving…",
+    "personalisation": {
+      "title": "Personalisation",
+      "hint": "Preferences tune your home feed ranking.",
+      "brands": "Favourite brands",
+      "brandsHint": "e.g. Nike, Zara — add with Enter.",
+      "brandsPlaceholder": "Brand name",
+      "sizes": "Sizes",
+      "sizesHint": "e.g. M, 38, 42",
+      "sizesPlaceholder": "Size",
+      "styles": "Style / category",
+      "stylesHint": "e.g. streetwear, vintage",
+      "stylesPlaceholder": "Style"
+    },
+    "notifications": {
+      "title": "Notification channels",
+      "favorites": "Favorites & seller activity",
+      "priceDrops": "Price drop watch",
+      "offers": "Offers",
+      "messages": "Messages",
+      "followers": "Followers & new listings",
+      "savedSearches": "Saved search alerts"
+    },
+    "language": {
+      "title": "Language"
+    },
+    "privacy": {
+      "title": "Privacy",
+      "body": "Your profile and listings follow marketplace rules. More controls coming soon."
+    }
+  },
+  "sellerEngagement": {
+    "title": "Interest in your listings",
+    "subtitle": "Favorites and quick replies — seller view.",
+    "empty": "No favorites on your items yet.",
+    "emptyHint": "When someone hearts an item, you can react here.",
+    "favorites": "{{count}} favorites",
+    "viewListing": "Listing",
+    "sendOffer": "Offer / message"
+  },
+  "priceWatch": {
+    "title": "Price watch",
+    "hint": "Watching {{count}} items — we highlight price drops.",
+    "noDrops": "No fresh price drops among favorites.",
+    "view": "View"
   },
   "messages": {
     "offersTitle": "Incoming offers",

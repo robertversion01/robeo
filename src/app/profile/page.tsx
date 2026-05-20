@@ -23,6 +23,9 @@ import BundleDiscountSettings from '@/components/profile/BundleDiscountSettings'
 import AdminReportedItems from '@/components/admin/AdminReportedItems';
 import ProfileTabNav, { type ProfileTabId } from '@/components/profile/ProfileTabNav';
 import ProfileSection from '@/components/profile/ProfileSection';
+import ProfileSettingsHub from '@/components/profile/ProfileSettingsHub';
+import ProfileSignOutBar from '@/components/profile/ProfileSignOutBar';
+import SellerEngagementHub from '@/components/seller/SellerEngagementHub';
 import { useTranslation } from 'react-i18next';
 import { useRouter } from 'next/navigation';
 
@@ -547,6 +550,7 @@ export default function ProfilePage() {
 
           {activeTab === 'about' ? (
             <>
+              <ProfileSettingsHub userId={user?.id} />
               <ProfileSection title={t('profile.incomingOffers')}>
                 <OffersList />
               </ProfileSection>
@@ -605,11 +609,6 @@ export default function ProfilePage() {
                 <span className="text-xs text-gray-500">→</span>
               </Link>
               <BundleDiscountSettings userId={user?.id} />
-              <div className="mb-6">
-                <button type="button" onClick={handleSignOut} className="btn-base btn-danger">
-                  {t('nav.signOut')}
-                </button>
-              </div>
             </>
           ) : null}
 
@@ -679,6 +678,7 @@ export default function ProfilePage() {
 
           {activeTab === 'shop' ? (
             <>
+          <SellerEngagementHub products={products} />
           <ProfileSection
             title={t('profile.myListings')}
             action={
@@ -824,6 +824,8 @@ export default function ProfilePage() {
             )}
           </ProfileSection>
           ) : null}
+
+          <ProfileSignOutBar />
         </div>
       </main>
     </div>

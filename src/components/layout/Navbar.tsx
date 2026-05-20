@@ -13,8 +13,11 @@ import LanguageSwitcher from '@/components/home/LanguageSwitcher';
 import type { CatalogFilterState } from '@/lib/catalogFilters';
 import { cn } from '@/lib/utils';
 import {
-  isCatalogSearchPath,
+  isBrowseSearchPath,
+  shouldHideNavbarOnMobileBrowse,
   shouldShowHeaderProfileMenu,
+  shouldShowMobileHeaderQuickActions,
+  shouldShowMobileBottomNav,
 } from '@/lib/navVisibility';
 
 interface NavbarProps {
@@ -34,7 +37,7 @@ export default function Navbar({ searchQuery, onSearchChange }: NavbarProps) {
   const isGuest = !loading && !user;
   const hideOnGuestHome = pathname === '/' && !user;
   const hideOnAuth = pathname === '/auth';
-  const catalogPath = isCatalogSearchPath(pathname);
+  const browsePath = isBrowseSearchPath(pathname);
   const showHeaderProfile = shouldShowHeaderProfileMenu(pathname, Boolean(user));
 
   useEffect(() => {
@@ -83,6 +86,11 @@ export default function Navbar({ searchQuery, onSearchChange }: NavbarProps) {
   if (hideOnGuestHome || hideOnAuth) return null;
 
   const loggedIn = Boolean(user);
+  const hideNavbarOnMobileBrowse = shouldHideNavbarOnMobileBrowse(pathname, loggedIn);
+  const mobileMinimalHeader =
+    loggedIn &&
+    shouldShowMobileBottomNav(pathname, loggedIn) &&
+    !shouldShowMobileHeaderQuickActions(pathname, loggedIn);
 
   const catalogFilters: CatalogFilterState = {
     category: 'all',
@@ -160,7 +168,7 @@ export default function Navbar({ searchQuery, onSearchChange }: NavbarProps) {
               setShowProfileMenu(false);
               void handleSignOut();
             }}
-            className="w-full min-h-9 flex items-center gap-2 px-3 py-2 rounded-lg text-sm text-red-600 hover:bg-red-50 md:hidden"
+            className="w-full min-h-9 flex items-center gap-2 px-3 py-2 rounded-lg text-sm text-red-600 hover:bg-red-50"
           >
             <LogOut size={15} />
             {t('nav.signOut')}
@@ -236,7 +244,13 @@ export default function Navbar({ searchQuery, onSearchChange }: NavbarProps) {
   );
 
   return (
-    <nav className="fixed top-0 left-0 right-0 z-[9999] h-11 bg-white border-b border-gray-200 shadow-sm">
+    <nav
+      className={cn(
+        'fixed top-0 left-0 right-0 z-[9999] bg-white border-b border-gray-200',
+        browsePath && loggedIn ? 'h-10 shadow-none border-gray-100' : 'h-11 shadow-sm',
+        hideNavbarOnMobileBrowse && 'max-md:hidden',
+      )}
+    >
       {showProfileMenu ? (
         <button
           type="button"
@@ -247,26 +261,38 @@ export default function Navbar({ searchQuery, onSearchChange }: NavbarProps) {
       ) : null}
 
       <div className="mx-auto flex h-full max-w-6xl items-center gap-1.5 px-2 sm:gap-2 sm:px-3">
-        <Link
-          href="/"
-          className="shrink-0 text-sm font-semibold tracking-wide text-[#007782] hover:text-[#006670]"
-        >
-          ROBEO
-        </Link>
+        {!(browsePath && loggedIn) ? (
+          <Link
+            href="/"
+            className="shrink-0 text-sm font-semibold tracking-wide text-[#007782] hover:text-[#006670]"
+          >
+            ROBEO
+          </Link>
+        ) : (
+          <Link
+            href="/"
+            className="shrink-0 text-xs font-semibold text-gray-400 hover:text-[#007782] md:text-sm md:text-[#007782]"
+            aria-label="ROBEO"
+          >
+            ← {t('nav.home')}
+          </Link>
+        )}
 
-        {loggedIn && !catalogPath ? (
-          <div className="min-w-0 flex-1">{searchField}</div>
+        {loggedIn && !browsePath ? (
+          <div className="hidden md:block min-w-0 flex-1">{searchField}</div>
         ) : null}
 
         <div className="ml-auto flex items-center gap-1 shrink-0">
           {loggedIn ? (
             <>
               <div className="hidden md:contents">{loggedInDesktopActions}</div>
-              <div className="flex md:hidden items-center gap-0.5">
-                {notificationsLink}
-                {messagesLink}
-                {profileMenu}
-              </div>
+              {!mobileMinimalHeader ? (
+                <div className="flex md:hidden items-center gap-0.5">
+                  {notificationsLink}
+                  {messagesLink}
+                  {profileMenu}
+                </div>
+              ) : null}
             </>
           ) : (
             guestDesktopActions

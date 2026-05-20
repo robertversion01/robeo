@@ -42,10 +42,24 @@ export function shouldPadForMobileBottomNav(
   return shouldShowMobileBottomNav(pathname, loggedIn);
 }
 
-/** Fő feed / böngészés — a katalógus saját keresőmezője mobilon */
-export function isCatalogSearchPath(pathname: string | null): boolean {
+/** Keresés tab — teljes kereső/szűrő UI (Vinted: csak /browse, nem a főoldal feed) */
+export function isBrowseSearchPath(pathname: string | null): boolean {
   if (!pathname) return false;
-  return pathname === '/' || pathname.startsWith('/browse');
+  return pathname.startsWith('/browse');
+}
+
+/** @deprecated — használd isBrowseSearchPath-et */
+export function isCatalogSearchPath(pathname: string | null): boolean {
+  return isBrowseSearchPath(pathname);
+}
+
+/** Mobil: alsó tab bar aktív → fejlécben nincs üzenet/értesítés duplikáció */
+export function shouldShowMobileHeaderQuickActions(
+  pathname: string | null,
+  loggedIn: boolean,
+): boolean {
+  if (!loggedIn) return true;
+  return !shouldShowMobileBottomNav(pathname, loggedIn);
 }
 
 /** Mobil fejléc: profil menü, ha az alsó tab bar már tartalmazza a Profilt */
@@ -55,4 +69,12 @@ export function shouldShowHeaderProfileMenu(
 ): boolean {
   if (!loggedIn) return true;
   return !shouldShowMobileBottomNav(pathname, loggedIn);
+}
+
+/** Keresés tab mobilon: nincs fejléc — több hely a termékeknek (desktopon marad) */
+export function shouldHideNavbarOnMobileBrowse(
+  pathname: string | null,
+  loggedIn: boolean,
+): boolean {
+  return loggedIn && isBrowseSearchPath(pathname);
 }

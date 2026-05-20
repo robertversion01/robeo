@@ -2,6 +2,7 @@
 
 import { useMemo } from 'react';
 import { useTranslation } from 'react-i18next';
+import Link from 'next/link';
 import { Sparkles } from 'lucide-react';
 import type { Product } from '@/types';
 
@@ -38,7 +39,15 @@ export default function FeedPersonalizationBanner({
   return (
     <div className="mb-3 flex items-start gap-2 rounded-xl border border-[#007782]/15 bg-[#007782]/5 px-3 py-2.5">
       <Sparkles size={16} className="mt-0.5 shrink-0 text-[#007782]" aria-hidden />
-      <p className="text-xs leading-relaxed text-gray-700">{hint}</p>
+      <div className="min-w-0 flex-1">
+        <p className="text-xs leading-relaxed text-gray-700">{hint}</p>
+        <Link
+          href="/profile?tab=about"
+          className="mt-1 inline-block text-[11px] font-semibold text-[#007782] hover:underline"
+        >
+          {t('browse.feed.tunePrefs')} →
+        </Link>
+      </div>
     </div>
   );
 }

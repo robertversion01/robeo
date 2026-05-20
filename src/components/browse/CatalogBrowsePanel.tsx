@@ -1,6 +1,6 @@
 'use client';
 
-import { Suspense, useMemo } from 'react';
+import { Suspense, useEffect, useMemo, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useProducts } from '@/hooks/useProducts';
 import { useCatalogUrlSync } from '@/hooks/useCatalogUrlSync';
@@ -10,9 +10,13 @@ import CatalogSearchBar from '@/components/browse/CatalogSearchBar';
 import CategoryQuickChips from '@/components/browse/CategoryQuickChips';
 import SavedSearchesStrip from '@/components/browse/SavedSearchesStrip';
 import FeedPersonalizationBanner from '@/components/browse/FeedPersonalizationBanner';
+import BrowseDiscoveryRails from '@/components/browse/BrowseDiscoveryRails';
 import { cn } from '@/lib/utils';
 import { filterProductsWithValidImages } from '@/lib/productImageValidation';
 import type { CatalogFilterState } from '@/lib/catalogFilters';
+import { supabase } from '@/lib/supabase';
+import { DEFAULT_FEED_PREFS, loadUserPreferences } from '@/lib/userPreferences';
+import { rankFeedProducts } from '@/lib/feedRanking';
 
 function sortLabelKey(id: string) {
   if (id === 'price_asc') return 'browse.sort.priceAsc';
@@ -20,11 +24,15 @@ function sortLabelKey(id: string) {
   return 'browse.sort.newest';
 }
 
+/** feed = főoldal (Vinted feed); search = Keresés tab teljes szűrővel */
+export type CatalogBrowseVariant = 'feed' | 'search';
+
 export type CatalogBrowsePanelProps = {
   browsePath?: string;
   stickyTopClass?: string;
   showPersonalization?: boolean;
   className?: string;
+  variant?: CatalogBrowseVariant;
 };
 
 function CatalogUrlSyncBridge(props: {
@@ -49,7 +57,11 @@ function CatalogBrowsePanelInner({
   stickyTopClass = 'top-11',
   showPersonalization = true,
   className,
+  variant = 'search',
 }: CatalogBrowsePanelProps) {
+  const isFeed = variant === 'feed';
+  const isSearch = variant === 'search';
+  const [feedPrefs, setFeedPrefs] = useState(DEFAULT_FEED_PREFS);
   const { t } = useTranslation();
   const {
     products,
@@ -81,7 +93,22 @@ function CatalogBrowsePanelInner({
     filterKey,
   } = useProducts();
 
-  const catalogProducts = useMemo(() => filterProductsWithValidImages(products), [products]);
+  useEffect(() => {
+    if (!user || !isFeed) return;
+    let cancelled = false;
+    void loadUserPreferences(supabase).then((p) => {
+      if (!cancelled) setFeedPrefs(p.feed);
+    });
+    return () => {
+      cancelled = true;
+    };
+  }, [user, isFeed]);
+
+  const catalogProducts = useMemo(() => {
+    const base = filterProductsWithValidImages(products);
+    if (isFeed && user) return rankFeedProducts(base, feedPrefs);
+    return base;
+  }, [products, isFeed, user, feedPrefs]);
 
   const catalogFilters: CatalogFilterState = useMemo(
     () => ({
@@ -152,14 +179,29 @@ function CatalogBrowsePanelInner({
         />
       ) : null}
 
-      <div
-        className={cn(
-          'sticky z-40 -mx-2 mb-1.5 border-b border-gray-200/90 bg-white/95 px-2 pt-2 pb-0 backdrop-blur-md supports-[backdrop-filter]:bg-white/80 md:-mx-0 md:px-0 shadow-sm',
-          stickyTopClass,
-        )}
-      >
-        <div className="space-y-2.5 pb-2">
-          <div className={user ? 'md:hidden' : ''}>
+      {isFeed ? (
+        <div className="mb-2 -mx-2 px-2 md:-mx-0 md:px-0">
+          <CategoryQuickChips
+            categories={categories}
+            selectedCategory={selectedCategory}
+            onCategoryChange={setSelectedCategory}
+          />
+        </div>
+      ) : (
+        <div
+          className={cn(
+            'sticky z-40 -mx-2 mb-1.5 border-b border-gray-200/90 bg-white/95 px-2 pt-2 pb-0 backdrop-blur-md supports-[backdrop-filter]:bg-white/80 md:-mx-0 md:px-0 shadow-sm',
+            stickyTopClass,
+          )}
+        >
+          <div className="space-y-2.5 pb-2">
+            {isSearch ? (
+              <BrowseDiscoveryRails
+                browsePath={browsePath}
+                onBrandPick={(brand) => setSelectedBrand(brand)}
+                onConditionPick={(condition) => setSelectedCondition(condition)}
+              />
+            ) : null}
             <CatalogSearchBar
               value={searchQuery}
               onChange={setSearchQuery}
@@ -167,40 +209,40 @@ function CatalogBrowsePanelInner({
               maxPriceLimit={maxPriceLimit}
               browsePath={browsePath}
             />
+            <CategoryQuickChips
+              categories={categories}
+              selectedCategory={selectedCategory}
+              onCategoryChange={setSelectedCategory}
+            />
+            <SavedSearchesStrip
+              filters={catalogFilters}
+              hasActiveFilters={hasActiveFilters}
+              onApply={applySavedSearch}
+            />
           </div>
-          <CategoryQuickChips
+          <Filters
             categories={categories}
             selectedCategory={selectedCategory}
             onCategoryChange={setSelectedCategory}
-          />
-          <SavedSearchesStrip
-            filters={catalogFilters}
-            hasActiveFilters={hasActiveFilters}
-            onApply={applySavedSearch}
+            selectedBrand={selectedBrand}
+            onBrandChange={setSelectedBrand}
+            selectedSize={selectedSize}
+            onSizeChange={setSelectedSize}
+            selectedCondition={selectedCondition}
+            onConditionChange={setSelectedCondition}
+            selectedMinPrice={selectedMinPrice}
+            selectedMaxPrice={selectedMaxPrice}
+            maxPriceLimit={maxPriceLimit}
+            onMinPriceChange={setSelectedMinPrice}
+            onMaxPriceChange={setSelectedMaxPrice}
+            sortOptions={localizedSortOptions}
+            selectedSort={selectedSort}
+            onSortChange={setSelectedSort}
+            activeFilterCount={activeFilterCount}
+            onClearAll={clearAllFilters}
           />
         </div>
-        <Filters
-          categories={categories}
-          selectedCategory={selectedCategory}
-          onCategoryChange={setSelectedCategory}
-          selectedBrand={selectedBrand}
-          onBrandChange={setSelectedBrand}
-          selectedSize={selectedSize}
-          onSizeChange={setSelectedSize}
-          selectedCondition={selectedCondition}
-          onConditionChange={setSelectedCondition}
-          selectedMinPrice={selectedMinPrice}
-          selectedMaxPrice={selectedMaxPrice}
-          maxPriceLimit={maxPriceLimit}
-          onMinPriceChange={setSelectedMinPrice}
-          onMaxPriceChange={setSelectedMaxPrice}
-          sortOptions={localizedSortOptions}
-          selectedSort={selectedSort}
-          onSortChange={setSelectedSort}
-          activeFilterCount={activeFilterCount}
-          onClearAll={clearAllFilters}
-        />
-      </div>
+      )}
 
       <p className="mb-2 text-sm tabular-nums text-gray-500">
         {loading ? t('landing.catalog.loading') : t('landing.catalog.results', { count: catalogProducts.length })}

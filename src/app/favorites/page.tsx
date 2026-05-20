@@ -10,6 +10,7 @@ import ProductGrid from '@/components/product/ProductGrid';
 import FreshOffersStrip from '@/components/home/FreshOffersStrip';
 import PageHeader from '@/components/layout/PageHeader';
 import FavoritesSortBar, { type FavoritesSortId } from '@/components/favorites/FavoritesSortBar';
+import FavoritePriceWatchPanel from '@/components/favorites/FavoritePriceWatchPanel';
 import type { Product } from '@/types';
 import { MAIN_TOP_PADDING, MOBILE_PAGE_BOTTOM_CLASS } from '@/lib/layoutTokens';
 
@@ -90,6 +91,8 @@ export default function FavoritesPage() {
       <main className={`${MAIN_TOP_PADDING} pb-20 px-3 md:px-6 md:pb-12`}>
         <div className="max-w-7xl mx-auto">
           <PageHeader title={t('favorites.title')} subtitle={t('favorites.subtitle')} />
+
+          {products.length > 0 ? <FavoritePriceWatchPanel products={products} /> : null}
 
           {products.length > 0 ? (
             <div className="mb-5 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">

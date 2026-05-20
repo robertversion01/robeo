@@ -17,7 +17,15 @@ import PageHeader from '@/components/layout/PageHeader';
 import { MAIN_TOP_PADDING, MOBILE_PAGE_BOTTOM_CLASS } from '@/lib/layoutTokens';
 import { cn } from '@/lib/utils';
 
-type FilterId = 'all' | 'unread' | 'offers' | 'sales' | 'other';
+type FilterId =
+  | 'all'
+  | 'unread'
+  | 'offers'
+  | 'sales'
+  | 'favorites'
+  | 'price_drop'
+  | 'followers'
+  | 'other';
 
 function formatWhen(iso: string, locale: string) {
   try {
@@ -32,11 +40,24 @@ function formatWhen(iso: string, locale: string) {
   }
 }
 
-function notificationCategory(row: AppNotificationRow): Exclude<FilterId, 'all'> {
+function notificationCategory(row: AppNotificationRow): Exclude<FilterId, 'all' | 'unread'> {
   const type = (row.type || '').toLowerCase();
   const title = (row.title || '').toLowerCase();
+  const body = (row.body || '').toLowerCase();
+  if (type.includes('favorite') || title.includes('kedvenc')) return 'favorites';
+  if (
+    type.includes('price') ||
+    title.includes('ár') ||
+    body.includes('price') ||
+    title.includes('price drop')
+  ) {
+    return 'price_drop';
+  }
+  if (type.includes('follow') || title.includes('követ')) return 'followers';
   if (type.includes('offer') || title.includes('ajánlat') || title.includes('offer')) return 'offers';
-  if (type.includes('sale') || type.includes('sold') || title.includes('elad') || title.includes('sale')) return 'sales';
+  if (type.includes('sale') || type.includes('sold') || title.includes('elad') || title.includes('sale')) {
+    return 'sales';
+  }
   return 'other';
 }
 
@@ -111,6 +132,9 @@ export default function AppNotificationsFeed() {
     { id: 'unread', label: t('notifications.filterUnread', { count: unreadCount }) },
     { id: 'offers', label: t('notifications.filterOffers') },
     { id: 'sales', label: t('notifications.filterSales') },
+    { id: 'favorites', label: t('notifications.filterFavorites') },
+    { id: 'price_drop', label: t('notifications.filterPriceDrop') },
+    { id: 'followers', label: t('notifications.filterFollowers') },
     { id: 'other', label: t('notifications.filterOther') },
   ];
 

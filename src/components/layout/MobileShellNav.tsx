@@ -7,7 +7,7 @@ import { Home, MessageCircle, Search, User, Plus, LogIn } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 import { supabase } from '@/lib/supabase';
 import { cn } from '@/lib/utils';
-import { MessagesNavBadge } from '@/context/NotificationContext';
+import { FeedNavBadge, MessagesNavBadge } from '@/context/NotificationContext';
 import { shouldShowMobileBottomNav } from '@/lib/navVisibility';
 
 export default function MobileShellNav() {
@@ -107,6 +107,7 @@ export default function MobileShellNav() {
       labelKey: 'nav.profile',
       Icon: User,
       match: (p: string) => p.startsWith('/profile'),
+      feedBadge: true,
     },
   ] as const;
 
@@ -147,6 +148,9 @@ export default function MobileShellNav() {
               <item.Icon size={22} strokeWidth={active ? 2.25 : 1.85} />
               {'messagesBadge' in item && item.messagesBadge ? (
                 <MessagesNavBadge className="top-0 right-[calc(50%-22px)]" />
+              ) : null}
+              {'feedBadge' in item && item.feedBadge ? (
+                <FeedNavBadge className="top-0 right-[calc(50%-22px)]" />
               ) : null}
               <span className="text-[10px] font-semibold leading-none">{label}</span>
             </Link>

@@ -13,6 +13,7 @@ import { supabase } from '@/lib/supabase';
 import { useBrowseSearch } from '@/context/BrowseContext';
 import type { Product } from '@/types';
 import { CATALOG_UPDATED_EVENT } from '@/lib/catalogRefresh';
+import { insertAppNotificationSafe } from '@/lib/supabaseResilience';
 import { conditionMatchesFilter } from '@/lib/vintedCatalog';
 import {
   type CatalogFilterState,
@@ -288,6 +289,17 @@ export function useProducts() {
           user_id: user.id,
           product_id: productId,
         });
+        const favorited = products.find((p) => p.id === productId);
+        const sellerId = favorited?.user_id;
+        if (sellerId && sellerId !== user.id) {
+          void insertAppNotificationSafe(supabase, {
+            user_id: sellerId,
+            type: 'favorite',
+            title: 'Új kedvenc',
+            body: `Valaki kedvencelte: ${favorited?.name || 'termék'}`,
+            link: `/products/${productId}`,
+          });
+        }
       }
     } catch {
       setFavorites((prev) => {

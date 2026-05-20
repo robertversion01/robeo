@@ -42,7 +42,12 @@ function HomePageContent() {
       <main className={`w-full max-w-[100vw] overflow-x-hidden ${MAIN_TOP_PADDING} px-2 pb-4 md:px-6`}>
         <div className="mx-auto max-w-7xl">
           <VintedHero products={heroProducts} compact />
-          <CatalogBrowsePanel browsePath="/" stickyTopClass="top-11" showPersonalization />
+          <CatalogBrowsePanel
+            browsePath="/"
+            stickyTopClass="top-11"
+            showPersonalization
+            variant="feed"
+          />
         </div>
       </main>
     </div>

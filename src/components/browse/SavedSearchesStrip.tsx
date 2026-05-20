@@ -1,7 +1,7 @@
 'use client';
 
 import { useCallback, useEffect, useState } from 'react';
-import { Bookmark, X } from 'lucide-react';
+import { Bell, BellOff, Bookmark, X } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 import { supabase } from '@/lib/supabase';
 import type { CatalogFilterState } from '@/lib/catalogFilters';
@@ -12,6 +12,10 @@ import {
   saveSearchEntry,
   type SavedSearch,
 } from '@/lib/savedSearches';
+import {
+  isSavedSearchAlertEnabled,
+  setSavedSearchAlertEnabled as persistSavedSearchAlert,
+} from '@/lib/savedSearchAlerts';
 
 type Props = {
   filters: CatalogFilterState;
@@ -23,6 +27,7 @@ export default function SavedSearchesStrip({ filters, onApply, hasActiveFilters 
   const { t } = useTranslation();
   const [items, setItems] = useState<SavedSearch[]>([]);
   const [syncing, setSyncing] = useState(false);
+  const [alertRevision, setAlertRevision] = useState(0);
 
   const refresh = useCallback(async () => {
     const merged = await loadSavedSearchesMerged(supabase);
@@ -87,7 +92,7 @@ export default function SavedSearchesStrip({ filters, onApply, hasActiveFilters 
         <div className="flex gap-2 overflow-x-auto pb-0.5 no-scrollbar">
           {items.map((item) => (
             <div
-              key={item.id}
+              key={`${item.id}-${alertRevision}`}
               className="group inline-flex shrink-0 items-center gap-1 rounded-full border border-gray-200 bg-white pl-3 pr-1 py-1"
             >
               <button
@@ -97,6 +102,29 @@ export default function SavedSearchesStrip({ filters, onApply, hasActiveFilters 
                 title={item.label}
               >
                 {item.label}
+              </button>
+              <button
+                type="button"
+                onClick={() => {
+                  persistSavedSearchAlert(
+                    item.id,
+                    !isSavedSearchAlertEnabled(item.id),
+                  );
+                  setAlertRevision((n) => n + 1);
+                }}
+                className="rounded-full p-1 text-[#007782] hover:bg-[#007782]/10"
+                aria-label={t('browse.saved.alertToggle')}
+                title={
+                  isSavedSearchAlertEnabled(item.id)
+                    ? t('browse.saved.alertOn')
+                    : t('browse.saved.alertOff')
+                }
+              >
+                {isSavedSearchAlertEnabled(item.id) ? (
+                  <Bell size={12} />
+                ) : (
+                  <BellOff size={12} className="text-gray-400" />
+                )}
               </button>
               <button
                 type="button"
