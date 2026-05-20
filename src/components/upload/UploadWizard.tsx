@@ -72,24 +72,36 @@ export default function UploadWizard() {
       return;
     }
     setAiLoading(true);
+    const input = {
+      category: formData.category,
+      brand: formData.brand,
+      size: formData.size,
+      condition: formData.condition,
+      price: formData.price,
+      imageCount: images.length,
+    };
     try {
-      const res = await suggestListingCopy({
-        category: formData.category,
-        brand: formData.brand,
-        size: formData.size,
-        condition: formData.condition,
-        price: formData.price,
-        imageCount: images.length,
-      });
-      if (!res.ok) {
-        toast.error(t('upload.ai.failed', { reason: res.error }));
-        return;
+      let name = '';
+      let description = '';
+      const clientRes = await suggestListingCopy(input);
+      if (clientRes.ok) {
+        name = clientRes.data.name;
+        description = clientRes.data.description;
+      } else {
+        const apiRes = await fetch('/api/upload/ai-suggest', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(input),
+        });
+        const apiJson = await apiRes.json();
+        if (!apiRes.ok || !apiJson?.data) {
+          toast.error(t('upload.ai.failed', { reason: clientRes.error || apiJson?.error }));
+          return;
+        }
+        name = apiJson.data.name;
+        description = apiJson.data.description;
       }
-      setFormData((p) => ({
-        ...p,
-        name: res.data.name,
-        description: res.data.description,
-      }));
+      setFormData((p) => ({ ...p, name, description }));
       toast.success(t('upload.ai.success'));
     } finally {
       setAiLoading(false);

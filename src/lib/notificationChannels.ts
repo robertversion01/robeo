@@ -119,40 +119,50 @@ export function parseNotificationOutbox(
   return raw as NotificationOutboxItem[];
 }
 
-/** Push — előkészített integrációs pont (FCM / Web Push később) */
-export async function dispatchPushNotification(
+async function appendToNotificationOutbox(
+  supabase: SupabaseClient,
+  channel: DeliveryChannel,
   payload: RoutedNotificationPayload,
-  prefs: NotificationDeliveryPrefs,
-  metadata?: Record<string, unknown>,
-): Promise<{ queued: boolean; reason?: string }> {
-  if (!prefs.pushEnabled) return { queued: false, reason: 'push_disabled' };
-  const outbox = parseNotificationOutbox(metadata);
+): Promise<boolean> {
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
+  if (!user || user.id !== payload.userId) return false;
+  const meta = (user.user_metadata || {}) as Record<string, unknown>;
+  const outbox = parseNotificationOutbox(meta);
   outbox.unshift({
     id: crypto.randomUUID(),
-    channel: 'push',
+    channel,
     payload,
     createdAt: new Date().toISOString(),
   });
-  void metadata;
-  return { queued: true, reason: 'push_queued_locally_pending_fcm' };
+  const trimmed = outbox.slice(0, 50);
+  await supabase.auth.updateUser({
+    data: { ...meta, [QUEUE_META_KEY]: trimmed },
+  });
+  return true;
+}
+
+/** Push — előkészített integrációs pont (FCM / Web Push később) */
+export async function dispatchPushNotification(
+  supabase: SupabaseClient,
+  payload: RoutedNotificationPayload,
+  prefs: NotificationDeliveryPrefs,
+): Promise<{ queued: boolean; reason?: string }> {
+  if (!prefs.pushEnabled) return { queued: false, reason: 'push_disabled' };
+  const queued = await appendToNotificationOutbox(supabase, 'push', payload);
+  return { queued, reason: queued ? 'push_queued_pending_fcm' : 'push_queue_failed' };
 }
 
 /** Email — előkészített integrációs pont (Resend / SMTP később) */
 export async function dispatchEmailNotification(
+  supabase: SupabaseClient,
   payload: RoutedNotificationPayload,
   prefs: NotificationDeliveryPrefs,
-  metadata?: Record<string, unknown>,
 ): Promise<{ queued: boolean; reason?: string }> {
   if (!prefs.emailEnabled) return { queued: false, reason: 'email_disabled' };
-  const outbox = parseNotificationOutbox(metadata);
-  outbox.unshift({
-    id: crypto.randomUUID(),
-    channel: 'email',
-    payload,
-    createdAt: new Date().toISOString(),
-  });
-  void metadata;
-  return { queued: true, reason: 'email_queued_locally_pending_smtp' };
+  const queued = await appendToNotificationOutbox(supabase, 'email', payload);
+  return { queued, reason: queued ? 'email_queued_pending_smtp' : 'email_queue_failed' };
 }
 
 /**
@@ -182,17 +192,12 @@ export async function routeMarketplaceNotification(
   let push = false;
   let email = false;
 
-  const {
-    data: { user },
-  } = await supabase.auth.getUser();
-  const meta = (user?.user_metadata || {}) as Record<string, unknown>;
-
   if (deliveryPrefs.pushEnabled) {
-    const res = await dispatchPushNotification(payload, deliveryPrefs, meta);
+    const res = await dispatchPushNotification(supabase, payload, deliveryPrefs);
     push = res.queued;
   }
   if (deliveryPrefs.emailEnabled) {
-    const res = await dispatchEmailNotification(payload, deliveryPrefs, meta);
+    const res = await dispatchEmailNotification(supabase, payload, deliveryPrefs);
     email = res.queued;
   }
 

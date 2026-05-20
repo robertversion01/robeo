@@ -40,9 +40,21 @@ Utolsó frissítés: marketplace round 2 (2026-05)
 | Immersive mobil | ✅ `ImmersiveFilterSheet` bottom sheet |
 | Push/email queue | ✅ Outbox típus + routing stub bővítés |
 
+## Ellenőrzés (2026-05)
+
+| Ellenőrzés | Lokál `.env.local` | Vercel Production |
+|------------|-------------------|-------------------|
+| CRON_SECRET | Hiányzik (másold Vercelről) | Beállítva (user) |
+| SERVICE_ROLE | Hiányzik | Beállítva (user) |
+| `/api/health/marketplace` | Dev szerveren működik | Deploy után |
+| `/api/workers/saved-search-scan` | Env nélkül 401/500 | Régi deploy → 404, **új deploy kell** |
+| Ollama `localhost:11434` | ✅ llama3 elérhető | ❌ (csak lokál upload AI) |
+
+Futtatás: `node scripts/verify-marketplace.mjs` (`.env.local`-ba másold a Vercel env-et is).
+
 ## Következő kör — backend / integráció
 
-1. **Vercel env** — `CRON_SECRET` + `SUPABASE_SERVICE_ROLE_KEY` Production-on
+1. **Redeploy** — `main` utolsó commit után Vercel build (worker route 404 megszűnik)
 2. **FCM Web Push** — `dispatchPushNotification` bekötése
 3. **E-mail** — Resend/SMTP + digest worker
 4. **Bundle tranzakció** — `transactions` több `product_id` / line items meta webhookban
