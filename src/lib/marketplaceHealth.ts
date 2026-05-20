@@ -5,6 +5,7 @@ import {
   VERCEL_CRON_SAVED_SEARCH,
   VERCEL_CRON_SAVED_SEARCH_LABEL,
 } from '@/lib/cronSchedules';
+import { productsHasSizeColumn } from '@/lib/productSchema';
 
 /** Közös health válasz — /api/health/marketplace és /api/marketplace-health */
 export async function getMarketplaceHealthResponse() {
@@ -17,11 +18,14 @@ export async function getMarketplaceHealthResponse() {
 
   let adminDb = false;
   let priceSnapshotsTable = false;
+  let productsSizeColumn = false;
   let followerTriggerHint = 'unknown';
 
   if (admin) {
     const products = await admin.from('products').select('id').limit(1);
     adminDb = !products.error;
+
+    productsSizeColumn = await productsHasSizeColumn(admin);
 
     const snaps = await admin.from('product_price_snapshots').select('id').limit(1);
     priceSnapshotsTable = !snaps.error;
@@ -41,8 +45,12 @@ export async function getMarketplaceHealthResponse() {
     },
     database: {
       adminClient: adminDb,
+      products_size: productsSizeColumn,
       product_price_snapshots: priceSnapshotsTable,
       follower_new_listing: followerTriggerHint,
+      products_size_patch: productsSizeColumn
+        ? 'ok'
+        : 'run supabase/patch-products-marketplace-columns.sql',
     },
     workers: {
       savedSearchScan: '/api/workers/saved-search-scan',

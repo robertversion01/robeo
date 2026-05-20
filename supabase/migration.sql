@@ -13,6 +13,8 @@ CREATE EXTENSION IF NOT EXISTS "pgcrypto";
 -- 1. products tábla - hiányzó oszlopok hozzáadása
 ALTER TABLE public.products ADD COLUMN IF NOT EXISTS condition TEXT;
 ALTER TABLE public.products ADD COLUMN IF NOT EXISTS brand TEXT;
+ALTER TABLE public.products ADD COLUMN IF NOT EXISTS size TEXT;
+ALTER TABLE public.products ADD COLUMN IF NOT EXISTS color TEXT;
 ALTER TABLE public.products ADD COLUMN IF NOT EXISTS images JSONB DEFAULT '[]'::jsonb;
 ALTER TABLE public.products ADD COLUMN IF NOT EXISTS status TEXT DEFAULT 'active';
 ALTER TABLE public.products ADD COLUMN IF NOT EXISTS favorite_count INTEGER DEFAULT 0;

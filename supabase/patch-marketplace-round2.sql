@@ -1,6 +1,9 @@
 -- ROBEO marketplace round 2 — ár-történet, worker state (opcionális)
 -- Futtatás: Supabase SQL Editor
 
+ALTER TABLE public.products ADD COLUMN IF NOT EXISTS size TEXT;
+ALTER TABLE public.products ADD COLUMN IF NOT EXISTS color TEXT;
+
 CREATE TABLE IF NOT EXISTS public.product_price_snapshots (
   id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
   product_id UUID NOT NULL REFERENCES public.products(id) ON DELETE CASCADE,

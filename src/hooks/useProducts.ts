@@ -15,6 +15,7 @@ import type { Product } from '@/types';
 import { CATALOG_UPDATED_EVENT } from '@/lib/catalogRefresh';
 import { insertAppNotificationSafe } from '@/lib/supabaseResilience';
 import { conditionMatchesFilter } from '@/lib/vintedCatalog';
+import { canFilterProductsBySize } from '@/lib/productSchema';
 import {
   type CatalogFilterState,
   productMatchesCategory,
@@ -122,8 +123,12 @@ export function useProducts() {
         query = query.ilike('brand', catalogFilters.brand);
       }
 
+      let sizeFilterOnServer = false;
       if (catalogFilters.size !== 'all') {
-        query = query.ilike('size', catalogFilters.size);
+        sizeFilterOnServer = await canFilterProductsBySize(supabase);
+        if (sizeFilterOnServer) {
+          query = query.ilike('size', catalogFilters.size);
+        }
       }
 
       if (catalogFilters.condition !== 'all') {
@@ -161,6 +166,11 @@ export function useProducts() {
         fetched = fetched.filter((p) =>
           conditionMatchesFilter(p.condition, catalogFilters.condition),
         );
+      }
+
+      if (catalogFilters.size !== 'all' && !sizeFilterOnServer) {
+        const sizeQ = catalogFilters.size.toLowerCase();
+        fetched = fetched.filter((p) => (p.size || '').toLowerCase().includes(sizeQ));
       }
 
       if (catalogFilters.search.trim()) {

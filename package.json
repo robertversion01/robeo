@@ -9,7 +9,8 @@
     "lint": "eslint",
     "fix:product-images": "node scripts/fix-product-images.mjs",
     "deploy:trigger": "node scripts/trigger-vercel-deploy.mjs",
-    "rotate:cron-secret": "node scripts/rotate-cron-secret.mjs"
+    "rotate:cron-secret": "node scripts/rotate-cron-secret.mjs",
+    "db:apply-patch": "node scripts/apply-supabase-patch.mjs"
   },
   "dependencies": {
     "@stripe/stripe-js": "^9.4.0",
@@ -37,7 +38,7 @@
     "@types/react-dom": "^19",
     "eslint": "^9",
     "eslint-config-next": "16.2.4",
-    "libsodium-wrappers": "^0.8.4",
+    "pg": "^8.21.0",
     "tailwindcss": "^4",
     "typescript": "^5"
   }

@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import { getSupabaseAdminClient } from '@/lib/supabase';
 import { runSavedSearchAlertScan } from '@/lib/savedSearchNotify';
 import { parseSavedSearchesFromMetadata } from '@/lib/savedSearchesServer';
+import { fetchProductsForScan } from '@/lib/productSchema';
 
 export const dynamic = 'force-dynamic';
 
@@ -98,16 +99,11 @@ async function scanForUser(
   userId: string,
   saved: ReturnType<typeof parseSavedSearchesFromMetadata>,
 ) {
-  const { data: products, error } = await supabase
-    .from('products')
-    .select('id, name, description, brand, category, size, condition, price, created_at')
-    .or('status.eq.active,status.is.null')
-    .order('created_at', { ascending: false })
-    .limit(SCAN_LIMIT);
+  const { data: products, error } = await fetchProductsForScan(supabase, SCAN_LIMIT);
 
   if (error) {
-    throw new Error(error.message);
+    throw error;
   }
 
-  return runSavedSearchAlertScan(supabase, userId, saved, (products || []) as never);
+  return runSavedSearchAlertScan(supabase, userId, saved, products);
 }
