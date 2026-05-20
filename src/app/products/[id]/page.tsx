@@ -1,6 +1,7 @@
 'use client';
 
 import { useEffect, useState, use, useMemo, useCallback } from 'react';
+import { useTranslation } from 'react-i18next';
 import { supabase } from '@/lib/supabase';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
@@ -9,12 +10,14 @@ import { Star, ZoomIn, ZoomOut } from 'lucide-react';
 import { getOptimizedImageUrl, shouldLazyLoad } from '@/lib/imageUtils';
 import { getValidProductImageUrls } from '@/lib/productImageValidation';
 import ProductImage from '@/components/product/ProductImage';
+import ProductFavoriteButton from '@/components/product/ProductFavoriteButton';
 import OfferModal from '@/components/product/OfferModal';
 import type { Product } from '@/types';
 import { MAIN_TOP_PADDING } from '@/lib/layoutTokens';
 
 export default function ProductPage({ params }: { params: Promise<{ id: string }> }) {
   const { id } = use(params);
+  const { t } = useTranslation();
   const [product, setProduct] = useState<Product | null>(null);
   const [loading, setLoading] = useState(true);
   const [selectedImageIndex, setSelectedImageIndex] = useState(0);
@@ -144,12 +147,12 @@ export default function ProductPage({ params }: { params: Promise<{ id: string }
           product_id: id
         });
 
-      toast.success('✅ Üzenet elküldve az eladónak! A beszélgetésed az Üzenetek menüben található.');
+      toast.success(t('product.messageSent'));
       setMessageText('');
       setShowMessageModal(false);
     } catch (error) {
       console.error(error);
-      toast.error('❌ Hiba történt az üzenet küldése során');
+      toast.error(t('product.messageError'));
     } finally {
       setSendingMessage(false);
     }
@@ -176,14 +179,6 @@ export default function ProductPage({ params }: { params: Promise<{ id: string }
     setShowOfferModal(true);
   };
 
-  const categoryLabels: Record<string, string> = {
-    clothing: 'Ruházat',
-    shoes: 'Cipő',
-    accessories: 'Kiegészítők',
-    electronics: 'Elektronika',
-    other: 'Egyéb'
-  };
-
   if (loading) {
     return (
       <div className="min-h-screen bg-white text-gray-900 flex items-center justify-center">
@@ -194,9 +189,9 @@ export default function ProductPage({ params }: { params: Promise<{ id: string }
 
   if (!product) {
     return (
-      <div className="min-h-screen bg-white text-gray-900 flex flex-col items-center justify-center">
-        <h2 className="text-xl mb-4">A termék nem található</h2>
-        <Link href="/" className="text-accent hover:underline">Vissza a főoldalra</Link>
+      <div className="min-h-screen bg-white text-gray-900 flex flex-col items-center justify-center px-4">
+        <h2 className="text-xl mb-4">{t('product.notFound')}</h2>
+        <Link href="/browse" className="text-[#007782] hover:underline">{t('product.backToBrowse')}</Link>
       </div>
     );
   }
@@ -204,21 +199,22 @@ export default function ProductPage({ params }: { params: Promise<{ id: string }
   if (productImages.length === 0) {
     return (
       <div className="min-h-screen bg-white text-gray-900 flex flex-col items-center justify-center px-4">
-        <h2 className="text-xl mb-2 text-center">A termék képei nem érhetők el</h2>
-        <p className="text-gray-500 text-sm mb-4 text-center">Ez a hirdetés nem jeleníthető meg galéria nélkül.</p>
-        <Link href="/" className="text-accent hover:underline">Vissza a főoldalra</Link>
+        <h2 className="text-xl mb-2 text-center">{t('product.noImages')}</h2>
+        <p className="text-gray-500 text-sm mb-4 text-center">{t('product.noImagesHint')}</p>
+        <Link href="/browse" className="text-[#007782] hover:underline">{t('product.backToBrowse')}</Link>
       </div>
     );
   }
 
+  const categoryKey = product.category || 'other';
+  const categoryBrowseHref = `/browse?cat=${encodeURIComponent(categoryKey)}#catalog`;
+  const categoryLabel = t(`browse.categories.${categoryKey}`, { defaultValue: product.category });
+
   const safeSelectedIndex = Math.min(selectedImageIndex, productImages.length - 1);
   const activeImage = productImages[safeSelectedIndex];
 
-  const sellerDisplayName = sellerProfile?.full_name || sellerProfile?.email?.split('@')[0] || 'Eladó';
+  const sellerDisplayName = sellerProfile?.full_name || sellerProfile?.email?.split('@')[0] || t('product.seller');
   const sellerInitial = sellerDisplayName?.charAt(0).toUpperCase() || 'E';
-  const urgencySeed = product.id.split('').reduce((acc, char) => acc + char.charCodeAt(0), 0);
-  const inCartCount = 2 + (urgencySeed % 7);
-  const showLastPiece = urgencySeed % 2 === 0;
 
   const handleImageTouchStart = (event: React.TouchEvent<HTMLDivElement>) => {
     setTouchStartX(event.touches[0]?.clientX ?? null);
@@ -253,13 +249,13 @@ export default function ProductPage({ params }: { params: Promise<{ id: string }
       {showMessageModal && (
         <div className="fixed inset-0 bg-black/50 backdrop-blur-sm z-[100] flex items-center justify-center p-4">
           <div className="card-base p-5 max-w-md w-full shadow-lg">
-            <h2 className="text-xl font-bold mb-3 text-gray-900">Üzenet az eladónak</h2>
-            <p className="text-gray-600 text-sm mb-4">Írd meg mit szeretnél kérdezni a termékről!</p>
+            <h2 className="text-xl font-bold mb-3 text-gray-900">{t('product.messageModalTitle')}</h2>
+            <p className="text-gray-600 text-sm mb-4">{t('product.messageModalHint')}</p>
             
             <textarea
               value={messageText}
               onChange={(e) => setMessageText(e.target.value)}
-              placeholder="Üzenet szövege..."
+              placeholder={t('product.messagePlaceholder')}
               rows={4}
               className="textarea-base resize-none mb-4 focus:outline-none focus:ring-1 focus:ring-[#007782]"
             />
@@ -269,14 +265,14 @@ export default function ProductPage({ params }: { params: Promise<{ id: string }
                 onClick={() => setShowMessageModal(false)}
                 className="flex-1 btn-base btn-secondary"
               >
-                Mégse
+                {t('product.cancel')}
               </button>
               <button
                 onClick={sendMessageToSeller}
                 disabled={sendingMessage}
                 className="flex-1 btn-base btn-primary disabled:opacity-50"
               >
-                {sendingMessage ? 'Küldés...' : 'Üzenet küldése'}
+                {sendingMessage ? t('product.sending') : t('product.send')}
               </button>
             </div>
           </div>
@@ -284,8 +280,8 @@ export default function ProductPage({ params }: { params: Promise<{ id: string }
       )}
 
       <main className={`${MAIN_TOP_PADDING} pb-24 px-0 md:px-6`}>
-        <Link href="/" className="inline-flex items-center gap-2 text-gray-500 hover:text-gray-900 mb-3 transition-colors px-3 md:px-0 md:mb-6">
-          ← Vissza a főoldalra
+        <Link href="/browse" className="inline-flex items-center gap-2 text-gray-500 hover:text-gray-900 mb-3 transition-colors px-3 md:px-0 md:mb-6">
+          ← {t('product.backToBrowse')}
         </Link>
 
         <div className="max-w-5xl mx-auto">
@@ -305,13 +301,17 @@ export default function ProductPage({ params }: { params: Promise<{ id: string }
                   className={`w-full h-full object-cover transition-transform duration-300 ${isZoomed ? 'scale-150' : 'scale-100'}`}
                   onError={() => markGalleryUrlFailed(activeImage)}
                 />
+                <ProductFavoriteButton
+                  productId={product.id}
+                  className="absolute top-3 right-3 z-10"
+                />
                 <button
                   type="button"
                   onClick={() => setIsZoomed((prev) => !prev)}
                   className="absolute bottom-2 right-2 inline-flex items-center gap-1 rounded-full bg-black/60 px-2 py-1 text-xs text-white"
                 >
                   {isZoomed ? <ZoomOut size={12} /> : <ZoomIn size={12} />}
-                  {isZoomed ? 'Kicsinyítés' : 'Nagyítás'}
+                  {isZoomed ? t('product.zoomOut') : t('product.zoomIn')}
                 </button>
               </div>
 
@@ -347,40 +347,31 @@ export default function ProductPage({ params }: { params: Promise<{ id: string }
 
             {/* Product Details */}
             <div className="flex flex-col p-3 md:p-0 pb-48">
-              <div className="text-accent text-xs uppercase tracking-wider mb-1">
-                {categoryLabels[product.category] || product.category}
-              </div>
+              <Link
+                href={categoryBrowseHref}
+                className="text-[#007782] text-xs uppercase tracking-wider mb-1 inline-block hover:underline"
+              >
+                {categoryLabel}
+              </Link>
               
               <h1 className="text-xl md:text-2xl font-bold mb-2">{product.name}</h1>
               
-              <div className="text-accent font-bold text-2xl mb-3">{product.price.toLocaleString()} Ft</div>
-
-              <div className="mb-3 space-y-1.5">
-                <div className="inline-flex items-center rounded-full bg-orange-100 px-2.5 py-1 text-xs font-semibold text-orange-700">
-                  Mar {inCartCount} ember kosaraban van
-                </div>
-                {showLastPiece ? (
-                  <div className="inline-flex items-center rounded-full bg-red-100 px-2.5 py-1 text-xs font-semibold text-red-700">
-                    Utolso darab ezen az aron!
-                  </div>
-                ) : null}
-              </div>
+              <div className="text-[#007782] font-bold text-2xl mb-3">{product.price.toLocaleString()} Ft</div>
               
-              {/* Product Attributes */}
               <div className="flex flex-wrap gap-2 mb-3">
                 {product.brand && (
                   <div className="bg-gray-100 px-2 py-1 rounded-md text-xs">
-                    <span className="text-gray-500">Márka:</span> {product.brand}
+                    <span className="text-gray-500">{t('product.brand')}:</span> {product.brand}
                   </div>
                 )}
                 {product.size && (
                   <div className="bg-gray-100 px-2 py-1 rounded-md text-xs">
-                    <span className="text-gray-500">Méret:</span> {product.size}
+                    <span className="text-gray-500">{t('product.size')}:</span> {product.size}
                   </div>
                 )}
                 {product.condition && (
                   <div className="bg-gray-100 px-2 py-1 rounded-md text-xs">
-                    <span className="text-gray-500">Állapot:</span> {product.condition}
+                    <span className="text-gray-500">{t('product.condition')}:</span> {product.condition}
                   </div>
                 )}
               </div>
@@ -391,25 +382,36 @@ export default function ProductPage({ params }: { params: Promise<{ id: string }
 
               <div className="mb-4 rounded-xl border border-gray-200 bg-gray-50 p-3">
                 <div className="flex items-center gap-3">
-                  <div className="h-10 w-10 rounded-full bg-[#007782]/15 text-[#007782] flex items-center justify-center font-semibold">
-                    {sellerInitial}
-                  </div>
-                  <div>
-                    <p className="text-sm font-semibold text-gray-900">{sellerDisplayName}</p>
-                    <div className="flex items-center gap-1 text-amber-500">
-                      {Array.from({ length: 5 }).map((_, idx) => (
-                        <Star
-                          key={idx}
-                          size={12}
-                          fill={idx < Math.round(sellerReviewSummary.avg) ? 'currentColor' : 'none'}
-                        />
-                      ))}
-                      <span className="ml-1 text-xs text-gray-500">
-                        {sellerReviewSummary.avg.toFixed(1)} ({sellerReviewSummary.count})
-                      </span>
+                  <Link
+                    href={`/profile/${product.user_id}`}
+                    className="flex items-center gap-3 flex-1 min-w-0 hover:opacity-90"
+                  >
+                    <div className="h-10 w-10 rounded-full bg-[#007782]/15 text-[#007782] flex items-center justify-center font-semibold shrink-0">
+                      {sellerInitial}
                     </div>
-                  </div>
+                    <div className="min-w-0">
+                      <p className="text-sm font-semibold text-gray-900 truncate">{sellerDisplayName}</p>
+                      <div className="flex items-center gap-1 text-amber-500">
+                        {Array.from({ length: 5 }).map((_, idx) => (
+                          <Star
+                            key={idx}
+                            size={12}
+                            fill={idx < Math.round(sellerReviewSummary.avg) ? 'currentColor' : 'none'}
+                          />
+                        ))}
+                        <span className="ml-1 text-xs text-gray-500">
+                          {sellerReviewSummary.avg.toFixed(1)} ({sellerReviewSummary.count})
+                        </span>
+                      </div>
+                    </div>
+                  </Link>
                 </div>
+                <Link
+                  href={categoryBrowseHref}
+                  className="mt-2 inline-block text-xs font-semibold text-[#007782] hover:underline"
+                >
+                  {t('product.browseCategory')} →
+                </Link>
               </div>
 
                <div className="fixed bottom-0 left-0 right-0 md:static mt-auto p-2 md:p-0 md:mt-4 bg-white backdrop-blur-md border-t border-gray-200 md:border-t-0 md:bg-transparent md:backdrop-blur-none md:space-y-3 space-y-1.5 shadow-lg md:shadow-none">
@@ -432,13 +434,13 @@ export default function ProductPage({ params }: { params: Promise<{ id: string }
                   }}
                    className="w-full btn-base btn-primary"
                  >
-                  {acceptedOffer ? 'Vásárlás alkudott áron' : 'Vásárlás'}
+                  {acceptedOffer ? t('product.buyOfferPrice') : t('product.buy')}
                  </button>
                   <button 
                     onClick={openOfferModal}
                     className="w-full btn-base btn-secondary"
                   >
-                    Ajánlatot teszek
+                    {t('product.makeOffer')}
                   </button>
                   <button 
                     onClick={() => {
@@ -447,7 +449,7 @@ export default function ProductPage({ params }: { params: Promise<{ id: string }
                     }}
                     className="w-full btn-base btn-secondary"
                   >
-                    Üzenet az eladónak
+                    {t('product.messageSeller')}
                   </button>
                </div>
             </div>

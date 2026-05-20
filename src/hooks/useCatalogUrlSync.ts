@@ -5,7 +5,10 @@ import { usePathname, useRouter, useSearchParams } from 'next/navigation';
 import type { CatalogFilterState } from '@/lib/catalogFilters';
 import { buildCatalogUrlParams, parseCatalogFromUrl } from '@/lib/catalogUrlParams';
 
+const CATALOG_PATHS = new Set(['/', '/browse']);
+
 type CatalogUrlSyncArgs = {
+  browsePath?: string;
   filters: CatalogFilterState;
   maxPriceLimit: number;
   setSearchQuery: (q: string) => void;
@@ -19,6 +22,7 @@ type CatalogUrlSyncArgs = {
 };
 
 export function useCatalogUrlSync({
+  browsePath,
   filters,
   maxPriceLimit,
   setSearchQuery,
@@ -36,8 +40,11 @@ export function useCatalogUrlSync({
   const hydratedRef = useRef(false);
   const skipWriteRef = useRef(false);
 
+  const activePath = browsePath ?? pathname;
+  const syncEnabled = CATALOG_PATHS.has(pathname) && activePath === pathname;
+
   useEffect(() => {
-    if (pathname !== '/') return;
+    if (!syncEnabled) return;
     if (hydratedRef.current) return;
 
     const parsed = parseCatalogFromUrl(searchParams);
@@ -61,7 +68,7 @@ export function useCatalogUrlSync({
       skipWriteRef.current = false;
     });
   }, [
-    pathname,
+    syncEnabled,
     searchParams,
     setSearchQuery,
     setSelectedCategory,
@@ -74,7 +81,7 @@ export function useCatalogUrlSync({
   ]);
 
   useEffect(() => {
-    if (pathname !== '/') return;
+    if (!syncEnabled) return;
     if (!hydratedRef.current) return;
     if (skipWriteRef.current) return;
 
@@ -84,7 +91,7 @@ export function useCatalogUrlSync({
 
     if (next === current) return;
 
-    const url = next ? `${pathname}?${next}` : pathname;
+    const url = next ? `${activePath}?${next}` : activePath;
     router.replace(url, { scroll: false });
-  }, [filters, maxPriceLimit, pathname, router, searchParams]);
+  }, [filters, maxPriceLimit, activePath, router, searchParams, syncEnabled]);
 }

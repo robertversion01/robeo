@@ -9,11 +9,7 @@ export default function GuestLandingHeader() {
   const { t } = useTranslation();
 
   const scrollToSearch = () => {
-    const catalog = document.getElementById('catalog');
-    catalog?.scrollIntoView({ behavior: 'smooth', block: 'start' });
-    window.setTimeout(() => {
-      document.getElementById('catalog-search')?.focus();
-    }, 400);
+    window.location.href = '/browse#catalog';
   };
 
   return (

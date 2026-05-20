@@ -95,9 +95,10 @@ export default function Navbar({ searchQuery, onSearchChange }: NavbarProps) {
       catalogFilters={catalogFilters}
       inputId="navbar-search"
       className="min-w-0 flex-1"
+      browsePath="/browse"
       onSeeAll={() => {
         if (pathname !== '/') {
-          window.location.href = `/?q=${encodeURIComponent(resolvedSearchQuery.trim())}#catalog`;
+          window.location.href = `/browse?q=${encodeURIComponent(resolvedSearchQuery.trim())}#catalog`;
         } else {
           document.getElementById('catalog')?.scrollIntoView({ behavior: 'smooth' });
         }

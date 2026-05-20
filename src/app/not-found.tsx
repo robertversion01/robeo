@@ -1,20 +1,32 @@
+'use client';
+
 import Link from 'next/link';
+import { useTranslation } from 'react-i18next';
+import { MAIN_TOP_PADDING } from '@/lib/layoutTokens';
 
 export default function NotFound() {
+  const { t } = useTranslation();
+
   return (
-    <div className="min-h-screen bg-gradient-to-br from-indigo-950 to-black text-white flex items-center justify-center">
-      <div className="text-center px-4">
-        <div className="text-9xl font-bold text-accent mb-4">404</div>
-        <h1 className="text-4xl font-bold mb-6">Az oldal nem található</h1>
-        <p className="text-white/60 mb-10 max-w-md mx-auto">
-          A keresett oldal nem létezik, vagy törölték. Kérlek ellenőrizd a címet, vagy térj vissza a főoldalra.
-        </p>
-        <Link 
-          href="/" 
-          className="px-8 py-4 bg-accent text-black font-semibold rounded-xl hover:bg-accent/90 transition-all"
-        >
-          ← Vissza a főoldalra
-        </Link>
+    <div className={`min-h-screen bg-white text-gray-900 ${MAIN_TOP_PADDING} flex items-center justify-center px-4 pb-20`}>
+      <div className="text-center max-w-md">
+        <div className="text-6xl font-bold text-[#007782] mb-3">404</div>
+        <h1 className="text-2xl font-bold mb-3">{t('notFound.title')}</h1>
+        <p className="text-gray-500 mb-8">{t('notFound.description')}</p>
+        <div className="flex flex-col sm:flex-row items-center justify-center gap-3">
+          <Link
+            href="/"
+            className="inline-flex h-10 items-center rounded-full bg-[#007782] px-5 text-sm font-semibold text-white hover:bg-[#006670]"
+          >
+            ← {t('notFound.backHome')}
+          </Link>
+          <Link
+            href="/browse"
+            className="inline-flex h-10 items-center rounded-full border border-gray-300 px-5 text-sm font-semibold text-gray-700 hover:bg-gray-50"
+          >
+            {t('notFound.browse')}
+          </Link>
+        </div>
       </div>
     </div>
   );

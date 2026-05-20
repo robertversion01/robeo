@@ -2,8 +2,8 @@
 
 import { useEffect, useState } from 'react';
 import Link from 'next/link';
-import { usePathname, useRouter } from 'next/navigation';
-import { Home, MessageCircle, Search, User, Plus } from 'lucide-react';
+import { usePathname } from 'next/navigation';
+import { Home, MessageCircle, Search, Heart, Plus } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 import { supabase } from '@/lib/supabase';
 import { cn } from '@/lib/utils';
@@ -15,13 +15,12 @@ type NavItem = {
   Icon: typeof Home;
   match: (p: string) => boolean;
   center?: boolean;
-  onClick?: () => void;
+  showMessagesBadge?: boolean;
 };
 
 export default function BottomNav() {
   const { t } = useTranslation();
   const pathname = usePathname();
-  const router = useRouter();
   const [visible, setVisible] = useState(false);
 
   useEffect(() => {
@@ -44,23 +43,13 @@ export default function BottomNav() {
     };
   }, []);
 
-  const openCatalogSearch = () => {
-    if (pathname === '/') {
-      document.getElementById('catalog')?.scrollIntoView({ behavior: 'smooth', block: 'start' });
-      window.setTimeout(() => document.getElementById('catalog-search')?.focus(), 350);
-      return;
-    }
-    router.push('/#catalog');
-  };
-
   const navItems: NavItem[] = [
     { href: '/', labelKey: 'nav.home', Icon: Home, match: (p) => p === '/' },
     {
-      href: '/',
+      href: '/browse',
       labelKey: 'nav.search',
       Icon: Search,
-      match: () => false,
-      onClick: openCatalogSearch,
+      match: (p) => p === '/browse' || p.startsWith('/browse'),
     },
     {
       href: '/upload',
@@ -74,12 +63,13 @@ export default function BottomNav() {
       labelKey: 'nav.messages',
       Icon: MessageCircle,
       match: (p) => p === '/messages' || p.startsWith('/messages/'),
+      showMessagesBadge: true,
     },
     {
-      href: '/profile',
-      labelKey: 'nav.profile',
-      Icon: User,
-      match: (p) => p === '/profile' || p.startsWith('/profile/'),
+      href: '/favorites',
+      labelKey: 'nav.favorites',
+      Icon: Heart,
+      match: (p) => p === '/favorites' || p.startsWith('/favorites/'),
     },
   ];
 
@@ -93,7 +83,7 @@ export default function BottomNav() {
       aria-label={t('nav.home')}
     >
       <div className="mx-auto flex h-[3.75rem] max-w-lg items-stretch justify-around px-1">
-        {navItems.map(({ href, labelKey, Icon, match, center, onClick }) => {
+        {navItems.map(({ href, labelKey, Icon, match, center, showMessagesBadge }) => {
           const active = match(pathname);
           const label = t(labelKey);
 
@@ -105,33 +95,10 @@ export default function BottomNav() {
                 aria-label={label}
                 className="flex min-w-0 flex-1 flex-col items-center justify-center"
               >
-                <span
-                  className={cn(
-                    'flex h-11 w-11 items-center justify-center rounded-full shadow-md transition-colors',
-                    active
-                      ? 'bg-[#007782] text-white'
-                      : 'bg-[#007782] text-white hover:bg-[#006670]',
-                  )}
-                >
+                <span className="flex h-11 w-11 items-center justify-center rounded-full bg-[#007782] text-white shadow-md hover:bg-[#006670]">
                   <Icon size={24} strokeWidth={2.25} />
                 </span>
               </Link>
-            );
-          }
-
-          const isMessages = href === '/messages';
-
-          if (onClick) {
-            return (
-              <button
-                key={labelKey}
-                type="button"
-                onClick={onClick}
-                className="relative flex min-w-0 flex-1 flex-col items-center justify-center gap-0.5 py-1 text-gray-500 hover:text-gray-800"
-              >
-                <Icon size={22} strokeWidth={1.85} className="shrink-0" />
-                <span className="text-[10px] font-semibold leading-none">{label}</span>
-              </button>
             );
           }
 
@@ -145,7 +112,7 @@ export default function BottomNav() {
               )}
             >
               <Icon size={22} strokeWidth={active ? 2.25 : 1.85} className="shrink-0" />
-              {isMessages ? (
+              {showMessagesBadge ? (
                 <MessagesNavBadge className="top-0 right-[calc(50%-18px)] h-2.5 w-2.5" />
               ) : null}
               <span

@@ -30,6 +30,8 @@
     "searchPlaceholder": "Keress márkákra, ruhákra..."
   },
   "browse": {
+    "pageTitle": "Böngészés",
+    "pageSubtitle": "Keress, szűrj és ments kedvenceket",
     "search": {
       "placeholder": "Mit keresel?",
       "noResults": "Nincs találat.",
@@ -75,6 +77,7 @@
     "saved": {
       "title": "Mentett keresések",
       "saveCurrent": "Keresés mentése",
+      "syncing": "Mentés…",
       "remove": "Mentett keresés törlése",
       "emptyHint": "Mentsd el a szűrőket, és egy kattintással visszatérhetsz hozzájuk."
     },
@@ -85,12 +88,84 @@
       "trendingBrands": "Népszerű most: {{brands}}"
     }
   },
+  "product": {
+    "notFound": "A termék nem található",
+    "noImages": "A termék képei nem érhetők el",
+    "noImagesHint": "Ez a hirdetés nem jeleníthető meg galéria nélkül.",
+    "backToBrowse": "Vissza a böngészéshez",
+    "zoomIn": "Nagyítás",
+    "zoomOut": "Kicsinyítés",
+    "brand": "Márka",
+    "size": "Méret",
+    "condition": "Állapot",
+    "seller": "Eladó",
+    "viewSeller": "Eladó profilja",
+    "buy": "Vásárlás",
+    "buyOfferPrice": "Vásárlás alkudott áron",
+    "makeOffer": "Ajánlatot teszek",
+    "messageSeller": "Üzenet az eladónak",
+    "messageModalTitle": "Üzenet az eladónak",
+    "messageModalHint": "Írd meg, mit szeretnél kérdezni a termékről!",
+    "messagePlaceholder": "Üzenet szövege…",
+    "cancel": "Mégse",
+    "send": "Üzenet küldése",
+    "sending": "Küldés…",
+    "messageSent": "Üzenet elküldve! Az Üzenetek menüben találod.",
+    "messageError": "Hiba történt az üzenet küldése során",
+    "favoriteAdd": "Kedvencekhez adás",
+    "favoriteRemove": "Eltávolítás a kedvencekből",
+    "browseCategory": "Több ebben a kategóriában"
+  },
   "favorites": {
     "title": "Kedvencek",
+    "subtitle": "Elmentett termékeim",
+    "count": "{{count}} kedvenc termék",
     "empty": "Még nincs kedvenc terméked.",
-    "browse": "Böngéssz a kínálatban"
+    "browse": "Böngéssz a kínálatban",
+    "sortNewest": "Legújabb",
+    "sortPriceAsc": "Legolcsóbb",
+    "sortPriceDesc": "Legdrágább",
+    "similar": "Hasonló termékek"
   },
   "notifications": {
-    "title": "Értesítések"
+    "title": "Értesítések",
+    "loginPrompt": "Jelentkezz be az értesítések megtekintéséhez.",
+    "login": "Belépés",
+    "markAllRead": "Mind olvasott",
+    "loading": "Betöltés…",
+    "empty": "Még nincs értesítésed.",
+    "filterAll": "Összes",
+    "filterOffers": "Ajánlatok",
+    "filterSales": "Eladások",
+    "filterOther": "Egyéb"
+  },
+  "messages": {
+    "offersTitle": "Beérkező ajánlatok",
+    "conversationsTitle": "Beszélgetések",
+    "emptyConversations": "Nincs még beszélgetésed",
+    "selectConversation": "Válassz ki egy beszélgetést",
+    "placeholder": "Üzenet írása…",
+    "makeOffer": "Ajánlatot teszek",
+    "payLink": "Fizetés indítása"
+  },
+  "checkout": {
+    "title": "Fizetés",
+    "back": "Vissza",
+    "buyerProtection": "Vásárlói védelem",
+    "payNow": "Fizetés",
+    "processing": "Feldolgozás…",
+    "total": "Összesen",
+    "itemPrice": "Termék ára",
+    "shipping": "Szállítás",
+    "protectionFee": "Vásárlói védelem"
+  },
+  "notFound": {
+    "title": "Az oldal nem található",
+    "description": "A keresett oldal nem létezik, vagy törölték.",
+    "backHome": "Vissza a főoldalra",
+    "browse": "Böngészés"
+  },
+  "common": {
+    "loading": "Betöltés…"
   }
 }

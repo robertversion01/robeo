@@ -3,12 +3,13 @@
 import { useCallback, useEffect, useState } from 'react';
 import { Bookmark, X } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
+import { supabase } from '@/lib/supabase';
 import type { CatalogFilterState } from '@/lib/catalogFilters';
 import {
   defaultSavedSearchLabel,
-  listSavedSearches,
-  removeSavedSearch,
-  saveSearch,
+  loadSavedSearchesMerged,
+  removeSavedSearchEntry,
+  saveSearchEntry,
   type SavedSearch,
 } from '@/lib/savedSearches';
 
@@ -21,28 +22,45 @@ type Props = {
 export default function SavedSearchesStrip({ filters, onApply, hasActiveFilters }: Props) {
   const { t } = useTranslation();
   const [items, setItems] = useState<SavedSearch[]>([]);
+  const [syncing, setSyncing] = useState(false);
 
-  const refresh = useCallback(() => {
-    setItems(listSavedSearches());
+  const refresh = useCallback(async () => {
+    const merged = await loadSavedSearchesMerged(supabase);
+    setItems(merged);
   }, []);
 
   useEffect(() => {
-    refresh();
+    void refresh();
+    const {
+      data: { subscription },
+    } = supabase.auth.onAuthStateChange(() => {
+      void refresh();
+    });
+    return () => subscription.unsubscribe();
   }, [refresh]);
 
-  const handleSave = () => {
-    const payload = {
-      category: filters.category,
-      brand: filters.brand,
-      size: filters.size,
-      condition: filters.condition,
-      minPrice: filters.minPrice,
-      maxPrice: filters.maxPrice,
-      sort: filters.sort,
-      search: filters.search,
-    };
-    saveSearch(defaultSavedSearchLabel(payload), payload);
-    refresh();
+  const handleSave = async () => {
+    setSyncing(true);
+    try {
+      const payload = {
+        category: filters.category,
+        brand: filters.brand,
+        size: filters.size,
+        condition: filters.condition,
+        minPrice: filters.minPrice,
+        maxPrice: filters.maxPrice,
+        sort: filters.sort,
+        search: filters.search,
+      };
+      await saveSearchEntry(
+        supabase,
+        defaultSavedSearchLabel(payload),
+        payload,
+      );
+      await refresh();
+    } finally {
+      setSyncing(false);
+    }
   };
 
   if (items.length === 0 && !hasActiveFilters) return null;
@@ -56,11 +74,12 @@ export default function SavedSearchesStrip({ filters, onApply, hasActiveFilters 
         {hasActiveFilters ? (
           <button
             type="button"
-            onClick={handleSave}
-            className="inline-flex items-center gap-1 rounded-full border border-[#007782]/30 bg-[#007782]/5 px-2.5 py-1 text-[11px] font-semibold text-[#007782] hover:bg-[#007782]/10"
+            disabled={syncing}
+            onClick={() => void handleSave()}
+            className="inline-flex items-center gap-1 rounded-full border border-[#007782]/30 bg-[#007782]/5 px-2.5 py-1 text-[11px] font-semibold text-[#007782] hover:bg-[#007782]/10 disabled:opacity-60"
           >
             <Bookmark size={12} />
-            {t('browse.saved.saveCurrent')}
+            {syncing ? t('browse.saved.syncing') : t('browse.saved.saveCurrent')}
           </button>
         ) : null}
       </div>
@@ -82,8 +101,7 @@ export default function SavedSearchesStrip({ filters, onApply, hasActiveFilters 
               <button
                 type="button"
                 onClick={() => {
-                  removeSavedSearch(item.id);
-                  refresh();
+                  void removeSavedSearchEntry(supabase, item.id).then(refresh);
                 }}
                 className="rounded-full p-1 text-gray-400 hover:bg-gray-100 hover:text-gray-600"
                 aria-label={t('browse.saved.remove')}

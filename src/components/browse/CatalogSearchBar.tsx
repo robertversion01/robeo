@@ -18,6 +18,7 @@ type Props = {
   className?: string;
   onSeeAll?: () => void;
   autoFocus?: boolean;
+  browsePath?: string;
 };
 
 export default function SearchTypeahead({
@@ -29,6 +30,7 @@ export default function SearchTypeahead({
   className = '',
   onSeeAll,
   autoFocus = false,
+  browsePath = '/browse',
 }: Props) {
   const { t } = useTranslation();
   const [liveResults, setLiveResults] = useState<
@@ -71,8 +73,8 @@ export default function SearchTypeahead({
 
   const seeAllHref =
     catalogFilters != null
-      ? `${catalogUrlFromFilters({ ...catalogFilters, search: value }, maxPriceLimit)}#catalog`
-      : `/?q=${encodeURIComponent(value.trim())}#catalog`;
+      ? `${catalogUrlFromFilters({ ...catalogFilters, search: value }, maxPriceLimit, browsePath)}#catalog`
+      : `${browsePath}?q=${encodeURIComponent(value.trim())}#catalog`;
 
   return (
     <div ref={containerRef} className={`relative ${className}`}>

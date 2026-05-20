@@ -1,27 +1,14 @@
 'use client';
 
-import { Suspense, useCallback, useEffect, useState, useRef } from 'react';
+import { useEffect, useState, useRef } from 'react';
 import { supabase } from '@/lib/supabase';
-import { useRouter, useSearchParams } from 'next/navigation';
+import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import OffersList from '@/components/product/OffersList';
+import ChatProductSummary from '@/components/messages/ChatProductSummary';
 import { toast } from 'sonner';
 import { isUuid } from '@/lib/validators';
-import { buildOfferInsertRow } from '@/lib/offers';
-import { insertChatSystemMessage } from '@/lib/chatMessages';
 import { MAIN_TOP_PADDING } from '@/lib/layoutTokens';
-import ChatTransactionPanel from '@/components/messages/ChatTransactionPanel';
-import ChatProductSummary from '@/components/messages/ChatProductSummary';
-import SaleSystemMessageCard, {
-  shouldUseSaleSystemCard,
-} from '@/components/messages/SaleSystemMessageCard';
-import PriceBreakdown from '@/components/product/PriceBreakdown';
-import {
-  buildConversationsFromMessages,
-  type ConversationRow,
-  type MessageRow,
-} from '@/lib/conversationList';
-import type { RealtimeChannel } from '@supabase/supabase-js';
 
 interface Message {
   id: string;
@@ -34,31 +21,23 @@ interface Message {
   media_url?: string | null;
 }
 
-export default function MessagesPage() {
-  return (
-    <Suspense
-      fallback={
-        <div className="min-h-screen flex items-center justify-center bg-white">
-          <div className="animate-spin h-10 w-10 border-4 border-[#007782] border-t-transparent rounded-full" />
-        </div>
-      }
-    >
-      <MessagesPageContent />
-    </Suspense>
-  );
+interface Conversation {
+  user_id: string;
+  email: string;
+  last_message: string;
+  last_message_time: string;
 }
 
-function MessagesPageContent() {
+export default function MessagesPage() {
   const [user, setUser] = useState<any>(null);
-  const [conversations, setConversations] = useState<ConversationRow[]>([]);
+  const [conversations, setConversations] = useState<Conversation[]>([]);
   const [selectedConversation, setSelectedConversation] = useState<string | null>(null);
   const [selectedEmail, setSelectedEmail] = useState<string>('');
   const [messages, setMessages] = useState<Message[]>([]);
   const [newMessage, setNewMessage] = useState('');
   const [showOfferModal, setShowOfferModal] = useState(false);
   const [offerAmount, setOfferAmount] = useState('');
-  const [offerMeta, setOfferMeta] = useState<{ min: number; title: string; listPrice: number } | null>(null);
-  const [activeProductId, setActiveProductId] = useState<string | null>(null);
+  const [offerMeta, setOfferMeta] = useState<{ min: number; title: string } | null>(null);
   const [offerSending, setOfferSending] = useState(false);
   const [loading, setLoading] = useState(true);
   const [uploadingImage, setUploadingImage] = useState(false);
@@ -66,239 +45,23 @@ function MessagesPageContent() {
   const fileInputRef = useRef<HTMLInputElement>(null);
   const selectedConversationRef = useRef<string | null>(null);
   const selectedEmailRef = useRef<string>('');
-  const userIdRef = useRef<string | null>(null);
   const router = useRouter();
-  const searchParams = useSearchParams();
-  const openWithHandledRef = useRef<string | null>(null);
 
   useEffect(() => {
     checkUser();
   }, []);
 
   useEffect(() => {
-    userIdRef.current = user?.id ?? null;
-  }, [user?.id]);
-
-  const loadConversations = useCallback(async () => {
-    const {
-      data: { user: authUser },
-    } = await supabase.auth.getUser();
-    if (!authUser?.id) return;
-
-    const { data, error } = await supabase
-      .from('messages')
-      .select('id, sender_id, receiver_id, content, created_at, product_id, message_type')
-      .or(`sender_id.eq.${authUser.id},receiver_id.eq.${authUser.id}`)
-      .order('created_at', { ascending: false });
-
-    if (error) {
-      console.error('[messages] loadConversations failed', error);
-      return;
-    }
-
-    const rows = (data || []) as MessageRow[];
-    const otherIds = Array.from(
-      new Set(
-        rows.flatMap((msg) =>
-          msg.sender_id === authUser.id ? [msg.receiver_id] : [msg.sender_id],
-        ),
-      ),
-    ).filter((id) => id && id !== authUser.id);
-
-    const emailMap = new Map<string, string>();
-    if (otherIds.length > 0) {
-      const { data: userData } = await supabase
-        .from('profiles')
-        .select('id, email')
-        .in('id', otherIds);
-      (userData as Array<{ id: string; email: string }> | null)?.forEach((u) =>
-        emailMap.set(u.id, u.email),
-      );
-    }
-
-    setConversations(buildConversationsFromMessages(rows, authUser.id, emailMap));
-  }, []);
-
-  const loadConversation = useCallback(
-    async (otherUserId: string, email?: string) => {
-      const {
-        data: { user: authUser },
-      } = await supabase.auth.getUser();
-      if (!authUser?.id) return;
-
-      setSelectedConversation(otherUserId);
-      setSelectedEmail(email || '');
-      const { data, error } = await supabase
-        .from('messages')
-        .select('*')
-        .or(
-          `and(sender_id.eq.${authUser.id},receiver_id.eq.${otherUserId}),and(sender_id.eq.${otherUserId},receiver_id.eq.${authUser.id})`,
-        )
-        .order('created_at', { ascending: true });
-
-      if (error) {
-        console.error('[messages] loadConversation failed', error);
-        return;
-      }
-      const list = (data as Message[]) || [];
-      setMessages(list);
-      const latestWithProduct = [...list].reverse().find((m) => m.product_id);
-      setActiveProductId(latestWithProduct?.product_id ?? null);
-    },
-    [],
-  );
-
-  useEffect(() => {
-    if (!user?.id) return;
+    if (!user) return;
     localStorage.setItem(`messages_last_seen_at_${user.id}`, new Date().toISOString());
     window.dispatchEvent(new CustomEvent('messages:seen'));
-    void loadConversations();
-
-    const uid = user.id;
-    let channel: RealtimeChannel | null = null;
-
-    const reloadActiveThread = () => {
-      const activeId = selectedConversationRef.current;
-      if (activeId) {
-        void loadConversation(activeId, selectedEmailRef.current);
-      }
-    };
-
-    const onOfferRealtime = (payload: { eventType: string; new: Record<string, unknown> }) => {
-      const offer = payload.new;
-      if (!offer) return;
-
-      void loadConversations();
-      reloadActiveThread();
-      window.dispatchEvent(new CustomEvent('offers:updated'));
-
-      const myId = userIdRef.current;
-      if (!myId || payload.eventType !== 'UPDATE' || offer.buyer_id !== myId) return;
-
-      if (offer.status === 'accepted') {
-        toast.success('Az eladó elfogadta az ajánlatod — fizetés az üzenetekben.');
-      } else if (offer.status === 'rejected') {
-        toast.info('Az eladó elutasította az ajánlatod.');
-      } else if (offer.status === 'countered') {
-        toast.success('Ellenajánlat érkezett az eladótól.');
-      }
-    };
-
-    const onMessageInsert = (payload: { new: Message }) => {
-      const newMsg = payload.new;
-      const myId = userIdRef.current;
-      const activeId = selectedConversationRef.current;
-      if (!myId) return;
-
-      const isMine = newMsg.sender_id === myId || newMsg.receiver_id === myId;
-      if (!isMine) return;
-
-      if (activeId) {
-        const inThread =
-          (newMsg.sender_id === myId && newMsg.receiver_id === activeId) ||
-          (newMsg.sender_id === activeId && newMsg.receiver_id === myId);
-        if (inThread) {
-          setMessages((prev) => {
-            if (prev.some((m) => m.id === newMsg.id)) return prev;
-            return [...prev, newMsg];
-          });
-        }
-      }
-      void loadConversations();
-    };
-
-    channel = supabase
-      .channel(`robeo-messages-thread-${uid}`)
-      .on(
-        'postgres_changes',
-        {
-          event: 'INSERT',
-          schema: 'public',
-          table: 'messages',
-          filter: `receiver_id=eq.${uid}`,
-        },
-        (payload) => onMessageInsert(payload as { new: Message }),
-      )
-      .on(
-        'postgres_changes',
-        {
-          event: 'INSERT',
-          schema: 'public',
-          table: 'messages',
-          filter: `sender_id=eq.${uid}`,
-        },
-        (payload) => onMessageInsert(payload as { new: Message }),
-      )
-      .on(
-        'postgres_changes',
-        {
-          event: 'UPDATE',
-          schema: 'public',
-          table: 'offers',
-          filter: `seller_id=eq.${uid}`,
-        },
-        (payload) => onOfferRealtime(payload as { eventType: string; new: Record<string, unknown> }),
-      )
-      .on(
-        'postgres_changes',
-        {
-          event: 'UPDATE',
-          schema: 'public',
-          table: 'offers',
-          filter: `buyer_id=eq.${uid}`,
-        },
-        (payload) => onOfferRealtime(payload as { eventType: string; new: Record<string, unknown> }),
-      )
-      .on(
-        'postgres_changes',
-        {
-          event: 'INSERT',
-          schema: 'public',
-          table: 'offers',
-          filter: `seller_id=eq.${uid}`,
-        },
-        () => {
-          void loadConversations();
-          reloadActiveThread();
-          window.dispatchEvent(new CustomEvent('offers:updated'));
-        },
-      )
-      .subscribe();
-
-    const onOffersUpdated = () => {
-      void loadConversations();
-      reloadActiveThread();
-    };
-    const onSaleCompleted = () => {
-      void loadConversations();
-    };
-    const onSaleBroadcast = () => {
-      void loadConversations();
-    };
-
-    window.addEventListener('offers:updated', onOffersUpdated);
-    window.addEventListener('sale:completed', onSaleCompleted);
-    window.addEventListener('robeo:sale-broadcast', onSaleBroadcast);
+    loadConversations();
+    subscribeToMessages();
 
     return () => {
-      window.removeEventListener('offers:updated', onOffersUpdated);
-      window.removeEventListener('sale:completed', onSaleCompleted);
-      window.removeEventListener('robeo:sale-broadcast', onSaleBroadcast);
-      if (channel) supabase.removeChannel(channel);
+      supabase.removeAllChannels();
     };
-  }, [user?.id, loadConversations, loadConversation]);
-
-  useEffect(() => {
-    const withUserId = searchParams.get('with');
-    if (!withUserId || !user?.id || conversations.length === 0) return;
-    if (openWithHandledRef.current === withUserId) return;
-
-    const conv = conversations.find((c) => c.user_id === withUserId);
-    if (conv) {
-      openWithHandledRef.current = withUserId;
-      void loadConversation(conv.user_id, conv.email);
-    }
-  }, [searchParams, user?.id, conversations, loadConversation]);
+  }, [user]);
 
   useEffect(() => {
     scrollToBottom();
@@ -339,7 +102,6 @@ function MessagesPageContent() {
       setOfferMeta({
         min: Math.ceil(price * 0.6),
         title: data.name || 'Termék',
-        listPrice: price,
       });
     })();
     return () => {
@@ -361,10 +123,106 @@ function MessagesPageContent() {
     setLoading(false);
   };
 
+  const subscribeToMessages = () => {
+    const channel = supabase.channel('messages')
+      .on('postgres_changes', {
+        event: 'INSERT',
+        schema: 'public',
+        table: 'messages',
+      }, (payload: any) => {
+        const newMsg = payload.new as Message;
+        const activeId = selectedConversationRef.current;
+        if (!activeId || !user?.id) {
+          loadConversations();
+          return;
+        }
+        const inThread =
+          (newMsg.sender_id === user.id && newMsg.receiver_id === activeId) ||
+          (newMsg.sender_id === activeId && newMsg.receiver_id === user.id);
+        if (inThread) {
+          setMessages((prev) => [...prev, newMsg]);
+        }
+        loadConversations();
+      })
+      .on('postgres_changes', {
+        event: '*',
+        schema: 'public',
+        table: 'offers',
+      }, async (payload: any) => {
+        const { data: { user: currentUser } } = await supabase.auth.getUser();
+        if (!currentUser?.id) return;
+        const offer = payload.new;
+        if (!offer) return;
+        if (offer.buyer_id === currentUser.id || offer.seller_id === currentUser.id) {
+          loadConversations();
+          const activeConversationId = selectedConversationRef.current;
+          if (activeConversationId) {
+            loadConversation(activeConversationId, selectedEmailRef.current);
+          }
+          if (payload.eventType === 'UPDATE' && offer.status === 'countered') {
+            toast.success('Ellenajánlat érkezett, frissítve a beszélgetés.');
+          }
+        }
+      })
+      .subscribe();
+  };
+
+  const loadConversations = async () => {
+    const { data, error } = await supabase
+      .from('messages')
+      .select('*')
+      .or(`sender_id.eq.${user.id},receiver_id.eq.${user.id}`)
+      .order('created_at', { ascending: false });
+
+    if (error) return;
+
+    // Group by conversation
+    const convMap = new Map<string, Message>();
+    (data as Message[] | null)?.forEach((msg: Message) => {
+      const otherUser = msg.sender_id === user.id ? msg.receiver_id : msg.sender_id;
+      if (!convMap.has(otherUser)) {
+        convMap.set(otherUser, msg);
+      }
+    });
+
+    // Get user emails from auth.users
+    const userIds = Array.from(convMap.keys());
+    const { data: userData } = await supabase
+      .from('profiles')
+      .select('id, email')
+      .in('id', userIds);
+
+    const emailMap = new Map<string, string>();
+    (userData as Array<{ id: string; email: string }> | null)?.forEach((u) =>
+      emailMap.set(u.id, u.email)
+    );
+
+    const convList: Conversation[] = Array.from(convMap.entries()).map(([user_id, msg]) => ({
+      user_id,
+      email: emailMap.get(user_id) || 'Felhasználó',
+      last_message: msg.content,
+      last_message_time: msg.created_at
+    }));
+
+    setConversations(convList);
+  };
+
+  const loadConversation = async (otherUserId: string, email?: string) => {
+    setSelectedConversation(otherUserId);
+    setSelectedEmail(email || '');
+    const { data, error } = await supabase
+      .from('messages')
+      .select('*')
+      .or(`and(sender_id.eq.${user.id},receiver_id.eq.${otherUserId}),and(sender_id.eq.${otherUserId},receiver_id.eq.${user.id})`)
+      .order('created_at', { ascending: true });
+
+    if (error) return;
+    setMessages((data as Message[]) || []);
+  };
+
   const closeConversation = () => {
     setSelectedConversation(null);
     setMessages([]);
-    setActiveProductId(null);
   };
 
   const sendMessage = async (e: React.FormEvent) => {
@@ -455,14 +313,13 @@ function MessagesPageContent() {
 
     setOfferSending(true);
     try {
-      const { error: offerErr } = await supabase.from('offers').insert(
-        buildOfferInsertRow({
-          productId: latestProductMessage.product_id,
-          buyerId: user.id,
-          sellerId: selectedConversation,
-          offeredPriceHuf: amount,
-        }),
-      );
+      const { error: offerErr } = await supabase.from('offers').insert({
+        product_id: latestProductMessage.product_id,
+        buyer_id: user.id,
+        seller_id: selectedConversation,
+        offered_price: amount,
+        status: 'pending',
+      });
 
       if (offerErr) {
         if (offerErr.code === '23505') {
@@ -473,11 +330,13 @@ function MessagesPageContent() {
         return;
       }
 
-      await insertChatSystemMessage(supabase, {
-        senderId: user.id,
-        receiverId: selectedConversation,
-        content: `Ajánlat: ${amount.toLocaleString('hu-HU')} Ft`,
-        productId: latestProductMessage.product_id,
+      await supabase.from('messages').insert({
+        sender_id: user.id,
+        receiver_id: selectedConversation,
+        content: `💡 Ajánlat: ${amount.toLocaleString('hu-HU')} Ft`,
+        product_id: latestProductMessage.product_id,
+        message_type: 'system',
+        is_system_message: true,
       });
 
       toast.success('Ajánlat elküldve.');
@@ -491,6 +350,8 @@ function MessagesPageContent() {
       setOfferSending(false);
     }
   };
+
+  const activeProductId = [...messages].reverse().find((msg) => msg.product_id)?.product_id ?? null;
 
   return (
     <div className="min-h-screen bg-white text-gray-900">
@@ -530,13 +391,6 @@ function MessagesPageContent() {
               min={offerMeta?.min ?? 1}
               className="mt-4 w-full input-base min-h-12 rounded-xl text-center text-lg font-semibold tabular-nums focus:ring-[#007782] focus:border-[#007782]"
             />
-
-            {offerAmount && Number(offerAmount) > 0 && (
-              <div className="mt-4 rounded-xl border border-gray-200 bg-gray-50 p-3">
-                <p className="text-xs font-medium text-gray-600 mb-2">Becsült fizetendő (vevővédelemmel)</p>
-                <PriceBreakdown price={Number(offerAmount)} />
-              </div>
-            )}
 
             <div className="flex gap-3 mt-5">
               <button
@@ -585,7 +439,7 @@ function MessagesPageContent() {
                     onClick={() => loadConversation(conv.user_id, conv.email)}
                     className={`w-full text-left p-5 border-b border-gray-100 hover:bg-gray-50 transition-colors ${
                       selectedConversation === conv.user_id ? 'bg-gray-50' : ''
-                    } ${conv.is_sale_thread ? 'bg-emerald-50/60 hover:bg-emerald-50' : ''}`}
+                    }`}
                   >
                     <div className="flex items-center gap-3">
                       <div className="w-10 h-10 rounded-full bg-[#007782]/10 flex items-center justify-center text-[#007782] font-bold">
@@ -623,18 +477,7 @@ function MessagesPageContent() {
                   </div>
                   <span className="font-medium truncate">{selectedEmail}</span>
                 </div>
-
-                {activeProductId && <ChatProductSummary productId={activeProductId} />}
-
-                {user?.id && selectedConversation && (
-                  <ChatTransactionPanel
-                    userId={user.id}
-                    otherUserId={selectedConversation}
-                    productId={activeProductId}
-                    userEmail={user.email}
-                  />
-                )}
-
+                <ChatProductSummary productId={activeProductId} />
                 {/* Messages */}
                 <div className="flex-1 overflow-y-auto p-4 md:p-6 space-y-4">
                   {messages.map((msg) => {
@@ -644,17 +487,6 @@ function MessagesPageContent() {
                     const checkoutMatch = msg.content.match(/(\/checkout\?offer=[a-f0-9-]+)/i);
 
                     if (isSystem) {
-                      if (shouldUseSaleSystemCard(msg.content, msg.message_type, msg.product_id)) {
-                        return (
-                          <div key={msg.id} className="flex justify-center px-2">
-                            <SaleSystemMessageCard
-                              content={msg.content}
-                              productId={msg.product_id}
-                              createdAt={msg.created_at}
-                            />
-                          </div>
-                        );
-                      }
                       return (
                         <div key={msg.id} className="flex justify-center px-2">
                           <div className="max-w-md rounded-xl border border-[#007782]/20 bg-[#007782]/5 px-4 py-2.5 text-center text-sm text-gray-700">

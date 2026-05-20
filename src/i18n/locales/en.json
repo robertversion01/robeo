@@ -30,6 +30,8 @@
     "searchPlaceholder": "Search brands, items..."
   },
   "browse": {
+    "pageTitle": "Browse",
+    "pageSubtitle": "Search, filter, and save favorites",
     "search": {
       "placeholder": "What are you looking for?",
       "noResults": "No results.",
@@ -75,6 +77,7 @@
     "saved": {
       "title": "Saved searches",
       "saveCurrent": "Save search",
+      "syncing": "Saving…",
       "remove": "Remove saved search",
       "emptyHint": "Save your filters and return to them with one tap."
     },
@@ -85,12 +88,84 @@
       "trendingBrands": "Popular now: {{brands}}"
     }
   },
+  "product": {
+    "notFound": "Product not found",
+    "noImages": "Product images unavailable",
+    "noImagesHint": "This listing cannot be displayed without images.",
+    "backToBrowse": "Back to browse",
+    "zoomIn": "Zoom in",
+    "zoomOut": "Zoom out",
+    "brand": "Brand",
+    "size": "Size",
+    "condition": "Condition",
+    "seller": "Seller",
+    "viewSeller": "View seller profile",
+    "buy": "Buy now",
+    "buyOfferPrice": "Buy at offer price",
+    "makeOffer": "Make an offer",
+    "messageSeller": "Message seller",
+    "messageModalTitle": "Message seller",
+    "messageModalHint": "Ask the seller about this item.",
+    "messagePlaceholder": "Your message…",
+    "cancel": "Cancel",
+    "send": "Send message",
+    "sending": "Sending…",
+    "messageSent": "Message sent! Find it in Inbox.",
+    "messageError": "Could not send message",
+    "favoriteAdd": "Add to favorites",
+    "favoriteRemove": "Remove from favorites",
+    "browseCategory": "More in this category"
+  },
   "favorites": {
     "title": "Favorites",
+    "subtitle": "Saved items",
+    "count": "{{count}} favorite items",
     "empty": "No favorites yet.",
-    "browse": "Browse catalog"
+    "browse": "Browse catalog",
+    "sortNewest": "Newest",
+    "sortPriceAsc": "Price: low to high",
+    "sortPriceDesc": "Price: high to low",
+    "similar": "Similar items"
   },
   "notifications": {
-    "title": "Notifications"
+    "title": "Notifications",
+    "loginPrompt": "Log in to view notifications.",
+    "login": "Log in",
+    "markAllRead": "Mark all read",
+    "loading": "Loading…",
+    "empty": "No notifications yet.",
+    "filterAll": "All",
+    "filterOffers": "Offers",
+    "filterSales": "Sales",
+    "filterOther": "Other"
+  },
+  "messages": {
+    "offersTitle": "Incoming offers",
+    "conversationsTitle": "Conversations",
+    "emptyConversations": "No conversations yet",
+    "selectConversation": "Select a conversation",
+    "placeholder": "Write a message…",
+    "makeOffer": "Make an offer",
+    "payLink": "Proceed to payment"
+  },
+  "checkout": {
+    "title": "Checkout",
+    "back": "Back",
+    "buyerProtection": "Buyer protection",
+    "payNow": "Pay now",
+    "processing": "Processing…",
+    "total": "Total",
+    "itemPrice": "Item price",
+    "shipping": "Shipping",
+    "protectionFee": "Buyer protection"
+  },
+  "notFound": {
+    "title": "Page not found",
+    "description": "The page you requested does not exist or was removed.",
+    "backHome": "Back to home",
+    "browse": "Browse catalog"
+  },
+  "common": {
+    "loading": "Loading…"
   }
 }
