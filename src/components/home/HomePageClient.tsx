@@ -1,12 +1,14 @@
 'use client';
 
+import { useMemo } from 'react';
+import { useTranslation } from 'react-i18next';
 import { useProducts } from '@/hooks/useProducts';
 import Filters from '@/components/product/Filters';
 import ProductGrid from '@/components/product/ProductGrid';
 import VintedHero from '@/components/home/VintedHero';
 import { MAIN_TOP_PADDING } from '@/lib/layoutTokens';
 import { cn } from '@/lib/utils';
-import { useTranslation } from 'react-i18next';
+import { filterProductsWithValidImages } from '@/lib/productImageValidation';
 
 export default function HomePageClient() {
   const { t } = useTranslation();
@@ -39,6 +41,7 @@ export default function HomePageClient() {
     filterKey,
   } = useProducts();
   const isGuest = !user;
+  const catalogProducts = useMemo(() => filterProductsWithValidImages(products), [products]);
 
   const filterBar = (
     <div
@@ -75,7 +78,7 @@ export default function HomePageClient() {
     <>
       {filterBar}
       <p className="mb-2 text-sm tabular-nums text-gray-500">
-        {loading ? t('landing.catalog.loading') : t('landing.catalog.results', { count: products.length })}
+        {loading ? t('landing.catalog.loading') : t('landing.catalog.results', { count: catalogProducts.length })}
       </p>
       <ProductGrid
         products={products}
@@ -91,7 +94,7 @@ export default function HomePageClient() {
     <div className="landing-page-root min-h-screen max-w-[100vw] overflow-x-hidden bg-white text-gray-900">
       {isGuest ? (
         <main className="w-full max-w-[100vw] overflow-x-hidden">
-          <VintedHero products={allProducts} fullScreen />
+          <VintedHero products={filterProductsWithValidImages(allProducts)} fullScreen />
           <div className="landing-catalog mx-auto max-w-7xl px-2 pb-4 pt-2 md:px-6 md:pt-3">
             {catalog}
           </div>
@@ -101,7 +104,7 @@ export default function HomePageClient() {
           className={`w-full max-w-[100vw] overflow-x-hidden ${MAIN_TOP_PADDING} px-2 pb-4 md:px-6`}
         >
           <div className="mx-auto max-w-7xl">
-            <VintedHero products={allProducts} compact />
+            <VintedHero products={filterProductsWithValidImages(allProducts)} compact />
             {catalog}
           </div>
         </main>

@@ -2,6 +2,8 @@
  * Utility functions for image handling and optimization
  */
 
+import { getValidProductImageUrls } from '@/lib/productImageValidation';
+
 /**
  * Formats an image URL for optimal loading
  */
@@ -70,27 +72,12 @@ export function normalizeProductImageUrls(images: unknown): string[] {
   return urls;
 }
 
-/**
- * Returns raw storage URLs for a product (optimize at render time with getOptimizedImageUrl).
- */
+/** Validált termékképek — nincs placehold.co fallback */
 export function getProductImages(product: {
   image_url: string | null;
   images?: unknown;
 }): string[] {
-  const urls: string[] = [];
-
-  const main = product.image_url?.trim();
-  if (main) urls.push(main);
-
-  for (const url of normalizeProductImageUrls(product.images)) {
-    if (!urls.includes(url)) urls.push(url);
-  }
-
-  if (urls.length === 0) {
-    urls.push(getPlaceholderImage());
-  }
-
-  return urls;
+  return getValidProductImageUrls(product);
 }
 
 export function shouldLazyLoad(index: number): boolean {

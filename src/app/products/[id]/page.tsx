@@ -1,16 +1,15 @@
 'use client';
 
-import { useEffect, useState, use } from 'react';
+import { useEffect, useState, use, useMemo, useCallback } from 'react';
 import { supabase } from '@/lib/supabase';
 import Link from 'next/link';
-import FollowSellerButton from '@/components/product/FollowSellerButton';
 import { useRouter } from 'next/navigation';
 import { toast } from 'sonner';
 import { Star, ZoomIn, ZoomOut } from 'lucide-react';
-import { getOptimizedImageUrl, getProductImages, shouldLazyLoad } from '@/lib/imageUtils';
-import { fetchSellerDisplayProfile, getSellerDisplayName } from '@/lib/sellerProfile';
+import { getOptimizedImageUrl, shouldLazyLoad } from '@/lib/imageUtils';
+import { getValidProductImageUrls } from '@/lib/productImageValidation';
+import ProductImage from '@/components/product/ProductImage';
 import OfferModal from '@/components/product/OfferModal';
-import ReportProductModal from '@/components/product/ReportProductModal';
 import type { Product } from '@/types';
 import { MAIN_TOP_PADDING } from '@/lib/layoutTokens';
 
@@ -21,7 +20,7 @@ export default function ProductPage({ params }: { params: Promise<{ id: string }
   const [selectedImageIndex, setSelectedImageIndex] = useState(0);
   const [isZoomed, setIsZoomed] = useState(false);
   const [touchStartX, setTouchStartX] = useState<number | null>(null);
-  const [sellerDisplayName, setSellerDisplayName] = useState('Eladó');
+  const [sellerProfile, setSellerProfile] = useState<{ full_name?: string | null; email?: string | null } | null>(null);
   const [sellerReviewSummary, setSellerReviewSummary] = useState<{ avg: number; count: number }>({ avg: 5, count: 0 });
   
   // Modal States
@@ -30,8 +29,39 @@ export default function ProductPage({ params }: { params: Promise<{ id: string }
   const [messageText, setMessageText] = useState('');
   const [sendingMessage, setSendingMessage] = useState(false);
   const [acceptedOffer, setAcceptedOffer] = useState<{ id: string; offered_price: number } | null>(null);
-  const [showReportModal, setShowReportModal] = useState(false);
+  const [failedGalleryUrls, setFailedGalleryUrls] = useState<Set<string>>(() => new Set());
   const router = useRouter();
+
+  const markGalleryUrlFailed = useCallback((url: string) => {
+    setFailedGalleryUrls((prev) => {
+      if (prev.has(url)) return prev;
+      const next = new Set(prev);
+      next.add(url);
+      return next;
+    });
+  }, []);
+
+  const allProductImages = useMemo(
+    () =>
+      product
+        ? getValidProductImageUrls({
+            image_url: product.image_url,
+            images: product.images || [],
+          })
+        : [],
+    [product],
+  );
+
+  const productImages = useMemo(
+    () => allProductImages.filter((url) => !failedGalleryUrls.has(url)),
+    [allProductImages, failedGalleryUrls],
+  );
+
+  useEffect(() => {
+    if (selectedImageIndex >= productImages.length && productImages.length > 0) {
+      setSelectedImageIndex(0);
+    }
+  }, [productImages.length, selectedImageIndex]);
 
   useEffect(() => {
     if (!id) return;
@@ -69,8 +99,13 @@ export default function ProductPage({ params }: { params: Promise<{ id: string }
         }
       }
 
-      const sellerProfile = await fetchSellerDisplayProfile(supabase, data.user_id);
-      setSellerDisplayName(getSellerDisplayName(sellerProfile));
+      const { data: sellerData } = await supabase
+        .from('profiles')
+        .select('full_name, email')
+        .eq('id', data.user_id)
+        .maybeSingle();
+
+      setSellerProfile((sellerData as { full_name?: string | null; email?: string | null }) || null);
 
       const { data: reviewData } = await supabase
         .from('reviews')
@@ -166,16 +201,24 @@ export default function ProductPage({ params }: { params: Promise<{ id: string }
     );
   }
 
-  const productImages = getProductImages({
-    image_url: product.image_url,
-    images: product.images || [],
-  });
+  if (productImages.length === 0) {
+    return (
+      <div className="min-h-screen bg-white text-gray-900 flex flex-col items-center justify-center px-4">
+        <h2 className="text-xl mb-2 text-center">A termék képei nem érhetők el</h2>
+        <p className="text-gray-500 text-sm mb-4 text-center">Ez a hirdetés nem jeleníthető meg galéria nélkül.</p>
+        <Link href="/" className="text-accent hover:underline">Vissza a főoldalra</Link>
+      </div>
+    );
+  }
 
-  const sellerInitial = sellerDisplayName.charAt(0).toUpperCase() || 'E';
+  const safeSelectedIndex = Math.min(selectedImageIndex, productImages.length - 1);
+  const activeImage = productImages[safeSelectedIndex];
+
+  const sellerDisplayName = sellerProfile?.full_name || sellerProfile?.email?.split('@')[0] || 'Eladó';
+  const sellerInitial = sellerDisplayName?.charAt(0).toUpperCase() || 'E';
   const urgencySeed = product.id.split('').reduce((acc, char) => acc + char.charCodeAt(0), 0);
-  const isSold = product.status === 'sold';
   const inCartCount = 2 + (urgencySeed % 7);
-  const showLastPiece = !isSold && urgencySeed % 2 === 0;
+  const showLastPiece = urgencySeed % 2 === 0;
 
   const handleImageTouchStart = (event: React.TouchEvent<HTMLDivElement>) => {
     setTouchStartX(event.touches[0]?.clientX ?? null);
@@ -241,28 +284,27 @@ export default function ProductPage({ params }: { params: Promise<{ id: string }
       )}
 
       <main className={`${MAIN_TOP_PADDING} pb-24 px-0 md:px-6`}>
+        <Link href="/" className="inline-flex items-center gap-2 text-gray-500 hover:text-gray-900 mb-3 transition-colors px-3 md:px-0 md:mb-6">
+          ← Vissza a főoldalra
+        </Link>
+
         <div className="max-w-5xl mx-auto">
           <div className="grid grid-cols-1 md:grid-cols-2 md:gap-10">
             {/* Product Image Gallery */}
             <div>
               {/* Main Image */}
               <div
-                className="relative aspect-square md:rounded-xl md:overflow-hidden bg-gray-100 mb-2 border border-gray-200 touch-pan-y"
+                className="relative aspect-square md:rounded-xl md:overflow-hidden bg-[#0f1a1d]/5 mb-2 border border-gray-200 touch-pan-y"
                 onTouchStart={handleImageTouchStart}
                 onTouchEnd={handleImageTouchEnd}
               >
-                {productImages[selectedImageIndex] ? (
-                  <img 
-                    src={getOptimizedImageUrl(productImages[selectedImageIndex], 800, 90)} 
-                    alt={product.name}
-                    loading="eager"
-                    className={`w-full h-full object-cover transition-transform duration-300 ${isZoomed ? 'scale-150' : 'scale-100'}`}
-                  />
-                ) : (
-                  <div className="w-full h-full flex items-center justify-center text-gray-400 text-5xl">
-                    📷
-                  </div>
-                )}
+                <ProductImage
+                  src={getOptimizedImageUrl(activeImage, 800, 90)}
+                  alt={product.name}
+                  loading="eager"
+                  className={`w-full h-full object-cover transition-transform duration-300 ${isZoomed ? 'scale-150' : 'scale-100'}`}
+                  onError={() => markGalleryUrlFailed(activeImage)}
+                />
                 <button
                   type="button"
                   onClick={() => setIsZoomed((prev) => !prev)}
@@ -278,23 +320,24 @@ export default function ProductPage({ params }: { params: Promise<{ id: string }
                 <div className="flex gap-1.5 overflow-x-auto pb-2">
                   {productImages.map((imgUrl: string, index: number) => (
                     <button
-                      key={index}
+                      key={imgUrl}
                       type="button"
                       onClick={() => {
                         setSelectedImageIndex(index);
                         setIsZoomed(false);
                       }}
                       className={`w-14 h-14 rounded-md overflow-hidden flex-shrink-0 border transition-all ${
-                        selectedImageIndex === index 
-                          ? 'border-accent opacity-100 shadow-sm' 
+                        safeSelectedIndex === index
+                          ? 'border-accent opacity-100 shadow-sm'
                           : 'border-gray-200 opacity-70 hover:opacity-100'
                       }`}
                     >
-                      <img 
-                        src={getOptimizedImageUrl(imgUrl, 100, 80)} 
-                        alt={`${product.name} ${index + 1}`}
-                        loading={shouldLazyLoad(index) ? "lazy" : "eager"}
-                        className="w-full h-full object-cover"
+                      <ProductImage
+                        src={getOptimizedImageUrl(imgUrl, 100, 80)}
+                        alt=""
+                        loading={shouldLazyLoad(index) ? 'lazy' : 'eager'}
+                        className="h-full w-full object-cover"
+                        onError={() => markGalleryUrlFailed(imgUrl)}
                       />
                     </button>
                   ))}
@@ -308,40 +351,19 @@ export default function ProductPage({ params }: { params: Promise<{ id: string }
                 {categoryLabels[product.category] || product.category}
               </div>
               
-              <div className="flex items-start justify-between gap-2 mb-2">
-                <h1 className="text-xl md:text-2xl font-bold flex-1">{product.name}</h1>
-                <button
-                  type="button"
-                  onClick={() => setShowReportModal(true)}
-                  className="text-xs text-gray-400 hover:text-red-600 underline shrink-0 mt-1"
-                >
-                  Termék jelentése
-                </button>
-              </div>
-
-              <div className="mb-3">
-                <FollowSellerButton sellerId={product.user_id} />
-              </div>
+              <h1 className="text-xl md:text-2xl font-bold mb-2">{product.name}</h1>
               
               <div className="text-accent font-bold text-2xl mb-3">{product.price.toLocaleString()} Ft</div>
 
               <div className="mb-3 space-y-1.5">
-                {isSold ? (
-                  <div className="inline-flex items-center rounded-full bg-gray-100 px-3 py-1.5 text-sm font-semibold text-gray-600 border border-gray-200">
-                    Eladva
+                <div className="inline-flex items-center rounded-full bg-orange-100 px-2.5 py-1 text-xs font-semibold text-orange-700">
+                  Mar {inCartCount} ember kosaraban van
+                </div>
+                {showLastPiece ? (
+                  <div className="inline-flex items-center rounded-full bg-red-100 px-2.5 py-1 text-xs font-semibold text-red-700">
+                    Utolso darab ezen az aron!
                   </div>
-                ) : (
-                  <>
-                    <div className="inline-flex items-center rounded-full bg-orange-100 px-2.5 py-1 text-xs font-semibold text-orange-700">
-                      Mar {inCartCount} ember kosaraban van
-                    </div>
-                    {showLastPiece ? (
-                      <div className="inline-flex items-center rounded-full bg-red-100 px-2.5 py-1 text-xs font-semibold text-red-700">
-                        Utolso darab ezen az aron!
-                      </div>
-                    ) : null}
-                  </>
-                )}
+                ) : null}
               </div>
               
               {/* Product Attributes */}
@@ -367,10 +389,7 @@ export default function ProductPage({ params }: { params: Promise<{ id: string }
                 {product.description}
               </div>
 
-              <Link
-                href={`/profile/${product.user_id}`}
-                className="mb-4 block rounded-xl border border-gray-200 bg-gray-50 p-3 hover:bg-gray-100/80 transition-colors"
-              >
+              <div className="mb-4 rounded-xl border border-gray-200 bg-gray-50 p-3">
                 <div className="flex items-center gap-3">
                   <div className="h-10 w-10 rounded-full bg-[#007782]/15 text-[#007782] flex items-center justify-center font-semibold">
                     {sellerInitial}
@@ -391,72 +410,50 @@ export default function ProductPage({ params }: { params: Promise<{ id: string }
                     </div>
                   </div>
                 </div>
-              </Link>
+              </div>
 
                <div className="fixed bottom-0 left-0 right-0 md:static mt-auto p-2 md:p-0 md:mt-4 bg-white backdrop-blur-md border-t border-gray-200 md:border-t-0 md:bg-transparent md:backdrop-blur-none md:space-y-3 space-y-1.5 shadow-lg md:shadow-none">
-                {isSold ? (
-                  <button
-                    type="button"
-                    disabled
-                    className="w-full min-h-11 rounded-xl border border-gray-200 bg-gray-100 text-gray-500 font-semibold text-sm cursor-not-allowed"
-                  >
-                    Eladva
-                  </button>
-                ) : (
-                  <>
-                    <button
-                      type="button"
-                      onClick={async () => {
-                        const { data: { user } } = await supabase.auth.getUser();
-                        if (!user) {
-                          router.push('/auth');
-                          return;
-                        }
-                        if (product.user_id === user.id) {
-                          toast.error('A saját termékedet nem vásárolhatod meg.');
-                          return;
-                        }
-                        router.push(
-                          acceptedOffer
-                            ? `/checkout?offer=${acceptedOffer.id}`
-                            : `/checkout?id=${id}`,
-                        );
-                      }}
-                      className="w-full btn-base btn-primary"
-                    >
-                      {acceptedOffer ? 'Vásárlás alkudott áron' : 'Vásárlás'}
-                    </button>
-                    <button
-                      type="button"
-                      onClick={openOfferModal}
-                      className="w-full btn-base btn-secondary"
-                    >
-                      Ajánlatot teszek
-                    </button>
-                  </>
-                )}
-                <button
-                  type="button"
-                  onClick={() => {
-                    setMessageText(`Szia! Erdeklodnek a ${product.name} irant.`);
-                    setShowMessageModal(true);
+                 <button 
+                  onClick={async () => {
+                    const { data: { user } } = await supabase.auth.getUser();
+                    if (!user) {
+                      router.push('/auth');
+                      return;
+                    }
+                    if (product.user_id === user.id) {
+                      toast.error('A saját termékedet nem vásárolhatod meg.');
+                      return;
+                    }
+                    router.push(
+                      acceptedOffer
+                        ? `/checkout?offer=${acceptedOffer.id}`
+                        : `/checkout?id=${id}`,
+                    );
                   }}
-                  className="w-full btn-base btn-secondary"
-                >
-                  Üzenet az eladónak
-                </button>
+                   className="w-full btn-base btn-primary"
+                 >
+                  {acceptedOffer ? 'Vásárlás alkudott áron' : 'Vásárlás'}
+                 </button>
+                  <button 
+                    onClick={openOfferModal}
+                    className="w-full btn-base btn-secondary"
+                  >
+                    Ajánlatot teszek
+                  </button>
+                  <button 
+                    onClick={() => {
+                      setMessageText(`Szia! Erdeklodnek a ${product.name} irant.`);
+                      setShowMessageModal(true);
+                    }}
+                    className="w-full btn-base btn-secondary"
+                  >
+                    Üzenet az eladónak
+                  </button>
                </div>
             </div>
           </div>
         </div>
       </main>
-
-      <ReportProductModal
-        productId={product.id}
-        productName={product.name}
-        open={showReportModal}
-        onClose={() => setShowReportModal(false)}
-      />
     </div>
   );
 }

@@ -1,9 +1,12 @@
 'use client';
 
+import { useState } from 'react';
 import Link from 'next/link';
 import { Heart } from 'lucide-react';
 import { cn, formatPrice } from '@/lib/utils';
 import { getOptimizedImageUrl } from '@/lib/imageUtils';
+import { normalizePrimaryProductImageUrl } from '@/lib/productImageValidation';
+import ProductImage from '@/components/product/ProductImage';
 import type { Product } from '@/types';
 
 interface ProductCardProps {
@@ -13,9 +16,11 @@ interface ProductCardProps {
 }
 
 export default function ProductCard({ product, isFavorite, onToggleFavorite }: ProductCardProps) {
-  const primaryImage =
-    product.image_url ||
-    (Array.isArray(product.images) && product.images.length > 0 ? product.images[0] : null);
+  const primaryImage = normalizePrimaryProductImageUrl(product);
+  const [imageVisible, setImageVisible] = useState(true);
+
+  if (!primaryImage || !imageVisible) return null;
+
   const isFeatured =
     typeof product.featured_until === 'string' &&
     new Date(product.featured_until).getTime() > Date.now();
@@ -29,20 +34,15 @@ export default function ProductCard({ product, isFavorite, onToggleFavorite }: P
     <div className="group card-base overflow-hidden transition-all duration-200 relative border border-gray-200/90 hover:border-[#007782]/50 hover:shadow-md active:scale-[0.98] touch-manipulation">
       <Link
         href={`/products/${product.id}`}
-        className="relative aspect-[3/4] sm:aspect-[4/5] overflow-hidden block bg-gray-100"
+        className="relative aspect-[3/4] sm:aspect-[4/5] overflow-hidden block bg-[#0f1a1d]/5"
       >
-        {primaryImage ? (
-          <img
-            src={getOptimizedImageUrl(primaryImage, 320, 82)}
-            alt={product.name}
-            loading="lazy"
-            className="w-full h-full object-cover transition-transform duration-300 ease-out group-hover:scale-[1.07] group-active:scale-[1.04]"
-          />
-        ) : (
-          <div className="w-full h-full bg-gray-100 flex items-center justify-center text-gray-400 text-lg">
-            📷
-          </div>
-        )}
+        <ProductImage
+          src={getOptimizedImageUrl(primaryImage, 320, 82)}
+          alt={product.name}
+          loading="lazy"
+          className="w-full h-full object-cover transition-transform duration-300 ease-out group-hover:scale-[1.07] group-active:scale-[1.04]"
+          onError={() => setImageVisible(false)}
+        />
         {isFeatured ? (
           <span className="pointer-events-none absolute bottom-1 left-1 rounded px-1 py-0.5 text-[9px] font-bold uppercase tracking-wide text-white bg-[#007782] shadow-sm">
             Kiemelt
@@ -64,7 +64,7 @@ export default function ProductCard({ product, isFavorite, onToggleFavorite }: P
           size={14}
           className={cn(
             'transition-colors',
-            isFavorite ? 'fill-rose-500 text-rose-500' : 'fill-transparent text-gray-500'
+            isFavorite ? 'fill-rose-500 text-rose-500' : 'fill-transparent text-gray-500',
           )}
         />
       </button>

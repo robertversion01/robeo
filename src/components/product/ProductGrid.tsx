@@ -5,6 +5,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 import ProductCard from './ProductCard';
 import ProductGridSkeleton from './ProductGridSkeleton';
 import EmptyState from '@/components/ui/EmptyState';
+import { filterProductsWithValidImages } from '@/lib/productImageValidation';
 import type { Product } from '@/types';
 
 interface ProductGridProps {
@@ -34,7 +35,9 @@ export default function ProductGrid({
     return <ProductGridSkeleton />;
   }
 
-  if (products.length === 0) {
+  const displayProducts = filterProductsWithValidImages(products);
+
+  if (displayProducts.length === 0) {
     return (
       <EmptyState
         icon="search"
@@ -54,7 +57,7 @@ export default function ProductGrid({
         transition={{ duration: 0.28, ease: 'easeOut' }}
         className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 xl:grid-cols-6 gap-1 sm:gap-1.5 md:gap-2"
       >
-        {products.map((product) => (
+        {displayProducts.map((product) => (
           <ProductCard
             key={product.id}
             product={product}

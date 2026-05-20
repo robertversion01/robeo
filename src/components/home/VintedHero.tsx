@@ -7,11 +7,12 @@ import { useTranslation } from 'react-i18next';
 import { formatPrice } from '@/lib/utils';
 import GuestLandingHeader from '@/components/home/GuestLandingHeader';
 import {
-  hasHeroImage,
+  filterProductsWithValidImages,
+  hasValidProductImage,
   isValidHeroTile,
-  normalizeHeroImageUrl,
-  normalizePrimaryHeroImageUrl,
-} from '@/lib/landingHeroImages';
+  normalizePrimaryProductImageUrl,
+  normalizeProductImageUrl,
+} from '@/lib/productImageValidation';
 import type { Product } from '@/types';
 
 interface VintedHeroProps {
@@ -51,11 +52,11 @@ const FLOAT_SECONDS_BASE = 4.8;
 const COLUMN_TRAVEL_PX = [118, 136, 124, 142, 128, 132];
 
 function primaryImageUrl(product: Product): string | null {
-  return normalizePrimaryHeroImageUrl(product);
+  return normalizePrimaryProductImageUrl(product);
 }
 
 function getFeaturedProducts(products: Product[]): HeroProduct[] {
-  const withImages = products.filter(hasHeroImage) as HeroProduct[];
+  const withImages = products.filter(hasValidProductImage) as HeroProduct[];
   const now = Date.now();
   return withImages.filter(
     (product) =>
@@ -66,14 +67,14 @@ function getFeaturedProducts(products: Product[]): HeroProduct[] {
 
 /** Egyedi termékek poolja — max 64, csak képes hirdetések */
 function buildHeroProductPool(products: Product[]): HeroProduct[] {
-  const withImages = products.filter(hasHeroImage) as HeroProduct[];
+  const withImages = products.filter(hasValidProductImage) as HeroProduct[];
   const featured = getFeaturedProducts(products);
   const pool: HeroProduct[] = [];
   const seen = new Set<string>();
 
   for (const product of [...featured, ...withImages]) {
     if (seen.has(product.id)) continue;
-    if (!hasHeroImage(product)) continue;
+    if (!hasValidProductImage(product)) continue;
     seen.add(product.id);
     pool.push(product);
     if (pool.length >= LANDING_HERO_POOL_MAX) break;
@@ -87,8 +88,8 @@ function buildHeroTiles(pool: HeroProduct[]): HeroTile[] {
   const tiles: HeroTile[] = [];
 
   for (const product of pool) {
-    if (!hasHeroImage(product)) continue;
-    const imageUrl = normalizePrimaryHeroImageUrl(product);
+    if (!hasValidProductImage(product)) continue;
+    const imageUrl = normalizePrimaryProductImageUrl(product);
     if (!imageUrl) continue;
 
     const tile: HeroTile = {
@@ -162,7 +163,7 @@ function HeroImageTile({
   const [loadFailed, setLoadFailed] = useState(false);
 
   if (!isValidHeroTile(tile) || loadFailed) return null;
-  if (!normalizeHeroImageUrl(tile.imageUrl)) return null;
+  if (!normalizeProductImageUrl(tile.imageUrl)) return null;
 
   return (
     <Link
@@ -247,7 +248,10 @@ export default function VintedHero({
 
   const heroProductPool = useMemo(() => buildHeroProductPool(products), [products]);
   const heroTiles = useMemo(() => buildHeroTiles(heroProductPool), [heroProductPool]);
-  const featuredProducts = useMemo(() => getFeaturedProducts(products).slice(0, 18), [products]);
+  const featuredProducts = useMemo(
+    () => getFeaturedProducts(products).slice(0, 18).filter(hasValidProductImage),
+    [products],
+  );
 
   const masonryColumns = useMemo(() => {
     const looped = repeatTiles(heroTiles, LANDING_HERO_LOOP_REPEATS);
@@ -425,7 +429,10 @@ export default function VintedHero({
             className="flex cursor-grab gap-1.5 overflow-x-auto no-scrollbar active:cursor-grabbing sm:gap-2"
             style={{ willChange: 'scroll-position' }}
           >
-            {featuredLoopItems.map((item, idx) => (
+            {featuredLoopItems.map((item, idx) => {
+              const imageSrc = primaryImageUrl(item);
+              if (!imageSrc) return null;
+              return (
               <Link
                 key={`${item.id}-${idx}`}
                 href={`/products/${item.id}`}
@@ -437,22 +444,19 @@ export default function VintedHero({
               >
                 <div className="flex h-full flex-col">
                   <div
-                    className={`w-full overflow-hidden rounded-md bg-gray-100 ${
+                    className={`w-full overflow-hidden rounded-md bg-[#0f1a1d]/5 ${
                       compact ? 'h-[112px] sm:h-[128px]' : 'h-[168px] sm:h-[182px]'
                     }`}
                   >
-                    {primaryImageUrl(item) ? (
-                      <img
-                        src={primaryImageUrl(item)!}
-                        alt={item.name}
-                        className="h-full w-full object-cover"
-                        loading="lazy"
-                      />
-                    ) : (
-                      <div className="flex h-full w-full items-center justify-center bg-gray-100 text-gray-400">
-                        📦
-                      </div>
-                    )}
+                    <img
+                      src={imageSrc}
+                      alt={item.name}
+                      className="h-full w-full object-cover"
+                      loading="lazy"
+                      onError={(e) => {
+                        (e.currentTarget as HTMLImageElement).style.display = 'none';
+                      }}
+                    />
                   </div>
                   <div
                     className={`flex flex-col px-0.5 ${
@@ -485,7 +489,8 @@ export default function VintedHero({
                   </div>
                 </div>
               </Link>
-            ))}
+              );
+            })}
           </div>
         )}
       </div>
