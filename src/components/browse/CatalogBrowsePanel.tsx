@@ -17,6 +17,7 @@ import type { CatalogFilterState } from '@/lib/catalogFilters';
 import { supabase } from '@/lib/supabase';
 import { DEFAULT_FEED_PREFS, loadUserPreferences } from '@/lib/userPreferences';
 import { rankFeedProducts } from '@/lib/feedRanking';
+import { useImmersiveBrowse } from '@/context/ImmersiveBrowseContext';
 
 function sortLabelKey(id: string) {
   if (id === 'price_asc') return 'browse.sort.priceAsc';
@@ -62,7 +63,15 @@ function CatalogBrowsePanelInner({
   const isFeed = variant === 'feed';
   const isSearch = variant === 'search';
   const [feedPrefs, setFeedPrefs] = useState(DEFAULT_FEED_PREFS);
+  const { catalogChromeHidden } = useImmersiveBrowse();
   const { t } = useTranslation();
+
+  const chromeCollapse = cn(
+    'transition-[max-height,opacity,margin] duration-300 ease-out overflow-hidden',
+    catalogChromeHidden
+      ? 'max-h-0 opacity-0 !mb-0 pointer-events-none'
+      : 'max-h-[2400px] opacity-100',
+  );
   const {
     products,
     loading,
@@ -169,31 +178,33 @@ function CatalogBrowsePanelInner({
         setSelectedSort={setSelectedSort}
       />
 
-      {showPersonalization && user ? (
-        <FeedPersonalizationBanner
-          products={catalogProducts}
-          favoriteIds={favorites}
-          preferredCategory={
-            selectedCategory !== 'all' ? t(`browse.categories.${selectedCategory}`) : undefined
-          }
-        />
-      ) : null}
-
-      {isFeed ? (
-        <div className="mb-2 -mx-2 px-2 md:-mx-0 md:px-0">
-          <CategoryQuickChips
-            categories={categories}
-            selectedCategory={selectedCategory}
-            onCategoryChange={setSelectedCategory}
+      <div className={chromeCollapse}>
+        {showPersonalization && user ? (
+          <FeedPersonalizationBanner
+            products={catalogProducts}
+            favoriteIds={favorites}
+            preferredCategory={
+              selectedCategory !== 'all' ? t(`browse.categories.${selectedCategory}`) : undefined
+            }
           />
-        </div>
-      ) : (
-        <div
-          className={cn(
-            'sticky z-40 -mx-2 mb-1.5 border-b border-gray-200/90 bg-white/95 px-2 pt-2 pb-0 backdrop-blur-md supports-[backdrop-filter]:bg-white/80 md:-mx-0 md:px-0 shadow-sm',
-            stickyTopClass,
-          )}
-        >
+        ) : null}
+
+        {isFeed ? (
+          <div className="mb-2 -mx-2 px-2 md:-mx-0 md:px-0">
+            <CategoryQuickChips
+              categories={categories}
+              selectedCategory={selectedCategory}
+              onCategoryChange={setSelectedCategory}
+            />
+          </div>
+        ) : (
+          <div
+            className={cn(
+              'sticky z-40 -mx-2 mb-1.5 border-b border-gray-200/90 bg-white/95 px-2 pt-2 pb-0 backdrop-blur-md supports-[backdrop-filter]:bg-white/80 md:-mx-0 md:px-0 shadow-sm',
+              stickyTopClass,
+              catalogChromeHidden && 'static border-transparent shadow-none',
+            )}
+          >
           <div className="space-y-2.5 pb-2">
             {isSearch ? (
               <BrowseDiscoveryRails
@@ -242,9 +253,15 @@ function CatalogBrowsePanelInner({
             onClearAll={clearAllFilters}
           />
         </div>
-      )}
+        )}
+      </div>
 
-      <p className="mb-2 text-sm tabular-nums text-gray-500">
+      <p
+        className={cn(
+          'mb-2 text-sm tabular-nums text-gray-500 transition-opacity duration-300',
+          catalogChromeHidden && 'max-md:opacity-0 max-md:h-0 max-md:mb-0 overflow-hidden',
+        )}
+      >
         {loading ? t('landing.catalog.loading') : t('landing.catalog.results', { count: catalogProducts.length })}
       </p>
       <ProductGrid

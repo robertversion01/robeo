@@ -7,11 +7,14 @@ import VintedHero from '@/components/home/VintedHero';
 import CatalogBrowsePanel from '@/components/browse/CatalogBrowsePanel';
 import { MAIN_TOP_PADDING } from '@/lib/layoutTokens';
 import { filterProductsWithValidImages } from '@/lib/productImageValidation';
+import { useImmersiveBrowse } from '@/context/ImmersiveBrowseContext';
+import { cn } from '@/lib/utils';
 
 function HomePageContent() {
   const { t } = useTranslation();
   const { allProducts, user } = useProducts();
   const isGuest = !user;
+  const { catalogChromeHidden } = useImmersiveBrowse();
   const heroProducts = useMemo(
     () => filterProductsWithValidImages(allProducts),
     [allProducts],
@@ -41,7 +44,16 @@ function HomePageContent() {
     <div className="landing-page-root min-h-screen max-w-[100vw] overflow-x-hidden bg-white text-gray-900">
       <main className={`w-full max-w-[100vw] overflow-x-hidden ${MAIN_TOP_PADDING} px-2 pb-4 md:px-6`}>
         <div className="mx-auto max-w-7xl">
-          <VintedHero products={heroProducts} compact />
+          <div
+            className={cn(
+              'overflow-hidden transition-[max-height,opacity] duration-300 ease-out',
+              catalogChromeHidden
+                ? 'max-h-0 opacity-0 pointer-events-none'
+                : 'max-h-[320px] opacity-100',
+            )}
+          >
+            <VintedHero products={heroProducts} compact />
+          </div>
           <CatalogBrowsePanel
             browsePath="/"
             stickyTopClass="top-11"

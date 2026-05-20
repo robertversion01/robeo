@@ -8,12 +8,14 @@ import { useTranslation } from 'react-i18next';
 import { supabase } from '@/lib/supabase';
 import { cn } from '@/lib/utils';
 import { FeedNavBadge, MessagesNavBadge } from '@/context/NotificationContext';
+import { useImmersiveBrowse } from '@/context/ImmersiveBrowseContext';
 import { shouldShowMobileBottomNav } from '@/lib/navVisibility';
 
 export default function MobileShellNav() {
   const { t } = useTranslation();
   const pathname = usePathname();
   const [loggedIn, setLoggedIn] = useState<boolean | null>(null);
+  const { shellChromeHidden } = useImmersiveBrowse();
 
   useEffect(() => {
     let cancelled = false;
@@ -113,7 +115,12 @@ export default function MobileShellNav() {
 
   return (
     <nav
-      className="md:hidden fixed bottom-0 left-0 right-0 z-[9980] border-t border-gray-200/90 bg-white/95 backdrop-blur-lg pb-[env(safe-area-inset-bottom,0px)] shadow-[0_-4px_24px_rgba(0,0,0,0.06)]"
+      className={cn(
+        'md:hidden fixed bottom-0 left-0 right-0 z-[9980] border-t pb-[env(safe-area-inset-bottom,0px)] transition-transform duration-300 ease-out will-change-transform',
+        shellChromeHidden
+          ? 'translate-y-full border-transparent bg-transparent shadow-none pointer-events-none'
+          : 'translate-y-0 border-gray-200/90 bg-white/90 backdrop-blur-lg shadow-[0_-4px_24px_rgba(0,0,0,0.06)]',
+      )}
       aria-label={t('nav.home')}
     >
       <div className="mx-auto flex h-[3.75rem] max-w-lg items-stretch justify-around px-1">

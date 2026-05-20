@@ -6,6 +6,7 @@ import { supabase } from '@/lib/supabase';
 import { fetchFollowCounts } from '@/lib/followCounts';
 import { fetchSellerDisplayProfile, getSellerDisplayName } from '@/lib/sellerProfile';
 import FollowSellerButton from '@/components/product/FollowSellerButton';
+import SellerTrustBadges from '@/components/profile/SellerTrustBadges';
 import ProductGrid from '@/components/product/ProductGrid';
 import StarRating from '@/components/review/StarRating';
 import type { Product } from '@/types';
@@ -24,6 +25,7 @@ export default function PublicSellerProfile({ sellerId }: Props) {
   const [followers, setFollowers] = useState(0);
   const [following, setFollowing] = useState(0);
   const [avgRating, setAvgRating] = useState<number | null>(null);
+  const [reviewCount, setReviewCount] = useState(0);
   const [viewerId, setViewerId] = useState<string | null>(null);
   const [favorites, setFavorites] = useState<Set<string>>(new Set());
 
@@ -119,6 +121,13 @@ export default function PublicSellerProfile({ sellerId }: Props) {
               <p className="text-gray-500">{t('publicSeller.products')}</p>
             </div>
           </div>
+
+          <SellerTrustBadges
+            avgRating={avgRating}
+            reviewCount={reviewCount}
+            followers={followers}
+            listingsCount={products.length}
+          />
 
           <div className="mt-4 flex flex-wrap gap-2">
             <FollowSellerButton

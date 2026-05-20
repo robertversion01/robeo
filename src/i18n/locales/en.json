@@ -93,6 +93,9 @@
       "conditionGood": "Good",
       "tip": "Tip: use the Search tab for precise filters — Home feed is personalised."
     },
+    "immersive": {
+      "showFilters": "Filters"
+    },
     "feed": {
       "default": "Fresh listings from the community — browse, filter, save favorites.",
       "favoritesHint": "You have {{count}} favorites — similar items may appear below.",
@@ -248,6 +251,11 @@
       "title": "Privacy",
       "body": "Your profile and listings follow marketplace rules. More controls coming soon."
     }
+  },
+  "sellerTrust": {
+    "noReviews": "No reviews yet",
+    "followers": "{{count}} followers",
+    "listings": "{{count}} listings"
   },
   "sellerEngagement": {
     "title": "Interest in your listings",

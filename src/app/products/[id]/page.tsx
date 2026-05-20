@@ -13,6 +13,7 @@ import ProductImage from '@/components/product/ProductImage';
 import ProductFavoriteButton from '@/components/product/ProductFavoriteButton';
 import ProductShareReportBar from '@/components/product/ProductShareReportBar';
 import OfferModal from '@/components/product/OfferModal';
+import SellerBundleHint from '@/components/product/SellerBundleHint';
 import type { Product } from '@/types';
 import { MAIN_TOP_PADDING, MOBILE_PAGE_BOTTOM_CLASS } from '@/lib/layoutTokens';
 
@@ -364,6 +365,8 @@ export default function ProductPage({ params }: { params: Promise<{ id: string }
               <h1 className="text-xl md:text-2xl font-bold mb-2">{product.name}</h1>
               
               <div className="text-[#007782] font-bold text-2xl mb-3">{product.price.toLocaleString()} Ft</div>
+
+              <SellerBundleHint sellerId={product.user_id} />
               
               <div className="flex flex-wrap gap-2 mb-3">
                 {product.brand && (

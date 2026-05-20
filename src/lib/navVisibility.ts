@@ -78,3 +78,14 @@ export function shouldHideNavbarOnMobileBrowse(
 ): boolean {
   return loggedIn && isBrowseSearchPath(pathname);
 }
+
+/** Immersive böngészés: főoldal feed (bejelentkezve) + keresés tab */
+export function isImmersiveBrowsePath(
+  pathname: string | null,
+  loggedIn: boolean,
+): boolean {
+  if (!pathname) return false;
+  if (pathname.startsWith('/browse')) return true;
+  if (pathname === '/' && loggedIn) return true;
+  return false;
+}

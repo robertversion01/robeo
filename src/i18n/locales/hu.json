@@ -93,6 +93,9 @@
       "conditionGood": "Jó",
       "tip": "Tipp: a Keresés tabon szűrj pontosabban — a főoldalon a feed személyre szabott."
     },
+    "immersive": {
+      "showFilters": "Szűrők"
+    },
     "feed": {
       "default": "Friss hirdetések a közösségtől — böngéssz, szűrj, ments kedvenceket.",
       "favoritesHint": "{{count}} kedvenc terméked van — hasonló ajánlatok a listában.",
@@ -132,6 +135,7 @@
     "favoriteAdd": "Kedvencekhez adás",
     "favoriteRemove": "Eltávolítás a kedvencekből",
     "featured": "Kiemelt",
+    "bundleHint": "Több termék egy eladótól: {{percent}}% kedvezmény {{items}}+ darabnál.",
     "browseCategory": "Több ebben a kategóriában",
     "share": "Megosztás",
     "report": "Jelentés",
@@ -248,6 +252,11 @@
       "title": "Adatvédelem",
       "body": "A profilod és hirdetéseid csak a piactér szabályai szerint láthatók. Részletes beállítások hamarosan."
     }
+  },
+  "sellerTrust": {
+    "noReviews": "Még nincs értékelés",
+    "followers": "{{count}} követő",
+    "listings": "{{count}} hirdetés"
   },
   "sellerEngagement": {
     "title": "Érdeklődés a hirdetéseid iránt",

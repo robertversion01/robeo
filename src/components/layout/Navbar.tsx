@@ -12,6 +12,7 @@ import CatalogSearchBar from '@/components/browse/CatalogSearchBar';
 import LanguageSwitcher from '@/components/home/LanguageSwitcher';
 import type { CatalogFilterState } from '@/lib/catalogFilters';
 import { cn } from '@/lib/utils';
+import { useImmersiveBrowse } from '@/context/ImmersiveBrowseContext';
 import {
   isBrowseSearchPath,
   shouldHideNavbarOnMobileBrowse,
@@ -86,6 +87,7 @@ export default function Navbar({ searchQuery, onSearchChange }: NavbarProps) {
   if (hideOnGuestHome || hideOnAuth) return null;
 
   const loggedIn = Boolean(user);
+  const { shellChromeHidden } = useImmersiveBrowse();
   const hideNavbarOnMobileBrowse = shouldHideNavbarOnMobileBrowse(pathname, loggedIn);
   const mobileMinimalHeader =
     loggedIn &&
@@ -246,9 +248,10 @@ export default function Navbar({ searchQuery, onSearchChange }: NavbarProps) {
   return (
     <nav
       className={cn(
-        'fixed top-0 left-0 right-0 z-[9999] bg-white border-b border-gray-200',
+        'fixed top-0 left-0 right-0 z-[9999] bg-white border-b border-gray-200 transition-transform duration-300 ease-out will-change-transform',
         browsePath && loggedIn ? 'h-10 shadow-none border-gray-100' : 'h-11 shadow-sm',
         hideNavbarOnMobileBrowse && 'max-md:hidden',
+        shellChromeHidden && 'max-md:-translate-y-full max-md:pointer-events-none',
       )}
     >
       {showProfileMenu ? (
