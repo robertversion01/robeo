@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from 'react';
 import Link from 'next/link';
-import { Heart, MessageCircle, Tag } from 'lucide-react';
+import { Heart, MessageCircle, Package, Tag } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 import { supabase } from '@/lib/supabase';
 import type { Product } from '@/types';
@@ -112,6 +112,13 @@ export default function SellerEngagementHub({ products }: Props) {
               >
                 <MessageCircle size={14} />
                 {t('sellerEngagement.sendOffer')}
+              </Link>
+              <Link
+                href={`/messages?product=${row.productId}&template=bundle`}
+                className="inline-flex items-center gap-1 rounded-full border border-[#007782] px-3 py-1.5 text-xs font-semibold text-[#007782] hover:bg-[#007782]/5"
+              >
+                <Package size={14} />
+                {t('sellerEngagement.bundleHint')}
               </Link>
             </div>
           </li>

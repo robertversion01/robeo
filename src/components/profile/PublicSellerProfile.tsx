@@ -6,7 +6,8 @@ import { supabase } from '@/lib/supabase';
 import { fetchFollowCounts } from '@/lib/followCounts';
 import { fetchSellerDisplayProfile, getSellerDisplayName } from '@/lib/sellerProfile';
 import FollowSellerButton from '@/components/product/FollowSellerButton';
-import SellerTrustBadges from '@/components/profile/SellerTrustBadges';
+import SellerTrustPanel from '@/components/profile/SellerTrustPanel';
+import TrustSafetyBlock from '@/components/trust/TrustSafetyBlock';
 import ProductGrid from '@/components/product/ProductGrid';
 import StarRating from '@/components/review/StarRating';
 import type { Product } from '@/types';
@@ -122,12 +123,8 @@ export default function PublicSellerProfile({ sellerId }: Props) {
             </div>
           </div>
 
-          <SellerTrustBadges
-            avgRating={avgRating}
-            reviewCount={reviewCount}
-            followers={followers}
-            listingsCount={products.length}
-          />
+          <SellerTrustPanel sellerId={sellerId} className="mb-3" />
+          <TrustSafetyBlock variant="compact" className="mb-3" />
 
           <div className="mt-4 flex flex-wrap gap-2">
             <FollowSellerButton

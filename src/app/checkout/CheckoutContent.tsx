@@ -8,6 +8,8 @@ import { toast } from 'sonner';
 import { ArrowLeft } from 'lucide-react';
 import ShippingSelector, { type ShippingOption } from '@/components/product/ShippingSelector';
 import CheckoutBuyerProtectionBanner from '@/components/checkout/CheckoutBuyerProtectionBanner';
+import CheckoutBundleNudge from '@/components/checkout/CheckoutBundleNudge';
+import TrustSafetyBlock from '@/components/trust/TrustSafetyBlock';
 import FoxpostTerminalPicker from '@/components/checkout/FoxpostTerminalPicker';
 import { calculateCheckoutTotal } from '@/lib/buyerProtection';
 import type { FoxpostTerminal } from '@/lib/foxpostTerminal';
@@ -344,6 +346,13 @@ export default function CheckoutContent() {
               </div>
 
               <CheckoutBuyerProtectionBanner />
+              <TrustSafetyBlock variant="compact" />
+              {product?.user_id ? (
+                <CheckoutBundleNudge
+                  sellerId={product.user_id}
+                  currentProductId={product.id}
+                />
+              ) : null}
 
               <div className="lg:hidden bg-white border border-gray-200 rounded-xl p-4">
                 {summaryBlock}

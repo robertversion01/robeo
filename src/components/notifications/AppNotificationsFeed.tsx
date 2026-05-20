@@ -25,6 +25,8 @@ type FilterId =
   | 'favorites'
   | 'price_drop'
   | 'followers'
+  | 'bundle'
+  | 'saved_search'
   | 'other';
 
 function formatWhen(iso: string, locale: string) {
@@ -135,6 +137,8 @@ export default function AppNotificationsFeed() {
     { id: 'favorites', label: t('notifications.filterFavorites') },
     { id: 'price_drop', label: t('notifications.filterPriceDrop') },
     { id: 'followers', label: t('notifications.filterFollowers') },
+    { id: 'bundle', label: t('notifications.filterBundle') },
+    { id: 'saved_search', label: t('notifications.filterSavedSearch') },
     { id: 'other', label: t('notifications.filterOther') },
   ];
 

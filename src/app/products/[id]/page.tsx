@@ -14,6 +14,10 @@ import ProductFavoriteButton from '@/components/product/ProductFavoriteButton';
 import ProductShareReportBar from '@/components/product/ProductShareReportBar';
 import OfferModal from '@/components/product/OfferModal';
 import SellerBundleHint from '@/components/product/SellerBundleHint';
+import SellerClosetBundle from '@/components/product/SellerClosetBundle';
+import TrustSafetyBlock from '@/components/trust/TrustSafetyBlock';
+import SellerTrustPanel from '@/components/profile/SellerTrustPanel';
+import BundleOfferModal from '@/components/product/BundleOfferModal';
 import type { Product } from '@/types';
 import { MAIN_TOP_PADDING, MOBILE_PAGE_BOTTOM_CLASS } from '@/lib/layoutTokens';
 
@@ -31,6 +35,8 @@ export default function ProductPage({ params }: { params: Promise<{ id: string }
   // Modal States
   const [showMessageModal, setShowMessageModal] = useState(false);
   const [showOfferModal, setShowOfferModal] = useState(false);
+  const [showBundleOfferModal, setShowBundleOfferModal] = useState(false);
+  const [viewerId, setViewerId] = useState<string | null>(null);
   const [messageText, setMessageText] = useState('');
   const [sendingMessage, setSendingMessage] = useState(false);
   const [acceptedOffer, setAcceptedOffer] = useState<{ id: string; offered_price: number } | null>(null);
@@ -86,6 +92,7 @@ export default function ProductPage({ params }: { params: Promise<{ id: string }
       setSelectedImageIndex(0);
 
       const { data: { user } } = await supabase.auth.getUser();
+      setViewerId(user?.id ?? null);
       if (user?.id) {
         const { data: acceptedOfferData } = await supabase
           .from('offers')
@@ -247,6 +254,14 @@ export default function ProductPage({ params }: { params: Promise<{ id: string }
         productTitle={product?.name || ''}
         originalPrice={product?.price || 0}
       />
+      {viewerId && product?.user_id ? (
+        <BundleOfferModal
+          isOpen={showBundleOfferModal}
+          onClose={() => setShowBundleOfferModal(false)}
+          sellerId={product.user_id}
+          buyerId={viewerId}
+        />
+      ) : null}
 
       {/* Message Modal */}
       {showMessageModal && (
@@ -367,6 +382,14 @@ export default function ProductPage({ params }: { params: Promise<{ id: string }
               <div className="text-[#007782] font-bold text-2xl mb-3">{product.price.toLocaleString()} Ft</div>
 
               <SellerBundleHint sellerId={product.user_id} />
+              <TrustSafetyBlock variant="compact" className="mb-3" />
+              {viewerId && viewerId !== product.user_id ? (
+                <SellerClosetBundle
+                  sellerId={product.user_id}
+                  currentProductId={product.id}
+                  onBundleOffer={() => setShowBundleOfferModal(true)}
+                />
+              ) : null}
               
               <div className="flex flex-wrap gap-2 mb-3">
                 {product.brand && (
@@ -391,6 +414,7 @@ export default function ProductPage({ params }: { params: Promise<{ id: string }
               </div>
 
               <div className="mb-4 rounded-xl border border-gray-200 bg-gray-50 p-3">
+                <SellerTrustPanel sellerId={product.user_id} className="mb-3" />
                 <div className="flex items-center gap-3">
                   <Link
                     href={`/profile/${product.user_id}`}

@@ -87,6 +87,8 @@
     },
     "discovery": {
       "brands": "Népszerű márkák",
+      "sizes": "Méretek",
+      "popular": "Népszerű rendezés",
       "condition": "Állapot szerint",
       "conditionNew": "Új",
       "conditionLikeNew": "Újszerű",
@@ -172,7 +174,14 @@
     "myListings": "Saját hirdetéseim",
     "soldItems": "Eladott termékeim",
     "reviews": "Kapott értékelések",
-    "noReviews": "Még nincs értékelésed."
+    "noReviews": "Még nincs értékelésed.",
+    "marketplace": {
+      "revenue": "Bevétel",
+      "sold": "Eladva",
+      "rating": "Értékelés",
+      "favorites": "Kedvencek a hirdetéseken",
+      "activeListings": "{{count}} aktív hirdetés"
+    }
   },
   "report": {
     "title": "Termék jelentése",
@@ -219,6 +228,8 @@
     "filterFavorites": "Kedvencek",
     "filterPriceDrop": "Árcsökkenés",
     "filterFollowers": "Követők",
+    "filterBundle": "Csomag ajánlat",
+    "filterSavedSearch": "Mentett keresés",
     "filterUnread": "Olvasatlan ({{count}})"
   },
   "settings": {
@@ -256,7 +267,44 @@
   "sellerTrust": {
     "noReviews": "Még nincs értékelés",
     "followers": "{{count}} követő",
-    "listings": "{{count}} hirdetés"
+    "listings": "{{count}} hirdetés",
+    "verified": "Ellenőrzött eladó",
+    "memberSince": "Tag {{date}} óta",
+    "responseFast": "Gyorsan válaszol",
+    "responseNormal": "Aktív eladó",
+    "responseNew": "Új eladó a piactéren"
+  },
+  "trust": {
+    "compactTitle": "Biztonságos vásárlás",
+    "compactBody": "Fizetés védelemmel, biztonságos szállítás, vitás esetben segítünk — mint a nagy piactereken.",
+    "protection": { "title": "Vevővédelem", "body": "A díj biztosítja a vitás ügyintézést és a biztonságos tranzakciót." },
+    "secure": { "title": "Biztonságos fizetés", "body": "A kártyás fizetés Stripe-on keresztül történik." },
+    "shipping": { "title": "Nyomon követhető szállítás", "body": "Foxpost, Packeta vagy házhoz — státusz az üzenetekben." }
+  },
+  "bundle": {
+    "closet": {
+      "title": "Több tétel ettől az eladótól",
+      "hint": "Add hozzá a csomaghoz — kedvezmény több darabnál (ha az eladó bekapcsolta).",
+      "add": "Csomag",
+      "added": "Benne",
+      "summary": "{{count}} tétel · {{percent}}% kedvezmény → {{total}} (megtakarítás {{savings}})",
+      "viewSeller": "Eladó boltja"
+    },
+    "offer": {
+      "title": "Csomag ajánlat",
+      "messageIntro": "Szia! Érdekelne ez a csomag együtt:",
+      "total": "Összesen",
+      "placeholder": "Üzenet az eladónak (opcionális)",
+      "submit": "Ajánlat küldése",
+      "sending": "Küldés…",
+      "sent": "Csomag ajánlat elküldve az üzenetekben.",
+      "failed": "Nem sikerült elküldeni.",
+      "notifyTitle": "Csomag ajánlat",
+      "notifyBody": "{{count}} tételre érkezett ajánlat.",
+      "cta": "Csomag ajánlat"
+    },
+    "checkoutNudge": "Még {{count}} tétel van a csomagodban — akár {{savings}} megtakarítás.",
+    "checkoutNudgeLink": "További hirdetések"
   },
   "sellerEngagement": {
     "title": "Érdeklődés a hirdetéseid iránt",
@@ -265,7 +313,8 @@
     "emptyHint": "Amint valaki szívecskézik, itt látod és ajánlatot küldhetsz.",
     "favorites": "{{count}} kedvenc",
     "viewListing": "Hirdetés",
-    "sendOffer": "Ajánlat / üzenet"
+    "sendOffer": "Ajánlat / üzenet",
+    "bundleHint": "Csomag ajánlat"
   },
   "priceWatch": {
     "title": "Árfigyelő",

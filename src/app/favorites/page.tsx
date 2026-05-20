@@ -11,6 +11,9 @@ import FreshOffersStrip from '@/components/home/FreshOffersStrip';
 import PageHeader from '@/components/layout/PageHeader';
 import FavoritesSortBar, { type FavoritesSortId } from '@/components/favorites/FavoritesSortBar';
 import FavoritePriceWatchPanel from '@/components/favorites/FavoritePriceWatchPanel';
+import TrustSafetyBlock from '@/components/trust/TrustSafetyBlock';
+import { detectPriceDrops } from '@/lib/priceWatch';
+import { notifyPriceDropsIfEnabled } from '@/lib/priceWatchNotify';
 import type { Product } from '@/types';
 import { MAIN_TOP_PADDING, MOBILE_PAGE_BOTTOM_CLASS } from '@/lib/layoutTokens';
 
@@ -44,10 +47,11 @@ export default function FavoritesPage() {
       .eq('user_id', user.id)
       .order('created_at', { ascending: false });
 
+    let fetchedProducts: Product[] = [];
     if (error) {
       console.error(error);
     } else {
-      const fetchedProducts = (((data || []) as FavoriteRow[])
+      fetchedProducts = (((data || []) as FavoriteRow[])
         .map((item) => item?.product)
         .filter(Boolean) as unknown) as Product[];
       setProducts(fetchedProducts);
@@ -55,6 +59,13 @@ export default function FavoritesPage() {
     }
 
     setLoading(false);
+
+    if (user && fetchedProducts.length > 0) {
+      const hits = detectPriceDrops(
+        fetchedProducts.map((p) => ({ id: p.id, name: p.name, price: p.price })),
+      );
+      void notifyPriceDropsIfEnabled(supabase, user.id, hits);
+    }
   };
 
   const sortedProducts = useMemo(() => {
@@ -91,6 +102,7 @@ export default function FavoritesPage() {
       <main className={`${MAIN_TOP_PADDING} pb-20 px-3 md:px-6 md:pb-12`}>
         <div className="max-w-7xl mx-auto">
           <PageHeader title={t('favorites.title')} subtitle={t('favorites.subtitle')} />
+          <TrustSafetyBlock variant="compact" className="mb-4" />
 
           {products.length > 0 ? <FavoritePriceWatchPanel products={products} /> : null}
 

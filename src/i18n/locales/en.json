@@ -87,6 +87,8 @@
     },
     "discovery": {
       "brands": "Popular brands",
+      "sizes": "Sizes",
+      "popular": "Popular sort",
       "condition": "By condition",
       "conditionNew": "New",
       "conditionLikeNew": "Like new",
@@ -135,6 +137,7 @@
     "favoriteAdd": "Add to favorites",
     "favoriteRemove": "Remove from favorites",
     "featured": "Featured",
+    "bundleHint": "Bundle from this seller: {{percent}}% off when buying {{items}}+ items.",
     "browseCategory": "More in this category",
     "share": "Share",
     "report": "Report",
@@ -218,6 +221,8 @@
     "filterFavorites": "Favorites",
     "filterPriceDrop": "Price drops",
     "filterFollowers": "Followers",
+    "filterBundle": "Bundle offers",
+    "filterSavedSearch": "Saved search",
     "filterUnread": "Unread ({{count}})"
   },
   "settings": {
@@ -255,7 +260,44 @@
   "sellerTrust": {
     "noReviews": "No reviews yet",
     "followers": "{{count}} followers",
-    "listings": "{{count}} listings"
+    "listings": "{{count}} listings",
+    "verified": "Verified seller",
+    "memberSince": "Member since {{date}}",
+    "responseFast": "Replies quickly",
+    "responseNormal": "Active seller",
+    "responseNew": "New on marketplace"
+  },
+  "trust": {
+    "compactTitle": "Safe shopping",
+    "compactBody": "Buyer protection, tracked shipping, dispute help — like major marketplaces.",
+    "protection": { "title": "Buyer protection", "body": "Fee covers dispute handling and secure checkout." },
+    "secure": { "title": "Secure payment", "body": "Card payments processed via Stripe." },
+    "shipping": { "title": "Tracked shipping", "body": "Foxpost, Packeta or home delivery — status in messages." }
+  },
+  "bundle": {
+    "closet": {
+      "title": "More from this seller",
+      "hint": "Add to bundle — discount on multiple items when seller enabled it.",
+      "add": "Bundle",
+      "added": "Added",
+      "summary": "{{count}} items · {{percent}}% off → {{total}} (save {{savings}})",
+      "viewSeller": "Seller shop"
+    },
+    "offer": {
+      "title": "Bundle offer",
+      "messageIntro": "Hi! I'm interested in this bundle:",
+      "total": "Total",
+      "placeholder": "Message to seller (optional)",
+      "submit": "Send bundle offer",
+      "sending": "Sending…",
+      "sent": "Bundle offer sent in messages.",
+      "failed": "Could not send.",
+      "notifyTitle": "Bundle offer",
+      "notifyBody": "Offer on {{count}} items.",
+      "cta": "Bundle offer"
+    },
+    "checkoutNudge": "{{count}} more items in your bundle — save up to {{savings}}.",
+    "checkoutNudgeLink": "More listings"
   },
   "sellerEngagement": {
     "title": "Interest in your listings",
@@ -264,7 +306,8 @@
     "emptyHint": "When someone hearts an item, you can react here.",
     "favorites": "{{count}} favorites",
     "viewListing": "Listing",
-    "sendOffer": "Offer / message"
+    "sendOffer": "Offer / message",
+    "bundleHint": "Bundle offer"
   },
   "priceWatch": {
     "title": "Price watch",

@@ -26,6 +26,8 @@ import ProfileSection from '@/components/profile/ProfileSection';
 import ProfileSettingsHub from '@/components/profile/ProfileSettingsHub';
 import ProfileSignOutBar from '@/components/profile/ProfileSignOutBar';
 import SellerEngagementHub from '@/components/seller/SellerEngagementHub';
+import ProfileMarketplaceStats from '@/components/profile/ProfileMarketplaceStats';
+import TrustSafetyBlock from '@/components/trust/TrustSafetyBlock';
 import { useTranslation } from 'react-i18next';
 import { useRouter } from 'next/navigation';
 
@@ -50,6 +52,7 @@ export default function ProfilePage() {
   const [statsTick, setStatsTick] = useState(0);
   const router = useRouter();
   const [activeTab, setActiveTab] = useState<ProfileTabId>('shop');
+  const [listingFavoriteCount, setListingFavoriteCount] = useState(0);
   const shopCount = products.length + soldProducts.length;
 
   const setProfileTab = (tab: ProfileTabId) => {
@@ -138,6 +141,27 @@ export default function ProfilePage() {
       console.error('Error fetching products:', error);
     } finally {
       setLoading(false);
+    }
+  };
+
+  const loadListingFavoriteCount = async (userId: string) => {
+    try {
+      const { data: listingIds } = await supabase
+        .from('products')
+        .select('id')
+        .eq('user_id', userId);
+      const ids = (listingIds || []).map((r) => r.id as string).filter(Boolean);
+      if (ids.length === 0) {
+        setListingFavoriteCount(0);
+        return;
+      }
+      const { count } = await supabase
+        .from('favorites')
+        .select('*', { count: 'exact', head: true })
+        .in('product_id', ids);
+      setListingFavoriteCount(count ?? 0);
+    } catch {
+      setListingFavoriteCount(0);
     }
   };
 
@@ -547,6 +571,15 @@ export default function ProfilePage() {
               reviews: receivedReviews.length,
             }}
           />
+
+          <ProfileMarketplaceStats
+            soldCount={stats.soldProducts}
+            revenue={stats.totalRevenue}
+            rating={stats.averageRating}
+            listingsCount={stats.totalProducts}
+            favoritesOnListings={listingFavoriteCount}
+          />
+          <TrustSafetyBlock variant="compact" className="mb-6" />
 
           {activeTab === 'about' ? (
             <>

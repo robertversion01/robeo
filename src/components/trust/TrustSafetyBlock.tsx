@@ -1,0 +1,53 @@
+'use client';
+
+import { ShieldCheck, Lock, Truck } from 'lucide-react';
+import { useTranslation } from 'react-i18next';
+import { cn } from '@/lib/utils';
+
+type Variant = 'compact' | 'full';
+
+type Props = {
+  variant?: Variant;
+  className?: string;
+};
+
+export default function TrustSafetyBlock({ variant = 'compact', className }: Props) {
+  const { t } = useTranslation();
+
+  const items = [
+    { icon: ShieldCheck, title: t('trust.protection.title'), body: t('trust.protection.body') },
+    { icon: Lock, title: t('trust.secure.title'), body: t('trust.secure.body') },
+    { icon: Truck, title: t('trust.shipping.title'), body: t('trust.shipping.body') },
+  ];
+
+  if (variant === 'compact') {
+    return (
+      <div
+        className={cn(
+          'rounded-xl border border-[#007782]/15 bg-[#007782]/5 px-3 py-2.5 text-xs text-gray-700',
+          className,
+        )}
+      >
+        <p className="font-semibold text-[#007782] mb-1">{t('trust.compactTitle')}</p>
+        <p className="leading-relaxed">{t('trust.compactBody')}</p>
+      </div>
+    );
+  }
+
+  return (
+    <div className={cn('grid gap-2 sm:grid-cols-3', className)}>
+      {items.map((item) => (
+        <div
+          key={item.title}
+          className="rounded-xl border border-gray-200 bg-white p-3 flex gap-2"
+        >
+          <item.icon size={18} className="shrink-0 text-[#007782] mt-0.5" />
+          <div>
+            <p className="text-xs font-semibold text-gray-900">{item.title}</p>
+            <p className="text-[11px] text-gray-600 mt-0.5 leading-relaxed">{item.body}</p>
+          </div>
+        </div>
+      ))}
+    </div>
+  );
+}

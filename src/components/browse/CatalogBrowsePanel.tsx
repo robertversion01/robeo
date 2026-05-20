@@ -18,6 +18,8 @@ import { supabase } from '@/lib/supabase';
 import { DEFAULT_FEED_PREFS, loadUserPreferences } from '@/lib/userPreferences';
 import { rankFeedProducts } from '@/lib/feedRanking';
 import { useImmersiveBrowse } from '@/context/ImmersiveBrowseContext';
+import { listSavedSearchesLocal } from '@/lib/savedSearches';
+import { scanSavedSearchNewMatches } from '@/lib/savedSearchMatcher';
 
 function sortLabelKey(id: string) {
   if (id === 'price_asc') return 'browse.sort.priceAsc';
@@ -112,6 +114,13 @@ function CatalogBrowsePanelInner({
       cancelled = true;
     };
   }, [user, isFeed]);
+
+  useEffect(() => {
+    if (!isSearch || products.length === 0) return;
+    const saved = listSavedSearchesLocal();
+    if (saved.length === 0) return;
+    scanSavedSearchNewMatches(saved, products);
+  }, [isSearch, products, filterKey]);
 
   const catalogProducts = useMemo(() => {
     const base = filterProductsWithValidImages(products);
@@ -210,7 +219,9 @@ function CatalogBrowsePanelInner({
               <BrowseDiscoveryRails
                 browsePath={browsePath}
                 onBrandPick={(brand) => setSelectedBrand(brand)}
+                onSizePick={(size) => setSelectedSize(size)}
                 onConditionPick={(condition) => setSelectedCondition(condition)}
+                onSortPick={(sort) => setSelectedSort(sort)}
               />
             ) : null}
             <CatalogSearchBar

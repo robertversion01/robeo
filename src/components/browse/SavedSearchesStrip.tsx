@@ -16,6 +16,10 @@ import {
   isSavedSearchAlertEnabled,
   setSavedSearchAlertEnabled as persistSavedSearchAlert,
 } from '@/lib/savedSearchAlerts';
+import {
+  clearSavedSearchNewBadge,
+  getSavedSearchNewCount,
+} from '@/lib/savedSearchMatcher';
 
 type Props = {
   filters: CatalogFilterState;
@@ -97,11 +101,20 @@ export default function SavedSearchesStrip({ filters, onApply, hasActiveFilters 
             >
               <button
                 type="button"
-                onClick={() => onApply(item.filters)}
-                className="max-w-[10rem] truncate text-xs font-medium text-gray-800 hover:text-[#007782]"
+                onClick={() => {
+                  clearSavedSearchNewBadge(item.id);
+                  setAlertRevision((n) => n + 1);
+                  onApply(item.filters);
+                }}
+                className="relative max-w-[10rem] truncate text-xs font-medium text-gray-800 hover:text-[#007782] pr-1"
                 title={item.label}
               >
                 {item.label}
+                {getSavedSearchNewCount(item.id) > 0 ? (
+                  <span className="absolute -top-1.5 -right-1 min-w-[16px] h-4 rounded-full bg-[#007782] text-white text-[9px] font-bold flex items-center justify-center px-1">
+                    {getSavedSearchNewCount(item.id)}
+                  </span>
+                ) : null}
               </button>
               <button
                 type="button"
