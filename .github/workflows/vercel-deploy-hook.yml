@@ -1,0 +1,43 @@
+# Fallback: ha a Vercel Git push webhook nem indít buildet, POST-olja a Deploy Hook URL-t.
+# Beállítás: docs/VERCEL_DEPLOY.md → GitHub repo secret: VERCEL_DEPLOY_HOOK_URL
+
+name: Trigger Vercel Deploy
+
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+concurrency:
+  group: vercel-deploy-${{ github.ref }}
+  cancel-in-progress: false
+
+jobs:
+  trigger:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - name: Require deploy hook secret
+        env:
+          HOOK: ${{ secrets.VERCEL_DEPLOY_HOOK_URL }}
+        run: |
+          if [ -z "$HOOK" ]; then
+            echo "::error::VERCEL_DEPLOY_HOOK_URL nincs beállítva. Lásd docs/VERCEL_DEPLOY.md"
+            exit 1
+          fi
+
+      - name: POST Vercel Deploy Hook (production / main)
+        env:
+          HOOK: ${{ secrets.VERCEL_DEPLOY_HOOK_URL }}
+          SHA: ${{ github.sha }}
+          REF: ${{ github.ref_name }}
+        run: |
+          echo "Triggering Vercel deploy for ${REF} @ ${SHA:0:7}"
+          HTTP=$(curl -sS -o /tmp/vercel-hook.json -w "%{http_code}" -X POST "$HOOK")
+          cat /tmp/vercel-hook.json || true
+          echo ""
+          if [ "$HTTP" -lt 200 ] || [ "$HTTP" -ge 300 ]; then
+            echo "::error::Deploy hook failed HTTP $HTTP"
+            exit 1
+          fi
+          echo "Deploy hook accepted (HTTP $HTTP). Ellenőrizd a Vercel Deployments listát."

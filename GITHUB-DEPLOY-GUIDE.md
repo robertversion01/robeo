@@ -69,6 +69,8 @@ Ha a deployment sikeres volt:
 - Később saját domain-t is csatlakoztathatsz
 - Minden új GitHub push automatikusan új deployment-et indít
 
+Ha a push **nem** indít buildet: lásd **[docs/VERCEL_DEPLOY.md](docs/VERCEL_DEPLOY.md)** (production branch `main`, Deploy Hook + GitHub Actions fallback).
+
 ---
 
 ## 🔄 Folyamatos fejlesztés
