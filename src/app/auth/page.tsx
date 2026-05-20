@@ -121,7 +121,7 @@ export default function AuthPage() {
                 required
                 minLength={6}
                 className="w-full min-h-11 px-4 rounded-xl border border-[#2f4a50] bg-[#0f1d21] text-white placeholder:text-gray-400 focus:outline-none focus:ring-1 focus:ring-[#4baab5]"
-                placeholder="••••••••"
+                placeholder={t('auth.passwordPlaceholder')}
               />
             </div>
 

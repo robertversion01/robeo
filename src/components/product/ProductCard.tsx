@@ -3,6 +3,7 @@
 import { useState } from 'react';
 import Link from 'next/link';
 import { Heart } from 'lucide-react';
+import { useTranslation } from 'react-i18next';
 import { cn, formatPrice } from '@/lib/utils';
 import { getOptimizedImageUrl } from '@/lib/imageUtils';
 import { normalizePrimaryProductImageUrl } from '@/lib/productImageValidation';
@@ -16,6 +17,7 @@ interface ProductCardProps {
 }
 
 export default function ProductCard({ product, isFavorite, onToggleFavorite }: ProductCardProps) {
+  const { t } = useTranslation();
   const primaryImage = normalizePrimaryProductImageUrl(product);
   const [imageVisible, setImageVisible] = useState(true);
 
@@ -45,7 +47,7 @@ export default function ProductCard({ product, isFavorite, onToggleFavorite }: P
         />
         {isFeatured ? (
           <span className="pointer-events-none absolute bottom-1 left-1 rounded px-1 py-0.5 text-[9px] font-bold uppercase tracking-wide text-white bg-[#007782] shadow-sm">
-            Kiemelt
+            {t('product.featured')}
           </span>
         ) : null}
       </Link>
@@ -58,7 +60,7 @@ export default function ProductCard({ product, isFavorite, onToggleFavorite }: P
           onToggleFavorite();
         }}
         className="absolute top-0.5 right-0.5 z-50 h-7 w-7 rounded-full bg-white/95 backdrop-blur-sm flex items-center justify-center hover:bg-white active:scale-90 transition-transform shadow-sm border border-gray-200/80"
-        aria-label={isFavorite ? 'Eltávolítás a kedvencekből' : 'Kedvencekhez adás'}
+        aria-label={isFavorite ? t('product.favoriteRemove') : t('product.favoriteAdd')}
       >
         <Heart
           size={14}

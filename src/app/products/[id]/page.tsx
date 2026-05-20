@@ -174,7 +174,7 @@ export default function ProductPage({ params }: { params: Promise<{ id: string }
     }
 
     if (user.id === product.user_id) {
-      toast.error('Nem tehetsz ajánlatot a saját termékedre.');
+      toast.error(t('product.offerOwnProduct'));
       return;
     }
 
@@ -430,7 +430,7 @@ export default function ProductPage({ params }: { params: Promise<{ id: string }
                       return;
                     }
                     if (product.user_id === user.id) {
-                      toast.error('A saját termékedet nem vásárolhatod meg.');
+                      toast.error(t('checkout.errors.ownProduct'));
                       return;
                     }
                     router.push(
@@ -451,7 +451,7 @@ export default function ProductPage({ params }: { params: Promise<{ id: string }
                   </button>
                   <button 
                     onClick={() => {
-                      setMessageText(`Szia! Erdeklodnek a ${product.name} irant.`);
+                      setMessageText(t('product.messagePrefill', { name: product.name }));
                       setShowMessageModal(true);
                     }}
                     className="w-full btn-base btn-secondary"

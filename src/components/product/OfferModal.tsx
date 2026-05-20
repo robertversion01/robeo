@@ -8,6 +8,7 @@ import { isUuid } from '@/lib/validators';
 import { buildOfferInsertRow, formatSupabaseError } from '@/lib/offers';
 import { insertChatSystemMessage } from '@/lib/chatMessages';
 import PriceBreakdown from '@/components/product/PriceBreakdown';
+import { useTranslation } from 'react-i18next';
 
 interface OfferModalProps {
   isOpen: boolean;
@@ -26,6 +27,8 @@ export default function OfferModal({
   productTitle,
   originalPrice,
 }: OfferModalProps) {
+  const { t, i18n } = useTranslation();
+  const priceLocale = i18n.language?.startsWith('en') ? 'en-HU' : 'hu-HU';
   const titleId = useId();
   const onCloseRef = useRef(onClose);
   onCloseRef.current = onClose;
@@ -201,9 +204,9 @@ export default function OfferModal({
 
         <div className="p-4 space-y-4">
           <div className="rounded-xl bg-gray-50 border border-gray-200 p-3">
-            <p className="text-gray-500 text-xs">Listaár</p>
+            <p className="text-gray-500 text-xs">{t('offerModal.listPrice')}</p>
             <p className="text-[#007782] font-bold text-lg tabular-nums">
-              {originalPrice.toLocaleString('hu-HU')} Ft
+              {originalPrice.toLocaleString(priceLocale)} {t('common.currencyHuf')}
             </p>
           </div>
 
@@ -224,7 +227,7 @@ export default function OfferModal({
                 disabled={loading}
               />
               <p className="mt-1.5 text-xs text-gray-500">
-                Legalább {minimumOffer.toLocaleString('hu-HU')} Ft (60% a listaárhoz képest).
+                {t('offerModal.minHint', { min: minimumOffer.toLocaleString(priceLocale) })}
               </p>
 
               <div className="flex gap-2 mt-3">
@@ -244,20 +247,20 @@ export default function OfferModal({
 
             {price > 0 && (
               <div className="rounded-xl border border-gray-200 bg-gray-50/80 p-3">
-                <p className="text-xs font-medium text-gray-600 mb-2">Ha elfogadják — becsült fizetendő</p>
+                <p className="text-xs font-medium text-gray-600 mb-2">{t('offerModal.estimateTitle')}</p>
                 <PriceBreakdown price={price} />
               </div>
             )}
 
             <div>
               <label htmlFor="offer-msg" className="block text-sm font-medium text-gray-700 mb-1.5">
-                Üzenet (opcionális)
+                {t('offerModal.messageLabel')}
               </label>
               <textarea
                 id="offer-msg"
                 value={message}
                 onChange={(e) => setMessage(e.target.value)}
-                placeholder="Pl. szívesen átvenném személyesen…"
+                placeholder={t('offerModal.messagePlaceholder')}
                 rows={3}
                 disabled={loading}
                 className="w-full px-3 py-2.5 rounded-xl bg-white border border-gray-300 focus:border-[#007782] focus:ring-1 focus:ring-[#007782] focus:outline-none transition-colors resize-none text-gray-900 text-sm"
@@ -270,7 +273,7 @@ export default function OfferModal({
               className="w-full py-3 rounded-xl bg-[#007782] hover:bg-[#006670] transition-colors font-semibold flex items-center justify-center gap-2 disabled:opacity-50 disabled:pointer-events-none text-white text-sm"
             >
               <Send size={18} />
-              {loading ? 'Küldés…' : 'Ajánlat elküldése'}
+              {loading ? t('offerModal.sending') : t('offerModal.submit')}
             </button>
           </form>
         </div>

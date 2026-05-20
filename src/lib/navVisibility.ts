@@ -29,7 +29,7 @@ export function shouldShowMobileBottomNav(
 ): boolean {
   if (!pathname || isBottomNavSuppressedPath(pathname)) return false;
   if (!loggedIn) {
-    return pathname === '/' || pathname.startsWith('/browse');
+    return false;
   }
   return true;
 }
@@ -40,4 +40,19 @@ export function shouldPadForMobileBottomNav(
   loggedIn: boolean,
 ): boolean {
   return shouldShowMobileBottomNav(pathname, loggedIn);
+}
+
+/** Fő feed / böngészés — a katalógus saját keresőmezője mobilon */
+export function isCatalogSearchPath(pathname: string | null): boolean {
+  if (!pathname) return false;
+  return pathname === '/' || pathname.startsWith('/browse');
+}
+
+/** Mobil fejléc: profil menü, ha az alsó tab bar már tartalmazza a Profilt */
+export function shouldShowHeaderProfileMenu(
+  pathname: string | null,
+  loggedIn: boolean,
+): boolean {
+  if (!loggedIn) return true;
+  return !shouldShowMobileBottomNav(pathname, loggedIn);
 }

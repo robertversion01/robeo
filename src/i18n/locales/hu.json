@@ -107,6 +107,8 @@
     "buyOfferPrice": "Vásárlás alkudott áron",
     "makeOffer": "Ajánlatot teszek",
     "messageSeller": "Üzenet az eladónak",
+    "messagePrefill": "Szia! Érdeklődöm a {{name}} iránt.",
+    "offerOwnProduct": "Nem tehetsz ajánlatot a saját termékedre.",
     "messageModalTitle": "Üzenet az eladónak",
     "messageModalHint": "Írd meg, mit szeretnél kérdezni a termékről!",
     "messagePlaceholder": "Üzenet szövege…",
@@ -117,6 +119,7 @@
     "messageError": "Hiba történt az üzenet küldése során",
     "favoriteAdd": "Kedvencekhez adás",
     "favoriteRemove": "Eltávolítás a kedvencekből",
+    "featured": "Kiemelt",
     "browseCategory": "Több ebben a kategóriában",
     "share": "Megosztás",
     "report": "Jelentés",
@@ -180,6 +183,10 @@
     "sortPriceAsc": "Legolcsóbb",
     "sortPriceDesc": "Legdrágább",
     "similar": "Hasonló termékek",
+    "discoverTitle": "Friss a piactérről",
+    "discoverHint": "Nem a mentett kedvenceid — új hirdetések felfedezéséhez.",
+    "discoverMore": "Továbbiak",
+    "discoverEmpty": "Jelenleg nincs friss hirdetés.",
     "emptyHint": "Ments el termékeket a szív ikonnal a böngészés során."
   },
   "notifications": {
@@ -237,6 +244,7 @@
     "emailHint": "Regisztráció és belépés e-mail címmel",
     "email": "E-mail cím",
     "password": "Jelszó",
+    "passwordPlaceholder": "••••••••",
     "emailPlaceholder": "pelda@email.com",
     "submitLogin": "Belépés",
     "submitRegister": "Regisztráció",
@@ -332,6 +340,16 @@
     "buyerProtectionLearnMore": "Tudj meg többet a vásárlói védelemről →",
     "shippingMethodLabel": "Szállítási mód",
     "selectShipping": "Válassz szállítási módot a fizetéshez",
+    "selectFoxpost": "Válassz Foxpost automatát a térképen",
+    "foxpost": {
+      "title": "Foxpost automata",
+      "openMap": "Automata kiválasztása térképen",
+      "mapTitle": "Válassz Foxpost automatát",
+      "mapAria": "Foxpost automata térkép",
+      "close": "Bezárás",
+      "changeTerminal": "Másik automata",
+      "terminalId": "Automata ID: {{id}}"
+    },
     "directPurchase": "Közvetlen vásárlás",
     "termsHint": "A fizetés gombra kattintva elfogadod a vásárlási feltételeket.",
     "shippingOptions": {
@@ -349,7 +367,8 @@
       "productNotFound": "A termék nem található vagy már nem elérhető.",
       "ownProduct": "A saját termékedet nem vásárolhatod meg.",
       "missingIds": "Hiányzó azonosítók a fizetéshez.",
-      "paymentFailed": "Hiba történt a fizetés során"
+      "paymentFailed": "Hiba történt a fizetés során",
+      "foxpostRequired": "Foxpost szállításnál kötelező automata választás."
     }
   },
   "uploadWizard": {
@@ -516,6 +535,20 @@
   },
   "common": {
     "loading": "Betöltés…",
-    "currencyHuf": "Ft"
+    "currencyHuf": "Ft",
+    "selectPlaceholder": "Válassz…"
+  },
+  "offerModal": {
+    "listPrice": "Listaár",
+    "priceLabel": "Ajánlott ár (Ft)",
+    "minHint": "Legalább {{min}} Ft (60% a listaárhoz képest).",
+    "estimateTitle": "Ha elfogadják — becsült fizetendő",
+    "messageLabel": "Üzenet (opcionális)",
+    "messagePlaceholder": "Pl. szívesen átvenném személyesen…",
+    "submit": "Ajánlat elküldése",
+    "sending": "Küldés…"
+  },
+  "review": {
+    "commentPlaceholder": "Oszd meg a tapasztalataidat (opcionális)…"
   }
 }

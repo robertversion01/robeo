@@ -4,6 +4,7 @@ import { useState } from 'react';
 import { supabase } from '@/lib/supabase';
 import { toast } from 'sonner';
 import StarRating from './StarRating';
+import { useTranslation } from 'react-i18next';
 
 interface ReviewFormProps {
   reviewedId: string;
@@ -24,6 +25,7 @@ export default function ReviewForm({
   transactionId,
   onComplete,
 }: ReviewFormProps) {
+  const { t } = useTranslation();
   const [rating, setRating] = useState(0);
   const [comment, setComment] = useState('');
   const [loading, setLoading] = useState(false);
@@ -83,7 +85,7 @@ export default function ReviewForm({
         <textarea
           value={comment}
           onChange={(e) => setComment(e.target.value)}
-          placeholder="Oszd meg a tapasztalataidat (opcionális)..."
+          placeholder={t('review.commentPlaceholder')}
           rows={3}
           maxLength={500}
           className="w-full px-4 py-3 bg-white border border-gray-300 rounded-xl focus:outline-none focus:border-[#007782] focus:ring-1 focus:ring-[#007782] transition-all resize-none text-sm"

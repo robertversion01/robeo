@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from 'react';
 import Link from 'next/link';
+import { useTranslation } from 'react-i18next';
 import { supabase } from '@/lib/supabase';
 
 type FreshItem = {
@@ -14,15 +15,21 @@ type FreshItem = {
 
 interface FreshOffersStripProps {
   title?: string;
+  hint?: string;
   className?: string;
 }
 
 export default function FreshOffersStrip({
-  title = 'Friss ajánlatok neked',
+  title,
+  hint,
   className = 'mb-5',
 }: FreshOffersStripProps) {
+  const { t, i18n } = useTranslation();
   const [items, setItems] = useState<FreshItem[]>([]);
   const [loading, setLoading] = useState(true);
+  const locale = i18n.language?.startsWith('en') ? 'en-HU' : 'hu-HU';
+  const resolvedTitle = title ?? t('favorites.discoverTitle');
+  const resolvedHint = hint ?? t('favorites.discoverHint');
 
   useEffect(() => {
     const loadFreshOffers = async () => {
@@ -39,49 +46,55 @@ export default function FreshOffersStrip({
       setLoading(false);
     };
 
-    loadFreshOffers();
+    void loadFreshOffers();
   }, []);
 
   if (loading) return null;
 
   return (
     <section className={className}>
-      <div className="flex items-center justify-between mb-2">
-        <h2 className="text-sm md:text-base font-semibold text-black">{title}</h2>
-        <Link href="/" className="text-xs text-[#007782] hover:underline">
-          Továbbiak
-        </Link>
+      <div className="mb-2">
+        <div className="flex items-center justify-between gap-2">
+          <h2 className="text-sm md:text-base font-semibold text-gray-900">{resolvedTitle}</h2>
+          <Link href="/browse" className="text-xs text-[#007782] hover:underline shrink-0">
+            {t('favorites.discoverMore')}
+          </Link>
+        </div>
+        <p className="text-xs text-gray-500 mt-0.5">{resolvedHint}</p>
       </div>
 
       {items.length === 0 ? (
-        <div className="card-base px-4 py-3 text-sm text-gray-500">
-          Jelenleg nincs elérhető friss ajánlat.
-        </div>
+        <div className="card-base px-4 py-3 text-sm text-gray-500">{t('favorites.discoverEmpty')}</div>
       ) : (
         <div className="flex gap-3 overflow-x-auto pb-2">
-        {items.map((item) => (
-          <Link
-            key={item.id}
-            href={`/products/${item.id}`}
-            className="min-w-[220px] max-w-[220px] card-base p-2.5 hover:border-[#007782]/40 transition-colors"
-          >
-            <div className="flex items-center gap-2.5">
-              <div className="h-14 w-14 bg-gray-100 rounded-lg overflow-hidden shrink-0">
-                {item.image_url ? (
-                  <img src={item.image_url} alt={item.name || 'Termék'} className="h-full w-full object-cover" />
-                ) : (
-                  <div className="h-full w-full flex items-center justify-center text-gray-400">📦</div>
-                )}
+          {items.map((item) => (
+            <Link
+              key={item.id}
+              href={`/products/${item.id}`}
+              className="min-w-[220px] max-w-[220px] card-base p-2.5 hover:border-[#007782]/40 transition-colors"
+            >
+              <div className="flex items-center gap-2.5">
+                <div className="h-14 w-14 bg-gray-100 rounded-lg overflow-hidden shrink-0">
+                  {item.image_url ? (
+                    <img
+                      src={item.image_url}
+                      alt={item.name || t('product.defaultProduct')}
+                      className="h-full w-full object-cover"
+                    />
+                  ) : (
+                    <div className="h-full w-full flex items-center justify-center text-gray-400">📦</div>
+                  )}
+                </div>
+                <div className="min-w-0">
+                  <p className="text-xs text-gray-500 truncate">{item.name || t('product.defaultProduct')}</p>
+                  <p className="text-sm font-semibold text-[#007782] tabular-nums">
+                    {item.price.toLocaleString(locale)} {t('common.currencyHuf')}
+                  </p>
+                </div>
               </div>
-              <div className="min-w-0">
-                <p className="text-xs text-gray-500 truncate">{item.name || 'Termék'}</p>
-                <p className="text-sm font-semibold text-[#007782]">{item.price.toLocaleString('hu-HU')} Ft</p>
-                <p className="text-[11px] text-gray-500">{item.category || 'Egyéb'}</p>
-              </div>
-            </div>
-          </Link>
-        ))}
-      </div>
+            </Link>
+          ))}
+        </div>
       )}
     </section>
   );

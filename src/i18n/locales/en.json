@@ -107,6 +107,8 @@
     "buyOfferPrice": "Buy at offer price",
     "makeOffer": "Make an offer",
     "messageSeller": "Message seller",
+    "messagePrefill": "Hi! I'm interested in {{name}}.",
+    "offerOwnProduct": "You cannot make an offer on your own item.",
     "messageModalTitle": "Message seller",
     "messageModalHint": "Ask the seller about this item.",
     "messagePlaceholder": "Your message…",
@@ -117,6 +119,7 @@
     "messageError": "Could not send message",
     "favoriteAdd": "Add to favorites",
     "favoriteRemove": "Remove from favorites",
+    "featured": "Featured",
     "browseCategory": "More in this category",
     "share": "Share",
     "report": "Report",
@@ -180,6 +183,10 @@
     "sortPriceAsc": "Price: low to high",
     "sortPriceDesc": "Price: high to low",
     "similar": "Similar items",
+    "discoverTitle": "Fresh on the marketplace",
+    "discoverHint": "Not your saved favorites — browse new listings.",
+    "discoverMore": "See more",
+    "discoverEmpty": "No fresh listings right now.",
     "emptyHint": "Tap the heart icon while browsing to save items here."
   },
   "notifications": {
@@ -293,6 +300,7 @@
     "emailHint": "Sign up and log in with email",
     "email": "Email",
     "password": "Password",
+    "passwordPlaceholder": "••••••••",
     "emailPlaceholder": "you@email.com",
     "submitLogin": "Log in",
     "submitRegister": "Sign up",
@@ -388,6 +396,16 @@
     "buyerProtectionLearnMore": "Learn more about buyer protection →",
     "shippingMethodLabel": "Delivery method",
     "selectShipping": "Choose a delivery method to pay",
+    "selectFoxpost": "Pick a Foxpost locker on the map",
+    "foxpost": {
+      "title": "Foxpost locker",
+      "openMap": "Choose locker on map",
+      "mapTitle": "Choose a Foxpost locker",
+      "mapAria": "Foxpost locker map",
+      "close": "Close",
+      "changeTerminal": "Choose another locker",
+      "terminalId": "Locker ID: {{id}}"
+    },
     "directPurchase": "Direct purchase",
     "termsHint": "By paying you accept the purchase terms.",
     "shippingOptions": {
@@ -405,7 +423,8 @@
       "productNotFound": "Product not found or unavailable.",
       "ownProduct": "You cannot buy your own item.",
       "missingIds": "Missing payment identifiers.",
-      "paymentFailed": "Payment failed"
+      "paymentFailed": "Payment failed",
+      "foxpostRequired": "Foxpost delivery requires selecting a locker."
     }
   },
   "uploadWizard": {
@@ -516,6 +535,20 @@
   },
   "common": {
     "loading": "Loading…",
-    "currencyHuf": "Ft"
+    "currencyHuf": "Ft",
+    "selectPlaceholder": "Select…"
+  },
+  "offerModal": {
+    "listPrice": "List price",
+    "priceLabel": "Your offer (Ft)",
+    "minHint": "At least {{min}} Ft (60% of list price).",
+    "estimateTitle": "If accepted — estimated total",
+    "messageLabel": "Message (optional)",
+    "messagePlaceholder": "e.g. happy to pick up in person…",
+    "submit": "Send offer",
+    "sending": "Sending…"
+  },
+  "review": {
+    "commentPlaceholder": "Share your experience (optional)…"
   }
 }

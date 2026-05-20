@@ -31,6 +31,12 @@ export default function GuestLandingHeader() {
           <Search size={16} />
         </button>
         <LanguageSwitcher variant="dark" className="scale-[0.92] sm:scale-100" />
+        <Link
+          href="/auth?view=sign_in"
+          className="inline-flex h-8 items-center rounded-full bg-white/15 px-3 text-xs font-semibold text-white ring-1 ring-white/25 backdrop-blur-sm hover:bg-white/25 touch-manipulation"
+        >
+          {t('nav.login')}
+        </Link>
       </div>
     </header>
   );

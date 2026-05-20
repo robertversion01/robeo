@@ -159,13 +159,15 @@ function CatalogBrowsePanelInner({
         )}
       >
         <div className="space-y-2.5 pb-2">
-          <CatalogSearchBar
-            value={searchQuery}
-            onChange={setSearchQuery}
-            catalogFilters={catalogFilters}
-            maxPriceLimit={maxPriceLimit}
-            browsePath={browsePath}
-          />
+          <div className={user ? 'md:hidden' : ''}>
+            <CatalogSearchBar
+              value={searchQuery}
+              onChange={setSearchQuery}
+              catalogFilters={catalogFilters}
+              maxPriceLimit={maxPriceLimit}
+              browsePath={browsePath}
+            />
+          </div>
           <CategoryQuickChips
             categories={categories}
             selectedCategory={selectedCategory}

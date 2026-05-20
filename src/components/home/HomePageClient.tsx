@@ -5,7 +5,7 @@ import { useTranslation } from 'react-i18next';
 import { useProducts } from '@/hooks/useProducts';
 import VintedHero from '@/components/home/VintedHero';
 import CatalogBrowsePanel from '@/components/browse/CatalogBrowsePanel';
-import { MAIN_TOP_PADDING, MOBILE_PAGE_BOTTOM_CLASS } from '@/lib/layoutTokens';
+import { MAIN_TOP_PADDING } from '@/lib/layoutTokens';
 import { filterProductsWithValidImages } from '@/lib/productImageValidation';
 
 function HomePageContent() {
@@ -22,7 +22,7 @@ function HomePageContent() {
       <div className="landing-page-root min-h-screen max-w-[100vw] overflow-x-hidden bg-white text-gray-900">
         <main className="w-full max-w-[100vw] overflow-x-hidden">
           <VintedHero products={heroProducts} fullScreen />
-          <div className={`landing-catalog mx-auto max-w-7xl px-2 pt-3 md:px-6 md:pt-4 ${MOBILE_PAGE_BOTTOM_CLASS}`}>
+          <div className="landing-catalog mx-auto max-w-7xl px-2 pt-3 pb-6 md:px-6 md:pt-4 md:pb-8">
             <h2 className="mb-2 text-base font-semibold text-gray-900 md:text-lg">
               {t('landing.catalog.title')}
             </h2>

@@ -8,7 +8,9 @@ import { toast } from 'sonner';
 import { ArrowLeft } from 'lucide-react';
 import ShippingSelector, { type ShippingOption } from '@/components/product/ShippingSelector';
 import CheckoutBuyerProtectionBanner from '@/components/checkout/CheckoutBuyerProtectionBanner';
+import FoxpostTerminalPicker from '@/components/checkout/FoxpostTerminalPicker';
 import { calculateCheckoutTotal } from '@/lib/buyerProtection';
+import type { FoxpostTerminal } from '@/lib/foxpostTerminal';
 import { MAIN_TOP_PADDING } from '@/lib/layoutTokens';
 
 const CATEGORY_KEYS: Record<string, string> = {
@@ -26,6 +28,7 @@ export default function CheckoutContent() {
   const [offer, setOffer] = useState<any>(null);
   const [product, setProduct] = useState<any>(null);
   const [shippingMethod, setShippingMethod] = useState('');
+  const [foxpostTerminal, setFoxpostTerminal] = useState<FoxpostTerminal | null>(null);
   const [processingPayment, setProcessingPayment] = useState(false);
   const [isDirectPurchase, setIsDirectPurchase] = useState(false);
   const router = useRouter();
@@ -72,6 +75,10 @@ export default function CheckoutContent() {
     if (offerId) void loadOffer();
     else if (productId) void loadProduct();
   }, [offerId, productId]);
+
+  useEffect(() => {
+    if (shippingMethod !== 'foxpost') setFoxpostTerminal(null);
+  }, [shippingMethod]);
 
   const loadOffer = async () => {
     if (!offerId) return;
@@ -172,6 +179,12 @@ export default function CheckoutContent() {
         throw new Error(t('checkout.errors.missingIds'));
       }
 
+      if (shippingMethod === 'foxpost' && !foxpostTerminal) {
+        toast.error(t('checkout.errors.foxpostRequired'));
+        setProcessingPayment(false);
+        return;
+      }
+
       if (offerId) {
         await supabaseClient
           .from('offers')
@@ -188,6 +201,7 @@ export default function CheckoutContent() {
           buyerId: user.id,
           shippingMethod,
           shippingCost,
+          foxpostTerminal: shippingMethod === 'foxpost' ? foxpostTerminal : null,
         }),
       });
 
@@ -321,6 +335,12 @@ export default function CheckoutContent() {
                   options={shippingOptions}
                   locale={locale}
                 />
+                {shippingMethod === 'foxpost' ? (
+                  <FoxpostTerminalPicker
+                    value={foxpostTerminal}
+                    onChange={setFoxpostTerminal}
+                  />
+                ) : null}
               </div>
 
               <CheckoutBuyerProtectionBanner />

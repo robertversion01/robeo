@@ -2,6 +2,7 @@
 
 import { useCallback, useEffect, useState } from 'react';
 import { MapPin, X } from 'lucide-react';
+import { useTranslation } from 'react-i18next';
 import {
   FOXPOST_APT_FINDER_URL,
   foxpostTerminalAddress,
@@ -18,6 +19,7 @@ type Props = {
 };
 
 export default function FoxpostTerminalPicker({ value, onChange }: Props) {
+  const { t } = useTranslation();
   const [open, setOpen] = useState(false);
 
   const onMessage = useCallback(
@@ -39,19 +41,21 @@ export default function FoxpostTerminalPicker({ value, onChange }: Props) {
 
   return (
     <div className="mt-3 rounded-xl border border-orange-200 bg-orange-50/60 p-3">
-      <p className="text-xs font-semibold text-orange-900 mb-2">Foxpost automata választó</p>
+      <p className="text-xs font-semibold text-orange-900 mb-2">{t('checkout.foxpost.title')}</p>
 
       {value ? (
         <div className="rounded-lg border border-orange-300/80 bg-white p-3 text-sm">
           <p className="font-semibold text-gray-900">{foxpostTerminalLabel(value)}</p>
           <p className="text-gray-600 text-xs mt-1">{foxpostTerminalAddress(value)}</p>
-          <p className="text-[10px] text-gray-400 mt-1 font-mono">ID: {foxpostTerminalId(value)}</p>
+          <p className="text-[10px] text-gray-400 mt-1 font-mono">
+            {t('checkout.foxpost.terminalId', { id: foxpostTerminalId(value) })}
+          </p>
           <button
             type="button"
             onClick={() => onChange(null)}
             className="mt-2 text-xs text-[#007782] font-semibold hover:underline"
           >
-            Másik automata választása
+            {t('checkout.foxpost.changeTerminal')}
           </button>
         </div>
       ) : (
@@ -61,7 +65,7 @@ export default function FoxpostTerminalPicker({ value, onChange }: Props) {
           className="w-full inline-flex items-center justify-center gap-2 rounded-xl bg-[#e85d04] hover:bg-[#d45303] text-white font-semibold py-3 text-sm transition-colors"
         >
           <MapPin size={18} />
-          Foxpost Automata Választó
+          {t('checkout.foxpost.openMap')}
         </button>
       )}
 
@@ -70,22 +74,22 @@ export default function FoxpostTerminalPicker({ value, onChange }: Props) {
           className="fixed inset-0 z-[20000] flex items-center justify-center bg-black/50 p-2 sm:p-4"
           role="dialog"
           aria-modal="true"
-          aria-label="Foxpost automata térkép"
+          aria-label={t('checkout.foxpost.mapAria')}
         >
           <div className="relative w-full max-w-5xl h-[85vh] bg-white rounded-2xl shadow-2xl overflow-hidden flex flex-col">
             <div className="flex items-center justify-between px-4 py-3 border-b border-gray-200 shrink-0">
-              <h3 className="font-bold text-gray-900">Válassz Foxpost automatát</h3>
+              <h3 className="font-bold text-gray-900">{t('checkout.foxpost.mapTitle')}</h3>
               <button
                 type="button"
                 onClick={() => setOpen(false)}
                 className="p-2 rounded-full hover:bg-gray-100"
-                aria-label="Bezárás"
+                aria-label={t('checkout.foxpost.close')}
               >
                 <X size={20} />
               </button>
             </div>
             <iframe
-              title="Foxpost automata térkép"
+              title={t('checkout.foxpost.mapAria')}
               src={FOXPOST_APT_FINDER_URL}
               className="flex-1 w-full border-0"
               allow="geolocation"

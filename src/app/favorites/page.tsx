@@ -87,7 +87,7 @@ export default function FavoritesPage() {
 
   return (
     <div className="min-h-screen bg-white text-gray-900">
-      <main className={`${MAIN_TOP_PADDING} ${MOBILE_PAGE_BOTTOM_CLASS} px-3 md:px-6`}>
+      <main className={`${MAIN_TOP_PADDING} pb-20 px-3 md:px-6 md:pb-12`}>
         <div className="max-w-7xl mx-auto">
           <PageHeader title={t('favorites.title')} subtitle={t('favorites.subtitle')} />
 
@@ -121,7 +121,7 @@ export default function FavoritesPage() {
             />
           )}
 
-          <FreshOffersStrip title={t('favorites.similar')} className="mt-10" />
+          <FreshOffersStrip className="mt-10" />
         </div>
       </main>
     </div>
