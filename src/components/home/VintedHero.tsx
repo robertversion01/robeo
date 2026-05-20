@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useMemo, useRef } from 'react';
+import { useEffect, useMemo, useRef, type CSSProperties } from 'react';
 import Link from 'next/link';
 import { motion, useReducedMotion } from 'framer-motion';
 import { useTranslation } from 'react-i18next';
@@ -41,21 +41,33 @@ const TILE_HEIGHTS = [
   'h-[9rem] sm:h-[9.75rem] md:h-[10.75rem] lg:h-[11.75rem] xl:h-[12.75rem]',
 ];
 
-const FLOAT_SECONDS = 7.5;
-const COLUMN_TRAVEL = [92, 108, 96, 112, 100, 104];
+const FLOAT_SECONDS_BASE = 4.8;
+const COLUMN_TRAVEL_PX = [118, 136, 124, 142, 128, 132];
+
+function isNonEmptyImageUrl(value: unknown): value is string {
+  return typeof value === 'string' && value.trim().length > 0;
+}
+
+/** Csak image_url vagy images[0] esetén kerülhet a hero poolba */
+function hasHeroImage(product: Product): boolean {
+  if (isNonEmptyImageUrl(product.image_url)) return true;
+  return Array.isArray(product.images) && isNonEmptyImageUrl(product.images[0]);
+}
 
 function primaryImageUrl(product: Product): string | null {
-  return (
-    product.image_url ||
-    (Array.isArray(product.images) && product.images.length > 0 ? product.images[0] : null) ||
-    null
-  );
+  if (isNonEmptyImageUrl(product.image_url)) return product.image_url.trim();
+  if (Array.isArray(product.images) && isNonEmptyImageUrl(product.images[0])) {
+    return product.images[0].trim();
+  }
+  return null;
 }
 
 function collectImageUrls(product: HeroProduct): string[] {
   const urls: string[] = [];
   const push = (url: string | null | undefined) => {
-    if (url && !urls.includes(url)) urls.push(url);
+    if (!isNonEmptyImageUrl(url)) return;
+    const trimmed = url.trim();
+    if (!urls.includes(trimmed)) urls.push(trimmed);
   };
   push(product.image_url);
   if (Array.isArray(product.images)) {
@@ -65,7 +77,7 @@ function collectImageUrls(product: HeroProduct): string[] {
 }
 
 function getFeaturedProducts(products: Product[]): HeroProduct[] {
-  const withImages = products.filter((product) => Boolean(primaryImageUrl(product))) as HeroProduct[];
+  const withImages = products.filter(hasHeroImage) as HeroProduct[];
   const now = Date.now();
   return withImages.filter(
     (product) =>
@@ -74,15 +86,16 @@ function getFeaturedProducts(products: Product[]): HeroProduct[] {
   );
 }
 
-/** Egyedi termékek poolja — max 64, kiemeltek elöl */
+/** Egyedi termékek poolja — max 64, csak képes hirdetések */
 function buildHeroProductPool(products: Product[]): HeroProduct[] {
-  const withImages = products.filter((product) => Boolean(primaryImageUrl(product))) as HeroProduct[];
-  const featured = getFeaturedProducts(withImages);
+  const withImages = products.filter(hasHeroImage) as HeroProduct[];
+  const featured = getFeaturedProducts(products);
   const pool: HeroProduct[] = [];
   const seen = new Set<string>();
 
   for (const product of [...featured, ...withImages]) {
     if (seen.has(product.id)) continue;
+    if (!hasHeroImage(product)) continue;
     seen.add(product.id);
     pool.push(product);
     if (pool.length >= LANDING_HERO_POOL_MAX) break;
@@ -98,7 +111,9 @@ function buildHeroTiles(pool: HeroProduct[]): HeroTile[] {
   const tiles: HeroTile[] = [];
 
   for (const product of pool) {
+    if (!hasHeroImage(product)) continue;
     const urls = collectImageUrls(product);
+    if (urls.length === 0) continue;
     const cap = Math.max(1, Math.min(3, urls.length));
     for (let i = 0; i < cap; i += 1) {
       tiles.push({
@@ -201,23 +216,26 @@ function FloatingMasonryColumn({
   reducedMotion: boolean;
   hiddenClass?: string;
 }) {
-  const direction = colIndex % 2 === 0 ? 1 : -1;
-  const travel = COLUMN_TRAVEL[colIndex % COLUMN_TRAVEL.length];
+  const travel = COLUMN_TRAVEL_PX[colIndex % COLUMN_TRAVEL_PX.length];
+  const duration = FLOAT_SECONDS_BASE + colIndex * 0.35;
+  const floatClass =
+    reducedMotion || tiles.length === 0
+      ? ''
+      : colIndex % 2 === 0
+        ? 'landing-masonry-float-up'
+        : 'landing-masonry-float-down';
 
   return (
-    <motion.div
-      className={`landing-masonry-column flex min-h-0 flex-col gap-0.5 sm:gap-1 md:gap-1.5 ${hiddenClass ?? ''}`}
-      initial={false}
-      animate={reducedMotion ? undefined : { y: direction > 0 ? [0, -travel] : [-travel, 0] }}
-      transition={
+    <div
+      className={`landing-masonry-column flex min-h-0 flex-col gap-0.5 sm:gap-1 md:gap-1.5 ${floatClass} ${hiddenClass ?? ''}`}
+      style={
         reducedMotion
           ? undefined
-          : {
-              duration: FLOAT_SECONDS + colIndex * 0.45,
-              repeat: Infinity,
-              repeatType: 'reverse',
-              ease: 'linear',
-            }
+          : ({
+              '--landing-float-travel': `${travel}px`,
+              '--landing-float-duration': `${duration}s`,
+              animationDelay: `${colIndex * 0.55}s`,
+            } as CSSProperties)
       }
     >
       {tiles.map((tile, idx) => (
@@ -225,18 +243,18 @@ function FloatingMasonryColumn({
           key={tile.tileKey}
           tile={tile}
           heightClass={TILE_HEIGHTS[(idx + colIndex) % TILE_HEIGHTS.length]}
-          priority={colIndex < 2 && idx < 3}
+          priority={colIndex < 3 && idx < 3}
         />
       ))}
-    </motion.div>
+    </div>
   );
 }
 
-function columnVisibilityClass(colIndex: number): string | undefined {
+function columnVisibilityClass(colIndex: number): string {
   if (colIndex >= 5) return 'hidden xl:flex';
   if (colIndex >= 4) return 'hidden lg:flex';
   if (colIndex >= 3) return 'hidden md:flex';
-  return undefined;
+  return 'flex';
 }
 
 export default function VintedHero({

@@ -383,6 +383,46 @@ input, textarea, select {
 
 .landing-masonry-column {
   will-change: transform;
+  transform: translate3d(0, 0, 0);
+  backface-visibility: hidden;
+}
+
+@keyframes landingMasonryFloatUp {
+  0% {
+    transform: translate3d(0, 0, 0);
+  }
+  100% {
+    transform: translate3d(0, calc(-1 * var(--landing-float-travel, 118px)), 0);
+  }
+}
+
+@keyframes landingMasonryFloatDown {
+  0% {
+    transform: translate3d(0, calc(-1 * var(--landing-float-travel, 118px)), 0);
+  }
+  100% {
+    transform: translate3d(0, 0, 0);
+  }
+}
+
+.landing-masonry-float-up {
+  animation: landingMasonryFloatUp var(--landing-float-duration, 4.8s) linear infinite alternate;
+  -webkit-animation: landingMasonryFloatUp var(--landing-float-duration, 4.8s) linear infinite
+    alternate;
+}
+
+.landing-masonry-float-down {
+  animation: landingMasonryFloatDown var(--landing-float-duration, 5.2s) linear infinite alternate;
+  -webkit-animation: landingMasonryFloatDown var(--landing-float-duration, 5.2s) linear infinite
+    alternate;
+}
+
+@media (max-width: 767px) {
+  .landing-masonry-float-up,
+  .landing-masonry-float-down {
+    animation-duration: calc(var(--landing-float-duration, 4.8s) * 0.82);
+    -webkit-animation-duration: calc(var(--landing-float-duration, 4.8s) * 0.82);
+  }
 }
 
 .landing-hero-tile {
@@ -410,7 +450,9 @@ input, textarea, select {
     animation: none;
   }
 
-  .landing-masonry-column {
-    transform: none !important;
+  .landing-masonry-float-up,
+  .landing-masonry-float-down {
+    animation: none !important;
+    -webkit-animation: none !important;
   }
 }
