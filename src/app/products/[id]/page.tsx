@@ -11,9 +11,10 @@ import { getOptimizedImageUrl, shouldLazyLoad } from '@/lib/imageUtils';
 import { getValidProductImageUrls } from '@/lib/productImageValidation';
 import ProductImage from '@/components/product/ProductImage';
 import ProductFavoriteButton from '@/components/product/ProductFavoriteButton';
+import ProductShareReportBar from '@/components/product/ProductShareReportBar';
 import OfferModal from '@/components/product/OfferModal';
 import type { Product } from '@/types';
-import { MAIN_TOP_PADDING } from '@/lib/layoutTokens';
+import { MAIN_TOP_PADDING, MOBILE_PAGE_BOTTOM_CLASS } from '@/lib/layoutTokens';
 
 export default function ProductPage({ params }: { params: Promise<{ id: string }> }) {
   const { id } = use(params);
@@ -150,6 +151,7 @@ export default function ProductPage({ params }: { params: Promise<{ id: string }
       toast.success(t('product.messageSent'));
       setMessageText('');
       setShowMessageModal(false);
+      router.push(`/messages?with=${product.user_id}`);
     } catch (error) {
       console.error(error);
       toast.error(t('product.messageError'));
@@ -279,7 +281,7 @@ export default function ProductPage({ params }: { params: Promise<{ id: string }
         </div>
       )}
 
-      <main className={`${MAIN_TOP_PADDING} pb-24 px-0 md:px-6`}>
+      <main className={`${MAIN_TOP_PADDING} ${MOBILE_PAGE_BOTTOM_CLASS} px-0 md:px-6`}>
         <Link href="/browse" className="inline-flex items-center gap-2 text-gray-500 hover:text-gray-900 mb-3 transition-colors px-3 md:px-0 md:mb-6">
           ← {t('product.backToBrowse')}
         </Link>
@@ -300,6 +302,11 @@ export default function ProductPage({ params }: { params: Promise<{ id: string }
                   loading="eager"
                   className={`w-full h-full object-cover transition-transform duration-300 ${isZoomed ? 'scale-150' : 'scale-100'}`}
                   onError={() => markGalleryUrlFailed(activeImage)}
+                />
+                <ProductShareReportBar
+                  productId={product.id}
+                  productName={product.name}
+                  className="absolute top-3 left-3 z-10"
                 />
                 <ProductFavoriteButton
                   productId={product.id}

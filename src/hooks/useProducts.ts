@@ -214,29 +214,33 @@ export function useProducts() {
     return () => window.removeEventListener(CATALOG_UPDATED_EVENT, onCatalogRefresh);
   }, [fetchProducts]);
 
-  useEffect(() => {
-    const onProductChange = () => {
-      void fetchProducts();
-    };
+  const fetchProductsRef = useRef(fetchProducts);
+  fetchProductsRef.current = fetchProducts;
 
-    const channel = supabase
-      .channel('catalog-products')
-      .on(
-        'postgres_changes',
-        { event: 'INSERT', schema: 'public', table: 'products' },
-        onProductChange,
-      )
-      .on(
-        'postgres_changes',
-        { event: 'UPDATE', schema: 'public', table: 'products' },
-        onProductChange,
-      )
-      .subscribe();
+  useEffect(() => {
+    const channelName = `catalog-products-${Math.random().toString(36).slice(2)}`;
+
+    const channel = supabase.channel(channelName);
+    channel.on(
+      'postgres_changes',
+      { event: 'INSERT', schema: 'public', table: 'products' },
+      () => {
+        void fetchProductsRef.current();
+      },
+    );
+    channel.on(
+      'postgres_changes',
+      { event: 'UPDATE', schema: 'public', table: 'products' },
+      () => {
+        void fetchProductsRef.current();
+      },
+    );
+    channel.subscribe();
 
     return () => {
       void supabase.removeChannel(channel);
     };
-  }, [fetchProducts]);
+  }, []);
 
   const checkUserAndFavorites = async () => {
     try {

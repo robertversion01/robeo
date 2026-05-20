@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from 'react';
 import { Heart } from 'lucide-react';
+import { useTranslation } from 'react-i18next';
 import { useRouter } from 'next/navigation';
 import { supabase } from '@/lib/supabase';
 import { cn } from '@/lib/utils';
@@ -12,6 +13,7 @@ type Props = {
 };
 
 export default function ProductFavoriteButton({ productId, className }: Props) {
+  const { t } = useTranslation();
   const router = useRouter();
   const [isFavorite, setIsFavorite] = useState(false);
   const [loading, setLoading] = useState(true);
@@ -75,7 +77,7 @@ export default function ProductFavoriteButton({ productId, className }: Props) {
       onClick={() => void toggle()}
       disabled={loading}
       aria-pressed={isFavorite}
-      aria-label={isFavorite ? 'Remove from favorites' : 'Add to favorites'}
+      aria-label={isFavorite ? t('product.favoriteRemove') : t('product.favoriteAdd')}
       className={cn(
         'inline-flex h-10 w-10 items-center justify-center rounded-full border bg-white/95 shadow-sm backdrop-blur-sm transition-colors',
         isFavorite

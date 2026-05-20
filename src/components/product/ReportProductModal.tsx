@@ -2,16 +2,11 @@
 
 import { useState } from 'react';
 import { X, Flag } from 'lucide-react';
+import { useTranslation } from 'react-i18next';
 import { supabase } from '@/lib/supabase';
 import { toast } from 'sonner';
 
 export type ReportReason = 'spam' | 'counterfeit' | 'prohibited';
-
-const REASONS: { id: ReportReason; label: string }[] = [
-  { id: 'spam', label: 'Spam / átverés' },
-  { id: 'counterfeit', label: 'Hamisítvány' },
-  { id: 'prohibited', label: 'Tiltott termék' },
-];
 
 type Props = {
   productId: string;
@@ -21,9 +16,16 @@ type Props = {
 };
 
 export default function ReportProductModal({ productId, productName, open, onClose }: Props) {
+  const { t } = useTranslation();
   const [reason, setReason] = useState<ReportReason>('spam');
   const [details, setDetails] = useState('');
   const [submitting, setSubmitting] = useState(false);
+
+  const reasons: { id: ReportReason; labelKey: string }[] = [
+    { id: 'spam', labelKey: 'report.reasonSpam' },
+    { id: 'counterfeit', labelKey: 'report.reasonCounterfeit' },
+    { id: 'prohibited', labelKey: 'report.reasonProhibited' },
+  ];
 
   if (!open) return null;
 
@@ -34,7 +36,7 @@ export default function ReportProductModal({ productId, productName, open, onClo
         data: { user },
       } = await supabase.auth.getUser();
       if (!user) {
-        toast.error('Jelentkezz be a bejelentéshez.');
+        toast.error(t('report.loginRequired'));
         return;
       }
 
@@ -47,11 +49,11 @@ export default function ReportProductModal({ productId, productName, open, onClo
       });
 
       if (error) throw error;
-      toast.success('Köszönjük — a bejelentést megkaptuk.');
+      toast.success(t('report.success'));
       onClose();
       setDetails('');
     } catch (e) {
-      toast.error(e instanceof Error ? e.message : 'Bejelentés sikertelen.');
+      toast.error(e instanceof Error ? e.message : t('report.submit'));
     } finally {
       setSubmitting(false);
     }
@@ -68,7 +70,7 @@ export default function ReportProductModal({ productId, productName, open, onClo
         <div className="flex items-center justify-between border-b border-gray-200 px-4 py-3">
           <h2 id="report-modal-title" className="font-bold text-gray-900 flex items-center gap-2">
             <Flag size={18} className="text-red-500" />
-            Termék jelentése
+            {t('report.title')}
           </h2>
           <button type="button" onClick={onClose} className="p-2 rounded-full hover:bg-gray-100">
             <X size={18} />
@@ -82,9 +84,9 @@ export default function ReportProductModal({ productId, productName, open, onClo
 
           <fieldset className="space-y-2">
             <legend className="text-xs font-semibold text-gray-700 uppercase tracking-wide">
-              Ok
+              {t('report.reasonLegend')}
             </legend>
-            {REASONS.map((r) => (
+            {reasons.map((r) => (
               <label
                 key={r.id}
                 className={`flex items-center gap-2 rounded-lg border px-3 py-2 text-sm cursor-pointer ${
@@ -101,19 +103,19 @@ export default function ReportProductModal({ productId, productName, open, onClo
                   onChange={() => setReason(r.id)}
                   className="text-[#007782]"
                 />
-                {r.label}
+                {t(r.labelKey)}
               </label>
             ))}
           </fieldset>
 
           <label className="block text-sm text-gray-700">
-            Részletek (opcionális)
+            {t('report.details')}
             <textarea
               value={details}
               onChange={(e) => setDetails(e.target.value)}
               rows={3}
               className="mt-1 w-full rounded-lg border border-gray-300 px-3 py-2 text-sm"
-              placeholder="Miért gyanús ez a hirdetés?"
+              placeholder={t('report.detailsPlaceholder')}
             />
           </label>
 
@@ -123,7 +125,7 @@ export default function ReportProductModal({ productId, productName, open, onClo
               onClick={onClose}
               className="flex-1 rounded-xl border border-gray-300 py-2.5 text-sm font-semibold text-gray-700"
             >
-              Mégse
+              {t('report.cancel')}
             </button>
             <button
               type="button"
@@ -131,7 +133,7 @@ export default function ReportProductModal({ productId, productName, open, onClo
               onClick={() => void submit()}
               className="flex-1 rounded-xl bg-red-600 hover:bg-red-700 disabled:opacity-60 py-2.5 text-sm font-semibold text-white"
             >
-              {submitting ? 'Küldés…' : 'Bejelentés'}
+              {submitting ? t('report.submitting') : t('report.submit')}
             </button>
           </div>
         </div>

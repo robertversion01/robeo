@@ -18,6 +18,7 @@
   "nav": {
     "home": "Home",
     "search": "Search",
+    "browse": "Browse",
     "favorites": "Favorites",
     "upload": "List item",
     "messages": "Inbox",
@@ -100,6 +101,8 @@
     "condition": "Condition",
     "seller": "Seller",
     "viewSeller": "View seller profile",
+    "available": "Available",
+    "sold": "Sold",
     "buy": "Buy now",
     "buyOfferPrice": "Buy at offer price",
     "makeOffer": "Make an offer",
@@ -114,7 +117,57 @@
     "messageError": "Could not send message",
     "favoriteAdd": "Add to favorites",
     "favoriteRemove": "Remove from favorites",
-    "browseCategory": "More in this category"
+    "browseCategory": "More in this category",
+    "share": "Share",
+    "report": "Report",
+    "shareCopied": "Link copied to clipboard",
+    "shareFailed": "Could not share"
+  },
+  "profile": {
+    "title": "My profile",
+    "memberSince": "Member since {{date}}",
+    "productCount": "{{count}} items",
+    "tabs": {
+      "shop": "Shop",
+      "reviews": "Reviews",
+      "about": "About"
+    },
+    "stats": {
+      "revenue": "Total revenue",
+      "sold": "Items sold",
+      "listings": "Active listings",
+      "rating": "Rating"
+    },
+    "deleteListing": "Delete",
+    "deleteAll": "Delete all",
+    "promoteHero": "Feature on homepage",
+    "promoted": "Featured",
+    "promoting": "Redirecting…",
+    "emptyListings": "No listings yet.",
+    "uploadFirst": "List your first item",
+    "emptySold": "No sold items yet.",
+    "adminTitle": "Admin",
+    "transactions": "My transactions",
+    "incomingOffers": "Incoming offers",
+    "sentOffers": "Sent offers",
+    "myListings": "My listings",
+    "soldItems": "Sold items",
+    "reviews": "Reviews received",
+    "noReviews": "No reviews yet."
+  },
+  "report": {
+    "title": "Report item",
+    "reasonLegend": "Reason",
+    "reasonSpam": "Spam / scam",
+    "reasonCounterfeit": "Counterfeit",
+    "reasonProhibited": "Prohibited item",
+    "details": "Details (optional)",
+    "detailsPlaceholder": "Why is this listing suspicious?",
+    "cancel": "Cancel",
+    "submit": "Report",
+    "submitting": "Sending…",
+    "success": "Thanks — we received your report.",
+    "loginRequired": "Log in to report."
   },
   "favorites": {
     "title": "Favorites",
@@ -122,10 +175,12 @@
     "count": "{{count}} favorite items",
     "empty": "No favorites yet.",
     "browse": "Browse catalog",
+    "sortLabel": "Sort",
     "sortNewest": "Newest",
     "sortPriceAsc": "Price: low to high",
     "sortPriceDesc": "Price: high to low",
-    "similar": "Similar items"
+    "similar": "Similar items",
+    "emptyHint": "Tap the heart icon while browsing to save items here."
   },
   "notifications": {
     "title": "Notifications",
@@ -137,7 +192,8 @@
     "filterAll": "All",
     "filterOffers": "Offers",
     "filterSales": "Sales",
-    "filterOther": "Other"
+    "filterOther": "Other",
+    "filterUnread": "Unread ({{count}})"
   },
   "messages": {
     "offersTitle": "Incoming offers",
@@ -146,18 +202,311 @@
     "selectConversation": "Select a conversation",
     "placeholder": "Write a message…",
     "makeOffer": "Make an offer",
-    "payLink": "Proceed to payment"
+    "payLink": "Proceed to payment",
+    "offerModalTitle": "Send offer",
+    "cancel": "Cancel",
+    "send": "Send",
+    "sending": "Sending…",
+    "loadingProduct": "Loading product…",
+    "offerMinHint": "At least {{min}} Ft (~60% of list price).",
+    "offerMinDefault": "Minimum follows the current list price.",
+    "amountPlaceholder": "Amount (Ft)",
+    "offerNoProduct": "No product found for this conversation.",
+    "offerBadIds": "Invalid IDs — offer cannot be sent.",
+    "offerInvalidAmount": "Enter a valid amount.",
+    "offerMinError": "Minimum offer: {{min}} Ft",
+    "offerDuplicate": "You already have an active offer for this item.",
+    "offerSent": "Offer sent.",
+    "offerFailed": "Failed to send offer: {{msg}}",
+    "uploadImage": "Upload image",
+    "counterOffer": "Counter-offer received — conversation updated.",
+    "defaultUser": "User",
+    "productContextLabel": "Product in conversation",
+    "viewProduct": "View",
+    "defaultProduct": "Product",
+    "imagePreview": "Image",
+    "back": "Back",
+    "chatImageAlt": "Attached image",
+    "noProductContext": "No product linked to this conversation.",
+    "sendAria": "Send message",
+    "offersCollapsible": "Incoming offers"
+  },
+  "offersList": {
+    "emptyTitle": "No incoming offers yet.",
+    "emptyHint": "When someone makes an offer, it will appear here.",
+    "listPrice": "list price:",
+    "counterPlaceholder": "Counter-offer (Ft)",
+    "counterBtn": "Counter",
+    "accept": "Accept",
+    "reject": "Decline",
+    "counteredHint": "The buyer must accept your counter-offer before payment.",
+    "acceptedHint": "Buyer receives the payment link in chat",
+    "rejectConfirm": "Decline this offer? The buyer will be notified in messages.",
+    "loginRequired": "Log in to manage offers.",
+    "errorPrefix": "Error: {{msg}}",
+    "unknownError": "Unknown error",
+    "acceptedToast": "Offer accepted — buyer sees it in messages.",
+    "rejectedToast": "Offer declined — buyer has been notified.",
+    "acceptedWarn": "Offer accepted, but chat notification failed: {{msg}}",
+    "rejectedWarn": "Offer declined, but chat notification failed: {{msg}}",
+    "counterInvalid": "Enter a valid counter-offer amount.",
+    "counterMin": "Minimum counter-offer: {{min}} Ft (at least 60% of list price).",
+    "counterSent": "Counter-offer sent — buyer sees it in messages.",
+    "counterWarn": "Counter-offer saved, but chat notification failed: {{msg}}",
+    "status": {
+      "pending": "Pending — action required",
+      "accepted": "Accepted",
+      "rejected": "Declined",
+      "countered": "Counter-offer sent",
+      "payment_pending": "Payment in progress",
+      "payment_completed": "Paid",
+      "completed": "Closed",
+      "cancelled": "Withdrawn"
+    }
+  },
+  "chatTransaction": {
+    "orderStatus": "Order status:",
+    "orderLabel": "Order:",
+    "downloadLabel": "Download shipping label",
+    "markShipped": "Mark as shipped",
+    "labelDownloaded": "Foxpost label downloaded. You can now mark as shipped.",
+    "downloadLabelFirst": "Download the shipping label first.",
+    "shippedSuccess": "Marked as shipped — carrier simulation started.",
+    "updateFailed": "Could not update.",
+    "stepHint": "Step 1: download the Foxpost label. Then “Mark as shipped” unlocks.",
+    "simulating": "Carrier simulation in progress… Buyer is notified at each step.",
+    "defaultProduct": "Product"
+  },
+  "publicSeller": {
+    "defaultName": "Seller",
+    "followers": "Followers",
+    "following": "Following",
+    "products": "Listings",
+    "emptyListings": "No active listings.",
+    "refresh": "Refresh",
+    "ownProfileLink": "My profile settings →",
+    "listingsTitle": "Seller listings"
+  },
+  "auth": {
+    "loginTitle": "Log in",
+    "registerTitle": "Sign up",
+    "emailHint": "Sign up and log in with email",
+    "email": "Email",
+    "password": "Password",
+    "emailPlaceholder": "you@email.com",
+    "submitLogin": "Log in",
+    "submitRegister": "Sign up",
+    "processing": "Please wait…",
+    "noAccount": "Don't have an account?",
+    "hasAccount": "Already have an account?",
+    "switchRegister": "Sign up",
+    "switchLogin": "Log in",
+    "successLogin": "Logged in successfully!",
+    "successRegister": "Account created!",
+    "errors": {
+      "generic": "Something went wrong",
+      "emailNotConfirmed": "Confirm your email before logging in.",
+      "invalidCredentials": "Invalid email or password.",
+      "invalidEmail": "Enter a valid email address.",
+      "passwordShort": "Password must be at least 6 characters.",
+      "userExists": "This email is already registered.",
+      "rateLimit": "Too many requests. Try again later."
+    }
+  },
+  "upload": {
+    "title": "List an item",
+    "subtitle": "Sell your pre-loved items to the community",
+    "name": "Item name",
+    "namePlaceholder": "e.g. Nike Air Max 270",
+    "description": "Description",
+    "descriptionPlaceholder": "Condition, size, details…",
+    "price": "Price (Ft)",
+    "pricePlaceholder": "15000",
+    "category": "Category",
+    "categoryPlaceholder": "Choose category",
+    "brand": "Brand",
+    "brandPlaceholder": "Choose brand",
+    "size": "Size",
+    "sizePlaceholder": "Choose size",
+    "condition": "Condition",
+    "conditionPlaceholder": "Choose condition",
+    "conditions": {
+      "new": "New",
+      "excellent": "Excellent",
+      "good": "Good",
+      "fair": "Fair",
+      "poor": "Poor"
+    },
+    "images": "Photos",
+    "imagesCount": "{{count}}/6",
+    "tapToSelect": "Tap to add photos",
+    "imagesHintFirst": "First photo becomes the cover (PNG, JPG, WEBP)",
+    "imagesHintMore": "Add more photos",
+    "submit": "Publish listing",
+    "submitting": "Uploading…",
+    "maxImages": "Maximum {{max}} photos allowed.",
+    "notImage": "\"{{name}}\" is not an image file.",
+    "remainingImages": "Only {{count}} more photo(s) can be added.",
+    "loginRequired": "Please log in first.",
+    "brandSizeRequired": "Brand and size are required.",
+    "success": "Listing published!",
+    "error": "Upload failed."
+  },
+  "checkoutSuccess": {
+    "title": "Purchase successful!",
+    "purchasedItem": "Purchased item:",
+    "timelineTitle": "Order timeline",
+    "stepPaid": "Payment completed",
+    "stepPaidHint": "Funds are held securely until the item arrives.",
+    "stepShip": "Seller ships item",
+    "stepShipHint": "The seller will ship your item soon.",
+    "stepDelivery": "Delivery",
+    "stepDeliveryHint": "Your item is on its way.",
+    "trackHint": "Track details in your inbox.",
+    "viewMessages": "View messages",
+    "backHome": "Back to home",
+    "toastSuccess": "Purchase successful! Your order is recorded.",
+    "errorTitle": "Something went wrong",
+    "missingId": "Missing transaction ID",
+    "notFound": "Transaction not found"
   },
   "checkout": {
     "title": "Checkout",
     "back": "Back",
     "buyerProtection": "Buyer protection",
+    "buyerProtectionHint": "If the item does not arrive or does not match the description, you get a full refund.",
+    "summary": "Summary",
     "payNow": "Pay now",
+    "payButton": "Pay {{total}} Ft",
+    "redirecting": "Redirecting…",
     "processing": "Processing…",
     "total": "Total",
     "itemPrice": "Item price",
-    "shipping": "Shipping",
-    "protectionFee": "Buyer protection"
+    "shippingFee": "Shipping",
+    "protectionFee": "Buyer protection fee",
+    "protectionFeeTooltip": "5% of item price, min 200 Ft, max 5000 Ft — funds are held in escrow until you receive the parcel.",
+    "buyerProtectionLearnMore": "Learn more about buyer protection →",
+    "shippingMethodLabel": "Delivery method",
+    "selectShipping": "Choose a delivery method to pay",
+    "directPurchase": "Direct purchase",
+    "termsHint": "By paying you accept the purchase terms.",
+    "shippingOptions": {
+      "foxpost": "Foxpost locker",
+      "packeta": "Packeta pickup point",
+      "home": "Home delivery",
+      "foxpostDays": "2–3 business days",
+      "packetaDays": "2–4 business days",
+      "homeDays": "1–2 business days"
+    },
+    "errors": {
+      "offerNotFound": "Offer not found or no longer available.",
+      "offerNotAccepted": "Only accepted offers can be paid.",
+      "productMissing": "Product for this offer is missing.",
+      "productNotFound": "Product not found or unavailable.",
+      "ownProduct": "You cannot buy your own item.",
+      "missingIds": "Missing payment identifiers.",
+      "paymentFailed": "Payment failed"
+    }
+  },
+  "uploadWizard": {
+    "title": "List an item",
+    "subtitle": "Step by step — your draft is saved automatically",
+    "stepOf": "Step {{current}} of {{total}}",
+    "back": "Back",
+    "next": "Next",
+    "cancel": "Cancel",
+    "publish": "Publish",
+    "clearDraft": "Clear draft",
+    "draftRestored": "Draft restored (please re-select photos).",
+    "draftCleared": "Draft cleared.",
+    "photosHint": "The first photo is the cover. Up to 6 photos.",
+    "steps": {
+      "photos": "Photos",
+      "category": "Category",
+      "brand": "Brand",
+      "condition": "Condition",
+      "price": "Price",
+      "details": "Details"
+    },
+    "errors": {
+      "photosRequired": "Add at least one photo.",
+      "categoryRequired": "Choose a category.",
+      "sizeRequired": "Choose a size.",
+      "brandRequired": "Choose a brand.",
+      "conditionRequired": "Choose a condition.",
+      "priceRequired": "Enter a valid price.",
+      "nameRequired": "Enter the item title.",
+      "descriptionRequired": "Add a description."
+    }
+  },
+  "orders": {
+    "title": "Order history",
+    "subtitle": "Your purchases and sales",
+    "purchases": "Purchases",
+    "sales": "Sales",
+    "viewAll": "All orders",
+    "emptyPurchases": "No purchases yet.",
+    "emptySales": "No sales yet.",
+    "browse": "Browse catalog",
+    "salesHint": "After payment, mark the parcel as shipped in messages or here.",
+    "confirmHint": "Some orders await pickup confirmation — confirm in messages when received.",
+    "status": {
+      "paymentPending": "Awaiting payment",
+      "paymentFailed": "Payment failed",
+      "paid": "Paid",
+      "shipped": "Shipped",
+      "inTransit": "In transit",
+      "readyForPickup": "Ready for pickup",
+      "completed": "Completed",
+      "refunded": "Refunded",
+      "unknown": "Unknown"
+    }
+  },
+  "help": {
+    "title": "Help",
+    "subtitle": "Quick answers and support",
+    "quickTitle": "How can we help?",
+    "quickSubtitle": "Safe buying, shipping, and contacting sellers.",
+    "browseCta": "Start browsing",
+    "sections": {
+      "protectionTitle": "Buyer protection",
+      "protectionBody": "Funds are held in escrow until you receive the item. Report issues in messages.",
+      "shippingTitle": "Shipping",
+      "shippingBody": "Foxpost, Packeta, or home delivery at checkout. Track status in messages and order history.",
+      "faqTitle": "FAQ"
+    },
+    "entries": {
+      "contactSeller": {
+        "title": "Contact seller",
+        "desc": "Send a message from the product page, then continue in Messages.",
+        "action": "Find items"
+      },
+      "buyerProtection": {
+        "title": "Buyer protection",
+        "desc": "5% fee, min 200 Ft — details at checkout."
+      },
+      "shipping": {
+        "title": "Delivery options",
+        "desc": "Locker, pickup point, or home — chosen at checkout."
+      },
+      "orders": {
+        "title": "Order history",
+        "desc": "Purchases and sales with status, date, and amount."
+      },
+      "faq": {
+        "title": "FAQ",
+        "desc": "Common questions and answers."
+      },
+      "support": {
+        "title": "Customer support",
+        "desc": "Email us for technical issues."
+      }
+    },
+    "faq": {
+      "q1": { "q": "How do I pay safely?", "a": "Checkout uses Stripe with buyer protection." },
+      "q2": { "q": "How do I sell?", "a": "Upload menu → step-by-step wizard → publish." },
+      "q3": { "q": "Where are my orders?", "a": "Profile → About, or the Order history page." }
+    }
   },
   "notFound": {
     "title": "Page not found",
@@ -166,6 +515,7 @@
     "browse": "Browse catalog"
   },
   "common": {
-    "loading": "Loading…"
+    "loading": "Loading…",
+    "currencyHuf": "Ft"
   }
 }

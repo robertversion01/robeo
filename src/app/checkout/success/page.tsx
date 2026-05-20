@@ -7,11 +7,13 @@ import Link from 'next/link';
 import { CheckCircle, ArrowRight, Truck, Package, CreditCard } from 'lucide-react';
 import dynamic from 'next/dynamic';
 import { toast } from 'sonner';
+import { useTranslation } from 'react-i18next';
 import ReviewForm from '@/components/review/ReviewForm';
 import { MAIN_TOP_PADDING } from '@/lib/layoutTokens';
 import { revalidateCatalog } from '@/app/actions/revalidateCatalog';
 import { notifyCatalogUpdated } from '@/lib/catalogRefresh';
 import { emitSaleCompletedBroadcast } from '@/lib/globalEvents';
+import { formatPrice } from '@/lib/utils';
 
 const CheckoutSuccessContent = dynamic(() => Promise.resolve(CheckoutSuccessContentComponent), {
   ssr: false,
@@ -22,6 +24,7 @@ export default function CheckoutSuccessPage() {
 }
 
 function CheckoutSuccessContentComponent() {
+  const { t } = useTranslation();
   const searchParams = useSearchParams();
   const router = useRouter();
 
@@ -40,7 +43,7 @@ function CheckoutSuccessContentComponent() {
     const sessionId = searchParams.get('session_id');
     const transactionId = searchParams.get('transaction_id');
     if (!sessionId && !transactionId) {
-      setError('Hiányzó tranzakció azonosító');
+      setError(t('checkoutSuccess.missingId'));
       setLoading(false);
       return;
     }
@@ -61,7 +64,7 @@ function CheckoutSuccessContentComponent() {
         const { data: transactionData, error: transactionError } = await query.single();
 
         if (transactionError || !transactionData) {
-          throw new Error('Transaction not found');
+          throw new Error(t('checkoutSuccess.notFound'));
         }
 
         const { data: productData, error: productError } = await supabase
@@ -71,7 +74,7 @@ function CheckoutSuccessContentComponent() {
           .single();
 
         if (productError || !productData) {
-          throw new Error('Product not found for transaction');
+          throw new Error(t('checkoutSuccess.notFound'));
         }
 
         setTransaction({ ...transactionData, product: productData });
@@ -106,12 +109,12 @@ function CheckoutSuccessContentComponent() {
         }
 
         if (!purchaseToastShown) {
-          toast.success('Sikeres vásárlás! A rendelésed rögzítve lett.');
+          toast.success(t('checkoutSuccess.toastSuccess'));
           setPurchaseToastShown(true);
         }
       } catch (err: unknown) {
         console.error('Error fetching transaction details:', err);
-        const message = err instanceof Error ? err.message : 'An error occurred';
+        const message = err instanceof Error ? err.message : t('auth.errors.generic');
         setError(message);
       } finally {
         setLoading(false);
@@ -119,7 +122,7 @@ function CheckoutSuccessContentComponent() {
     };
 
     void fetchTransactionDetails();
-  }, [searchParams, router, purchaseToastShown]);
+  }, [searchParams, router, purchaseToastShown, t]);
 
   if (loading) {
     return (
@@ -133,14 +136,14 @@ function CheckoutSuccessContentComponent() {
     return (
       <div className="min-h-screen bg-white text-gray-900 flex flex-col items-center justify-center p-4">
         <div className="max-w-md w-full bg-white rounded-lg p-6 shadow-lg border border-gray-200 text-center">
-          <h1 className="text-xl font-bold mb-4">Hiba történt</h1>
+          <h1 className="text-xl font-bold mb-4">{t('checkoutSuccess.errorTitle')}</h1>
           <p className="text-gray-600 mb-6">{error}</p>
           <button
             type="button"
             onClick={goToHome}
             className="inline-flex items-center justify-center btn-base btn-primary"
           >
-            Vissza a főoldalra
+            {t('checkoutSuccess.backHome')}
           </button>
         </div>
       </div>
@@ -154,11 +157,11 @@ function CheckoutSuccessContentComponent() {
           <div className="bg-white rounded-lg p-6 shadow-lg border border-gray-200">
             <div className="flex items-center justify-center mb-6">
               <CheckCircle className="text-green-500 mr-2" size={28} />
-              <h1 className="text-xl font-bold">Sikeres vásárlás!</h1>
+              <h1 className="text-xl font-bold">{t('checkoutSuccess.title')}</h1>
             </div>
 
             <div className="mb-6 p-4 bg-gray-50 rounded-lg border border-gray-200">
-              <p className="text-sm text-gray-600 mb-1">Vásárolt termék:</p>
+              <p className="text-sm text-gray-600 mb-1">{t('checkoutSuccess.purchasedItem')}</p>
               {product && (
                 <div className="flex items-center">
                   <div className="w-16 h-16 rounded-md overflow-hidden mr-3 bg-gray-100 flex-shrink-0">
@@ -176,24 +179,22 @@ function CheckoutSuccessContentComponent() {
                   </div>
                   <div>
                     <h3 className="font-medium text-gray-900">{product.name}</h3>
-                    <p className="text-accent font-bold">{product.price.toLocaleString()} Ft</p>
+                    <p className="text-accent font-bold">{formatPrice(product.price)}</p>
                   </div>
                 </div>
               )}
             </div>
 
             <div className="mb-6">
-              <h2 className="text-lg font-semibold mb-3">Fizetési folyamat</h2>
+              <h2 className="text-lg font-semibold mb-3">{t('checkoutSuccess.timelineTitle')}</h2>
               <div className="space-y-4">
                 <div className="flex items-start">
                   <div className="bg-green-100 p-2 rounded-full mr-3">
                     <CreditCard className="text-green-600" size={18} />
                   </div>
                   <div>
-                    <h3 className="font-medium text-gray-900">Fizetés megtörtént</h3>
-                    <p className="text-sm text-gray-600">
-                      A pénz biztonságos letétben van, amíg a termék meg nem érkezik.
-                    </p>
+                    <h3 className="font-medium text-gray-900">{t('checkoutSuccess.stepPaid')}</h3>
+                    <p className="text-sm text-gray-600">{t('checkoutSuccess.stepPaidHint')}</p>
                   </div>
                 </div>
 
@@ -202,8 +203,8 @@ function CheckoutSuccessContentComponent() {
                     <Package className="text-gray-500" size={18} />
                   </div>
                   <div>
-                    <h3 className="font-medium text-gray-900">Termék feladása</h3>
-                    <p className="text-sm text-gray-600">Az eladó hamarosan feladja a terméket.</p>
+                    <h3 className="font-medium text-gray-900">{t('checkoutSuccess.stepShip')}</h3>
+                    <p className="text-sm text-gray-600">{t('checkoutSuccess.stepShipHint')}</p>
                   </div>
                 </div>
 
@@ -212,17 +213,15 @@ function CheckoutSuccessContentComponent() {
                     <Truck className="text-gray-500" size={18} />
                   </div>
                   <div>
-                    <h3 className="font-medium text-gray-900">Szállítás</h3>
-                    <p className="text-sm text-gray-600">A termék úton van hozzád.</p>
+                    <h3 className="font-medium text-gray-900">{t('checkoutSuccess.stepDelivery')}</h3>
+                    <p className="text-sm text-gray-600">{t('checkoutSuccess.stepDeliveryHint')}</p>
                   </div>
                 </div>
               </div>
             </div>
 
             <div className="text-center space-y-3">
-              <p className="text-sm text-gray-600">
-                A vásárlás részleteit és a szállítás állapotát az üzenetekben követheted nyomon.
-              </p>
+              <p className="text-sm text-gray-600">{t('checkoutSuccess.trackHint')}</p>
               {transaction && product && !reviewCompleted ? (
                 <div className="text-left">
                   <ReviewForm
@@ -240,7 +239,7 @@ function CheckoutSuccessContentComponent() {
                   href="/messages"
                   className="inline-flex items-center justify-center btn-base btn-primary"
                 >
-                  Üzenetek megtekintése
+                  {t('checkoutSuccess.viewMessages')}
                   <ArrowRight size={16} className="ml-1" />
                 </Link>
                 <button
@@ -248,7 +247,7 @@ function CheckoutSuccessContentComponent() {
                   onClick={goToHome}
                   className="inline-flex items-center justify-center btn-base btn-secondary"
                 >
-                  Vissza a főoldalra
+                  {t('checkoutSuccess.backHome')}
                 </button>
               </div>
             </div>

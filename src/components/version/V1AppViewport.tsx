@@ -3,17 +3,27 @@
 import { useEffect, useState } from 'react';
 import { usePathname } from 'next/navigation';
 import Navbar from '@/components/layout/Navbar';
-import BottomNav from '@/components/layout/BottomNav';
+import MobileShellNav from '@/components/layout/MobileShellNav';
 import { NotificationProvider } from '@/context/NotificationContext';
 import { supabase } from '@/lib/supabase';
 import { cn } from '@/lib/utils';
 
 const MOBILE_BOTTOM_NAV_PAD =
-  'pb-[calc(3.75rem+env(safe-area-inset-bottom,0px))] md:pb-0';
+  'pb-[calc(6.25rem+env(safe-area-inset-bottom,0px))] md:pb-0';
 
 function bottomNavSuppressedPath(pathname: string | null) {
   if (!pathname) return false;
-  return pathname === '/auth' || pathname.startsWith('/messages');
+  return (
+    pathname === '/auth' ||
+    pathname.startsWith('/messages') ||
+    pathname.startsWith('/checkout') ||
+    pathname.startsWith('/upload')
+  );
+}
+
+function guestNeedsBottomPad(pathname: string | null) {
+  if (!pathname) return false;
+  return pathname !== '/' && !pathname.startsWith('/auth');
 }
 
 /** Next.js (v1) felület: meglévő nav + tartalom + alsó nav. */
@@ -41,7 +51,9 @@ export default function V1AppViewport({ children }: { children: React.ReactNode 
     };
   }, []);
 
-  const showMobileBottomPad = loggedIn && !bottomNavSuppressedPath(pathname);
+  const showMobileBottomPad =
+    !bottomNavSuppressedPath(pathname) &&
+    (loggedIn || guestNeedsBottomPad(pathname));
 
   return (
     <NotificationProvider>
@@ -51,7 +63,7 @@ export default function V1AppViewport({ children }: { children: React.ReactNode 
       >
         {children}
       </div>
-      <BottomNav />
+      <MobileShellNav />
     </NotificationProvider>
   );
 }

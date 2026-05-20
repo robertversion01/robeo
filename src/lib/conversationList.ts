@@ -42,6 +42,7 @@ export function buildConversationsFromMessages(
   messages: MessageRow[],
   myUserId: string,
   emailByUserId: Map<string, string>,
+  defaultUserLabel = 'User',
 ): ConversationRow[] {
   const convMap = new Map<string, MessageRow>();
 
@@ -55,7 +56,7 @@ export function buildConversationsFromMessages(
 
   const list: ConversationRow[] = Array.from(convMap.entries()).map(([user_id, msg]) => ({
     user_id,
-    email: emailByUserId.get(user_id) || 'Felhasználó',
+    email: emailByUserId.get(user_id) || defaultUserLabel,
     last_message: formatConversationPreview(msg),
     last_message_time: msg.created_at,
     product_id: msg.product_id ?? null,

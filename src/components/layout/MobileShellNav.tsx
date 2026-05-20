@@ -1,0 +1,175 @@
+'use client';
+
+import { useEffect, useState } from 'react';
+import Link from 'next/link';
+import { usePathname } from 'next/navigation';
+import { Home, MessageCircle, Search, User, Plus, LogIn, Bell } from 'lucide-react';
+import { useTranslation } from 'react-i18next';
+import { supabase } from '@/lib/supabase';
+import { cn } from '@/lib/utils';
+import { FeedNavBadge, MessagesNavBadge } from '@/context/NotificationContext';
+
+const AUTH_PATHS = ['/auth', '/login', '/register'];
+
+function isAuthPath(pathname: string) {
+  return AUTH_PATHS.some((p) => pathname === p || pathname.startsWith(`${p}/`));
+}
+
+export default function MobileShellNav() {
+  const { t } = useTranslation();
+  const pathname = usePathname();
+  const [loggedIn, setLoggedIn] = useState<boolean | null>(null);
+
+  useEffect(() => {
+    let cancelled = false;
+    const sync = async () => {
+      const {
+        data: { user },
+      } = await supabase.auth.getUser();
+      if (!cancelled) setLoggedIn(!!user);
+    };
+    sync();
+    const {
+      data: { subscription },
+    } = supabase.auth.onAuthStateChange((_event, session) => {
+      setLoggedIn(!!session?.user);
+    });
+    return () => {
+      cancelled = true;
+      subscription.unsubscribe();
+    };
+  }, []);
+
+  if (loggedIn === null) return null;
+  if (isAuthPath(pathname)) return null;
+  if (loggedIn && pathname.startsWith('/messages')) return null;
+  if (pathname.startsWith('/checkout') || pathname.startsWith('/upload')) return null;
+
+  if (!loggedIn) {
+    return (
+      <nav
+        className="md:hidden fixed bottom-0 left-0 right-0 z-[9980] border-t border-gray-200/90 bg-white/95 backdrop-blur-lg pb-[env(safe-area-inset-bottom,0px)] shadow-[0_-4px_24px_rgba(0,0,0,0.06)]"
+        aria-label={t('nav.home')}
+      >
+        <div className="mx-auto flex h-[3.75rem] max-w-lg items-stretch justify-around px-1">
+          <Link
+            href="/"
+            className={cn(
+              'flex min-w-0 flex-1 flex-col items-center justify-center gap-0.5 py-1',
+              pathname === '/' ? 'text-[#007782]' : 'text-gray-500',
+            )}
+          >
+            <Home size={22} />
+            <span className="text-[10px] font-semibold">{t('nav.home')}</span>
+          </Link>
+          <Link
+            href="/browse"
+            className={cn(
+              'flex min-w-0 flex-1 flex-col items-center justify-center gap-0.5 py-1',
+              pathname.startsWith('/browse') ? 'text-[#007782]' : 'text-gray-500',
+            )}
+          >
+            <Search size={22} />
+            <span className="text-[10px] font-semibold">{t('nav.search')}</span>
+          </Link>
+          <Link
+            href="/auth?view=sign_in"
+            className={cn(
+              'flex min-w-0 flex-1 flex-col items-center justify-center gap-0.5 py-1',
+              pathname.startsWith('/auth') ? 'text-[#007782]' : 'text-gray-500',
+            )}
+          >
+            <LogIn size={22} />
+            <span className="text-[10px] font-semibold">{t('nav.login')}</span>
+          </Link>
+        </div>
+      </nav>
+    );
+  }
+
+  const items = [
+    { href: '/', labelKey: 'nav.home', Icon: Home, match: (p: string) => p === '/' },
+    {
+      href: '/browse',
+      labelKey: 'nav.search',
+      Icon: Search,
+      match: (p: string) => p.startsWith('/browse'),
+    },
+    {
+      href: '/upload',
+      labelKey: 'nav.upload',
+      Icon: Plus,
+      center: true,
+      match: (p: string) => p.startsWith('/upload'),
+    },
+    {
+      href: '/messages',
+      labelKey: 'nav.messages',
+      Icon: MessageCircle,
+      match: (p: string) => p.startsWith('/messages'),
+      messagesBadge: true,
+    },
+    {
+      href: '/profile',
+      labelKey: 'nav.profile',
+      Icon: User,
+      match: (p: string) => p.startsWith('/profile'),
+    },
+  ] as const;
+
+  return (
+    <nav
+      className="md:hidden fixed bottom-0 left-0 right-0 z-[9980] border-t border-gray-200/90 bg-white/95 backdrop-blur-lg pb-[env(safe-area-inset-bottom,0px)] shadow-[0_-4px_24px_rgba(0,0,0,0.06)]"
+      aria-label={t('nav.home')}
+    >
+      <div className="mx-auto flex h-[3.75rem] max-w-lg items-stretch justify-around px-1">
+        {items.map((item) => {
+          const active = item.match(pathname);
+          const label = t(item.labelKey);
+
+          if ('center' in item && item.center) {
+            return (
+              <Link
+                key={item.href}
+                href={item.href}
+                aria-label={label}
+                className="flex min-w-0 flex-1 flex-col items-center justify-center"
+              >
+                <span className="flex h-11 w-11 items-center justify-center rounded-full bg-[#007782] text-white shadow-md">
+                  <item.Icon size={24} strokeWidth={2.25} />
+                </span>
+              </Link>
+            );
+          }
+
+          return (
+            <Link
+              key={item.href}
+              href={item.href}
+              className={cn(
+                'relative flex min-w-0 flex-1 flex-col items-center justify-center gap-0.5 py-1',
+                active ? 'text-[#007782]' : 'text-gray-500',
+              )}
+            >
+              <item.Icon size={22} strokeWidth={active ? 2.25 : 1.85} />
+              {'messagesBadge' in item && item.messagesBadge ? (
+                <MessagesNavBadge className="top-0 right-[calc(50%-22px)]" />
+              ) : null}
+              <span className="text-[10px] font-semibold leading-none">{label}</span>
+            </Link>
+          );
+        })}
+      </div>
+      <div className="flex justify-center border-t border-gray-100 py-1">
+        <Link
+          href="/notifications"
+          className="relative inline-flex items-center gap-1.5 rounded-full px-3 py-1 text-[10px] font-semibold text-gray-600 hover:bg-gray-50"
+        >
+          <Bell size={14} className="shrink-0" />
+          {t('nav.notifications')}
+          <FeedNavBadge className="top-0 right-1 h-2 w-2" />
+        </Link>
+      </div>
+    </nav>
+  );
+}

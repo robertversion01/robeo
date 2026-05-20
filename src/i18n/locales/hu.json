@@ -18,6 +18,7 @@
   "nav": {
     "home": "Főoldal",
     "search": "Keresés",
+    "browse": "Böngészés",
     "favorites": "Kedvencek",
     "upload": "Feltöltés",
     "messages": "Üzenetek",
@@ -100,6 +101,8 @@
     "condition": "Állapot",
     "seller": "Eladó",
     "viewSeller": "Eladó profilja",
+    "available": "Elérhető",
+    "sold": "Eladva",
     "buy": "Vásárlás",
     "buyOfferPrice": "Vásárlás alkudott áron",
     "makeOffer": "Ajánlatot teszek",
@@ -114,7 +117,57 @@
     "messageError": "Hiba történt az üzenet küldése során",
     "favoriteAdd": "Kedvencekhez adás",
     "favoriteRemove": "Eltávolítás a kedvencekből",
-    "browseCategory": "Több ebben a kategóriában"
+    "browseCategory": "Több ebben a kategóriában",
+    "share": "Megosztás",
+    "report": "Jelentés",
+    "shareCopied": "Link a vágólapra másolva",
+    "shareFailed": "Megosztás sikertelen"
+  },
+  "profile": {
+    "title": "Profilom",
+    "memberSince": "Tag {{date}} óta",
+    "productCount": "{{count}} termék",
+    "tabs": {
+      "shop": "Bolt",
+      "reviews": "Értékelések",
+      "about": "Rólam"
+    },
+    "stats": {
+      "revenue": "Összes bevétel",
+      "sold": "Sikeres eladás",
+      "listings": "Feltöltött hirdetések",
+      "rating": "Értékelés"
+    },
+    "deleteListing": "Törlés",
+    "deleteAll": "Összes törlése",
+    "promoteHero": "Kiemelés a főoldalon",
+    "promoted": "Kiemelve",
+    "promoting": "Átirányítás…",
+    "emptyListings": "Még nincs feltöltött terméked.",
+    "uploadFirst": "Töltsd fel az első termékedet",
+    "emptySold": "Még nincs eladott termék.",
+    "adminTitle": "Adminisztráció",
+    "transactions": "Tranzakcióim",
+    "incomingOffers": "Beérkező ajánlataim",
+    "sentOffers": "Küldött ajánlataim",
+    "myListings": "Saját hirdetéseim",
+    "soldItems": "Eladott termékeim",
+    "reviews": "Kapott értékelések",
+    "noReviews": "Még nincs értékelésed."
+  },
+  "report": {
+    "title": "Termék jelentése",
+    "reasonLegend": "Ok",
+    "reasonSpam": "Spam / átverés",
+    "reasonCounterfeit": "Hamisítvány",
+    "reasonProhibited": "Tiltott termék",
+    "details": "Részletek (opcionális)",
+    "detailsPlaceholder": "Miért gyanús ez a hirdetés?",
+    "cancel": "Mégse",
+    "submit": "Bejelentés",
+    "submitting": "Küldés…",
+    "success": "Köszönjük — a bejelentést megkaptuk.",
+    "loginRequired": "Jelentkezz be a bejelentéshez."
   },
   "favorites": {
     "title": "Kedvencek",
@@ -122,10 +175,12 @@
     "count": "{{count}} kedvenc termék",
     "empty": "Még nincs kedvenc terméked.",
     "browse": "Böngéssz a kínálatban",
+    "sortLabel": "Rendezés",
     "sortNewest": "Legújabb",
     "sortPriceAsc": "Legolcsóbb",
     "sortPriceDesc": "Legdrágább",
-    "similar": "Hasonló termékek"
+    "similar": "Hasonló termékek",
+    "emptyHint": "Ments el termékeket a szív ikonnal a böngészés során."
   },
   "notifications": {
     "title": "Értesítések",
@@ -137,7 +192,8 @@
     "filterAll": "Összes",
     "filterOffers": "Ajánlatok",
     "filterSales": "Eladások",
-    "filterOther": "Egyéb"
+    "filterOther": "Egyéb",
+    "filterUnread": "Olvasatlan ({{count}})"
   },
   "messages": {
     "offersTitle": "Beérkező ajánlatok",
@@ -146,18 +202,311 @@
     "selectConversation": "Válassz ki egy beszélgetést",
     "placeholder": "Üzenet írása…",
     "makeOffer": "Ajánlatot teszek",
-    "payLink": "Fizetés indítása"
+    "payLink": "Fizetés indítása",
+    "offerModalTitle": "Ajánlat küldése",
+    "cancel": "Mégse",
+    "send": "Küldés",
+    "sending": "Küldés…",
+    "loadingProduct": "Termék betöltése…",
+    "offerMinHint": "Legalább {{min}} Ft (listaár ~60%-a).",
+    "offerMinDefault": "A minimum az aktuális listaárhoz igazodik.",
+    "amountPlaceholder": "Összeg (Ft)",
+    "offerNoProduct": "Ehhez a beszélgetéshez nem találtam termék-azonosítót.",
+    "offerBadIds": "Hibás azonosítók — az ajánlat nem küldhető el.",
+    "offerInvalidAmount": "Adj meg érvényes összeget.",
+    "offerMinError": "Minimum ajánlat: {{min}} Ft",
+    "offerDuplicate": "Már van aktív ajánlatod ehhez a termékhez.",
+    "offerSent": "Ajánlat elküldve.",
+    "offerFailed": "Ajánlat küldése sikertelen: {{msg}}",
+    "uploadImage": "Kép feltöltése",
+    "counterOffer": "Ellenajánlat érkezett, frissítve a beszélgetés.",
+    "defaultUser": "Felhasználó",
+    "productContextLabel": "Termék a beszélgetésben",
+    "viewProduct": "Megtekintés",
+    "defaultProduct": "Termék",
+    "imagePreview": "Kép",
+    "back": "Vissza",
+    "chatImageAlt": "Csatolt kép",
+    "noProductContext": "Ehhez a beszélgetéshez nincs termék hozzárendelve.",
+    "sendAria": "Üzenet küldése",
+    "offersCollapsible": "Beérkező ajánlatok"
+  },
+  "auth": {
+    "loginTitle": "Belépés",
+    "registerTitle": "Regisztráció",
+    "emailHint": "Regisztráció és belépés e-mail címmel",
+    "email": "E-mail cím",
+    "password": "Jelszó",
+    "emailPlaceholder": "pelda@email.com",
+    "submitLogin": "Belépés",
+    "submitRegister": "Regisztráció",
+    "processing": "Folyamatban…",
+    "noAccount": "Még nincs fiókod?",
+    "hasAccount": "Már van fiókod?",
+    "switchRegister": "Regisztrálj",
+    "switchLogin": "Jelentkezz be",
+    "successLogin": "Sikeres bejelentkezés!",
+    "successRegister": "Sikeres regisztráció!",
+    "errors": {
+      "generic": "Hiba történt",
+      "emailNotConfirmed": "Igazold vissza az e-mail címedet a bejelentkezés előtt!",
+      "invalidCredentials": "Hibás e-mail cím vagy jelszó!",
+      "invalidEmail": "Érvényes e-mail címet adj meg!",
+      "passwordShort": "A jelszónak minimum 6 karakter hosszúnak kell lennie!",
+      "userExists": "Ez az e-mail cím már regisztrálva van!",
+      "rateLimit": "Túl sok kérés. Próbáld újra később."
+    }
+  },
+  "upload": {
+    "title": "Termék feltöltése",
+    "subtitle": "Add el használt cuccaidat a közösségnek",
+    "name": "Termék neve",
+    "namePlaceholder": "pl. Nike Air Max 270",
+    "description": "Leírás",
+    "descriptionPlaceholder": "Állapot, méret, egyéb részletek…",
+    "price": "Ár (Ft)",
+    "pricePlaceholder": "15000",
+    "category": "Kategória",
+    "categoryPlaceholder": "Válassz kategóriát",
+    "brand": "Márka",
+    "brandPlaceholder": "Válassz márkát",
+    "size": "Méret",
+    "sizePlaceholder": "Válassz méretet",
+    "condition": "Állapot",
+    "conditionPlaceholder": "Válassz állapotot",
+    "conditions": {
+      "new": "Új",
+      "excellent": "Kiváló",
+      "good": "Jó",
+      "fair": "Közepes",
+      "poor": "Rossz"
+    },
+    "images": "Képek",
+    "imagesCount": "{{count}}/6",
+    "tapToSelect": "Kattints a képek kiválasztásához",
+    "imagesHintFirst": "Az első kép lesz a fő kép (PNG, JPG, WEBP)",
+    "imagesHintMore": "Válassz további képeket",
+    "submit": "Termék feltöltése",
+    "submitting": "Feltöltés folyamatban…",
+    "maxImages": "Maximum {{max}} kép tölthető fel!",
+    "notImage": "„{{name}}” nem kép fájl.",
+    "remainingImages": "Csak {{count}} további kép tölthető fel.",
+    "loginRequired": "Először jelentkezz be!",
+    "brandSizeRequired": "Márka és méret kötelező.",
+    "success": "Sikeres feltöltés!",
+    "error": "Hiba történt a feltöltés során."
+  },
+  "checkoutSuccess": {
+    "title": "Sikeres vásárlás!",
+    "purchasedItem": "Vásárolt termék:",
+    "timelineTitle": "Fizetési folyamat",
+    "stepPaid": "Fizetés megtörtént",
+    "stepPaidHint": "A pénz biztonságos letétben van, amíg meg nem érkezik a termék.",
+    "stepShip": "Termék feladása",
+    "stepShipHint": "Az eladó hamarosan feladja a terméket.",
+    "stepDelivery": "Szállítás",
+    "stepDeliveryHint": "A termék úton van hozzád.",
+    "trackHint": "A részleteket az üzenetekben követheted.",
+    "viewMessages": "Üzenetek megtekintése",
+    "backHome": "Vissza a főoldalra",
+    "toastSuccess": "Sikeres vásárlás! A rendelésed rögzítve lett.",
+    "errorTitle": "Hiba történt",
+    "missingId": "Hiányzó tranzakció azonosító",
+    "notFound": "A tranzakció nem található"
   },
   "checkout": {
     "title": "Fizetés",
     "back": "Vissza",
     "buyerProtection": "Vásárlói védelem",
+    "buyerProtectionHint": "Ha a termék nem érkezik meg, vagy nem egyezik a leírással, teljes visszatérítést kapsz.",
+    "summary": "Összegzés",
     "payNow": "Fizetés",
+    "payButton": "Fizetés {{total}} Ft",
+    "redirecting": "Átirányítás…",
     "processing": "Feldolgozás…",
     "total": "Összesen",
     "itemPrice": "Termék ára",
-    "shipping": "Szállítás",
-    "protectionFee": "Vásárlói védelem"
+    "shippingFee": "Szállítási díj",
+    "protectionFee": "Vásárlói védelem díja",
+    "protectionFeeTooltip": "5% a termék árából, minimum 200 Ft, maximum 5000 Ft — a pénz letétben marad, amíg meg nem kapod a csomagot.",
+    "buyerProtectionLearnMore": "Tudj meg többet a vásárlói védelemről →",
+    "shippingMethodLabel": "Szállítási mód",
+    "selectShipping": "Válassz szállítási módot a fizetéshez",
+    "directPurchase": "Közvetlen vásárlás",
+    "termsHint": "A fizetés gombra kattintva elfogadod a vásárlási feltételeket.",
+    "shippingOptions": {
+      "foxpost": "Foxpost automatába",
+      "packeta": "Packeta pontba",
+      "home": "Házhozszállítás",
+      "foxpostDays": "2–3 munkanap",
+      "packetaDays": "2–4 munkanap",
+      "homeDays": "1–2 munkanap"
+    },
+    "errors": {
+      "offerNotFound": "Az ajánlat nem található vagy már nem elérhető.",
+      "offerNotAccepted": "Csak elfogadott ajánlattal lehet fizetni.",
+      "productMissing": "Az ajánlathoz tartozó termék már nem található.",
+      "productNotFound": "A termék nem található vagy már nem elérhető.",
+      "ownProduct": "A saját termékedet nem vásárolhatod meg.",
+      "missingIds": "Hiányzó azonosítók a fizetéshez.",
+      "paymentFailed": "Hiba történt a fizetés során"
+    }
+  },
+  "uploadWizard": {
+    "title": "Termék feltöltése",
+    "subtitle": "Lépésről lépésre — a piszkozat automatikusan mentve",
+    "stepOf": "{{current}} / {{total}} lépés",
+    "back": "Vissza",
+    "next": "Tovább",
+    "cancel": "Mégse",
+    "publish": "Közzététel",
+    "clearDraft": "Piszkozat törlése",
+    "draftRestored": "Korábbi piszkozat betöltve (a fotókat újra kell választani).",
+    "draftCleared": "Piszkozat törölve.",
+    "photosHint": "Az első kép lesz a fő kép. Maximum 6 fotó.",
+    "steps": {
+      "photos": "Fotók",
+      "category": "Kategória",
+      "brand": "Márka",
+      "condition": "Állapot",
+      "price": "Ár",
+      "details": "Leírás"
+    },
+    "errors": {
+      "photosRequired": "Legalább egy fotó szükséges.",
+      "categoryRequired": "Válassz kategóriát.",
+      "sizeRequired": "Válassz méretet.",
+      "brandRequired": "Válassz márkát.",
+      "conditionRequired": "Válassz állapotot.",
+      "priceRequired": "Adj meg érvényes árat.",
+      "nameRequired": "Add meg a termék nevét.",
+      "descriptionRequired": "Írj leírást a termékhez."
+    }
+  },
+  "orders": {
+    "title": "Rendeléstörténet",
+    "subtitle": "Vásárlásaid és eladásaid",
+    "purchases": "Vásárlások",
+    "sales": "Eladások",
+    "viewAll": "Összes rendelés",
+    "emptyPurchases": "Még nincs vásárlásod.",
+    "emptySales": "Még nincs eladásod.",
+    "browse": "Böngéssz a kínálatban",
+    "salesHint": "Fizetés után jelöld feladottnak a csomagot az üzenetekben vagy itt.",
+    "confirmHint": "Van csomag átvételre vár — erősítsd meg az üzenetekben, ha megkaptad.",
+    "status": {
+      "paymentPending": "Fizetésre vár",
+      "paymentFailed": "Fizetés sikertelen",
+      "paid": "Kifizetve",
+      "shipped": "Feladva",
+      "inTransit": "Úton",
+      "readyForPickup": "Átvételre vár",
+      "completed": "Befejezve",
+      "refunded": "Visszatérítve",
+      "unknown": "Ismeretlen"
+    }
+  },
+  "help": {
+    "title": "Súgó",
+    "subtitle": "Gyors válaszok és támogatás",
+    "quickTitle": "Miben segíthetünk?",
+    "quickSubtitle": "Biztonságos vásárlás, szállítás és kapcsolat az eladóval.",
+    "browseCta": "Böngészés indítása",
+    "sections": {
+      "protectionTitle": "Vásárlói védelem",
+      "protectionBody": "A pénz letétben marad, amíg meg nem kapod a terméket. Ha nem egyezik a leírással, jelezd az üzenetekben.",
+      "shippingTitle": "Szállítás",
+      "shippingBody": "Foxpost, Packeta vagy házhozszállítás a fizetéskor. Az állapotot az üzenetekben és a rendeléstörténetben követheted.",
+      "faqTitle": "Gyakori kérdések"
+    },
+    "entries": {
+      "contactSeller": {
+        "title": "Kapcsolat az eladóval",
+        "desc": "A termékoldalon üzenetet küldhetsz — utána az Üzenetek menüben folytathatod.",
+        "action": "Termék keresése"
+      },
+      "buyerProtection": {
+        "title": "Vásárlói védelem",
+        "desc": "5% díj, minimum 200 Ft — részletek a fizetésnél."
+      },
+      "shipping": {
+        "title": "Szállítási módok",
+        "desc": "Automata, csomagpont vagy házhoz — a checkoutnál választod."
+      },
+      "orders": {
+        "title": "Rendeléstörténet",
+        "desc": "Vásárlások és eladások státusszal, dátummal és összeggel."
+      },
+      "faq": {
+        "title": "GYIK",
+        "desc": "Gyakori kérdések és válaszok."
+      },
+      "support": {
+        "title": "Ügyfélszolgálat",
+        "desc": "Írj e-mailt, ha technikai problémád van."
+      }
+    },
+    "faq": {
+      "q1": { "q": "Hogyan fizetek biztonságosan?", "a": "A checkout Stripe-on keresztül történik, vevővédelemmel." },
+      "q2": { "q": "Hogyan adok el?", "a": "Feltöltés menü → lépésenkénti varázsló → közzététel." },
+      "q3": { "q": "Hol látom a rendeléseimet?", "a": "Profil → Rólam, vagy közvetlenül a Rendeléstörténet oldalon." }
+    }
+  },
+  "offersList": {
+    "emptyTitle": "Még nincsenek beérkező ajánlataid.",
+    "emptyHint": "Ha valaki ajánlatot tesz, itt fog megjelenni.",
+    "listPrice": "listaár:",
+    "counterPlaceholder": "Ellenajánlat (Ft)",
+    "counterBtn": "Ellenajánlat",
+    "accept": "Elfogadás",
+    "reject": "Elutasítás",
+    "counteredHint": "A vevőnek el kell fogadnia az ellenajánlatot — utána indulhat a fizetés.",
+    "acceptedHint": "Vevő a chatben kapja a fizetési linket",
+    "rejectConfirm": "Biztosan elutasítod ezt az ajánlatot? A vevő értesítést kap az üzenetekben.",
+    "loginRequired": "Jelentkezz be az ajánlat kezeléséhez.",
+    "errorPrefix": "Hiba: {{msg}}",
+    "unknownError": "Ismeretlen hiba",
+    "acceptedToast": "Ajánlat elfogadva — a vevő azonnal látja az üzenetekben.",
+    "rejectedToast": "Ajánlat elutasítva — a vevő értesítést kapott.",
+    "acceptedWarn": "Ajánlat elfogadva, de a chat értesítés nem ment ki: {{msg}}",
+    "rejectedWarn": "Ajánlat elutasítva, de a chat értesítés nem ment ki: {{msg}}",
+    "counterInvalid": "Adj meg egy érvényes ellenajánlat összeget.",
+    "counterMin": "Minimum ellenajánlat: {{min}} Ft (a listaár legalább 60%-a).",
+    "counterSent": "Ellenajánlat elküldve — a vevő azonnal látja az üzenetekben.",
+    "counterWarn": "Ellenajánlat mentve, de a chat értesítés nem ment ki: {{msg}}",
+    "status": {
+      "pending": "Függőben — válasz szükséges",
+      "accepted": "Elfogadva",
+      "rejected": "Elutasítva",
+      "countered": "Ellenajánlat küldve",
+      "payment_pending": "Fizetés folyamatban",
+      "payment_completed": "Kifizetve",
+      "completed": "Lezárva",
+      "cancelled": "Visszavonva"
+    }
+  },
+  "chatTransaction": {
+    "orderStatus": "Rendelés állapota:",
+    "orderLabel": "Rendelés:",
+    "downloadLabel": "Szállítási címke letöltése",
+    "markShipped": "Csomag feladva",
+    "labelDownloaded": "Foxpost címke letöltve. Most már jelölheted „Csomag feladva”-ként!",
+    "downloadLabelFirst": "Először töltsd le a szállítási címkét!",
+    "shippedSuccess": "Csomag feladva — a futár szimuláció elindult.",
+    "updateFailed": "Nem sikerült frissíteni.",
+    "stepHint": "1. lépés: töltsd le a Foxpost címkét. Utána aktiválódik a „Csomag feladva” gomb.",
+    "simulating": "Futár szimuláció folyamatban… A vevő értesítést kap minden lépésről.",
+    "defaultProduct": "Termék"
+  },
+  "publicSeller": {
+    "defaultName": "Eladó",
+    "followers": "Követő",
+    "following": "Követés",
+    "products": "Termék",
+    "emptyListings": "Nincs aktív hirdetés.",
+    "refresh": "Frissítés",
+    "ownProfileLink": "Saját profil beállítások →",
+    "listingsTitle": "Eladó termékei"
   },
   "notFound": {
     "title": "Az oldal nem található",
@@ -166,6 +515,7 @@
     "browse": "Böngészés"
   },
   "common": {
-    "loading": "Betöltés…"
+    "loading": "Betöltés…",
+    "currencyHuf": "Ft"
   }
 }

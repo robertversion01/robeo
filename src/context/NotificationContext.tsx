@@ -84,33 +84,44 @@ export function useNotifications(): NotificationContextValue {
   return ctx;
 }
 
-function MessagesBadgeDot({ className = '' }: { className?: string }) {
+function NavBadgeCount({
+  count,
+  className = 'top-0 right-0',
+}: {
+  count: number;
+  className?: string;
+}) {
+  if (count <= 0) return null;
+  const label = count > 9 ? '9+' : String(count);
+  const compact = count <= 9;
   return (
     <span
-      className={`absolute rounded-full bg-red-500 border-2 border-white ${className}`}
-      aria-hidden
-    />
+      className={`absolute flex items-center justify-center rounded-full bg-red-500 text-white font-bold border-2 border-white ${className} ${
+        compact ? 'min-w-[18px] h-[18px] text-[10px] px-1' : 'min-w-[22px] h-[18px] text-[9px] px-1'
+      }`}
+      aria-label={String(count)}
+    >
+      {label}
+    </span>
   );
 }
 
 export function MessagesNavBadge({
-  className = 'top-0.5 right-0.5 h-2.5 w-2.5',
+  className = 'top-0 right-[calc(50%-20px)]',
 }: {
   className?: string;
 }) {
   const { unreadCount } = useNotifications();
-  if (unreadCount <= 0) return null;
-  return <MessagesBadgeDot className={className} />;
+  return <NavBadgeCount count={unreadCount} className={className} />;
 }
 
 export function FeedNavBadge({
-  className = 'top-0.5 right-0.5 h-2.5 w-2.5',
+  className = 'top-0 right-0',
 }: {
   className?: string;
 }) {
   const { feedUnreadCount } = useNotifications();
-  if (feedUnreadCount <= 0) return null;
-  return <MessagesBadgeDot className={className} />;
+  return <NavBadgeCount count={feedUnreadCount} className={className} />;
 }
 
 export function NotificationProvider({ children }: { children: ReactNode }) {

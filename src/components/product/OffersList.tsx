@@ -7,8 +7,9 @@ import { toast } from 'sonner';
 import { Check, X, Clock, ExternalLink, Loader2 } from 'lucide-react';
 import Link from 'next/link';
 import { getOptimizedImageUrl } from '@/lib/imageUtils';
-import { OFFER_LABELS_SELLER, offerBadgeClass } from '@/lib/offerUi';
+import { offerBadgeClass } from '@/lib/offerUi';
 import { sellerSendCounterOffer, sellerSetOfferStatus } from '@/lib/offerActions';
+import { useTranslation } from 'react-i18next';
 
 interface Offer {
   id: string;
@@ -36,6 +37,8 @@ function offerThumbUrl(product: Offer['product']): string | null {
 }
 
 export default function OffersList() {
+  const { t, i18n } = useTranslation();
+  const priceLocale = i18n.language?.startsWith('en') ? 'en-HU' : 'hu-HU';
   const [offers, setOffers] = useState<Offer[]>([]);
   const [loading, setLoading] = useState(true);
   const [counterValues, setCounterValues] = useState<Record<string, string>>({});
@@ -123,11 +126,12 @@ export default function OffersList() {
     return () => window.removeEventListener('offers:updated', onOffersUpdated);
   }, [loadOffers]);
 
+  const statusLabel = (status: string) =>
+    t(`offersList.status.${status}`, { defaultValue: status });
+
   const updateOfferStatus = async (offerId: string, status: 'accepted' | 'rejected') => {
     if (status === 'rejected') {
-      const ok = window.confirm(
-        'Biztosan elutasítod ezt az ajánlatot? A vevő értesítést kap az üzenetekben.'
-      );
+      const ok = window.confirm(t('offersList.rejectConfirm'));
       if (!ok) return;
     }
 
@@ -140,7 +144,7 @@ export default function OffersList() {
         data: { user },
       } = await supabase.auth.getUser();
       if (!user) {
-        toast.error('Jelentkezz be az ajánlat kezeléséhez.');
+        toast.error(t('offersList.loginRequired'));
         return;
       }
 
@@ -159,29 +163,27 @@ export default function OffersList() {
       });
 
       if (!result.ok) {
-        toast.error('Hiba: ' + result.error);
+        toast.error(t('offersList.errorPrefix', { msg: result.error }));
         return;
       }
 
       if (result.messageWarning) {
         toast.warning(
           status === 'accepted'
-            ? 'Ajánlat elfogadva, de a chat értesítés nem ment ki: ' + result.messageWarning
-            : 'Ajánlat elutasítva, de a chat értesítés nem ment ki: ' + result.messageWarning,
+            ? t('offersList.acceptedWarn', { msg: result.messageWarning })
+            : t('offersList.rejectedWarn', { msg: result.messageWarning }),
         );
       } else {
         toast.success(
-          status === 'accepted'
-            ? 'Ajánlat elfogadva — a vevő azonnal látja az üzenetekben.'
-            : 'Ajánlat elutasítva — a vevő értesítést kapott.',
+          status === 'accepted' ? t('offersList.acceptedToast') : t('offersList.rejectedToast'),
         );
       }
 
       setOffers((prev) => prev.map((o) => (o.id === offerId ? { ...o, status } : o)));
       await loadOffers(user.id);
     } catch (error: unknown) {
-      const msg = error instanceof Error ? error.message : 'Ismeretlen hiba';
-      toast.error('Hiba: ' + msg);
+      const msg = error instanceof Error ? error.message : t('offersList.unknownError');
+      toast.error(t('offersList.errorPrefix', { msg }));
     } finally {
       setActingOfferId(null);
     }
@@ -191,15 +193,13 @@ export default function OffersList() {
     const rawValue = counterValues[offer.id];
     const counterPrice = Number(rawValue);
     if (!counterPrice || counterPrice <= 0) {
-      toast.error('Adj meg egy érvényes ellenajánlat összeget.');
+      toast.error(t('offersList.counterInvalid'));
       return;
     }
 
     const minimumAllowed = Math.ceil(offer.product.price * 0.6);
     if (counterPrice < minimumAllowed) {
-      toast.error(
-        `Minimum ellenajánlat: ${minimumAllowed.toLocaleString('hu-HU')} Ft (a listaár legalább 60%-a).`
-      );
+      toast.error(t('offersList.counterMin', { min: minimumAllowed.toLocaleString(priceLocale) }));
       return;
     }
 
@@ -220,14 +220,14 @@ export default function OffersList() {
       });
 
       if (!result.ok) {
-        toast.error('Hiba: ' + result.error);
+        toast.error(t('offersList.errorPrefix', { msg: result.error }));
         return;
       }
 
       if (result.messageWarning) {
-        toast.warning('Ellenajánlat mentve, de a chat értesítés nem ment ki: ' + result.messageWarning);
+        toast.warning(t('offersList.counterWarn', { msg: result.messageWarning }));
       } else {
-        toast.success('Ellenajánlat elküldve — a vevő azonnal látja az üzenetekben.');
+        toast.success(t('offersList.counterSent'));
       }
 
       setOffers((prev) =>
@@ -237,8 +237,8 @@ export default function OffersList() {
       );
       await loadOffers(user.id);
     } catch (error: unknown) {
-      const msg = error instanceof Error ? error.message : 'Ismeretlen hiba';
-      toast.error('Hiba: ' + msg);
+      const msg = error instanceof Error ? error.message : t('offersList.unknownError');
+      toast.error(t('offersList.errorPrefix', { msg }));
     } finally {
       setActingOfferId(null);
     }
@@ -257,8 +257,8 @@ export default function OffersList() {
   if (offers.length === 0) {
     return (
       <div className="text-center py-12 text-gray-500">
-        <p>Még nincsenek beérkező ajánlataid.</p>
-        <p className="text-sm mt-2 text-gray-400">Ha valaki ajánlatot tesz, itt fog megjelenni.</p>
+        <p>{t('offersList.emptyTitle')}</p>
+        <p className="text-sm mt-2 text-gray-400">{t('offersList.emptyHint')}</p>
       </div>
     );
   }
@@ -267,7 +267,7 @@ export default function OffersList() {
     <div className="space-y-3">
       {offers.map((offer) => {
         const thumb = offerThumbUrl(offer.product);
-        const label = OFFER_LABELS_SELLER[offer.status] ?? offer.status;
+        const label = statusLabel(offer.status);
 
         return (
           <div
@@ -299,10 +299,10 @@ export default function OffersList() {
                 </Link>
                 <div className="flex flex-wrap items-baseline gap-x-3 gap-y-1">
                   <span className="text-[#007782] font-bold tabular-nums">
-                    {offer.offered_price.toLocaleString('hu-HU')} Ft
+                    {offer.offered_price.toLocaleString(priceLocale)} {t('common.currencyHuf')}
                   </span>
                   <span className="text-gray-500 text-sm tabular-nums">
-                    listaár: {offer.product.price.toLocaleString('hu-HU')} Ft
+                    {t('offersList.listPrice')} {offer.product.price.toLocaleString(priceLocale)} {t('common.currencyHuf')}
                   </span>
                 </div>
                 {offer.message ? (
@@ -338,7 +338,7 @@ export default function OffersList() {
                               [offer.id]: e.target.value,
                             }))
                           }
-                          placeholder="Ellenajánlat (Ft)"
+                          placeholder={t('offersList.counterPlaceholder')}
                           className="min-w-0 flex-1 input-base min-h-10 px-3 text-sm rounded-xl border-gray-300 focus:ring-[#007782] focus:border-[#007782]"
                         />
                         <button
@@ -350,7 +350,7 @@ export default function OffersList() {
                           {busy(offer.id) ? (
                             <Loader2 className="h-4 w-4 animate-spin" />
                           ) : null}
-                          Ellenajánlat
+                          {t('offersList.counterBtn')}
                         </button>
                       </div>
                       <div className="flex gap-2 flex-wrap">
@@ -365,7 +365,7 @@ export default function OffersList() {
                           ) : (
                             <Check size={16} />
                           )}
-                          Elfogadás
+                          {t('offersList.accept')}
                         </button>
                         <button
                           type="button"
@@ -374,7 +374,7 @@ export default function OffersList() {
                           className="btn-base border border-red-200 bg-red-50 text-red-700 hover:bg-red-100 min-h-10 px-4 flex-1 sm:flex-none rounded-xl inline-flex items-center justify-center gap-1.5 text-sm"
                         >
                           <X size={16} />
-                          Elutasítás
+                          {t('offersList.reject')}
                         </button>
                       </div>
                     </div>
@@ -383,14 +383,14 @@ export default function OffersList() {
 
                 {offer.status === 'countered' && (
                   <p className="text-xs text-gray-600 text-right max-w-xs">
-                    A vevőnek el kell fogadnia az ellenajánlatot — utána indulhat a fizetés.
+                    {t('offersList.counteredHint')}
                   </p>
                 )}
 
                 {offer.status === 'accepted' && (
                   <span className="text-xs text-emerald-800 font-medium inline-flex items-center gap-1.5 text-right">
                     <ExternalLink size={14} className="shrink-0" />
-                    Vevő a chatben kapja a fizetési linket
+                    {t('offersList.acceptedHint')}
                   </span>
                 )}
               </div>

@@ -2,13 +2,13 @@
 
 import Link from 'next/link';
 import { useTranslation } from 'react-i18next';
-import { MAIN_TOP_PADDING } from '@/lib/layoutTokens';
+import { MAIN_TOP_PADDING, MOBILE_PAGE_BOTTOM_CLASS } from '@/lib/layoutTokens';
 
 export default function NotFound() {
   const { t } = useTranslation();
 
   return (
-    <div className={`min-h-screen bg-white text-gray-900 ${MAIN_TOP_PADDING} flex items-center justify-center px-4 pb-20`}>
+    <div className={`min-h-screen bg-white text-gray-900 ${MAIN_TOP_PADDING} ${MOBILE_PAGE_BOTTOM_CLASS} flex items-center justify-center px-4`}>
       <div className="text-center max-w-md">
         <div className="text-6xl font-bold text-[#007782] mb-3">404</div>
         <h1 className="text-2xl font-bold mb-3">{t('notFound.title')}</h1>

@@ -4,7 +4,7 @@ import { useEffect, useRef, useState } from 'react';
 import { supabase } from '@/lib/supabase';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
-import { MessageCircle, Heart, User, Plus, LogOut, Bell } from 'lucide-react';
+import { MessageCircle, Heart, User, Plus, LogOut, Bell, Search } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 import { useBrowseSearch } from '@/context/BrowseContext';
 import { FeedNavBadge, MessagesNavBadge } from '@/context/NotificationContext';
@@ -146,6 +146,20 @@ export default function Navbar({ searchQuery, onSearchChange }: NavbarProps) {
               {t('nav.myProfile')}
             </Link>
             <Link
+              href="/orders"
+              className="w-full min-h-9 flex items-center gap-2 px-3 py-2 rounded-lg text-sm text-gray-700 hover:bg-gray-100"
+              onClick={() => setShowProfileMenu(false)}
+            >
+              {t('orders.title')}
+            </Link>
+            <Link
+              href="/help"
+              className="w-full min-h-9 flex items-center gap-2 px-3 py-2 rounded-lg text-sm text-gray-700 hover:bg-gray-100"
+              onClick={() => setShowProfileMenu(false)}
+            >
+              {t('help.title')}
+            </Link>
+            <Link
               href="/notifications"
               className="w-full min-h-9 flex items-center gap-2 px-3 py-2 rounded-lg text-sm text-gray-700 hover:bg-gray-100"
               onClick={() => setShowProfileMenu(false)}
@@ -169,6 +183,13 @@ export default function Navbar({ searchQuery, onSearchChange }: NavbarProps) {
     <div className="w-20 h-9 animate-pulse bg-gray-100 rounded-full" />
   ) : (
     <>
+      <Link
+        href="/browse"
+        className={`icon-btn hidden sm:inline-flex ${pathname.startsWith('/browse') ? 'text-[#007782]' : 'text-gray-700'}`}
+        aria-label={t('nav.browse')}
+      >
+        <Search size={18} />
+      </Link>
       <LanguageSwitcher variant="light" className="hidden sm:inline-flex" />
       <Link
         href="/auth?view=sign_up"

@@ -3,7 +3,6 @@
 import { Suspense, useEffect, useState } from 'react';
 import { supabase } from '@/lib/supabase';
 import Link from 'next/link';
-import { useRouter } from 'next/navigation';
 import { toast } from 'sonner';
 import { useUserStats } from '@/hooks/useUserStats';
 import StarRating from '@/components/review/StarRating';
@@ -14,7 +13,7 @@ import ProductGrid from '@/components/product/ProductGrid';
 import { formatPrice } from '@/lib/utils';
 import { getOptimizedImageUrl } from '@/lib/imageUtils';
 import type { Product } from '@/types';
-import { MAIN_TOP_PADDING } from '@/lib/layoutTokens';
+import { MAIN_TOP_PADDING, MOBILE_PAGE_BOTTOM_CLASS } from '@/lib/layoutTokens';
 import { Bell, ChevronDown } from 'lucide-react';
 import { revalidateCatalog } from '@/app/actions/revalidateCatalog';
 import { notifyCatalogUpdated } from '@/lib/catalogRefresh';
@@ -22,8 +21,13 @@ import { softDeleteAllUserProducts, softDeleteProduct } from '@/lib/productSoftD
 import WalletBalanceCard from '@/components/profile/WalletBalanceCard';
 import BundleDiscountSettings from '@/components/profile/BundleDiscountSettings';
 import AdminReportedItems from '@/components/admin/AdminReportedItems';
+import ProfileTabNav, { type ProfileTabId } from '@/components/profile/ProfileTabNav';
+import ProfileSection from '@/components/profile/ProfileSection';
+import { useTranslation } from 'react-i18next';
+import { useRouter } from 'next/navigation';
 
 export default function ProfilePage() {
+  const { t, i18n } = useTranslation();
   const [products, setProducts] = useState<Product[]>([]);
   const [adminProducts, setAdminProducts] = useState<Product[]>([]);
   const [soldProducts, setSoldProducts] = useState<Product[]>([]);
@@ -42,12 +46,29 @@ export default function ProfilePage() {
   const [bulkBusy, setBulkBusy] = useState(false);
   const [statsTick, setStatsTick] = useState(0);
   const router = useRouter();
+  const [activeTab, setActiveTab] = useState<ProfileTabId>('shop');
+  const shopCount = products.length + soldProducts.length;
+
+  const setProfileTab = (tab: ProfileTabId) => {
+    setActiveTab(tab);
+    const params = new URLSearchParams(typeof window !== 'undefined' ? window.location.search : '');
+    params.set('tab', tab);
+    router.replace(`/profile?${params.toString()}`, { scroll: false });
+  };
 
   const { stats, loading: statsLoading } = useUserStats(user?.id, statsTick);
   const isAdmin = user?.email === 'hevesi.tr@gmail.com';
 
   useEffect(() => {
     checkUser();
+  }, []);
+
+  useEffect(() => {
+    if (typeof window === 'undefined') return;
+    const tab = new URLSearchParams(window.location.search).get('tab') as ProfileTabId | null;
+    if (tab && ['shop', 'reviews', 'about'].includes(tab)) {
+      setActiveTab(tab);
+    }
   }, []);
 
   useEffect(() => {
@@ -95,7 +116,8 @@ export default function ProfilePage() {
 
   const formatDate = (dateStr: string) => {
     const date = new Date(dateStr);
-    return date.toLocaleDateString('hu-HU', { year: 'numeric', month: 'long' });
+    const locale = i18n.language?.startsWith('en') ? 'en-HU' : 'hu-HU';
+    return date.toLocaleDateString(locale, { year: 'numeric', month: 'long' });
   };
 
   const loadUserProducts = async (userId: string) => {
@@ -494,49 +516,104 @@ export default function ProfilePage() {
         </div>
       ) : null}
 
-      <main className={`${MAIN_TOP_PADDING} pb-12 px-3 md:px-6`}>
+      <main className={`${MAIN_TOP_PADDING} ${MOBILE_PAGE_BOTTOM_CLASS} px-3 md:px-6`}>
         <div className="max-w-7xl mx-auto">
-          <div className="flex items-center gap-3 mb-1.5">
-              <div className="w-14 h-14 rounded-full bg-[#007782]/10 flex items-center justify-center text-[#007782] text-xl font-bold">
+          <div className="flex items-center gap-3 mb-2">
+              <div className="w-12 h-12 md:w-14 md:h-14 rounded-full bg-[#007782]/10 flex items-center justify-center text-[#007782] text-lg md:text-xl font-bold shrink-0">
               {user?.email?.charAt(0).toUpperCase() || '?'}
             </div>
-            <div>
-              <h1 className="text-2xl md:text-3xl font-bold">Profilom</h1>
+            <div className="min-w-0">
+              <h1 className="text-xl md:text-2xl font-bold truncate">{t('profile.title')}</h1>
               <div className="flex items-center gap-2 text-xs text-gray-500 mt-1">
-                <span>Tag since {createdAt ? formatDate(createdAt) : 'now'}</span>
+                <span>
+                  {t('profile.memberSince', {
+                    date: createdAt ? formatDate(createdAt) : '—',
+                  })}
+                </span>
                 <span className="w-1 h-1 rounded-full bg-gray-300" />
-                <span>{stats.totalProducts} termék</span>
+                <span>{t('profile.productCount', { count: stats.totalProducts })}</span>
               </div>
             </div>
           </div>
-          <WalletBalanceCard userId={user?.id} />
 
-          <Link
-            href="/notifications"
-            className="mb-6 flex items-center justify-between rounded-xl border border-gray-200 bg-white px-4 py-3 hover:bg-gray-50 transition-colors"
-          >
-            <span className="flex items-center gap-2 text-sm font-semibold text-gray-900">
-              <Bell size={18} className="text-[#007782]" />
-              Értesítések
-            </span>
-            <span className="text-xs text-gray-500">Követések, új termékek →</span>
-          </Link>
+          <ProfileTabNav
+            active={activeTab}
+            onChange={setProfileTab}
+            counts={{
+              shop: shopCount,
+              reviews: receivedReviews.length,
+            }}
+          />
 
-          <BundleDiscountSettings userId={user?.id} />
+          {activeTab === 'about' ? (
+            <>
+              <ProfileSection title={t('profile.incomingOffers')}>
+                <OffersList />
+              </ProfileSection>
+              <ProfileSection title={t('profile.sentOffers')}>
+                <BuyerOffersList />
+              </ProfileSection>
+              <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-6">
+                <div className="bg-gray-50 border border-gray-200 rounded-lg p-4">
+                  <div className="text-[#007782] text-xs uppercase tracking-wider mb-1">
+                    {t('profile.stats.revenue')}
+                  </div>
+                  <div className="text-xl font-bold">{formatPrice(stats.totalRevenue)}</div>
+                </div>
+                <div className="bg-gray-50 border border-gray-200 rounded-lg p-4">
+                  <div className="text-[#007782] text-xs uppercase tracking-wider mb-1">
+                    {t('profile.stats.sold')}
+                  </div>
+                  <div className="text-xl font-bold">{stats.soldProducts}</div>
+                </div>
+                <div className="bg-gray-50 border border-gray-200 rounded-lg p-4">
+                  <div className="text-[#007782] text-xs uppercase tracking-wider mb-1">
+                    {t('profile.stats.listings')}
+                  </div>
+                  <div className="text-xl font-bold">{stats.totalProducts}</div>
+                </div>
+                <div className="bg-gray-50 border border-gray-200 rounded-lg p-4">
+                  <div className="text-[#007782] text-xs uppercase tracking-wider mb-1">
+                    {t('profile.stats.rating')}
+                  </div>
+                  <div className="flex items-center gap-2">
+                    <span className="text-xl font-bold">{stats.averageRating.toFixed(1)}</span>
+                    <StarRating rating={stats.averageRating} size={16} />
+                  </div>
+                </div>
+              </div>
+              <div className="mb-8">
+                <div className="flex items-center justify-between mb-3">
+                  <h2 className="text-lg font-bold">{t('profile.transactions')}</h2>
+                  <Link href="/orders" className="text-xs font-semibold text-[#007782] hover:underline">
+                    {t('orders.viewAll')} →
+                  </Link>
+                </div>
+                <Suspense fallback={<div className="text-sm text-gray-500 py-4">{t('common.loading')}</div>}>
+                  <TransactionList />
+                </Suspense>
+              </div>
+              <WalletBalanceCard userId={user?.id} />
+              <Link
+                href="/notifications"
+                className="mb-6 flex items-center justify-between rounded-xl border border-gray-200 bg-white px-4 py-3 hover:bg-gray-50 transition-colors"
+              >
+                <span className="flex items-center gap-2 text-sm font-semibold text-gray-900">
+                  <Bell size={18} className="text-[#007782]" />
+                  {t('nav.notifications')}
+                </span>
+                <span className="text-xs text-gray-500">→</span>
+              </Link>
+              <BundleDiscountSettings userId={user?.id} />
+              <div className="mb-6">
+                <button type="button" onClick={handleSignOut} className="btn-base btn-danger">
+                  {t('nav.signOut')}
+                </button>
+              </div>
+            </>
+          ) : null}
 
-          <p className="text-gray-500 text-sm mb-5 ml-0">Saját feltöltött termékeim</p>
-
-          <div className="mb-6">
-            <button
-              type="button"
-              onClick={handleSignOut}
-              className="btn-base btn-danger"
-            >
-              Kijelentkezés
-            </button>
-          </div>
-
-          {isAdmin ? (
+          {isAdmin && activeTab === 'about' ? (
             <details className="group mb-8 rounded-xl border border-gray-200 bg-gray-50 overflow-hidden">
               <summary className="flex cursor-pointer list-none items-center justify-between gap-2 px-4 py-3 text-sm font-medium text-gray-700 hover:bg-gray-100/80 [&::-webkit-details-marker]:hidden">
                 <span>🛠️ Adminisztrációs beállítások (Kattints a megnyitáshoz)</span>
@@ -600,79 +677,31 @@ export default function ProfilePage() {
             </details>
           ) : null}
 
-          {/* Tranzakciók */}
-          <div className="mb-8">
-            <h2 className="text-xl font-bold mb-4">💰 Tranzakcióim</h2>
-            <Suspense fallback={<div className="text-sm text-gray-500 py-4">Tranzakciók betöltése…</div>}>
-              <TransactionList />
-            </Suspense>
-          </div>
-
-          {/* Beérkező ajánlatok */}
-          <div className="mb-8">
-            <h2 className="text-xl font-bold mb-4">📬 Beérkező ajánlataim</h2>
-            <OffersList />
-          </div>
-
-          {/* Küldött ajánlatok (vevő) */}
-          <div className="mb-8">
-            <h2 className="text-xl font-bold mb-4">📤 Küldött ajánlataim</h2>
-            <BuyerOffersList />
-          </div>
-
-          {/* Statistics Dashboard */}
-          <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mb-8">
-            <div className="bg-gray-50 border border-gray-200 rounded-lg p-4">
-              <div className="text-accent text-xs uppercase tracking-wider mb-1">Összes bevétel</div>
-              <div className="text-2xl font-bold">{formatPrice(stats.totalRevenue)}</div>
-            </div>
-
-            <div className="bg-gray-50 border border-gray-200 rounded-lg p-4">
-              <div className="text-accent text-xs uppercase tracking-wider mb-1">Sikeres eladás</div>
-              <div className="text-2xl font-bold">{stats.soldProducts} db</div>
-              {stats.soldProducts > 0 && stats.totalRevenue > 0 && (
-                <div className="text-xs text-gray-400 mt-1">
-                  Ø {Math.round(stats.totalRevenue / stats.soldProducts).toLocaleString('hu-HU')} Ft / eladás
-                </div>
-              )}
-            </div>
-
-            <div className="bg-gray-50 border border-gray-200 rounded-lg p-4">
-              <div className="text-accent text-xs uppercase tracking-wider mb-1">Feltöltött hirdetések</div>
-              <div className="text-2xl font-bold">{stats.totalProducts} db</div>
-            </div>
-
-            <div className="bg-gray-50 border border-gray-200 rounded-lg p-4">
-              <div className="text-accent text-xs uppercase tracking-wider mb-1">Értékelés</div>
-              <div className="flex items-center gap-2">
-                <span className="text-2xl font-bold">{stats.averageRating.toFixed(1)}</span>
-                <StarRating rating={stats.averageRating} size={16} />
-                <span className="text-gray-400 text-xs">({stats.reviewCount})</span>
-              </div>
-            </div>
-          </div>
-
-          {/* Saját hirdetések */}
-          <div className="mb-4 flex items-center justify-between">
-            <h2 className="text-xl font-bold">📦 Saját hirdetéseim</h2>
-            <button
-              type="button"
-              disabled={products.length === 0 || bulkBusy}
-              onClick={() => setBulkDeleteOpen(true)}
-              className="btn-base btn-danger text-xs px-3 disabled:opacity-50"
-            >
-              Összes törlése
-            </button>
-          </div>
-
+          {activeTab === 'shop' ? (
+            <>
+          <ProfileSection
+            title={t('profile.myListings')}
+            action={
+              <button
+                type="button"
+                disabled={products.length === 0 || bulkBusy}
+                onClick={() => setBulkDeleteOpen(true)}
+                className="btn-base btn-danger text-xs px-3 disabled:opacity-50"
+              >
+                {t('profile.deleteAll')}
+              </button>
+            }
+          >
           {products.length === 0 ? (
             <div className="text-center py-16 text-gray-400">
-              <p className="text-lg mb-3">Még nincs feltöltött terméked</p>
-              <Link href="/upload" className="text-accent hover:underline">Töltsd fel az első termékedet →</Link>
+              <p className="text-lg mb-3">{t('profile.emptyListings')}</p>
+              <Link href="/upload" className="text-[#007782] font-semibold hover:underline">
+                {t('profile.uploadFirst')} →
+              </Link>
             </div>
           ) : (
             <>
-              <p className="text-gray-500 text-sm mb-4">{products.length} termék</p>
+              <p className="text-gray-500 text-sm mb-4">{t('profile.productCount', { count: products.length })}</p>
               <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-2">
                 {products.map((product) => (
                   <div 
@@ -703,7 +732,7 @@ export default function ProfilePage() {
                       }}
                       className="absolute top-1.5 right-1.5 z-20 bg-red-500/90 hover:bg-red-500 text-white px-2 py-0.5 rounded text-[10px] transition-colors touch-manipulation"
                     >
-                      Törlés
+                      {t('profile.deleteListing')}
                     </button>
 
                     <div className="p-1.5 space-y-0.5">
@@ -725,10 +754,10 @@ export default function ProfilePage() {
                         }`}
                       >
                         {isProductFeatured(product)
-                          ? 'Kiemelve a Hero-ban'
+                          ? t('profile.promoted')
                           : promotingProductIds.has(product.id)
-                            ? 'Atiranyitas Stripe-ra...'
-                            : 'Kiemeles a fooldalra (690 Ft / 7 nap)'}
+                            ? t('profile.promoting')
+                            : t('profile.promoteHero')}
                       </button>
                     </div>
                   </div>
@@ -736,11 +765,11 @@ export default function ProfilePage() {
               </div>
             </>
           )}
+          </ProfileSection>
 
-          <div className="mt-10">
-            <h2 className="text-xl font-bold mb-4">✅ Eladott termékeim</h2>
+          <ProfileSection title={t('profile.soldItems')}>
             {soldProducts.length === 0 ? (
-              <p className="text-sm text-gray-500">Még nincs eladott termék.</p>
+              <p className="text-sm text-gray-500">{t('profile.emptySold')}</p>
             ) : (
               <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-2">
                 {soldProducts.map((product) => (
@@ -765,12 +794,15 @@ export default function ProfilePage() {
                 ))}
               </div>
             )}
-          </div>
+          </ProfileSection>
 
-          <div className="mt-10">
-            <h2 className="text-xl font-bold mb-4">⭐ Kapott értékelések</h2>
+            </>
+          ) : null}
+
+          {activeTab === 'reviews' ? (
+          <ProfileSection title={t('profile.reviews')}>
             {receivedReviews.length === 0 ? (
-              <p className="text-sm text-gray-500">Még nincs értékelésed.</p>
+              <p className="text-sm text-gray-500">{t('profile.noReviews')}</p>
             ) : (
               <div className="space-y-3">
                 {receivedReviews.map((review) => (
@@ -778,17 +810,20 @@ export default function ProfilePage() {
                     <div className="flex items-center justify-between">
                       <StarRating rating={review.rating} size={16} />
                       <span className="text-xs text-gray-500">
-                        {new Date(review.created_at).toLocaleDateString('hu-HU')}
+                        {new Date(review.created_at).toLocaleDateString(
+                          i18n.language?.startsWith('en') ? 'en-HU' : 'hu-HU',
+                        )}
                       </span>
                     </div>
-                    {review.comment && (
+                    {review.comment ? (
                       <p className="text-sm mt-2 text-gray-700">{review.comment}</p>
-                    )}
+                    ) : null}
                   </div>
                 ))}
               </div>
             )}
-          </div>
+          </ProfileSection>
+          ) : null}
         </div>
       </main>
     </div>

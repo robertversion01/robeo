@@ -4,8 +4,19 @@ import { useEffect, useState } from 'react';
 import { supabase } from '@/lib/supabase';
 import { useRouter } from 'next/navigation';
 import { toast } from 'sonner';
+import { useTranslation } from 'react-i18next';
+
+const AUTH_ERROR_KEYS: Record<string, string> = {
+  'Email not confirmed': 'auth.errors.emailNotConfirmed',
+  'Invalid login credentials': 'auth.errors.invalidCredentials',
+  'Invalid email': 'auth.errors.invalidEmail',
+  'Password should be at least 6 characters': 'auth.errors.passwordShort',
+  'User already registered': 'auth.errors.userExists',
+  'Email rate limit exceeded': 'auth.errors.rateLimit',
+};
 
 export default function AuthPage() {
+  const { t } = useTranslation();
   const [isLogin, setIsLogin] = useState(true);
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
@@ -34,42 +45,30 @@ export default function AuthPage() {
 
     try {
       if (isLogin) {
-        // Login
-        const { error } = await supabase.auth.signInWithPassword({
+        const { error: signInError } = await supabase.auth.signInWithPassword({
           email,
           password,
         });
-        if (error) throw error;
-        toast.success('Sikeres bejelentkezés!');
+        if (signInError) throw signInError;
+        toast.success(t('auth.successLogin'));
         router.push('/');
       } else {
-        // Signup
-        const { error } = await supabase.auth.signUp({
+        const { error: signUpError } = await supabase.auth.signUp({
           email,
           password,
         });
-        if (error) throw error;
-        toast.success('✅ Sikeres regisztráció!');
+        if (signUpError) throw signUpError;
+        toast.success(t('auth.successRegister'));
         router.push('/profile');
       }
-    } catch (err: any) {
-      let errorMessage = 'Hiba történt';
-      
-      const errorTranslations: Record<string, string> = {
-        'Email not confirmed': 'Kérjük, igazold vissza az e-mail címedet a bejelentkezés előtt!',
-        'Invalid login credentials': 'Hibás e-mail cím vagy jelszó!',
-        'Invalid email': 'Kérjük érvényes e-mail címet adj meg!',
-        'Password should be at least 6 characters': 'A jelszónak minimum 6 karakter hosszúnak kell lennie!',
-        'User already registered': 'Ez az e-mail cím már regisztrálva van!',
-        'Email rate limit exceeded': 'Túl sok kérés érkezett erről az címről. Kérjük próbáld újra később.'
-      };
-
-      if (err.message && errorTranslations[err.message]) {
-        errorMessage = errorTranslations[err.message];
-      } else if (err.message) {
-        errorMessage = err.message;
+    } catch (err: unknown) {
+      let errorMessage = t('auth.errors.generic');
+      const message = err instanceof Error ? err.message : '';
+      if (message && AUTH_ERROR_KEYS[message]) {
+        errorMessage = t(AUTH_ERROR_KEYS[message]);
+      } else if (message) {
+        errorMessage = message;
       }
-
       setError(errorMessage);
     } finally {
       setLoading(false);
@@ -87,7 +86,7 @@ export default function AuthPage() {
       <div className="w-full max-w-md">
         <div className="bg-[#142327] border border-[#22353a] rounded-3xl p-8 shadow-sm">
           <h1 className="text-3xl font-bold text-center mb-6 text-white">
-            {isLogin ? 'Belépés' : 'Regisztráció'}
+            {isLogin ? t('auth.loginTitle') : t('auth.registerTitle')}
           </h1>
 
           {error && (
@@ -97,24 +96,24 @@ export default function AuthPage() {
           )}
 
           <div className="mb-5 rounded-xl border border-[#2a3f44] bg-[#102024] px-3 py-2 text-center text-xs uppercase tracking-wide text-gray-300">
-            Regisztráció és belépés e-mail címmel
+            {t('auth.emailHint')}
           </div>
 
           <form onSubmit={handleSubmit} className="space-y-4">
             <div>
-              <label className="block mb-2 font-medium text-gray-200">E-mail cím</label>
+              <label className="block mb-2 font-medium text-gray-200">{t('auth.email')}</label>
               <input
                 type="email"
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
                 required
                 className="w-full min-h-11 px-4 rounded-xl border border-[#2f4a50] bg-[#0f1d21] text-white placeholder:text-gray-400 focus:outline-none focus:ring-1 focus:ring-[#4baab5]"
-                placeholder="pelda@email.com"
+                placeholder={t('auth.emailPlaceholder')}
               />
             </div>
 
             <div>
-              <label className="block mb-2 font-medium text-gray-200">Jelszó</label>
+              <label className="block mb-2 font-medium text-gray-200">{t('auth.password')}</label>
               <input
                 type="password"
                 value={password}
@@ -131,17 +130,21 @@ export default function AuthPage() {
               disabled={loading}
               className="w-full h-12 rounded-xl bg-[#4baab5] text-black text-base font-semibold inline-flex items-center justify-center disabled:opacity-50 disabled:cursor-not-allowed mt-1"
             >
-              {loading ? 'Folyamatban...' : isLogin ? 'Belépés' : 'Regisztráció'}
+              {loading
+                ? t('auth.processing')
+                : isLogin
+                  ? t('auth.submitLogin')
+                  : t('auth.submitRegister')}
             </button>
           </form>
 
           <div className="mt-6 text-center text-gray-300">
-            {isLogin ? 'Még nincs fiókod?' : 'Már van fiókod?'}
+            {isLogin ? t('auth.noAccount') : t('auth.hasAccount')}
             <button
               onClick={switchMode}
               className="text-[#4baab5] hover:underline ml-1 font-medium"
             >
-              {isLogin ? 'Regisztrálj' : 'Jelentkezz be'}
+              {isLogin ? t('auth.switchRegister') : t('auth.switchLogin')}
             </button>
           </div>
         </div>

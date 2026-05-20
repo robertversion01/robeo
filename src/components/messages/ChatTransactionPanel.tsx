@@ -9,11 +9,12 @@ import {
   hasFoxpostLabelDownloaded,
 } from '@/lib/foxpostLabel';
 import {
-  TX_STATUS_LABELS,
   canSellerMarkShipped,
   isPaidStatus,
   sellerShowsWaitingHint,
 } from '@/lib/transactionFlow';
+import { useTranslation } from 'react-i18next';
+import { orderStatusI18nKey } from '@/lib/orderStatusI18n';
 import { markPackageShipped, type ShippingTransaction } from '@/lib/sellerShipping';
 
 type Props = {
@@ -33,7 +34,10 @@ export default function ChatTransactionPanel({
   productId,
   userEmail,
 }: Props) {
+  const { t } = useTranslation();
   const [transaction, setTransaction] = useState<TxRow | null>(null);
+
+  const txStatusLabel = (status: string) => t(orderStatusI18nKey(status));
   const [loading, setLoading] = useState(false);
   const [acting, setActing] = useState(false);
   const [labelDownloaded, setLabelDownloaded] = useState(false);
@@ -129,12 +133,12 @@ export default function ChatTransactionPanel({
   const isSeller = transaction.seller_id === userId;
   const canDownloadLabel = isSeller && isPaidStatus(transaction.status);
   const canMarkShipped = isSeller && canSellerMarkShipped(transaction.status);
-  const statusLabel = TX_STATUS_LABELS[transaction.status] ?? transaction.status;
+  const statusLabel = txStatusLabel(transaction.status);
 
   const handleLabelDownload = () => {
     downloadFoxpostLabelStub({
       transactionId: transaction.id,
-      productName: transaction.productName || 'Termék',
+      productName: transaction.productName || t('chatTransaction.defaultProduct'),
       sellerEmail: userEmail || undefined,
       foxpostTerminalId: (transaction as { foxpost_terminal_id?: string }).foxpost_terminal_id,
       foxpostTerminalName: (transaction as { foxpost_terminal_name?: string }).foxpost_terminal_name,
@@ -143,12 +147,12 @@ export default function ChatTransactionPanel({
       buyerAddress: (transaction as { foxpost_terminal_address?: string }).foxpost_terminal_address,
     });
     setLabelDownloaded(true);
-    toast.success('Foxpost címke letöltve. Most már jelölheted „Csomag feladva”-ként!');
+    toast.success(t('chatTransaction.labelDownloaded'));
   };
 
   const handleMarkShipped = async () => {
     if (!labelDownloaded) {
-      toast.error('Először töltsd le a szállítási címkét!');
+      toast.error(t('chatTransaction.downloadLabelFirst'));
       return;
     }
     setActing(true);
@@ -159,10 +163,10 @@ export default function ChatTransactionPanel({
           setSimulating(true);
         }
       });
-      toast.success('Csomag feladva — a futár szimuláció elindult.');
+      toast.success(t('chatTransaction.shippedSuccess'));
     } catch (err) {
       console.error(err);
-      toast.error(err instanceof Error ? err.message : 'Nem sikerült frissíteni.');
+      toast.error(err instanceof Error ? err.message : t('chatTransaction.updateFailed'));
     } finally {
       setActing(false);
     }
@@ -171,7 +175,7 @@ export default function ChatTransactionPanel({
   if (!isSeller && !canDownloadLabel) {
     return (
       <div className="mx-4 mt-2 mb-1 rounded-xl border border-gray-200 bg-gray-50 px-3 py-2 text-sm text-gray-700">
-        Rendelés állapota: <strong>{statusLabel}</strong>
+        {t('chatTransaction.orderStatus')} <strong>{statusLabel}</strong>
       </div>
     );
   }
@@ -181,7 +185,7 @@ export default function ChatTransactionPanel({
       <div className="flex items-center gap-2 text-sm text-gray-800">
         <Package size={16} className="text-[#007782]" />
         <span>
-          Rendelés: <strong>{statusLabel}</strong>
+          {t('chatTransaction.orderLabel')} <strong>{statusLabel}</strong>
         </span>
       </div>
 
@@ -193,7 +197,7 @@ export default function ChatTransactionPanel({
             className="flex-1 inline-flex items-center justify-center gap-1.5 rounded-lg border border-[#007782] bg-white px-3 py-2 text-xs font-semibold text-[#007782] hover:bg-[#007782]/5"
           >
             <Download size={14} />
-            Szállítási címke letöltése
+            {t('chatTransaction.downloadLabel')}
           </button>
           <button
             type="button"
@@ -202,20 +206,20 @@ export default function ChatTransactionPanel({
             className="flex-1 inline-flex items-center justify-center gap-1.5 rounded-lg bg-[#007782] px-3 py-2 text-xs font-semibold text-white hover:bg-[#006670] disabled:opacity-50 disabled:cursor-not-allowed"
           >
             {acting ? <Loader2 size={14} className="animate-spin" /> : <Truck size={14} />}
-            Csomag feladva
+            {t('chatTransaction.markShipped')}
           </button>
         </div>
       )}
 
       {canDownloadLabel && !labelDownloaded && (
         <p className="text-[11px] text-amber-800 bg-amber-50 border border-amber-200 rounded-lg px-2 py-1.5">
-          1. lépés: töltsd le a Foxpost címkét. Utána aktiválódik a „Csomag feladva” gomb.
+          {t('chatTransaction.stepHint')}
         </p>
       )}
 
       {(sellerShowsWaitingHint(transaction.status) || simulating) && (
         <p className="text-[11px] text-gray-600">
-          Futár szimuláció folyamatban… A vevő értesítést kap minden lépésről.
+          {t('chatTransaction.simulating')}
         </p>
       )}
     </div>

@@ -3,6 +3,7 @@ import { Inter, Geist_Mono } from "next/font/google";
 import "./globals.css";
 import AppChrome from "../components/layout/AppChrome";
 import { Toaster } from "sonner";
+import { buildPageMetadata, siteConfig } from "@/lib/seo";
 
 const interSans = Inter({
   variable: "--font-inter-sans",
@@ -15,40 +16,20 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "ROBEO — Vásárolj és adj el használt ruhákat",
-  description:
-    "Biztonságos másodkéz piactér Magyarországon. Böngéssz, alkudj, fizess vevővédelemmel és válassz szállítási módot.",
+  ...buildPageMetadata({
+    title: siteConfig.defaultTitle,
+    description: siteConfig.defaultDescription,
+    path: "/",
+  }),
   keywords: [
     "robeo",
     "másodkéz",
     "használt ruházat",
-    "cipő",
-    "divat",
-    "vásárlás",
-    "eladás",
-    "piac",
-    "fenntartható",
+    "vinted",
     "magyar",
+    "piac",
   ],
-  authors: [{ name: "ROBEO" }],
-  openGraph: {
-    title: "ROBEO — Vásárolj és adj el használt ruhákat",
-    description:
-      "Biztonságos másodkéz piactér: ajánlatok, chat, Foxpost és Packeta szállítás, Stripe fizetés.",
-    type: "website",
-    locale: "hu_HU",
-    siteName: "ROBEO",
-  },
-  twitter: {
-    card: "summary_large_image",
-    title: "ROBEO — Vásárolj és adj el használt ruhákat",
-    description:
-      "Biztonságos másodkéz piactér Magyarországon. Böngéssz, alkudj, fizess vevővédelemmel.",
-  },
-  robots: {
-    index: true,
-    follow: true
-  }
+  authors: [{ name: siteConfig.name }],
 };
 
 export default function RootLayout({

@@ -1,52 +1,76 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import { supabase } from '@/lib/supabase';
 import { useSearchParams, useRouter } from 'next/navigation';
+import { useTranslation } from 'react-i18next';
 import { toast } from 'sonner';
-import { ArrowLeft, ShieldCheck } from 'lucide-react';
-import ShippingSelector, { SHIPPING_OPTIONS } from '@/components/product/ShippingSelector';
-import FoxpostTerminalPicker from '@/components/checkout/FoxpostTerminalPicker';
-import { buyerProtectionFeeLabel, calculateCheckoutTotal } from '@/lib/buyerProtection';
-import {
-  applyBundleDiscountToPrice,
-  bundleDiscountPercentForCount,
-  fetchSellerBundleDiscountSettings,
-} from '@/lib/bundleDiscount';
-import type { FoxpostTerminal } from '@/lib/foxpostTerminal';
+import { ArrowLeft } from 'lucide-react';
+import ShippingSelector, { type ShippingOption } from '@/components/product/ShippingSelector';
+import CheckoutBuyerProtectionBanner from '@/components/checkout/CheckoutBuyerProtectionBanner';
+import { calculateCheckoutTotal } from '@/lib/buyerProtection';
 import { MAIN_TOP_PADDING } from '@/lib/layoutTokens';
 
+const CATEGORY_KEYS: Record<string, string> = {
+  clothing: 'browse.categories.clothing',
+  shoes: 'browse.categories.shoes',
+  accessories: 'browse.categories.accessories',
+  electronics: 'browse.categories.electronics',
+  other: 'browse.categories.other',
+};
+
 export default function CheckoutContent() {
+  const { t, i18n } = useTranslation();
   const supabaseClient = supabase as any;
   const [loading, setLoading] = useState(true);
   const [offer, setOffer] = useState<any>(null);
   const [product, setProduct] = useState<any>(null);
   const [shippingMethod, setShippingMethod] = useState('');
   const [processingPayment, setProcessingPayment] = useState(false);
-  const [validatingCheckout, setValidatingCheckout] = useState(false);
   const [isDirectPurchase, setIsDirectPurchase] = useState(false);
   const router = useRouter();
   const searchParams = useSearchParams();
   const offerId = searchParams.get('offer');
   const productId = searchParams.get('id');
   const [amount, setAmount] = useState(0);
-  const [walletAvailable, setWalletAvailable] = useState(0);
-  const [useWallet, setUseWallet] = useState(true);
-  const [foxpostTerminal, setFoxpostTerminal] = useState<FoxpostTerminal | null>(null);
-  const [bundleItemCount, setBundleItemCount] = useState(1);
-  const [bundleDiscountPercent, setBundleDiscountPercent] = useState(0);
-  const [sellerBundleEnabled, setSellerBundleEnabled] = useState(false);
+
+  const locale = i18n.language?.startsWith('en') ? 'en-HU' : 'hu-HU';
+  const currency = t('common.currencyHuf');
+
+  const shippingOptions: ShippingOption[] = useMemo(
+    () => [
+      {
+        value: 'foxpost',
+        label: t('checkout.shippingOptions.foxpost'),
+        cost: 1190,
+        days: t('checkout.shippingOptions.foxpostDays'),
+        icon: 'foxpost',
+      },
+      {
+        value: 'packeta',
+        label: t('checkout.shippingOptions.packeta'),
+        cost: 990,
+        days: t('checkout.shippingOptions.packetaDays'),
+        icon: 'packeta',
+      },
+      {
+        value: 'home',
+        label: t('checkout.shippingOptions.home'),
+        cost: 1790,
+        days: t('checkout.shippingOptions.homeDays'),
+        icon: 'home',
+      },
+    ],
+    [t],
+  );
 
   useEffect(() => {
     if (!offerId && !productId) {
-      router.push('/');
+      router.push('/browse');
       return;
     }
-    if (offerId) {
-      loadOffer();
-    } else if (productId) {
-      loadProduct();
-    }
+    if (offerId) void loadOffer();
+    else if (productId) void loadProduct();
   }, [offerId, productId]);
 
   const loadOffer = async () => {
@@ -68,20 +92,13 @@ export default function CheckoutContent() {
     const offerData = offerDataRaw as any;
 
     if (offerError || !offerData) {
-      console.error('[checkout-ui] Offer query failed', {
-        offerId,
-        buyerId: user.id,
-        offerError,
-      });
-      toast.error('Az ajánlat nem található vagy már nem elérhető.');
-      router.push('/');
+      toast.error(t('checkout.errors.offerNotFound'));
+      router.push('/browse');
       return;
     }
 
     if ((offerData as { status?: string }).status !== 'accepted') {
-      toast.error(
-        'Csak elfogadott ajánlattal lehet fizetni. Ha ellenajánlatot kaptál, előbb fogadd el a profilodon.'
-      );
+      toast.error(t('checkout.errors.offerNotAccepted'));
       router.push('/profile');
       return;
     }
@@ -92,42 +109,16 @@ export default function CheckoutContent() {
       .eq('id', offerData.product_id)
       .single();
 
-    const productData = productDataRaw as any;
-
-    if (productError || !productData) {
-      console.error('[checkout-ui] Product for offer is missing', {
-        offerId,
-        offerProductId: offerData.product_id,
-        productError,
-      });
-      toast.error('Az ajánlathoz tartozó termék már nem található.');
-      router.push('/');
+    if (productError || !productDataRaw) {
+      toast.error(t('checkout.errors.productMissing'));
+      router.push('/browse');
       return;
     }
 
     setOffer(offerData);
-    setProduct(productData);
+    setProduct(productDataRaw);
     setAmount(offerData.offered_price);
-    await loadSellerBundleAndWallet(productData.user_id, user.id);
     setLoading(false);
-  };
-
-  const loadSellerBundleAndWallet = async (
-    sellerId: string,
-    buyerId: string,
-    itemCount = bundleItemCount,
-  ) => {
-    const [{ data: wallet }, bundleSettings] = await Promise.all([
-      supabaseClient.from('wallets').select('available_balance').eq('user_id', buyerId).maybeSingle(),
-      fetchSellerBundleDiscountSettings(supabaseClient, sellerId),
-    ]);
-    setWalletAvailable(Math.max(0, Math.round(wallet?.available_balance || 0)));
-    setSellerBundleEnabled(bundleSettings.enabled);
-    if (bundleSettings.enabled) {
-      setBundleDiscountPercent(bundleDiscountPercentForCount(bundleSettings.tiers, itemCount));
-    } else {
-      setBundleDiscountPercent(0);
-    }
   };
 
   const loadProduct = async () => {
@@ -145,45 +136,26 @@ export default function CheckoutContent() {
       .eq('id', productId)
       .single();
 
-    const productData = productDataRaw as any;
-
-    if (productError || !productData) {
-      console.error('[checkout-ui] Product query failed', {
-        productId,
-        productError,
-      });
-      toast.error('A termék nem található vagy már nem elérhető.');
-      router.push('/');
+    if (productError || !productDataRaw) {
+      toast.error(t('checkout.errors.productNotFound'));
+      router.push('/browse');
       return;
     }
 
-    if (productData.user_id === user.id) {
-      toast.error('A saját termékedet nem vásárolhatod meg.');
+    if (productDataRaw.user_id === user.id) {
+      toast.error(t('checkout.errors.ownProduct'));
       router.push(`/products/${productId}`);
       return;
     }
 
     setIsDirectPurchase(true);
-    setProduct(productData);
-    setAmount(productData.price);
-    await loadSellerBundleAndWallet(productData.user_id, user.id);
+    setProduct(productDataRaw);
+    setAmount(productDataRaw.price);
     setLoading(false);
   };
 
-  useEffect(() => {
-    if (!product?.user_id) return;
-    void supabaseClient.auth.getUser().then(({ data: { user } }) => {
-      if (user) void loadSellerBundleAndWallet(product.user_id, user.id);
-    });
-  }, [bundleItemCount, product?.user_id]);
-
-  const shippingCost = SHIPPING_OPTIONS.find((s) => s.value === shippingMethod)?.cost || 0;
-  const discountedProductPrice =
-    bundleDiscountPercent > 0 ? applyBundleDiscountToPrice(amount, bundleDiscountPercent) : amount;
-  const bundleDiscountAmount = Math.max(0, Math.round(amount - discountedProductPrice));
-  const { buyerProtectionFee, total } = calculateCheckoutTotal(discountedProductPrice, shippingCost);
-  const walletCovers = useWallet ? Math.min(walletAvailable, total) : 0;
-  const payWithCard = Math.max(0, total - walletCovers);
+  const shippingCost = shippingOptions.find((s) => s.value === shippingMethod)?.cost || 0;
+  const { buyerProtectionFee, total } = calculateCheckoutTotal(amount, shippingCost);
 
   const processPayment = async () => {
     try {
@@ -197,329 +169,184 @@ export default function CheckoutContent() {
 
       const effectiveProductId = product?.id || productId;
       if (!effectiveProductId && !offerId) {
-        console.error('[checkout-ui] Missing payment identifiers', {
-          offerId,
-          productIdFromUrl: productId,
-          productIdFromState: product?.id,
-          buyerId: user.id,
-        });
-        throw new Error('Hiányzó azonosítók: nem található termék vagy ajánlat.');
+        throw new Error(t('checkout.errors.missingIds'));
       }
 
-      // Save shipping method to the offer if applicable
       if (offerId) {
         await supabaseClient
           .from('offers')
-          .update({
-            shipping_method: shippingMethod,
-            shipping_cost: shippingCost
-          })
+          .update({ shipping_method: shippingMethod, shipping_cost: shippingCost })
           .eq('id', offerId);
-      }
-
-      // Call our Stripe checkout API
-      if (shippingMethod === 'foxpost' && !foxpostTerminal) {
-        throw new Error('Válassz Foxpost automatát a térképen!');
-      }
-
-      const checkoutPayload = {
-        productId: effectiveProductId,
-        offerId,
-        buyerId: user.id,
-        shippingMethod,
-        shippingCost,
-        bundleItemCount,
-        foxpostTerminal: shippingMethod === 'foxpost' ? foxpostTerminal : null,
-        useWallet,
-      };
-
-      const walletRes = await fetch('/api/checkout/wallet-pay', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(checkoutPayload),
-      });
-      const walletData = await walletRes.json();
-
-      if (walletRes.ok && walletData.mode === 'wallet' && walletData.successUrl) {
-        window.location.href = walletData.successUrl;
-        return;
-      }
-
-      if (walletRes.ok && walletData.mode === 'mixed' && walletData.url) {
-        window.location.href = walletData.url;
-        return;
       }
 
       const response = await fetch('/api/stripe/checkout', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(checkoutPayload),
+        body: JSON.stringify({
+          productId: effectiveProductId,
+          offerId,
+          buyerId: user.id,
+          shippingMethod,
+          shippingCost,
+        }),
       });
 
       const data = await response.json();
-
       if (!response.ok) {
-        throw new Error(data.error || 'Hiba történt a fizetés során');
+        throw new Error(data.error || t('checkout.errors.paymentFailed'));
       }
 
       window.location.href = data.url;
-    } catch (error: any) {
-      console.error('Payment error:', error);
-      toast.error(`Hiba történt: ${error.message}`);
+    } catch (error: unknown) {
+      const msg = error instanceof Error ? error.message : t('checkout.errors.paymentFailed');
+      toast.error(msg);
       setProcessingPayment(false);
     }
   };
 
-  const runPrecheck = async () => {
-    if (processingPayment) {
-      toast.info('A fizetés feldolgozás alatt van, az előellenőrzés most le van tiltva.');
-      return;
-    }
-
-    try {
-      setValidatingCheckout(true);
-
-      const { data: { user } } = await supabaseClient.auth.getUser();
-      if (!user) {
-        router.push('/auth');
-        return;
-      }
-
-      const payload = {
-        productId: product?.id || productId,
-        offerId,
-        buyerId: user.id,
-        shippingMethod,
-        shippingCost,
-        bundleItemCount,
-      };
-
-      console.log('[checkout-ui] Running precheck with payload', payload);
-
-      const response = await fetch('/api/checkout/validate', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify(payload),
-      });
-
-      const data = await response.json();
-      if (!response.ok || !data?.ok) {
-        console.error('[checkout-ui] Precheck failed', {
-          status: response.status,
-          responseData: data,
-          payload,
-        });
-        throw new Error(data?.error || 'Az előellenőrzés sikertelen.');
-      }
-
-      console.info('[checkout-ui] Precheck success', data);
-      const totalHuf = data?.pricing?.totalHuf;
-      toast.success(
-        totalHuf != null
-          ? `Előellenőrzés OK — végösszeg: ${Number(totalHuf).toLocaleString('hu-HU')} Ft`
-          : 'Előellenőrzés sikeres: azonosítók és árazás rendben.',
-      );
-    } catch (error: any) {
-      toast.error(`Előellenőrzés hiba: ${error?.message || 'Ismeretlen hiba'}`);
-    } finally {
-      setValidatingCheckout(false);
-    }
-  };
-
   const backUrl = isDirectPurchase ? `/products/${productId}` : '/messages';
+  const categoryLabel = product?.category
+    ? t(CATEGORY_KEYS[product.category] || 'browse.categories.other')
+    : '';
+
+  const formatMoney = (n: number) => `${n.toLocaleString(locale)} ${currency}`;
 
   if (loading) {
     return (
       <div className="min-h-screen bg-white text-gray-900 flex items-center justify-center">
-        <div className="animate-spin h-10 w-10 border-4 border-accent border-t-transparent rounded-full"></div>
+        <div className="animate-spin h-10 w-10 border-4 border-[#007782] border-t-transparent rounded-full" />
       </div>
     );
   }
 
+  const summaryBlock = (
+    <>
+      <h3 className="font-bold text-base mb-4">{t('checkout.summary')}</h3>
+      <div className="space-y-3 text-sm">
+        <div className="flex justify-between">
+          <span className="text-gray-600">{t('checkout.itemPrice')}</span>
+          <span className="font-medium text-gray-900 tabular-nums">{formatMoney(amount)}</span>
+        </div>
+        <div className="flex justify-between gap-2">
+          <span className="text-gray-600">{t('checkout.protectionFee')}</span>
+          <span className="font-medium text-gray-900 tabular-nums text-right">
+            {formatMoney(buyerProtectionFee)}
+          </span>
+        </div>
+        <div className="flex justify-between">
+          <span className="text-gray-600">{t('checkout.shippingFee')}</span>
+          <span className="font-medium text-gray-900 tabular-nums">{formatMoney(shippingCost)}</span>
+        </div>
+        <div className="border-t border-gray-200" />
+        <div className="flex justify-between font-bold">
+          <span className="text-gray-900">{t('checkout.total')}</span>
+          <span className="text-[#007782] text-lg tabular-nums">{formatMoney(total)}</span>
+        </div>
+      </div>
+      <p className="text-[10px] text-gray-400 text-center mt-3">{t('checkout.termsHint')}</p>
+    </>
+  );
+
+  const payButton = (
+    <div>
+      {!shippingMethod && !processingPayment ? (
+        <p className="text-xs text-amber-700 text-center mb-2">{t('checkout.selectShipping')}</p>
+      ) : null}
+      <button
+        type="button"
+        onClick={() => void processPayment()}
+        disabled={!shippingMethod || processingPayment}
+        className="w-full btn-base btn-primary disabled:opacity-50 disabled:cursor-not-allowed min-h-12"
+      >
+        {processingPayment ? (
+          <span className="flex items-center justify-center gap-2">
+            <span className="animate-spin w-4 h-4 border-2 border-white border-t-transparent rounded-full" />
+            {t('checkout.redirecting')}
+          </span>
+        ) : (
+          t('checkout.payButton', { total: total.toLocaleString(locale) })
+        )}
+      </button>
+    </div>
+  );
+
   return (
     <div className="min-h-screen bg-white text-gray-900">
-      <main className={`min-h-screen ${MAIN_TOP_PADDING} pb-16`}>
+      <main className={`min-h-screen ${MAIN_TOP_PADDING} pb-32 lg:pb-16`}>
         <div className="max-w-4xl mx-auto px-4">
-          {/* Back button + Title */}
           <div className="flex items-center gap-3 mb-4 pt-3">
-            <button onClick={() => router.push(backUrl)} className="p-2 rounded-full hover:bg-gray-100 transition-colors text-gray-700">
+            <button
+              type="button"
+              onClick={() => router.push(backUrl)}
+              className="p-2 rounded-full hover:bg-gray-100 transition-colors text-gray-700"
+              aria-label={t('checkout.back')}
+            >
               <ArrowLeft size={18} />
             </button>
-            <h1 className="text-xl font-bold">Fizetés</h1>
+            <h1 className="text-xl font-bold">{t('checkout.title')}</h1>
           </div>
 
           <div className="grid grid-cols-1 lg:grid-cols-5 gap-8">
-            {/* Left Column: Product + Shipping */}
             <div className="lg:col-span-3 space-y-6">
-              {/* Product Summary - Vinted style card */}
-              <div className="bg-white border border-gray-200 rounded-lg p-4">
+              <div className="bg-white border border-gray-200 rounded-xl p-4">
                 <div className="flex gap-3">
-                  <div className="w-20 h-20 rounded-md overflow-hidden bg-gray-100 flex-shrink-0">
+                  <div className="w-20 h-20 rounded-lg overflow-hidden bg-gray-100 flex-shrink-0">
                     {product?.image_url ? (
-                      <img src={product.image_url} alt={product.name} className="w-full h-full object-cover" />
-                    ) : (
-                      <div className="w-full h-full flex items-center justify-center text-2xl text-gray-400">📷</div>
-                    )}
+                      <img
+                        src={product.image_url}
+                        alt={product.name}
+                        className="w-full h-full object-cover"
+                      />
+                    ) : null}
                   </div>
                   <div className="flex-1 min-w-0">
                     <h3 className="font-semibold text-base truncate text-gray-900">{product?.name}</h3>
-                    <div className="text-gray-500 text-xs mt-1">
-                      {product?.category === 'clothing' ? 'Ruházat' :
-                       product?.category === 'shoes' ? 'Cipő' :
-                       product?.category === 'accessories' ? 'Kiegészítők' : product?.category}
+                    {categoryLabel ? (
+                      <div className="text-gray-500 text-xs mt-1">{categoryLabel}</div>
+                    ) : null}
+                    <div className="text-[#007782] font-bold text-lg mt-1 tabular-nums">
+                      {formatMoney(amount)}
                     </div>
-                    <div className="text-accent font-bold text-lg mt-1">
-                      {discountedProductPrice.toLocaleString('hu-HU')} Ft
-                      {bundleDiscountAmount > 0 ? (
-                        <span className="block text-xs text-gray-400 line-through font-normal">
-                          {amount.toLocaleString('hu-HU')} Ft
-                        </span>
-                      ) : null}
-                    </div>
-                    {isDirectPurchase && (
-                      <div className="text-[10px] text-gray-400 mt-0.5">Közvetlen vásárlás</div>
-                    )}
+                    {isDirectPurchase ? (
+                      <div className="text-[10px] text-gray-400 mt-0.5">{t('checkout.directPurchase')}</div>
+                    ) : null}
                   </div>
                 </div>
               </div>
 
-              {/* Shipping Selection - Vinted radio card style */}
-              <div className="bg-white border border-gray-200 rounded-lg p-4">
+              <div className="bg-white border border-gray-200 rounded-xl p-4">
                 <ShippingSelector
                   value={shippingMethod}
-                  onChange={(v) => {
-                    setShippingMethod(v);
-                    if (v !== 'foxpost') setFoxpostTerminal(null);
-                  }}
+                  onChange={setShippingMethod}
+                  options={shippingOptions}
+                  locale={locale}
                 />
-                {shippingMethod === 'foxpost' ? (
-                  <FoxpostTerminalPicker value={foxpostTerminal} onChange={setFoxpostTerminal} />
-                ) : null}
               </div>
 
-              {sellerBundleEnabled ? (
-                <div className="bg-white border border-gray-200 rounded-lg p-4">
-                  <label className="block text-sm font-medium text-gray-800 mb-2">
-                    Csomag vásárlás (kedvezmény)
-                  </label>
-                  <select
-                    value={bundleItemCount}
-                    onChange={(e) => setBundleItemCount(Number(e.target.value))}
-                    className="w-full h-10 rounded-lg border border-gray-300 px-3 text-sm"
-                  >
-                    {[1, 2, 3, 4, 5].map((n) => (
-                      <option key={n} value={n}>
-                        {n} termék{n > 1 && bundleDiscountPercent > 0 ? ` (−${bundleDiscountPercent}%)` : ''}
-                      </option>
-                    ))}
-                  </select>
-                </div>
-              ) : null}
+              <CheckoutBuyerProtectionBanner />
 
-              {/* Buyer Protection Info */}
-              <div className="bg-accent/5 border border-accent/20 rounded-lg p-3 flex items-start gap-2">
-                <ShieldCheck size={18} className="text-accent flex-shrink-0 mt-0.5" />
-                <div>
-                  <p className="text-sm font-medium text-gray-900">Vevővédelem</p>
-                  <p className="text-xs text-gray-500 mt-0.5">
-                    A vevővédelmi díj biztosítja, hogy ha a termék nem érkezik meg, 
-                    vagy nem egyezik a leírással, teljes visszatérítést kapsz.
-                  </p>
-                </div>
+              <div className="lg:hidden bg-white border border-gray-200 rounded-xl p-4">
+                {summaryBlock}
               </div>
             </div>
 
-            {/* Right Column: Price Summary - Vinted sticky sidebar */}
-            <div className="lg:col-span-2 min-w-0">
-              <div className="bg-white border border-gray-200 rounded-lg p-4 lg:sticky lg:top-20 w-full">
-                <h3 className="font-bold text-base mb-4">Összegzés</h3>
-                
-                <div className="space-y-3 text-sm">
-                  {bundleDiscountAmount > 0 ? (
-                    <div className="flex justify-between text-sm text-emerald-700">
-                      <span>Csomagkedvezmény</span>
-                      <span className="font-medium">
-                        −{bundleDiscountAmount.toLocaleString('hu-HU')} Ft
-                        <span className="block text-[10px] text-emerald-600 text-right">
-                          ({bundleDiscountPercent}% · {bundleItemCount} termék)
-                        </span>
-                      </span>
-                    </div>
-                  ) : null}
-                  <div className="flex justify-between text-sm">
-                    <span className="text-gray-600">Termék ára</span>
-                    <span className="font-medium text-gray-900">
-                      {discountedProductPrice.toLocaleString('hu-HU')} Ft
-                      {bundleDiscountAmount > 0 ? (
-                        <span className="block text-[10px] text-gray-400 line-through">
-                          {amount.toLocaleString('hu-HU')} Ft
-                        </span>
-                      ) : null}
-                    </span>
-                  </div>
-                  <div className="flex justify-between text-sm">
-                    <span className="text-gray-600" title="280 Ft + 5% a termék árára (Vinted HU)">
-                      Vevővédelem
-                    </span>
-                    <span className="font-medium text-gray-900 text-right">
-                      {buyerProtectionFee.toLocaleString('hu-HU')} Ft
-                      <span className="block text-[10px] text-gray-400 font-normal">
-                        ({buyerProtectionFeeLabel(discountedProductPrice)})
-                      </span>
-                    </span>
-                  </div>
-                  <div className="flex justify-between text-sm">
-                    <span className="text-gray-600">Szállítási díj</span>
-                    <span className="font-medium text-gray-900">
-                      {shippingCost.toLocaleString('hu-HU')} Ft
-                    </span>
-                  </div>
-                  <div className="border-t border-gray-200" />
-                  <div className="flex justify-between font-bold">
-                    <span className="text-gray-900">Összesen</span>
-                    <span className="text-accent text-lg">{total.toLocaleString('hu-HU')} Ft</span>
-                  </div>
-                </div>
-
-                {/* Pay Button */}
-                <button
-                  onClick={runPrecheck}
-                  disabled={validatingCheckout || processingPayment}
-                  className="w-full btn-base btn-secondary mt-5 disabled:opacity-50 disabled:cursor-not-allowed"
-                >
-                  {validatingCheckout ? 'Ellenőrzés...' : 'Előellenőrzés (ID validátor)'}
-                </button>
-                <button
-                  onClick={processPayment}
-                  disabled={
-                    !shippingMethod ||
-                    processingPayment ||
-                    (shippingMethod === 'foxpost' && !foxpostTerminal)
-                  }
-                  className="w-full btn-base btn-primary mt-2 disabled:opacity-50 disabled:cursor-not-allowed"
-                >
-                  {processingPayment ? (
-                    <span className="flex items-center justify-center gap-2">
-                      <span className="animate-spin w-4 h-4 border-2 border-white border-t-transparent rounded-full" />
-                      Átirányítás...
-                    </span>
-                  ) : (
-                    payWithCard > 0 && useWallet && walletCovers > 0
-                      ? `Fizetés ${payWithCard.toLocaleString('hu-HU')} Ft (kártya)`
-                      : `Fizetés ${total.toLocaleString('hu-HU')} Ft`
-                  )}
-                </button>
-
-                <p className="text-[10px] text-gray-400 text-center mt-3">
-                  A fizetés gombra kattintva elfogadod a vásárlási feltételeket.
-                </p>
+            <div className="lg:col-span-2 min-w-0 hidden lg:block">
+              <div className="bg-white border border-gray-200 rounded-xl p-4 lg:sticky lg:top-20 w-full">
+                {summaryBlock}
+                <div className="mt-5">{payButton}</div>
               </div>
             </div>
           </div>
         </div>
       </main>
+
+      <div className="lg:hidden fixed bottom-0 left-0 right-0 z-[9990] border-t border-gray-200 bg-white/95 backdrop-blur-lg px-4 py-3 pb-[calc(0.75rem+env(safe-area-inset-bottom,0px))] shadow-[0_-8px_32px_rgba(0,0,0,0.08)]">
+        <div className="flex items-center justify-between gap-3 mb-2">
+          <span className="text-sm font-semibold text-gray-900">{t('checkout.total')}</span>
+          <span className="text-lg font-bold text-[#007782] tabular-nums">{formatMoney(total)}</span>
+        </div>
+        {payButton}
+      </div>
     </div>
   );
 }

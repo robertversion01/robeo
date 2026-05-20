@@ -14,10 +14,10 @@ import {
 } from '@/lib/appNotificationsFeed';
 import { useNotifications } from '@/context/NotificationContext';
 import PageHeader from '@/components/layout/PageHeader';
-import { MAIN_TOP_PADDING } from '@/lib/layoutTokens';
+import { MAIN_TOP_PADDING, MOBILE_PAGE_BOTTOM_CLASS } from '@/lib/layoutTokens';
 import { cn } from '@/lib/utils';
 
-type FilterId = 'all' | 'offers' | 'sales' | 'other';
+type FilterId = 'all' | 'unread' | 'offers' | 'sales' | 'other';
 
 function formatWhen(iso: string, locale: string) {
   try {
@@ -42,6 +42,7 @@ function notificationCategory(row: AppNotificationRow): Exclude<FilterId, 'all'>
 
 function matchesFilter(row: AppNotificationRow, filter: FilterId) {
   if (filter === 'all') return true;
+  if (filter === 'unread') return isNotificationUnread(row);
   return notificationCategory(row) === filter;
 }
 
@@ -103,8 +104,11 @@ export default function AppNotificationsFeed() {
     [items, filter],
   );
 
+  const unreadCount = useMemo(() => items.filter((n) => isNotificationUnread(n)).length, [items]);
+
   const filterTabs: { id: FilterId; label: string }[] = [
     { id: 'all', label: t('notifications.filterAll') },
+    { id: 'unread', label: t('notifications.filterUnread', { count: unreadCount }) },
     { id: 'offers', label: t('notifications.filterOffers') },
     { id: 'sales', label: t('notifications.filterSales') },
     { id: 'other', label: t('notifications.filterOther') },
@@ -129,7 +133,7 @@ export default function AppNotificationsFeed() {
 
   if (!userId && !loading) {
     return (
-      <main className={`min-h-screen bg-white ${MAIN_TOP_PADDING} px-4 pb-20`}>
+      <main className={`min-h-screen bg-white ${MAIN_TOP_PADDING} px-4 ${MOBILE_PAGE_BOTTOM_CLASS}`}>
         <p className="text-center text-gray-600 mt-12">
           <Link href="/auth" className="text-[#007782] font-semibold hover:underline">
             {t('notifications.login')}
@@ -141,7 +145,7 @@ export default function AppNotificationsFeed() {
   }
 
   return (
-    <main className={`min-h-screen bg-white ${MAIN_TOP_PADDING} px-4 pb-20`}>
+      <main className={`min-h-screen bg-white ${MAIN_TOP_PADDING} px-4 ${MOBILE_PAGE_BOTTOM_CLASS}`}>
       <div className="max-w-lg mx-auto">
         <PageHeader
           title={t('notifications.title')}
@@ -196,7 +200,12 @@ export default function AppNotificationsFeed() {
                       : 'border-gray-200 bg-white',
                   )}
                 >
-                  <p className="font-semibold text-gray-900 text-sm">{n.title}</p>
+                  <div className="flex items-start gap-2">
+                    {unread ? (
+                      <span className="mt-1.5 h-2 w-2 shrink-0 rounded-full bg-[#007782]" aria-hidden />
+                    ) : null}
+                    <p className="font-semibold text-gray-900 text-sm flex-1">{n.title}</p>
+                  </div>
                   {n.body ? <p className="text-sm text-gray-600 mt-1">{n.body}</p> : null}
                   <p className="text-[10px] text-gray-400 mt-2">{formatWhen(n.created_at, locale)}</p>
                 </div>

@@ -50,10 +50,10 @@ export default function CategoryQuickChips({
             aria-selected={active}
             onClick={() => onCategoryChange(cat.id)}
             className={cn(
-              'shrink-0 rounded-full border px-3.5 py-1.5 text-xs font-semibold transition-colors touch-manipulation',
+              'shrink-0 rounded-full border px-4 py-2 text-xs font-bold transition-all touch-manipulation shadow-sm',
               active
-                ? 'border-[#007782] bg-[#007782] text-white'
-                : 'border-gray-200 bg-white text-gray-700 hover:border-gray-300 hover:bg-gray-50',
+                ? 'border-[#007782] bg-[#007782] text-white shadow-[0_2px_8px_rgba(0,119,130,0.35)] scale-[1.02]'
+                : 'border-gray-200 bg-white text-gray-700 hover:border-[#007782]/40 hover:bg-[#007782]/5',
             )}
           >
             {label}

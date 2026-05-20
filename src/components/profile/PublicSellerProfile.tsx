@@ -9,16 +9,18 @@ import FollowSellerButton from '@/components/product/FollowSellerButton';
 import ProductGrid from '@/components/product/ProductGrid';
 import StarRating from '@/components/review/StarRating';
 import type { Product } from '@/types';
-import { MAIN_TOP_PADDING } from '@/lib/layoutTokens';
+import { MAIN_TOP_PADDING, MOBILE_PAGE_BOTTOM_CLASS } from '@/lib/layoutTokens';
+import { useTranslation } from 'react-i18next';
 
 type Props = {
   sellerId: string;
 };
 
 export default function PublicSellerProfile({ sellerId }: Props) {
+  const { t } = useTranslation();
   const [loading, setLoading] = useState(true);
   const [products, setProducts] = useState<Product[]>([]);
-  const [displayName, setDisplayName] = useState('Eladó');
+  const [displayName, setDisplayName] = useState('');
   const [followers, setFollowers] = useState(0);
   const [following, setFollowing] = useState(0);
   const [avgRating, setAvgRating] = useState<number | null>(null);
@@ -92,10 +94,10 @@ export default function PublicSellerProfile({ sellerId }: Props) {
   };
 
   return (
-    <main className={`min-h-screen bg-white ${MAIN_TOP_PADDING} pb-20 px-4`}>
+    <main className={`min-h-screen bg-white ${MAIN_TOP_PADDING} ${MOBILE_PAGE_BOTTOM_CLASS} px-4`}>
       <div className="max-w-4xl mx-auto">
         <div className="rounded-2xl border border-gray-200 bg-gradient-to-br from-[#007782]/5 to-white p-5 mb-6">
-          <h1 className="text-2xl font-bold text-gray-900">{displayName}</h1>
+          <h1 className="text-2xl font-bold text-gray-900">{displayName || t('publicSeller.defaultName')}</h1>
           {avgRating != null ? (
             <div className="mt-2 flex items-center gap-2 text-sm text-gray-600">
               <StarRating rating={avgRating} size={16} />
@@ -106,15 +108,15 @@ export default function PublicSellerProfile({ sellerId }: Props) {
           <div className="flex gap-6 mt-4 text-sm">
             <div>
               <p className="font-bold text-gray-900">{followers}</p>
-              <p className="text-gray-500">Követő</p>
+              <p className="text-gray-500">{t('publicSeller.followers')}</p>
             </div>
             <div>
               <p className="font-bold text-gray-900">{following}</p>
-              <p className="text-gray-500">Követés</p>
+              <p className="text-gray-500">{t('publicSeller.following')}</p>
             </div>
             <div>
               <p className="font-bold text-gray-900">{products.length}</p>
-              <p className="text-gray-500">Termék</p>
+              <p className="text-gray-500">{t('publicSeller.products')}</p>
             </div>
           </div>
 
@@ -129,17 +131,17 @@ export default function PublicSellerProfile({ sellerId }: Props) {
               onClick={refreshCounts}
               className="text-xs text-gray-500 underline"
             >
-              Frissítés
+              {t('publicSeller.refresh')}
             </button>
             {viewerId === sellerId ? (
               <Link href="/profile" className="text-sm font-semibold text-[#007782] hover:underline">
-                Saját profil beállítások →
+                {t('publicSeller.ownProfileLink')}
               </Link>
             ) : null}
           </div>
         </div>
 
-        <h2 className="text-lg font-bold text-gray-900 mb-3">Eladó termékei</h2>
+        <h2 className="text-lg font-bold text-gray-900 mb-3">{t('publicSeller.listingsTitle')}</h2>
         <ProductGrid
           products={products}
           loading={loading}

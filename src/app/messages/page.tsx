@@ -4,11 +4,18 @@ import { useEffect, useState, useRef } from 'react';
 import { supabase } from '@/lib/supabase';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
+import { ChevronDown, ChevronLeft } from 'lucide-react';
 import OffersList from '@/components/product/OffersList';
 import ChatProductSummary from '@/components/messages/ChatProductSummary';
+import ChatTransactionPanel from '@/components/messages/ChatTransactionPanel';
+import {
+  buildConversationsFromMessages,
+  type MessageRow,
+} from '@/lib/conversationList';
 import { toast } from 'sonner';
 import { isUuid } from '@/lib/validators';
 import { MAIN_TOP_PADDING } from '@/lib/layoutTokens';
+import { useTranslation } from 'react-i18next';
 
 interface Message {
   id: string;
@@ -26,9 +33,11 @@ interface Conversation {
   email: string;
   last_message: string;
   last_message_time: string;
+  product_id?: string | null;
 }
 
 export default function MessagesPage() {
+  const { t, i18n } = useTranslation();
   const [user, setUser] = useState<any>(null);
   const [conversations, setConversations] = useState<Conversation[]>([]);
   const [selectedConversation, setSelectedConversation] = useState<string | null>(null);
@@ -46,10 +55,19 @@ export default function MessagesPage() {
   const selectedConversationRef = useRef<string | null>(null);
   const selectedEmailRef = useRef<string>('');
   const router = useRouter();
+  const timeLocale = i18n.language?.startsWith('en') ? 'en-HU' : 'hu-HU';
+  const [offersOpen, setOffersOpen] = useState(true);
 
   useEffect(() => {
     checkUser();
   }, []);
+
+  useEffect(() => {
+    if (typeof window === 'undefined' || !user?.id || loading) return;
+    const withId = new URLSearchParams(window.location.search).get('with');
+    if (!withId || selectedConversation === withId) return;
+    void loadConversation(withId);
+  }, [user?.id, loading, selectedConversation]);
 
   useEffect(() => {
     if (!user) return;
@@ -101,7 +119,7 @@ export default function MessagesPage() {
       const price = Number(data.price);
       setOfferMeta({
         min: Math.ceil(price * 0.6),
-        title: data.name || 'Termék',
+        title: data.name || t('messages.defaultProduct'),
       });
     })();
     return () => {
@@ -160,7 +178,7 @@ export default function MessagesPage() {
             loadConversation(activeConversationId, selectedEmailRef.current);
           }
           if (payload.eventType === 'UPDATE' && offer.status === 'countered') {
-            toast.success('Ellenajánlat érkezett, frissítve a beszélgetés.');
+            toast.success(t('messages.counterOffer'));
           }
         }
       })
@@ -197,12 +215,12 @@ export default function MessagesPage() {
       emailMap.set(u.id, u.email)
     );
 
-    const convList: Conversation[] = Array.from(convMap.entries()).map(([user_id, msg]) => ({
-      user_id,
-      email: emailMap.get(user_id) || 'Felhasználó',
-      last_message: msg.content,
-      last_message_time: msg.created_at
-    }));
+    const convList = buildConversationsFromMessages(
+      (data as MessageRow[]) || [],
+      user.id,
+      emailMap,
+      t('messages.defaultUser'),
+    ) as Conversation[];
 
     setConversations(convList);
   };
@@ -264,7 +282,7 @@ export default function MessagesPage() {
         .insert({
           sender_id: user.id,
           receiver_id: selectedConversation,
-          content: '📷 Kép',
+          content: t('messages.imagePreview'),
           message_type: 'image',
           media_url: mediaUrl,
         });
@@ -287,7 +305,7 @@ export default function MessagesPage() {
     if (!selectedConversation || !user?.id) return;
     const latestProductMessage = [...messages].reverse().find((msg) => msg.product_id);
     if (!latestProductMessage?.product_id) {
-      toast.error('Ehhez a beszélgetéshez nem találtam termék-azonosítót az ajánlathoz.');
+      toast.error(t('messages.offerNoProduct'));
       return;
     }
     if (
@@ -295,19 +313,19 @@ export default function MessagesPage() {
       !isUuid(selectedConversation) ||
       !isUuid(user.id)
     ) {
-      toast.error('Hibás azonosító(k), ezért az ajánlat nem küldhető el.');
+      toast.error(t('messages.offerBadIds'));
       return;
     }
 
     const amount = parseInt(offerAmount, 10);
     if (!Number.isFinite(amount) || amount <= 0) {
-      toast.error('Adj meg érvényes összeget.');
+      toast.error(t('messages.offerInvalidAmount'));
       return;
     }
 
     const minimum = offerMeta?.min ?? 1;
     if (amount < minimum) {
-      toast.error(`Minimum ajánlat: ${minimum.toLocaleString('hu-HU')} Ft (a listaár ~60%-a).`);
+      toast.error(t('messages.offerMinError', { min: minimum.toLocaleString(i18n.language?.startsWith('en') ? 'en-HU' : 'hu-HU') }));
       return;
     }
 
@@ -323,7 +341,7 @@ export default function MessagesPage() {
 
       if (offerErr) {
         if (offerErr.code === '23505') {
-          toast.error('Már van aktív ajánlatod ehhez a termékhez.');
+          toast.error(t('messages.offerDuplicate'));
         } else {
           throw offerErr;
         }
@@ -339,13 +357,13 @@ export default function MessagesPage() {
         is_system_message: true,
       });
 
-      toast.success('Ajánlat elküldve.');
+      toast.success(t('messages.offerSent'));
       setShowOfferModal(false);
       setOfferAmount('');
       window.dispatchEvent(new CustomEvent('offers:updated'));
     } catch (e: unknown) {
-      const msg = e instanceof Error ? e.message : 'Ismeretlen hiba';
-      toast.error('Ajánlat küldése sikertelen: ' + msg);
+      const msg = e instanceof Error ? e.message : '';
+      toast.error(t('messages.offerFailed', { msg }));
     } finally {
       setOfferSending(false);
     }
@@ -369,16 +387,18 @@ export default function MessagesPage() {
             className="w-full max-w-md rounded-t-2xl sm:rounded-2xl bg-white border border-gray-200 shadow-2xl p-5 sm:p-6"
             onClick={(e) => e.stopPropagation()}
           >
-            <h2 className="text-lg font-bold text-gray-900">Ajánlat küldése</h2>
+            <h2 className="text-lg font-bold text-gray-900">{t('messages.offerModalTitle')}</h2>
             {offerMeta ? (
               <p className="text-sm text-gray-600 mt-1 line-clamp-2">{offerMeta.title}</p>
             ) : (
-              <p className="text-sm text-amber-700 mt-1">Termék betöltése…</p>
+              <p className="text-sm text-amber-700 mt-1">{t('messages.loadingProduct')}</p>
             )}
             <p className="text-xs text-gray-500 mt-3">
               {offerMeta
-                ? `Legalább ${offerMeta.min.toLocaleString('hu-HU')} Ft (listaár ~60%-a).`
-                : 'A minimum az aktuális listaárhoz igazodik.'}
+                ? t('messages.offerMinHint', {
+                    min: offerMeta.min.toLocaleString(i18n.language?.startsWith('en') ? 'en-HU' : 'hu-HU'),
+                  })
+                : t('messages.offerMinDefault')}
             </p>
 
             <input
@@ -386,7 +406,7 @@ export default function MessagesPage() {
               inputMode="numeric"
               value={offerAmount}
               onChange={(e) => setOfferAmount(e.target.value)}
-              placeholder="Összeg (Ft)"
+              placeholder={t('messages.amountPlaceholder')}
               disabled={offerSending}
               min={offerMeta?.min ?? 1}
               className="mt-4 w-full input-base min-h-12 rounded-xl text-center text-lg font-semibold tabular-nums focus:ring-[#007782] focus:border-[#007782]"
@@ -399,7 +419,7 @@ export default function MessagesPage() {
                 onClick={() => setShowOfferModal(false)}
                 className="flex-1 btn-base btn-secondary min-h-11 rounded-xl"
               >
-                Mégse
+                {t('messages.cancel')}
               </button>
               <button
                 type="button"
@@ -407,48 +427,72 @@ export default function MessagesPage() {
                 onClick={() => void sendOffer()}
                 className="flex-1 btn-base btn-primary min-h-11 rounded-xl"
               >
-                {offerSending ? 'Küldés…' : 'Küldés'}
+                {offerSending ? t('messages.sending') : t('messages.send')}
               </button>
             </div>
           </div>
         </div>
       )}
       <main
-        className={`${MAIN_TOP_PADDING} pb-24 md:pb-8 min-h-[100dvh] md:h-screen max-w-full overflow-x-hidden`}
+        className={`${MAIN_TOP_PADDING} pb-0 md:pb-8 min-h-[100dvh] md:h-screen max-w-full overflow-x-hidden`}
       >
         <div className="max-w-6xl mx-auto h-full flex flex-col md:flex-row">
           
           {/* Offers Section */}
-          <div className={`w-full md:w-80 border-b md:border-b-0 md:border-r border-gray-200 overflow-y-auto ${selectedConversation ? 'hidden md:block' : ''}`}>
-            <div className="p-5 border-b border-gray-200">
-              <h2 className="text-xl font-bold mb-4">Beérkező ajánlatok</h2>
-              <OffersList />
+          <div className={`w-full md:w-80 border-b md:border-b-0 md:border-r border-gray-200 overflow-y-auto flex flex-col min-h-0 ${selectedConversation ? 'hidden md:flex' : ''}`}>
+            <div className="border-b border-gray-200 shrink-0">
+              <button
+                type="button"
+                onClick={() => setOffersOpen((o) => !o)}
+                className="md:hidden w-full flex items-center justify-between px-4 py-3 text-left font-bold text-gray-900 touch-manipulation"
+                aria-expanded={offersOpen}
+              >
+                {t('messages.offersCollapsible')}
+                <ChevronDown
+                  size={20}
+                  className={`transition-transform ${offersOpen ? 'rotate-180' : ''}`}
+                />
+              </button>
+              <div className={`${offersOpen ? 'block' : 'hidden'} md:block p-4 md:p-5`}>
+                <h2 className="hidden md:block text-xl font-bold mb-4">{t('messages.offersTitle')}</h2>
+                <OffersList />
+              </div>
             </div>
 
-            <h2 className="text-xl font-bold p-5 border-b border-gray-200">Beszélgetések</h2>
+            <h2 className="text-lg font-bold px-4 py-3 border-b border-gray-200 shrink-0">{t('messages.conversationsTitle')}</h2>
             
             {conversations.length === 0 ? (
               <div className="p-8 text-center text-gray-500">
-                Nincs még beszélgetésed
+                {t('messages.emptyConversations')}
               </div>
             ) : (
-              <div>
-                {conversations.map(conv => (
+              <div className="flex-1 min-h-0 overflow-y-auto">
+                {conversations.map((conv) => (
                   <button
                     key={conv.user_id}
+                    type="button"
                     onClick={() => loadConversation(conv.user_id, conv.email)}
-                    className={`w-full text-left p-5 border-b border-gray-100 hover:bg-gray-50 transition-colors ${
-                      selectedConversation === conv.user_id ? 'bg-gray-50' : ''
+                    className={`w-full text-left p-4 border-b border-gray-100 hover:bg-gray-50 transition-colors touch-manipulation ${
+                      selectedConversation === conv.user_id ? 'bg-[#007782]/5' : ''
                     }`}
                   >
                     <div className="flex items-center gap-3">
-                      <div className="w-10 h-10 rounded-full bg-[#007782]/10 flex items-center justify-center text-[#007782] font-bold">
+                      <div className="w-10 h-10 rounded-full bg-[#007782]/10 flex items-center justify-center text-[#007782] font-bold shrink-0">
                         {conv.email?.charAt(0).toUpperCase() || '?'}
                       </div>
                       <div className="flex-1 min-w-0">
-                        <div className="font-medium mb-1 truncate">{conv.email}</div>
-                        <div className="text-sm text-gray-500 truncate">{conv.last_message}</div>
+                        <div className="font-medium mb-0.5 truncate text-sm">{conv.email}</div>
+                        <div className="text-xs text-gray-500 truncate">{conv.last_message}</div>
                       </div>
+                      {conv.product_id ? (
+                        <Link
+                          href={`/products/${conv.product_id}`}
+                          onClick={(e) => e.stopPropagation()}
+                          className="shrink-0 text-[10px] font-semibold text-[#007782] hover:underline"
+                        >
+                          →
+                        </Link>
+                      ) : null}
                     </div>
                   </button>
                 ))}
@@ -457,20 +501,28 @@ export default function MessagesPage() {
           </div>
 
           {/* Chat Area */}
-          <div className={`flex-1 flex flex-col min-h-[70vh] md:min-h-0 ${selectedConversation ? 'block' : 'hidden md:flex'}`}>
+          <div className={`flex-1 flex flex-col min-h-0 ${selectedConversation ? 'flex' : 'hidden md:flex'}`}>
             {!selectedConversation ? (
               <div className="flex-1 flex items-center justify-center text-gray-500">
-                Válassz ki egy beszélgetést
+                {t('messages.selectConversation')}
               </div>
             ) : (
               <>
                 {/* Chat Header (mobile back button) */}
-                <div className="flex items-center gap-3 p-3 border-b border-gray-200 md:hidden">
+                <div className="hidden md:flex items-center gap-3 px-4 py-3 border-b border-gray-200 shrink-0">
+                  <div className="w-9 h-9 rounded-full bg-[#007782]/10 flex items-center justify-center text-[#007782] font-bold text-sm">
+                    {selectedEmail?.charAt(0).toUpperCase() || '?'}
+                  </div>
+                  <span className="font-semibold truncate">{selectedEmail}</span>
+                </div>
+                <div className="flex items-center gap-3 p-3 border-b border-gray-200 md:hidden shrink-0">
                   <button
+                    type="button"
                     onClick={closeConversation}
                     className="icon-btn text-gray-700"
+                    aria-label={t('messages.back')}
                   >
-                    ←
+                    <ChevronLeft size={22} />
                   </button>
                   <div className="w-8 h-8 rounded-full bg-[#007782]/10 flex items-center justify-center text-[#007782] font-bold text-sm">
                     {selectedEmail?.charAt(0).toUpperCase() || '?'}
@@ -478,8 +530,15 @@ export default function MessagesPage() {
                   <span className="font-medium truncate">{selectedEmail}</span>
                 </div>
                 <ChatProductSummary productId={activeProductId} />
-                {/* Messages */}
-                <div className="flex-1 overflow-y-auto p-4 md:p-6 space-y-4">
+                {user && selectedConversation ? (
+                  <ChatTransactionPanel
+                    userId={user.id}
+                    otherUserId={selectedConversation}
+                    productId={activeProductId}
+                    userEmail={user.email}
+                  />
+                ) : null}
+                <div className="flex-1 min-h-0 overflow-y-auto p-4 md:p-6 space-y-4">
                   {messages.map((msg) => {
                     const isSystem =
                       msg.message_type === 'system' ||
@@ -497,14 +556,14 @@ export default function MessagesPage() {
                                   href={checkoutMatch[1]}
                                   className="font-semibold text-[#007782] underline underline-offset-2"
                                 >
-                                  Fizetés indítása
+                                  {t('messages.payLink')}
                                 </Link>
                               </>
                             ) : (
                               msg.content
                             )}
                             <div className="mt-1 text-[10px] text-gray-400">
-                              {new Date(msg.created_at).toLocaleTimeString('hu-HU', {
+                              {new Date(msg.created_at).toLocaleTimeString(timeLocale, {
                                 hour: '2-digit',
                                 minute: '2-digit',
                               })}
@@ -527,12 +586,12 @@ export default function MessagesPage() {
                         }`}
                       >
                         {msg.message_type === 'image' && msg.media_url ? (
-                          <img src={msg.media_url} alt="chat-image" className="max-w-full rounded-lg" />
+                          <img src={msg.media_url} alt={t('messages.chatImageAlt')} className="max-w-full rounded-lg" />
                         ) : (
                           msg.content
                         )}
                         <div className={`mt-1 text-[10px] ${msg.sender_id === user.id ? 'text-white/80' : 'text-gray-500'}`}>
-                          {new Date(msg.created_at).toLocaleTimeString('hu-HU', { hour: '2-digit', minute: '2-digit' })}
+                          {new Date(msg.created_at).toLocaleTimeString(timeLocale, { hour: '2-digit', minute: '2-digit' })}
                         </div>
                       </div>
                     </div>
@@ -542,20 +601,17 @@ export default function MessagesPage() {
                 </div>
 
                 {/* Message Input */}
-                <div className="p-2.5 md:p-4 border-t border-gray-200 bg-white sticky bottom-0 z-20">
-                  {/* Offer Button */}
-                  {selectedConversation && (
-                    <div className="mb-4">
+                <div className="shrink-0 p-2.5 md:p-4 border-t border-gray-200 bg-white pb-[calc(0.625rem+env(safe-area-inset-bottom,0px))]">
+                  <form onSubmit={sendMessage} className="flex flex-nowrap items-center gap-2 max-w-full box-border">
+                    {selectedConversation && activeProductId ? (
                       <button
+                        type="button"
                         onClick={() => setShowOfferModal(true)}
-                        className="w-full btn-base btn-ghost"
+                        className="shrink-0 rounded-full border border-[#007782]/30 px-2.5 py-1.5 text-[10px] font-bold text-[#007782] hover:bg-[#007782]/5 touch-manipulation"
                       >
-                        💰 Ajánlatot teszek
+                        {t('messages.makeOffer')}
                       </button>
-                    </div>
-                  )}
-
-                   <form onSubmit={sendMessage} className="flex flex-nowrap items-center gap-2 max-w-full box-border px-0">
+                    ) : null}
                     <input
                       ref={fileInputRef}
                       type="file"
@@ -572,20 +628,21 @@ export default function MessagesPage() {
                       onClick={() => fileInputRef.current?.click()}
                       disabled={uploadingImage}
                       className="icon-btn shrink-0 bg-gray-100 border border-gray-300 hover:bg-gray-200 transition-all"
+                      aria-label={t('messages.uploadImage')}
                     >
-                      {uploadingImage ? '...' : '📷'}
+                      {uploadingImage ? '…' : '📷'}
                     </button>
                     <input
                       type="text"
                       value={newMessage}
                       onChange={(e) => setNewMessage(e.target.value)}
-                      placeholder="Üzenet írása..."
-                      className="flex-1 min-w-0 min-h-10 px-4 py-2.5 bg-gray-50 border border-gray-300 rounded-full focus:outline-none focus:border-[#007782] transition-all"
+                      placeholder={t('messages.placeholder')}
+                      className="flex-1 min-w-0 min-h-11 px-4 py-2.5 bg-gray-50 border border-gray-300 rounded-full focus:outline-none focus:border-[#007782] transition-all"
                     />
                     <button
                       type="submit"
-                      className="icon-btn shrink-0 bg-[#007782] text-white font-medium hover:bg-[#00616b] transition-all"
-                      aria-label="Üzenet küldése"
+                      className="icon-btn shrink-0 bg-[#007782] text-white font-medium hover:bg-[#00616b] transition-all min-h-11 min-w-11"
+                      aria-label={t('messages.sendAria')}
                     >
                       ➤
                     </button>
