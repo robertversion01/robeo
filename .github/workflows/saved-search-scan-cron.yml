@@ -1,0 +1,46 @@
+# Óránkénti saved-search worker — Vercel Hobby csak napi 1 cron-t enged (vercel.json: 0 21 * * *).
+# GitHub repo secret: CRON_SECRET (ugyanaz, mint Vercel Production env)
+# Opcionális repo variable: PRODUCTION_URL (default: https://robeo.vercel.app)
+
+name: Saved Search Scan (hourly)
+
+on:
+  schedule:
+    - cron: '0 * * * *'
+  workflow_dispatch:
+
+concurrency:
+  group: saved-search-scan-hourly
+  cancel-in-progress: false
+
+jobs:
+  scan:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - name: Require CRON_SECRET
+        env:
+          CRON_SECRET: ${{ secrets.CRON_SECRET }}
+        run: |
+          if [ -z "$CRON_SECRET" ]; then
+            echo "::error::CRON_SECRET nincs beállítva (GitHub → Settings → Secrets → Actions). Lásd docs/VERCEL_DEPLOY.md"
+            exit 1
+          fi
+
+      - name: GET /api/workers/saved-search-scan
+        env:
+          CRON_SECRET: ${{ secrets.CRON_SECRET }}
+          BASE_URL: ${{ vars.PRODUCTION_URL }}
+        run: |
+          URL="${BASE_URL:-https://robeo.vercel.app}"
+          echo "Scanning via ${URL}/api/workers/saved-search-scan"
+          HTTP=$(curl -sS -o /tmp/scan.json -w "%{http_code}" \
+            -H "Authorization: Bearer ${CRON_SECRET}" \
+            "${URL}/api/workers/saved-search-scan")
+          cat /tmp/scan.json || true
+          echo ""
+          if [ "$HTTP" -lt 200 ] || [ "$HTTP" -ge 300 ]; then
+            echo "::error::Worker failed HTTP $HTTP"
+            exit 1
+          fi
+          echo "Saved search scan OK (HTTP $HTTP)"

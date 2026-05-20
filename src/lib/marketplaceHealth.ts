@@ -1,5 +1,10 @@
 import { NextResponse } from 'next/server';
 import { getSupabaseAdminClient } from '@/lib/supabase';
+import {
+  GITHUB_CRON_SAVED_SEARCH_LABEL,
+  VERCEL_CRON_SAVED_SEARCH,
+  VERCEL_CRON_SAVED_SEARCH_LABEL,
+} from '@/lib/cronSchedules';
 
 /** Közös health válasz — /api/health/marketplace és /api/marketplace-health */
 export async function getMarketplaceHealthResponse() {
@@ -42,7 +47,10 @@ export async function getMarketplaceHealthResponse() {
     workers: {
       savedSearchScan: '/api/workers/saved-search-scan',
       priceWatchScan: '/api/workers/price-watch-scan',
-      cronSchedule: '0 * * * * (vercel.json)',
+      cronSchedule: {
+        vercel: `${VERCEL_CRON_SAVED_SEARCH} (${VERCEL_CRON_SAVED_SEARCH_LABEL})`,
+        githubActions: GITHUB_CRON_SAVED_SEARCH_LABEL,
+      },
     },
     deployNote:
       'Upload AI (Ollama) csak lokálisan működik a böngészőből; élesben szerver OLLAMA_URL kell.',

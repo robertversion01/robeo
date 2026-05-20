@@ -85,3 +85,33 @@ GET https://robeo.vercel.app/api/health/marketplace
 - **404** → még régi deployment
 
 GitHub: **Deployments** tabon új `vercel[bot]` sor a legújabb commit SHA-val.
+
+## 5. Cron — saved-search worker (Hobby plan)
+
+A **Vercel Hobby** csak **napi egyszeri** cron-t enged (`0 * * * *` óránként **nem** deployolható).
+
+| Forrás | Ütem | Fájl / beállítás |
+|--------|------|------------------|
+| **Vercel Cron** | `0 21 * * *` (21:00 UTC, ~23:00 magyar nyár) | `vercel.json` |
+| **GitHub Actions** | `0 * * * *` (óránként) | `.github/workflows/saved-search-scan-cron.yml` |
+
+### Kötelező env / secret
+
+| Hol | Név | Érték |
+|-----|-----|--------|
+| Vercel Production | `CRON_SECRET` | hosszú random string |
+| GitHub Actions secret | `CRON_SECRET` | **ugyanaz** mint Vercel |
+| GitHub Actions variable (opc.) | `PRODUCTION_URL` | `https://robeo.vercel.app` |
+
+A Vercel cron automatikusan küldi: `Authorization: Bearer <CRON_SECRET>`.
+
+### Kézi teszt
+
+```bash
+curl -H "Authorization: Bearer $CRON_SECRET" \
+  https://robeo.vercel.app/api/workers/saved-search-scan
+```
+
+Várható: `{"ok":true,"mode":"cron",...}`
+
+GitHub: **Actions → Saved Search Scan (hourly) → Run workflow** (secret után).

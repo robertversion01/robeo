@@ -33,7 +33,7 @@ Utolsó frissítés: marketplace round 2 (2026-05)
 
 | Terület | Állapot |
 |--------|---------|
-| Vercel cron | ✅ `vercel.json` óránként + GET handler `CRON_SECRET` |
+| Vercel cron | ✅ `vercel.json` napi 21:00 UTC (Hobby) + GitHub Actions óránként | GET handler `CRON_SECRET` |
 | Discovery rails | ✅ Dinamikus márka/méret + ár chip + feed-en is |
 | Offer flow chat | ✅ `ChatOfferActions`, `ChatBuyerOffersPanel`, vevő elutasít |
 | Upload AI | ✅ Ollama `llama3` — `uploadListingAi.ts` + wizard gomb |
