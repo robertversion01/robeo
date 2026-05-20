@@ -1,0 +1,17 @@
+{
+  "landing": {
+    "hero": {
+      "titleLine1": "Csatlakozz, és add el",
+      "titleLine2": "egykor kedvelt cuccaidat",
+      "titleLine3": "díjmentesen",
+      "register": "Regisztrálás a Robeo rendszerébe",
+      "login": "Már rendelkezem fiókkal",
+      "empty": "Még nincs kiemelt termék.",
+      "swipeHint": "Húzd oldalra a kiemelt darabokat"
+    },
+    "catalog": {
+      "loading": "Betöltés...",
+      "results": "{{count}} találat"
+    }
+  }
+}

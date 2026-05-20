@@ -1,0 +1,17 @@
+{
+  "landing": {
+    "hero": {
+      "titleLine1": "Join and sell",
+      "titleLine2": "your once-loved items",
+      "titleLine3": "for free",
+      "register": "Sign up to Robeo",
+      "login": "I already have an account",
+      "empty": "No featured items yet.",
+      "swipeHint": "Swipe to browse featured items"
+    },
+    "catalog": {
+      "loading": "Loading...",
+      "results": "{{count}} results"
+    }
+  }
+}

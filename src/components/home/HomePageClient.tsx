@@ -5,8 +5,11 @@ import Filters from '@/components/product/Filters';
 import ProductGrid from '@/components/product/ProductGrid';
 import VintedHero from '@/components/home/VintedHero';
 import { MAIN_TOP_PADDING } from '@/lib/layoutTokens';
+import { cn } from '@/lib/utils';
+import { useTranslation } from 'react-i18next';
 
 export default function HomePageClient() {
+  const { t } = useTranslation();
   const {
     allProducts,
     products,
@@ -38,7 +41,12 @@ export default function HomePageClient() {
   const isGuest = !user;
 
   const filterBar = (
-    <div className="sticky z-40 -mx-2 md:-mx-6 mb-1.5 border-b border-gray-200/90 bg-white/95 px-2 pt-1.5 pb-0 backdrop-blur-md supports-[backdrop-filter]:bg-white/80 md:px-6 shadow-sm top-[6.75rem] sm:top-11">
+    <div
+      className={cn(
+        'sticky z-40 -mx-2 mb-1.5 border-b border-gray-200/90 bg-white/95 px-2 pt-1.5 pb-0 backdrop-blur-md supports-[backdrop-filter]:bg-white/80 md:-mx-6 md:px-6 shadow-sm',
+        isGuest ? 'top-0' : 'top-11',
+      )}
+    >
       <Filters
         categories={categories}
         selectedCategory={selectedCategory}
@@ -66,8 +74,8 @@ export default function HomePageClient() {
   const catalog = (
     <>
       {filterBar}
-      <p className="text-gray-500 text-sm mb-2 tabular-nums">
-        {loading ? 'Betöltés...' : `${products.length} találat`}
+      <p className="mb-2 text-sm tabular-nums text-gray-500">
+        {loading ? t('landing.catalog.loading') : t('landing.catalog.results', { count: products.length })}
       </p>
       <ProductGrid
         products={products}
@@ -80,19 +88,19 @@ export default function HomePageClient() {
   );
 
   return (
-    <div className="bg-white text-gray-900 overflow-x-hidden max-w-[100vw] min-h-screen">
+    <div className="landing-page-root min-h-screen max-w-[100vw] overflow-x-hidden bg-white text-gray-900">
       {isGuest ? (
-        <main className="w-full max-w-[100vw] overflow-x-hidden pt-14 min-h-screen">
+        <main className="w-full max-w-[100vw] overflow-x-hidden">
           <VintedHero products={allProducts} fullScreen />
-          <div className={`max-w-7xl mx-auto px-2 md:px-6 pb-4 ${MAIN_TOP_PADDING}`}>
+          <div className="landing-catalog mx-auto max-w-7xl px-2 pb-4 pt-2 md:px-6 md:pt-3">
             {catalog}
           </div>
         </main>
       ) : (
         <main
-          className={`w-full max-w-[100vw] overflow-x-hidden ${MAIN_TOP_PADDING} pb-4 px-2 md:px-6`}
+          className={`w-full max-w-[100vw] overflow-x-hidden ${MAIN_TOP_PADDING} px-2 pb-4 md:px-6`}
         >
-          <div className="max-w-7xl mx-auto">
+          <div className="mx-auto max-w-7xl">
             <VintedHero products={allProducts} compact />
             {catalog}
           </div>

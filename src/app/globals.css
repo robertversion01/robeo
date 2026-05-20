@@ -329,13 +329,13 @@ input, textarea, select {
     transform: translateY(0);
   }
   100% {
-    transform: translateY(-64px);
+    transform: translateY(-40px);
   }
 }
 
 @keyframes masonryFloatDown {
   0% {
-    transform: translateY(-64px);
+    transform: translateY(-40px);
   }
   100% {
     transform: translateY(0);
@@ -344,10 +344,70 @@ input, textarea, select {
 
 .floating-masonry-col {
   will-change: transform;
-  animation: masonryFloatUp 28s linear infinite alternate;
+  animation: masonryFloatUp 14s linear infinite alternate;
 }
 
 .floating-masonry-col-mid {
   will-change: transform;
-  animation: masonryFloatDown 32s linear infinite alternate;
+  animation: masonryFloatDown 16s linear infinite alternate;
+}
+
+/* Guest landing — full viewport hero, no header gap */
+.landing-page-root {
+  background: #ffffff;
+}
+
+.landing-hero-shell {
+  height: 100dvh;
+  height: 100svh;
+  min-height: 100dvh;
+  min-height: 100svh;
+  max-height: 100dvh;
+  max-height: 100svh;
+}
+
+.landing-hero-header {
+  background: linear-gradient(180deg, rgba(15, 26, 29, 0.88) 0%, rgba(15, 26, 29, 0) 100%);
+}
+
+.landing-hero-masonry {
+  touch-action: pan-y pinch-zoom;
+}
+
+.landing-masonry-grid {
+  min-height: 100%;
+}
+
+.landing-masonry-column {
+  will-change: transform;
+}
+
+.landing-hero-tile {
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.22);
+}
+
+.landing-hero-cta {
+  background: linear-gradient(
+    180deg,
+    rgba(15, 26, 29, 0) 0%,
+    rgba(15, 26, 29, 0.72) 22%,
+    #0f1a1d 100%
+  );
+}
+
+.landing-catalog {
+  position: relative;
+  z-index: 1;
+  background: #ffffff;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .floating-masonry-col,
+  .floating-masonry-col-mid {
+    animation: none;
+  }
+
+  .landing-masonry-column {
+    transform: none !important;
+  }
 }
