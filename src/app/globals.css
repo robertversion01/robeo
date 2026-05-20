@@ -371,11 +371,14 @@ input, textarea, select {
 }
 
 .landing-hero-masonry {
-  touch-action: pan-y pinch-zoom;
+  touch-action: pan-x pan-y pinch-zoom;
+  -webkit-overflow-scrolling: touch;
 }
 
 .landing-masonry-grid {
-  min-height: 100%;
+  min-height: 155%;
+  height: 155%;
+  will-change: transform;
 }
 
 .landing-masonry-column {

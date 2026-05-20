@@ -16,20 +16,33 @@ interface VintedHeroProps {
 
 type HeroProduct = Product;
 
-/** Vinted-szerű változó magasságok — mobilon nagyobb tömeg, desktopon még teltebb */
+/** UI-only hero density — nem módosít backend / fetch logikát */
+export const LANDING_HERO_POOL_MAX = 64;
+export const LANDING_HERO_LOOP_REPEATS = 6;
+export const LANDING_HERO_MIN_TILES_PER_COLUMN = 22;
+export const LANDING_HERO_COLUMN_COUNT = 6;
+
+type HeroTile = {
+  product: HeroProduct;
+  imageUrl: string;
+  tileKey: string;
+};
+
 const TILE_HEIGHTS = [
-  'h-[9.5rem] sm:h-[10.5rem] md:h-[11.5rem] lg:h-[12.5rem] xl:h-[13.5rem]',
-  'h-[11rem] sm:h-[12rem] md:h-[13rem] lg:h-[14rem] xl:h-[15rem]',
-  'h-[10rem] sm:h-[11rem] md:h-[12rem] lg:h-[13rem] xl:h-[14rem]',
-  'h-[11.5rem] sm:h-[12.5rem] md:h-[13.5rem] lg:h-[14.5rem] xl:h-[15.5rem]',
-  'h-[9rem] sm:h-[10rem] md:h-[11rem] lg:h-[12rem] xl:h-[13rem]',
-  'h-[10.5rem] sm:h-[11.5rem] md:h-[12.5rem] lg:h-[13.5rem] xl:h-[14.5rem]',
-  'h-[11.25rem] sm:h-[12.25rem] md:h-[13.25rem] lg:h-[14.25rem] xl:h-[15.25rem]',
-  'h-[10.25rem] sm:h-[11.25rem] md:h-[12.25rem] lg:h-[13.25rem] xl:h-[14.25rem]',
+  'h-[8.75rem] sm:h-[9.5rem] md:h-[10.5rem] lg:h-[11.5rem] xl:h-[12.5rem]',
+  'h-[10rem] sm:h-[10.75rem] md:h-[11.75rem] lg:h-[12.75rem] xl:h-[13.75rem]',
+  'h-[9.25rem] sm:h-[10rem] md:h-[11rem] lg:h-[12rem] xl:h-[13rem]',
+  'h-[10.5rem] sm:h-[11.25rem] md:h-[12.25rem] lg:h-[13.25rem] xl:h-[14.25rem]',
+  'h-[8.5rem] sm:h-[9.25rem] md:h-[10.25rem] lg:h-[11.25rem] xl:h-[12.25rem]',
+  'h-[9.75rem] sm:h-[10.5rem] md:h-[11.5rem] lg:h-[12.5rem] xl:h-[13.5rem]',
+  'h-[10.25rem] sm:h-[11rem] md:h-[12rem] lg:h-[13rem] xl:h-[14rem]',
+  'h-[9.5rem] sm:h-[10.25rem] md:h-[11.25rem] lg:h-[12.25rem] xl:h-[13.25rem]',
+  'h-[10.75rem] sm:h-[11.5rem] md:h-[12.5rem] lg:h-[13.5rem] xl:h-[14.5rem]',
+  'h-[9rem] sm:h-[9.75rem] md:h-[10.75rem] lg:h-[11.75rem] xl:h-[12.75rem]',
 ];
 
-const FLOAT_SECONDS = 9;
-const COLUMN_TRAVEL = [68, 82, 74, 88, 76];
+const FLOAT_SECONDS = 7.5;
+const COLUMN_TRAVEL = [92, 108, 96, 112, 100, 104];
 
 function primaryImageUrl(product: Product): string | null {
   return (
@@ -37,6 +50,18 @@ function primaryImageUrl(product: Product): string | null {
     (Array.isArray(product.images) && product.images.length > 0 ? product.images[0] : null) ||
     null
   );
+}
+
+function collectImageUrls(product: HeroProduct): string[] {
+  const urls: string[] = [];
+  const push = (url: string | null | undefined) => {
+    if (url && !urls.includes(url)) urls.push(url);
+  };
+  push(product.image_url);
+  if (Array.isArray(product.images)) {
+    for (const img of product.images) push(img);
+  }
+  return urls;
 }
 
 function getFeaturedProducts(products: Product[]): HeroProduct[] {
@@ -49,10 +74,72 @@ function getFeaturedProducts(products: Product[]): HeroProduct[] {
   );
 }
 
-function getLandingProducts(products: Product[]): HeroProduct[] {
+/** Egyedi termékek poolja — max 64, kiemeltek elöl */
+function buildHeroProductPool(products: Product[]): HeroProduct[] {
   const withImages = products.filter((product) => Boolean(primaryImageUrl(product))) as HeroProduct[];
   const featured = getFeaturedProducts(withImages);
-  return (featured.length > 0 ? featured : withImages).slice(0, 24);
+  const pool: HeroProduct[] = [];
+  const seen = new Set<string>();
+
+  for (const product of [...featured, ...withImages]) {
+    if (seen.has(product.id)) continue;
+    seen.add(product.id);
+    pool.push(product);
+    if (pool.length >= LANDING_HERO_POOL_MAX) break;
+  }
+
+  return pool;
+}
+
+/** Több kép / termék → sűrű tile lista (ugyanaz a termék link, több vizuális variáns) */
+function buildHeroTiles(pool: HeroProduct[]): HeroTile[] {
+  if (pool.length === 0) return [];
+
+  const tiles: HeroTile[] = [];
+
+  for (const product of pool) {
+    const urls = collectImageUrls(product);
+    const cap = Math.max(1, Math.min(3, urls.length));
+    for (let i = 0; i < cap; i += 1) {
+      tiles.push({
+        product,
+        imageUrl: urls[i],
+        tileKey: `${product.id}-img-${i}`,
+      });
+    }
+  }
+
+  let guard = 0;
+  while (tiles.length < Math.min(pool.length * 2, 96) && guard < 12) {
+    for (const product of pool) {
+      const url = primaryImageUrl(product);
+      if (!url) continue;
+      tiles.push({
+        product,
+        imageUrl: url,
+        tileKey: `${product.id}-fill-${tiles.length}`,
+      });
+      if (tiles.length >= 96) break;
+    }
+    guard += 1;
+  }
+
+  return tiles;
+}
+
+function repeatTiles(tiles: HeroTile[], repeats: number): HeroTile[] {
+  if (tiles.length === 0) return [];
+  const out: HeroTile[] = [];
+  for (let r = 0; r < repeats; r += 1) {
+    for (let i = 0; i < tiles.length; i += 1) {
+      const tile = tiles[i];
+      out.push({
+        ...tile,
+        tileKey: `${tile.tileKey}-loop-${r}-${i}`,
+      });
+    }
+  }
+  return out;
 }
 
 function distributeColumns<T>(items: T[], columnCount: number): T[][] {
@@ -63,47 +150,54 @@ function distributeColumns<T>(items: T[], columnCount: number): T[][] {
   return cols;
 }
 
+function fillColumnTiles(tiles: HeroTile[], minTiles: number): HeroTile[] {
+  if (tiles.length === 0) return [];
+  const out: HeroTile[] = [];
+  let i = 0;
+  while (out.length < minTiles) {
+    const source = tiles[i % tiles.length];
+    out.push({
+      ...source,
+      tileKey: `${source.tileKey}-col-${out.length}`,
+    });
+    i += 1;
+  }
+  return out;
+}
+
 function HeroImageTile({
-  item,
+  tile,
   heightClass,
   priority,
 }: {
-  item: HeroProduct;
+  tile: HeroTile;
   heightClass: string;
   priority?: boolean;
 }) {
-  const url = primaryImageUrl(item);
-
   return (
     <Link
-      href={`/products/${item.id}`}
-      className={`landing-hero-tile block w-full shrink-0 overflow-hidden rounded-xl md:rounded-2xl ${heightClass}`}
+      href={`/products/${tile.product.id}`}
+      className={`landing-hero-tile block w-full shrink-0 overflow-hidden rounded-lg sm:rounded-xl md:rounded-2xl ${heightClass}`}
     >
-      {url ? (
-        <img
-          src={url}
-          alt={item.name}
-          className="h-full w-full object-cover"
-          loading={priority ? 'eager' : 'lazy'}
-          decoding="async"
-        />
-      ) : (
-        <div className="flex h-full w-full items-center justify-center bg-[#1a282c] text-xl text-gray-400">
-          📦
-        </div>
-      )}
+      <img
+        src={tile.imageUrl}
+        alt={tile.product.name}
+        className="h-full w-full object-cover"
+        loading={priority ? 'eager' : 'lazy'}
+        decoding="async"
+      />
     </Link>
   );
 }
 
 function FloatingMasonryColumn({
   colIndex,
-  loopItems,
+  tiles,
   reducedMotion,
   hiddenClass,
 }: {
   colIndex: number;
-  loopItems: HeroProduct[];
+  tiles: HeroTile[];
   reducedMotion: boolean;
   hiddenClass?: string;
 }) {
@@ -112,30 +206,37 @@ function FloatingMasonryColumn({
 
   return (
     <motion.div
-      className={`landing-masonry-column flex min-h-0 flex-col gap-1 sm:gap-1.5 md:gap-2 ${hiddenClass ?? ''}`}
+      className={`landing-masonry-column flex min-h-0 flex-col gap-0.5 sm:gap-1 md:gap-1.5 ${hiddenClass ?? ''}`}
       initial={false}
       animate={reducedMotion ? undefined : { y: direction > 0 ? [0, -travel] : [-travel, 0] }}
       transition={
         reducedMotion
           ? undefined
           : {
-              duration: FLOAT_SECONDS + colIndex * 0.6,
+              duration: FLOAT_SECONDS + colIndex * 0.45,
               repeat: Infinity,
               repeatType: 'reverse',
               ease: 'linear',
             }
       }
     >
-      {loopItems.map((item, idx) => (
+      {tiles.map((tile, idx) => (
         <HeroImageTile
-          key={`${item.id}-${colIndex}-${idx}`}
-          item={item}
+          key={tile.tileKey}
+          tile={tile}
           heightClass={TILE_HEIGHTS[(idx + colIndex) % TILE_HEIGHTS.length]}
-          priority={colIndex < 2 && idx < 2}
+          priority={colIndex < 2 && idx < 3}
         />
       ))}
     </motion.div>
   );
+}
+
+function columnVisibilityClass(colIndex: number): string | undefined {
+  if (colIndex >= 5) return 'hidden xl:flex';
+  if (colIndex >= 4) return 'hidden lg:flex';
+  if (colIndex >= 3) return 'hidden md:flex';
+  return undefined;
 }
 
 export default function VintedHero({
@@ -149,20 +250,25 @@ export default function VintedHero({
   const autoplayRef = useRef<number | null>(null);
   const lastFrameRef = useRef<number | null>(null);
 
-  const landingProducts = useMemo(() => getLandingProducts(products), [products]);
+  const heroProductPool = useMemo(() => buildHeroProductPool(products), [products]);
+  const heroTiles = useMemo(() => buildHeroTiles(heroProductPool), [heroProductPool]);
   const featuredProducts = useMemo(() => getFeaturedProducts(products).slice(0, 18), [products]);
 
-  const floatingItems = useMemo(() => {
-    if (landingProducts.length === 0) return [];
-    return [...landingProducts, ...landingProducts, ...landingProducts];
-  }, [landingProducts]);
+  const masonryColumns = useMemo(() => {
+    const looped = repeatTiles(heroTiles, LANDING_HERO_LOOP_REPEATS);
+    const distributed = distributeColumns(looped, LANDING_HERO_COLUMN_COUNT);
+    return distributed.map((col) => fillColumnTiles(col, LANDING_HERO_MIN_TILES_PER_COLUMN));
+  }, [heroTiles]);
+
+  const heroTileCount = useMemo(
+    () => masonryColumns.reduce((sum, col) => sum + col.length, 0),
+    [masonryColumns],
+  );
 
   const featuredLoopItems = useMemo(() => {
     if (featuredProducts.length === 0) return [];
     return [...featuredProducts, ...featuredProducts];
   }, [featuredProducts]);
-
-  const masonryColumns = useMemo(() => distributeColumns(floatingItems, 5), [floatingItems]);
 
   useEffect(() => {
     if (fullScreen) return;
@@ -215,53 +321,47 @@ export default function VintedHero({
 
   if (fullScreen) {
     return (
-      <section className="landing-hero-shell relative h-[100dvh] min-h-[100dvh] max-h-[100dvh] w-full overflow-hidden bg-[#0f1a1d] text-white">
+      <section
+        className="landing-hero-shell relative h-[100dvh] min-h-[100dvh] max-h-[100dvh] w-full overflow-hidden bg-[#0f1a1d] text-white"
+        data-hero-pool-size={heroProductPool.length}
+        data-hero-tile-count={heroTileCount}
+      >
         <GuestLandingHeader />
 
-        {landingProducts.length === 0 ? (
+        {heroProductPool.length === 0 ? (
           <div className="flex h-full items-center justify-center px-4 py-10 text-center text-sm text-gray-300">
             {t('landing.hero.empty')}
           </div>
         ) : (
           <>
-            {/* Vinted: teljes viewport masonry, CTA alul overlay */}
-            <div
-              className="landing-hero-masonry absolute inset-0 z-0 overflow-hidden"
-              aria-hidden={false}
-            >
-              <div className="landing-masonry-grid grid h-[115%] w-full grid-cols-3 gap-1 px-1.5 pt-[3.25rem] sm:gap-1.5 sm:px-2 md:grid-cols-4 md:gap-2 md:px-3 lg:grid-cols-5 lg:px-4">
-                {masonryColumns.map((colItems, colIndex) => (
+            <div className="landing-hero-masonry absolute inset-0 z-0 overflow-hidden">
+              <div className="landing-masonry-grid grid w-full grid-cols-3 gap-0.5 px-1 pt-[2.85rem] sm:gap-1 sm:px-1.5 md:grid-cols-4 md:gap-1 md:px-2 lg:grid-cols-5 lg:gap-1.5 lg:px-3 xl:grid-cols-6 xl:px-3.5">
+                {masonryColumns.map((colTiles, colIndex) => (
                   <FloatingMasonryColumn
                     key={`masonry-col-${colIndex}`}
                     colIndex={colIndex}
-                    loopItems={colItems}
+                    tiles={colTiles}
                     reducedMotion={!!reducedMotion}
-                    hiddenClass={
-                      colIndex === 3
-                        ? 'hidden md:flex'
-                        : colIndex === 4
-                          ? 'hidden lg:flex'
-                          : undefined
-                    }
+                    hiddenClass={columnVisibilityClass(colIndex)}
                   />
                 ))}
               </div>
             </div>
 
             <div
-              className="pointer-events-none absolute inset-x-0 top-0 z-10 h-28 bg-gradient-to-b from-[#0f1a1d] via-[#0f1a1d]/70 to-transparent"
+              className="pointer-events-none absolute inset-x-0 top-0 z-10 h-20 bg-gradient-to-b from-[#0f1a1d]/95 via-[#0f1a1d]/45 to-transparent"
               aria-hidden
             />
             <div
-              className="pointer-events-none absolute inset-x-0 bottom-0 z-10 h-[min(58vh,28rem)] bg-gradient-to-t from-[#0f1a1d] via-[#0f1a1d]/92 to-transparent"
+              className="pointer-events-none absolute inset-x-0 bottom-0 z-10 h-[min(46vh,24rem)] bg-gradient-to-t from-[#0f1a1d] via-[#0f1a1d]/88 to-transparent"
               aria-hidden
             />
           </>
         )}
 
-        <div className="landing-hero-cta absolute inset-x-0 bottom-0 z-20 px-4 pb-[max(1rem,env(safe-area-inset-bottom))] pt-6 sm:px-6 sm:pb-6">
+        <div className="landing-hero-cta absolute inset-x-0 bottom-0 z-20 px-4 pb-[max(1rem,env(safe-area-inset-bottom))] pt-4 sm:px-6 sm:pb-6">
           <motion.h2
-            className="mx-auto max-w-lg text-center font-serif text-[clamp(1.85rem,6.2vw,2.5rem)] font-semibold leading-[1.08] tracking-[-0.01em] text-white"
+            className="mx-auto max-w-lg text-center font-serif text-[clamp(1.85rem,6.2vw,2.5rem)] font-semibold leading-[1.08] tracking-[-0.01em] text-white drop-shadow-sm"
             initial={reducedMotion ? false : { opacity: 0, y: 10 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.4, ease: 'easeOut' }}
