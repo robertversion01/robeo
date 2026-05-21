@@ -113,8 +113,11 @@ export async function insertAppNotificationSafe(
   },
 ): Promise<boolean> {
   try {
+    const text = row.body ?? row.title;
     const { error } = await supabase.from('app_notifications').insert({
       ...row,
+      body: text,
+      message: text,
       is_read: false,
     });
     if (error) {
