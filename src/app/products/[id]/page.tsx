@@ -93,6 +93,24 @@ export default function ProductPage({ params }: { params: Promise<{ id: string }
 
       if (error) throw error;
       setProduct(data);
+
+      const featuredUntil = (data as Product).featured_until;
+      if (
+        featuredUntil &&
+        new Date(featuredUntil).getTime() > Date.now() &&
+        typeof window !== 'undefined'
+      ) {
+        const viewKey = `robeo_promote_view_${data.id}`;
+        if (!sessionStorage.getItem(viewKey)) {
+          sessionStorage.setItem(viewKey, '1');
+          void fetch('/api/products/promote-event', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ productId: data.id, type: 'view' }),
+          }).catch(() => undefined);
+        }
+      }
+
       void recordPriceSnapshot(supabase, data.id, data.price);
       setSelectedImageIndex(0);
 

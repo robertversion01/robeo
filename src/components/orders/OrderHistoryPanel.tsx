@@ -11,6 +11,8 @@ import { TX_STATUS } from '@/lib/transactionFlow';
 import { cn } from '@/lib/utils';
 import { Package, ChevronRight } from 'lucide-react';
 import DisputeDemoPanel from '@/components/orders/DisputeDemoPanel';
+import BundleOrderLineItems from '@/components/orders/BundleOrderLineItems';
+import { isBundleTransaction } from '@/lib/bundleLineItems';
 
 type OrderTab = 'purchases' | 'sales';
 
@@ -22,6 +24,8 @@ type TransactionRow = {
   amount: number;
   status: string;
   created_at: string;
+  bundle_product_ids?: string | null;
+  bundle_item_count?: number | null;
   product?: { id: string; name: string; image_url: string | null };
   counterparty_email?: string | null;
 };
@@ -189,7 +193,11 @@ export default function OrderHistoryPanel({ initialTab = 'purchases' }: Props) {
                 </div>
                 <div className="min-w-0 flex-1">
                   <div className="flex justify-between gap-2 items-start">
-                    <h3 className="font-semibold text-sm text-gray-900 truncate">{tx.product?.name || '—'}</h3>
+                    <h3 className="font-semibold text-sm text-gray-900 truncate">
+                      {isBundleTransaction(tx)
+                        ? t('orders.bundleTitle', { count: tx.bundle_item_count || 2 })
+                        : tx.product?.name || '—'}
+                    </h3>
                     <span className="text-sm font-bold text-[#007782] tabular-nums shrink-0">
                       {formatPrice(tx.amount)}
                     </span>
@@ -208,6 +216,16 @@ export default function OrderHistoryPanel({ initialTab = 'purchases' }: Props) {
                 </div>
                 <ChevronRight size={18} className="shrink-0 text-gray-400 self-center" />
               </Link>
+              {isBundleTransaction(tx) ? (
+                <div className="px-3 pb-1">
+                  <BundleOrderLineItems
+                    transactionId={tx.id}
+                    productId={tx.product_id}
+                    bundleProductIds={tx.bundle_product_ids}
+                    bundleItemCount={tx.bundle_item_count}
+                  />
+                </div>
+              ) : null}
               {tab === 'purchases' &&
               [TX_STATUS.ATVETELRE_VAR, TX_STATUS.SIKERESEN_ATVEVE, 'completed'].includes(tx.status) ? (
                 <div className="px-3 pb-3">

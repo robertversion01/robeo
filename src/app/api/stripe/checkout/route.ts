@@ -4,6 +4,13 @@ import { calculateCheckoutTotal } from '@/lib/buyerProtection';
 import { applyBundleDiscountToPrice } from '@/lib/bundleDiscount';
 import { getStripeInstance } from '@/lib/stripe-client';
 import { getSupabaseAdminClient, getSupabaseClient } from '@/lib/supabase';
+import { insertTransactionLineItems } from '@/lib/bundleLineItems';
+import {
+  foxpostTerminalAddress,
+  foxpostTerminalId,
+  foxpostTerminalLabel,
+  type FoxpostTerminal,
+} from '@/lib/foxpostTerminal';
 
 // Force dynamic rendering
 export const dynamic = 'force-dynamic';
@@ -31,6 +38,7 @@ export async function POST(req: NextRequest) {
       shippingCost,
       shippingMethod,
       bundleDiscountPercent,
+      foxpostTerminal,
     } = body as {
       productId?: string;
       productIds?: string[];
@@ -39,6 +47,7 @@ export async function POST(req: NextRequest) {
       shippingCost?: number;
       shippingMethod?: string;
       bundleDiscountPercent?: number;
+      foxpostTerminal?: FoxpostTerminal | null;
     };
 
     const bundleIds = Array.isArray(productIds)
@@ -66,6 +75,19 @@ export async function POST(req: NextRequest) {
     }
 
     const supabase = (getSupabaseAdminClient() || getSupabaseClient()) as any;
+
+    if (isBundleCheckout) {
+      return handleBundleCheckout({
+        stripe,
+        supabase,
+        bundleIds,
+        buyerId,
+        shippingCost,
+        shippingMethod,
+        bundleDiscountPercent,
+        foxpostTerminal: foxpostTerminal ?? null,
+      });
+    }
 
     if (!supabase) {
       console.error('Supabase configuration is missing');
@@ -350,9 +372,25 @@ async function handleBundleCheckout(ctx: {
   shippingCost?: number;
   shippingMethod?: string;
   bundleDiscountPercent?: number;
+  foxpostTerminal?: FoxpostTerminal | null;
 }) {
-  const { stripe, supabase, bundleIds, buyerId, shippingCost, shippingMethod, bundleDiscountPercent } =
-    ctx;
+  const {
+    stripe,
+    supabase,
+    bundleIds,
+    buyerId,
+    shippingCost,
+    shippingMethod,
+    bundleDiscountPercent,
+    foxpostTerminal,
+  } = ctx;
+
+  if (shippingMethod === 'foxpost' && !foxpostTerminal) {
+    return NextResponse.json(
+      { error: 'Foxpost szállításnál kötelező automata választás.' },
+      { status: 400 },
+    );
+  }
 
   const uniqueIds = [...new Set(bundleIds)].slice(0, 8);
   const { data: productsData, error: productsError } = await supabase
@@ -481,6 +519,15 @@ async function handleBundleCheckout(ctx: {
   const session = await stripe.checkout.sessions.create(checkoutSessionPayload);
 
   try {
+    const foxpostFields =
+      shippingMethod === 'foxpost' && foxpostTerminal
+        ? {
+            foxpost_terminal_id: foxpostTerminalId(foxpostTerminal) || null,
+            foxpost_terminal_name: foxpostTerminalLabel(foxpostTerminal),
+            foxpost_terminal_address: foxpostTerminalAddress(foxpostTerminal) || null,
+          }
+        : {};
+
     const baseRow = {
       id: transactionId,
       product_id: primaryProductId,
@@ -493,15 +540,37 @@ async function handleBundleCheckout(ctx: {
       status: 'payment_pending',
       checkout_session_id: session.id,
       payment_intent_id: (session.payment_intent as string) || null,
+      ...foxpostFields,
     };
-    const { error: fullErr } = await supabase.from('transactions').insert({
+    const bundleRow = {
       ...baseRow,
       bundle_item_count: products.length,
       bundle_product_ids: uniqueIds.join(','),
-    });
-    if (fullErr && /bundle_product_ids|bundle_item_count/i.test(fullErr.message)) {
-      await supabase.from('transactions').insert(baseRow);
+    };
+    const { error: fullErr } = await supabase.from('transactions').insert(bundleRow);
+    if (fullErr && /bundle_product_ids|bundle_item_count|foxpost_terminal/i.test(fullErr.message)) {
+      const { foxpost_terminal_id, foxpost_terminal_name, foxpost_terminal_address, ...withoutFoxpost } =
+        bundleRow;
+      const { error: bundleOnlyErr } = await supabase.from('transactions').insert({
+        ...withoutFoxpost,
+        bundle_item_count: products.length,
+        bundle_product_ids: uniqueIds.join(','),
+      });
+      if (bundleOnlyErr) {
+        await supabase.from('transactions').insert(baseRow);
+      }
     }
+
+    await insertTransactionLineItems(
+      supabase,
+      transactionId,
+      products.map((p) => ({
+        id: p.id,
+        name: p.name,
+        price: p.price,
+        image_url: p.image_url ?? null,
+      })),
+    );
   } catch {
     /* non-blocking */
   }

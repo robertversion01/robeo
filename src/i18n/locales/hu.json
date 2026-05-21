@@ -518,7 +518,20 @@
     "toastSuccess": "Sikeres vásárlás! A rendelésed rögzítve lett.",
     "errorTitle": "Hiba történt",
     "missingId": "Hiányzó tranzakció azonosító",
-    "notFound": "A tranzakció nem található"
+    "notFound": "A tranzakció nem található",
+    "bundleTitle": "Csomag vásárlás ({{count}} tétel)",
+    "bundleItems": "Csomag tételei"
+  },
+  "promote": {
+    "statsTitle": "Kiemelés statisztika",
+    "statsHint": "Demo megtekintések és kattintások a kiemelt termékeidre.",
+    "activeBoosts": "Aktív kiemelés",
+    "views": "Megtekintés",
+    "clicks": "Kattintás",
+    "viewsShort": "néz.",
+    "empty": "Még nincs kiemelt terméked — indíts kiemelést a listádból.",
+    "live": "Élő",
+    "ended": "Lejárt"
   },
   "checkout": {
     "title": "Fizetés",
@@ -620,6 +633,7 @@
     "browse": "Böngéssz a kínálatban",
     "salesHint": "Fizetés után jelöld feladottnak a csomagot az üzenetekben vagy itt.",
     "confirmHint": "Van csomag átvételre vár — erősítsd meg az üzenetekben, ha megkaptad.",
+    "bundleTitle": "Csomag ({{count}} tétel)",
     "status": {
       "paymentPending": "Fizetésre vár",
       "paymentFailed": "Fizetés sikertelen",

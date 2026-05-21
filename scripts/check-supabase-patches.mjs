@@ -63,6 +63,16 @@ const CHECKS = [
     label: 'product_price_snapshots',
     path: 'product_price_snapshots?select=id&limit=1',
   },
+  {
+    patch: 'patch-bundle-v2-promote.sql',
+    label: 'transaction_line_items',
+    path: 'transaction_line_items?select=id&limit=1',
+  },
+  {
+    patch: 'patch-bundle-v2-promote.sql',
+    label: 'products (promote analytics)',
+    path: 'products?select=promote_demo_views,promote_last_boosted_at&limit=1',
+  },
 ];
 
 async function probe(baseUrl, key, { patch, label, path: restPath }) {

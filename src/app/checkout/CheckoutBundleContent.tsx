@@ -117,6 +117,7 @@ export default function CheckoutBundleContent() {
           shippingMethod,
           shippingCost,
           bundleDiscountPercent: discountPercent,
+          foxpostTerminal: shippingMethod === 'foxpost' ? foxpostTerminal : null,
         }),
       });
 

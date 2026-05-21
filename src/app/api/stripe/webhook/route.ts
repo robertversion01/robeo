@@ -139,11 +139,16 @@ async function handleCheckoutSessionCompleted(event: Stripe.Event, db: any): Pro
         return;
       }
 
+      const seedViews = 12 + Math.floor(Math.random() * 38);
+      const seedClicks = Math.max(1, Math.floor(seedViews * (0.06 + Math.random() * 0.06)));
       const { error: promoteError } = await db
         .from('products')
         .update({
           featured_until: featuredUntil,
           featured_checkout_session_id: checkoutSessionId,
+          promote_last_boosted_at: new Date().toISOString(),
+          promote_demo_views: seedViews,
+          promote_demo_clicks: seedClicks,
         })
         .eq('id', promotedProductId)
         .eq('user_id', promoterId);

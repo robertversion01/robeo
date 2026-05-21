@@ -14,6 +14,12 @@ import { revalidateCatalog } from '@/app/actions/revalidateCatalog';
 import { notifyCatalogUpdated } from '@/lib/catalogRefresh';
 import { emitSaleCompletedBroadcast } from '@/lib/globalEvents';
 import { formatPrice } from '@/lib/utils';
+import {
+  isBundleTransaction,
+  resolveBundleDisplayItems,
+  type BundleLineProduct,
+} from '@/lib/bundleLineItems';
+import { getOptimizedImageUrl } from '@/lib/imageUtils';
 
 const CheckoutSuccessContent = dynamic(() => Promise.resolve(CheckoutSuccessContentComponent), {
   ssr: false,
@@ -35,6 +41,7 @@ function CheckoutSuccessContentComponent() {
   const [loading, setLoading] = useState(true);
   const [transaction, setTransaction] = useState<any>(null);
   const [product, setProduct] = useState<any>(null);
+  const [bundleItems, setBundleItems] = useState<BundleLineProduct[]>([]);
   const [error, setError] = useState<string | null>(null);
   const [purchaseToastShown, setPurchaseToastShown] = useState(false);
   const [reviewCompleted, setReviewCompleted] = useState(false);
@@ -79,6 +86,17 @@ function CheckoutSuccessContentComponent() {
 
         setTransaction({ ...transactionData, product: productData });
         setProduct(productData);
+
+        if (isBundleTransaction(transactionData)) {
+          const items = await resolveBundleDisplayItems(supabase, {
+            id: transactionData.id as string,
+            product_id: transactionData.product_id as string,
+            bundle_product_ids: transactionData.bundle_product_ids as string | null,
+          });
+          setBundleItems(items);
+        } else {
+          setBundleItems([]);
+        }
 
         try {
           await revalidateCatalog();
@@ -162,7 +180,41 @@ function CheckoutSuccessContentComponent() {
 
             <div className="mb-6 p-4 bg-gray-50 rounded-lg border border-gray-200">
               <p className="text-sm text-gray-600 mb-1">{t('checkoutSuccess.purchasedItem')}</p>
-              {product && (
+              {bundleItems.length >= 2 ? (
+                <div>
+                  <p className="text-sm font-semibold text-[#007782] mb-2">
+                    {t('checkoutSuccess.bundleTitle', { count: bundleItems.length })}
+                  </p>
+                  <ul className="space-y-2">
+                    {bundleItems.map((item) => (
+                      <li key={item.id} className="flex items-center gap-3">
+                        <div className="w-12 h-12 rounded-md overflow-hidden bg-gray-100 shrink-0">
+                          {item.image_url ? (
+                            <img
+                              src={getOptimizedImageUrl(item.image_url, 96, 96)}
+                              alt=""
+                              className="w-full h-full object-cover"
+                            />
+                          ) : (
+                            <div className="w-full h-full flex items-center justify-center text-gray-400 text-xs">
+                              📷
+                            </div>
+                          )}
+                        </div>
+                        <div className="min-w-0 flex-1">
+                          <h3 className="font-medium text-sm text-gray-900 truncate">{item.name}</h3>
+                          <p className="text-accent font-bold text-sm">{formatPrice(item.price)}</p>
+                        </div>
+                      </li>
+                    ))}
+                  </ul>
+                  {transaction?.amount ? (
+                    <p className="text-xs text-gray-500 mt-2 text-right">
+                      {t('checkout.total')}: {formatPrice(transaction.amount)}
+                    </p>
+                  ) : null}
+                </div>
+              ) : product ? (
                 <div className="flex items-center">
                   <div className="w-16 h-16 rounded-md overflow-hidden mr-3 bg-gray-100 flex-shrink-0">
                     {product.image_url ? (
@@ -182,7 +234,7 @@ function CheckoutSuccessContentComponent() {
                     <p className="text-accent font-bold">{formatPrice(product.price)}</p>
                   </div>
                 </div>
-              )}
+              ) : null}
             </div>
 
             <div className="mb-6">

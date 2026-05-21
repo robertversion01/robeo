@@ -567,7 +567,20 @@
     "toastSuccess": "Purchase successful! Your order is recorded.",
     "errorTitle": "Something went wrong",
     "missingId": "Missing transaction ID",
-    "notFound": "Transaction not found"
+    "notFound": "Transaction not found",
+    "bundleTitle": "Bundle purchase ({{count}} items)",
+    "bundleItems": "Bundle items"
+  },
+  "promote": {
+    "statsTitle": "Boost analytics",
+    "statsHint": "Demo views and clicks for your featured listings.",
+    "activeBoosts": "Active boosts",
+    "views": "Views",
+    "clicks": "Clicks",
+    "viewsShort": "views",
+    "empty": "No boosted items yet — promote a listing from your shop tab.",
+    "live": "Live",
+    "ended": "Ended"
   },
   "checkout": {
     "title": "Checkout",
@@ -669,6 +682,7 @@
     "browse": "Browse catalog",
     "salesHint": "After payment, mark the parcel as shipped in messages or here.",
     "confirmHint": "Some orders await pickup confirmation — confirm in messages when received.",
+    "bundleTitle": "Bundle ({{count}} items)",
     "status": {
       "paymentPending": "Awaiting payment",
       "paymentFailed": "Payment failed",

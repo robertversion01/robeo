@@ -28,11 +28,13 @@ import ProfileSection from '@/components/profile/ProfileSection';
 import ProfileSettingsHub from '@/components/profile/ProfileSettingsHub';
 import ProfileSignOutBar from '@/components/profile/ProfileSignOutBar';
 import SellerEngagementHub from '@/components/seller/SellerEngagementHub';
+import PromoteAnalyticsCard from '@/components/profile/PromoteAnalyticsCard';
 import ProfileMarketplaceStats from '@/components/profile/ProfileMarketplaceStats';
 import TrustSafetyBlock from '@/components/trust/TrustSafetyBlock';
 import { useTranslation } from 'react-i18next';
 import { useRouter } from 'next/navigation';
 import { useIsAdmin } from '@/hooks/useIsAdmin';
+import { markProductPromoteBoosted } from '@/lib/promoteAnalytics';
 
 export default function ProfilePage() {
   const { t, i18n } = useTranslation();
@@ -370,12 +372,19 @@ export default function ProfilePage() {
       const rawValue = featuredDrafts[productId];
       const featuredUntil = rawValue ? new Date(rawValue).toISOString() : null;
 
-      const { error } = await supabase
-        .from('products')
-        .update({ featured_until: featuredUntil })
-        .eq('id', productId);
-
-      if (error) throw error;
+      if (featuredUntil && new Date(featuredUntil).getTime() > Date.now()) {
+        await markProductPromoteBoosted(supabase, productId, featuredUntil);
+      } else {
+        const { error } = await supabase
+          .from('products')
+          .update({
+            featured_until: featuredUntil,
+            promote_demo_views: 0,
+            promote_demo_clicks: 0,
+          })
+          .eq('id', productId);
+        if (error) throw error;
+      }
 
       setAdminProducts((prev) =>
         prev.map((item) =>
@@ -722,6 +731,7 @@ export default function ProfilePage() {
 
           {activeTab === 'shop' ? (
             <>
+          <PromoteAnalyticsCard userId={user?.id} />
           <SellerEngagementHub products={products} />
           <ProfileSection
             title={t('profile.myListings')}
