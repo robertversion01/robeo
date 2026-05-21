@@ -14,9 +14,12 @@ Ha itt megvan a commit → a kód rendben van, a **Vercel kapcsolat** a gond.
 2. Nyisd meg a **robeo** projektet (ha több van, a helyes domaint keresd: `robeo.vercel.app`)
 3. **Deployments** fül
 4. Jobb felső: **Create Deployment**
-5. **Branch:** `main`
-6. **Commit:** válaszd a legfrissebbet (`2ad1fa8` vagy újabb)
+5. **Ne csak** `2ad1fa8` — a mezőbe írd: **`main`** (branch neve), vagy a teljes SHA:
+   `2ad1fa89956f05215d7fdaf474ea7c36d0691bee`
+6. Ha kéri: **Branch = `main`**, **Production** environment → pipáld be
 7. **Deploy**
+
+Ha Hobby cron hiba jelenik meg (`0 */4 * * *`): frissítsd a repót (`vercel.json` csak 1 napi cron) — lásd legújabb `main`.
 
 Ha **Create Deployment** nincs vagy más repo látszik:
 

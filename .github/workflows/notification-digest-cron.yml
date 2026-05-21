@@ -1,0 +1,43 @@
+# Napi értesítés digest — Vercel Hobby: csak saved-search marad vercel.json-ban.
+
+name: Notification Digest (daily)
+
+on:
+  schedule:
+    - cron: '0 6 * * *'
+  workflow_dispatch:
+
+concurrency:
+  group: notification-digest-daily
+  cancel-in-progress: false
+
+jobs:
+  digest:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - name: Require CRON_SECRET
+        env:
+          CRON_SECRET: ${{ secrets.CRON_SECRET }}
+        run: |
+          if [ -z "$CRON_SECRET" ]; then
+            echo "::error::CRON_SECRET missing"
+            exit 1
+          fi
+
+      - name: GET /api/workers/notification-digest
+        env:
+          CRON_SECRET: ${{ secrets.CRON_SECRET }}
+          BASE_URL: ${{ vars.PRODUCTION_URL }}
+        run: |
+          URL="${BASE_URL:-https://robeo.vercel.app}"
+          HTTP=$(curl -sS -o /tmp/digest.json -w "%{http_code}" \
+            -H "Authorization: Bearer ${CRON_SECRET}" \
+            "${URL}/api/workers/notification-digest")
+          cat /tmp/digest.json || true
+          echo ""
+          if [ "$HTTP" -lt 200 ] || [ "$HTTP" -ge 300 ]; then
+            echo "::error::Notification digest failed HTTP $HTTP"
+            exit 1
+          fi
+          echo "Notification digest OK (HTTP $HTTP)"

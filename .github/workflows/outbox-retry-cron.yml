@@ -1,0 +1,44 @@
+# Outbox retry — Vercel Hobby: max 1×/nap cron (vercel.json csak saved-search).
+# GitHub secret: CRON_SECRET
+
+name: Outbox Retry (every 4h)
+
+on:
+  schedule:
+    - cron: '0 */4 * * *'
+  workflow_dispatch:
+
+concurrency:
+  group: outbox-retry-4h
+  cancel-in-progress: false
+
+jobs:
+  retry:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - name: Require CRON_SECRET
+        env:
+          CRON_SECRET: ${{ secrets.CRON_SECRET }}
+        run: |
+          if [ -z "$CRON_SECRET" ]; then
+            echo "::error::CRON_SECRET missing — GitHub → Settings → Secrets → Actions"
+            exit 1
+          fi
+
+      - name: GET /api/workers/outbox-retry
+        env:
+          CRON_SECRET: ${{ secrets.CRON_SECRET }}
+          BASE_URL: ${{ vars.PRODUCTION_URL }}
+        run: |
+          URL="${BASE_URL:-https://robeo.vercel.app}"
+          HTTP=$(curl -sS -o /tmp/outbox.json -w "%{http_code}" \
+            -H "Authorization: Bearer ${CRON_SECRET}" \
+            "${URL}/api/workers/outbox-retry")
+          cat /tmp/outbox.json || true
+          echo ""
+          if [ "$HTTP" -lt 200 ] || [ "$HTTP" -ge 300 ]; then
+            echo "::error::Outbox retry failed HTTP $HTTP"
+            exit 1
+          fi
+          echo "Outbox retry OK (HTTP $HTTP)"
