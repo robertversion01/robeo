@@ -17,6 +17,7 @@ import SellerBundleHint from '@/components/product/SellerBundleHint';
 import SellerClosetBundle from '@/components/product/SellerClosetBundle';
 import SellerMoreListings from '@/components/product/SellerMoreListings';
 import PriceHistoryBadge from '@/components/product/PriceHistoryBadge';
+import PriceHistorySparkline from '@/components/product/PriceHistorySparkline';
 import TrustSafetyBlock from '@/components/trust/TrustSafetyBlock';
 import SellerTrustPanel from '@/components/profile/SellerTrustPanel';
 import BundleOfferModal from '@/components/product/BundleOfferModal';
@@ -389,6 +390,7 @@ export default function ProductPage({ params }: { params: Promise<{ id: string }
                 </div>
                 <PriceHistoryBadge productId={product.id} currentPrice={product.price} />
               </div>
+              <PriceHistorySparkline productId={product.id} currentPrice={product.price} />
 
               <SellerBundleHint sellerId={product.user_id} />
               <TrustSafetyBlock variant="compact" className="mb-3" />

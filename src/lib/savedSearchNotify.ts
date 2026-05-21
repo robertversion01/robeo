@@ -12,6 +12,11 @@ import {
 } from '@/lib/savedSearchWorkerState';
 import { routeMarketplaceNotification } from '@/lib/notificationChannels';
 import { requestNotificationFlush } from '@/lib/notificationFlushClient';
+import {
+  loadServerNotificationDedupe,
+  markServerNotificationDedupe,
+  wasRecentlyNotified,
+} from '@/lib/notificationDedupe';
 
 const NOTIFY_DEDUPE_KEY = 'robeo_saved_search_notify_dedupe_v1';
 
@@ -78,7 +83,11 @@ export async function runSavedSearchAlertScan(
   let notified = 0;
   let outboundQueued = 0;
   const { state: workerState, useAdmin } = await resolveWorkerState(supabase, userId);
-  const dedupe = readDedupe();
+  const isServer = typeof window === 'undefined';
+  const dedupe = isServer
+    ? await loadServerNotificationDedupe(supabase, userId, 'saved_search')
+    : readDedupe();
+  const dedupeKeysToMark: string[] = [];
   let nextState = { ...workerState };
 
   for (const search of saved) {
@@ -89,7 +98,7 @@ export async function runSavedSearchAlertScan(
 
     const top = matches[0];
     const dedupeKey = `${search.id}:${top.id}`;
-    if (dedupe[dedupeKey]) {
+    if (wasRecentlyNotified(dedupe, dedupeKey)) {
       nextState = mergeSeenIds(nextState, search.id, matches.map((m) => m.id));
       continue;
     }
@@ -111,7 +120,8 @@ export async function runSavedSearchAlertScan(
     if (delivered) {
       if (routed.inApp) notified += 1;
       if (routed.push || routed.email) outboundQueued += 1;
-      dedupe[dedupeKey] = Date.now();
+      dedupeKeysToMark.push(dedupeKey);
+      if (!isServer) dedupe[dedupeKey] = Date.now();
       nextState = mergeSeenIds(
         nextState,
         search.id,
@@ -120,7 +130,11 @@ export async function runSavedSearchAlertScan(
     }
   }
 
-  writeDedupe(dedupe);
+  if (isServer && dedupeKeysToMark.length > 0) {
+    await markServerNotificationDedupe(supabase, userId, 'saved_search', dedupeKeysToMark);
+  } else if (!isServer) {
+    writeDedupe(dedupe);
+  }
   await persistWorkerState(supabase, userId, nextState, useAdmin);
 
   if ((notified > 0 || outboundQueued > 0) && typeof window !== 'undefined') {

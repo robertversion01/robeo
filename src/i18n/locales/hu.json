@@ -155,7 +155,9 @@
     "moreFromSeller": "Több ettől az eladótól",
     "viewCloset": "Szekrény",
     "priceDropped": "{{from}} → {{to}} Ft",
-    "priceDroppedShort": "Árcsökkenés"
+    "priceDroppedShort": "Árcsökkenés",
+    "priceHistory": "Ártörténet",
+    "priceTrendDown": "Csökkenő trend"
   },
   "closet": {
     "pageTitle": "Eladó szekrénye",

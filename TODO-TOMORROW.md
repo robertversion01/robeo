@@ -1,6 +1,6 @@
 # ROBEO — Development TODO (V1 Next.js monolith)
 
-Utolsó frissítés: admin RBAC + moderáció + backend cleanup
+Utolsó frissítés: értesítés outbox retry + árfigyelő szinkron + PDP ártörténet
 
 ---
 
@@ -47,9 +47,10 @@ Utolsó frissítés: admin RBAC + moderáció + backend cleanup
 ### Értesítések
 - [ ] Resend **domain verify** — sandbox csak regisztrált címre küld
 - [ ] Web Push előfizetés E2E — Profil → Kézbesítés, `public/sw.js`
-- [ ] Outbox retry / cleanup ha push/email fail
+- [x] Outbox retry / cleanup — max 5 próba, 7 nap TTL, `/api/workers/outbox-retry` cron
 - [x] Price-watch **szerver cron** — `patch-vinted-advanced.sql` + GitHub hourly workflow
-- [ ] Szerver oldali dedupe (ne csak `localStorage`)
+- [x] Szerver oldali dedupe — `notificationDedupe.ts` (saved_search + price_drop)
+- [x] Price-watch **kliens → szerver szinkron** — `POST /api/price-watch/sync`
 
 ### Szállítás
 - [ ] Foxpost **live partner API** — állítsd be `FOXPOST_API_URL` + `FOXPOST_API_KEY` (registry mode már működik)
@@ -70,7 +71,7 @@ Utolsó frissítés: admin RBAC + moderáció + backend cleanup
 ## B) Next logical Vinted features
 
 - [ ] Szerver oldali katalógus keresés + URL sync finomhangolás
-- [ ] Ár history grafikon PDP-n (`PriceHistoryBadge` + snapshots)
+- [x] Ár history grafikon PDP-n — `PriceHistorySparkline` + snapshots
 - [ ] Követés → `seller_new_item` push/email teszt
 - [ ] Seller trust: valós válaszidő aggregátum
 - [ ] Bundle checkout v2 — line items, orders UI

@@ -24,4 +24,7 @@ export type NotificationOutboxItem = {
   channel: DeliveryChannel;
   payload: RoutedNotificationPayload;
   createdAt: string;
+  /** Sikertelen kézbesítés után növekszik (max 5). */
+  attempts?: number;
+  lastAttemptAt?: string;
 };

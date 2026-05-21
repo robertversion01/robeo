@@ -12,6 +12,7 @@ import {
   upsertPriceWatch,
   type PriceDropHit,
 } from '@/lib/priceWatch';
+import { syncPriceWatchesToServer } from '@/lib/priceWatchSync';
 import type { Product } from '@/types';
 
 type Props = {
@@ -36,11 +37,13 @@ export default function FavoritePriceWatchPanel({ products }: Props) {
       }
     }
     setWatches(listPriceWatches());
+    const next = listPriceWatches();
     setDrops(
       detectPriceDrops(
         products.map((p) => ({ id: p.id, name: p.name, price: p.price })),
       ),
     );
+    void syncPriceWatchesToServer(next);
   }, [products]);
 
   const watchedCount = useMemo(
@@ -113,7 +116,9 @@ export default function FavoritePriceWatchPanel({ products }: Props) {
                     alertEnabled: true,
                   });
                 }
-                setWatches(listPriceWatches());
+                const next = listPriceWatches();
+                setWatches(next);
+                void syncPriceWatchesToServer(next);
               }}
               className={`rounded-full px-2.5 py-1 text-[11px] font-medium border ${
                 on

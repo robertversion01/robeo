@@ -155,7 +155,9 @@
     "moreFromSeller": "More from this seller",
     "viewCloset": "Closet",
     "priceDropped": "{{from}} → {{to}} Ft",
-    "priceDroppedShort": "Price drop"
+    "priceDroppedShort": "Price drop",
+    "priceHistory": "Price history",
+    "priceTrendDown": "Downward trend"
   },
   "closet": {
     "pageTitle": "Seller closet",
