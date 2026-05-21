@@ -11,7 +11,10 @@
     "deploy:trigger": "node scripts/trigger-vercel-deploy.mjs",
     "rotate:cron-secret": "node scripts/rotate-cron-secret.mjs",
     "db:apply-patch": "node scripts/apply-supabase-patch.mjs",
-    "db:ensure-schema": "node scripts/ensure-marketplace-schema.mjs"
+    "db:ensure-schema": "node scripts/ensure-marketplace-schema.mjs",
+    "db:check-patches": "node scripts/check-supabase-patches.mjs",
+    "test:wallet-release": "node scripts/run-wallet-release-e2e.mjs",
+    "test:notifications": "node scripts/run-e2e-notification-pipeline.mjs"
   },
   "dependencies": {
     "@stripe/stripe-js": "^9.4.0",

@@ -151,7 +151,23 @@ export async function POST(req: NextRequest) {
       );
     }
 
-    return NextResponse.json({ success: true, captured });
+    const { data: sellerWallet } = await supabase
+      .from('wallets')
+      .select('available_balance, pending_balance')
+      .eq('user_id', transaction.seller_id)
+      .maybeSingle();
+
+    return NextResponse.json({
+      success: true,
+      captured,
+      walletReleased: true,
+      sellerWallet: sellerWallet
+        ? {
+            available: sellerWallet.available_balance,
+            pending: sellerWallet.pending_balance,
+          }
+        : null,
+    });
   } catch (error: unknown) {
     const message = error instanceof Error ? error.message : 'Failed to confirm transaction';
     console.error('[transactions.confirm] error', error);

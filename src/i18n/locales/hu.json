@@ -288,7 +288,11 @@
       "hintEnv": "Éles küldéshez Vercelen állítsd be a VAPID kulcsokat és Resend/SMTP változókat (.env.example).",
       "pushReady": "Push feliratkozás mentve.",
       "pushFailed": "Push bekapcsolása sikertelen (engedély vagy szerver kulcs).",
-      "pushUnsupported": "A böngésző nem támogatja a push értesítést."
+      "pushUnsupported": "A böngésző nem támogatja a push értesítést.",
+      "pushE2eHint": "Kapcsold be, majd küldj teszt értesítést. A service worker: /sw.js",
+      "vapidMissing": "VAPID kulcs hiányzik — állítsd be a .env.local-ban.",
+      "testPush": "Teszt push küldése",
+      "testPushOk": "Teszt push elküldve ({{sent}} eszköz)."
     },
     "language": {
       "title": "Nyelv"
@@ -313,6 +317,7 @@
     "responseFast": "Gyorsan válaszol",
     "responseNormal": "Aktív eladó",
     "responseNew": "Új eladó a piactéren",
+    "responseSlow": "Lassabb válaszidő",
     "trustScore": "Bizalmi pont: {{score}}",
     "active": "Aktív eladó"
   },

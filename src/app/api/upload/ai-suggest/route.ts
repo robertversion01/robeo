@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { suggestListingCopy, type ListingAiInput } from '@/lib/uploadListingAi';
 import { isOllamaReachable } from '@/lib/ollamaClient';
+import { isUploadAiEnabled, uploadAiDisabledMessage } from '@/lib/ollamaFeature';
 
 export const dynamic = 'force-dynamic';
 
@@ -10,6 +11,13 @@ export async function POST(req: NextRequest) {
     const body = (await req.json()) as ListingAiInput;
     if (!body?.category || !body?.brand) {
       return NextResponse.json({ error: 'category and brand required' }, { status: 400 });
+    }
+
+    if (!isUploadAiEnabled()) {
+      return NextResponse.json(
+        { error: 'upload_ai_disabled', hint: uploadAiDisabledMessage() },
+        { status: 503 },
+      );
     }
 
     const reachable = await isOllamaReachable();

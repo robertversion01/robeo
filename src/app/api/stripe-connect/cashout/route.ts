@@ -21,7 +21,7 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: 'userId is required' }, { status: 400 });
     }
 
-    const db = getSupabaseAdminClient() as any;
+    const db = getSupabaseAdminClient();
     if (!db) {
       return NextResponse.json(
         { error: 'Server database (service role) is required for payouts' },

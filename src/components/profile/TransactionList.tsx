@@ -248,6 +248,13 @@ export default function TransactionList() {
       await notifyTransactionStatusBothParties(supabase, transaction, TX_STATUS.SIKERESEN_ATVEVE);
 
       toast.success('Köszönjük! A pénz felszabadult az eladó számára.');
+      if (typeof window !== 'undefined') {
+        window.dispatchEvent(
+          new CustomEvent('wallet:updated', {
+            detail: { sellerId: transaction.seller_id, transactionId: transaction.id },
+          }),
+        );
+      }
       void loadTransactions();
     } catch (error: unknown) {
       const msg = error instanceof Error ? error.message : 'Hiba történt a lezárás során';

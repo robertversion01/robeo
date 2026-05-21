@@ -10,6 +10,7 @@ import { orderStatusI18nKey } from '@/lib/orderStatusI18n';
 import { TX_STATUS } from '@/lib/transactionFlow';
 import { cn } from '@/lib/utils';
 import { Package, ChevronRight } from 'lucide-react';
+import DisputeDemoPanel from '@/components/orders/DisputeDemoPanel';
 
 type OrderTab = 'purchases' | 'sales';
 
@@ -170,10 +171,10 @@ export default function OrderHistoryPanel({ initialTab = 'purchases' }: Props) {
       ) : (
         <ul className="space-y-3">
           {rows.map((tx) => (
-            <li key={tx.id}>
+            <li key={tx.id} className="rounded-xl border border-gray-200 bg-white overflow-hidden">
               <Link
                 href={detailHref(tx)}
-                className="flex gap-3 rounded-xl border border-gray-200 bg-white p-3 hover:border-[#007782]/40 hover:bg-[#007782]/5 transition-colors touch-manipulation"
+                className="flex gap-3 p-3 hover:border-[#007782]/40 hover:bg-[#007782]/5 transition-colors touch-manipulation"
               >
                 <div className="h-16 w-16 shrink-0 rounded-lg overflow-hidden bg-gray-100">
                   {tx.product?.image_url ? (
@@ -207,6 +208,12 @@ export default function OrderHistoryPanel({ initialTab = 'purchases' }: Props) {
                 </div>
                 <ChevronRight size={18} className="shrink-0 text-gray-400 self-center" />
               </Link>
+              {tab === 'purchases' &&
+              [TX_STATUS.ATVETELRE_VAR, TX_STATUS.SIKERESEN_ATVEVE, 'completed'].includes(tx.status) ? (
+                <div className="px-3 pb-3">
+                  <DisputeDemoPanel transactionId={tx.id} productName={tx.product?.name} />
+                </div>
+              ) : null}
             </li>
           ))}
         </ul>

@@ -1,4 +1,5 @@
 import type { SupabaseClient } from '@supabase/supabase-js';
+import { fetchSellerResponseStats } from '@/lib/sellerResponseTime';
 
 export type SellerTrustSignals = {
   verified: boolean;
@@ -10,8 +11,12 @@ export type SellerTrustSignals = {
   /** 0–100 heurisztikus bizalmi pont (frontend) */
   trustScore: number;
   activeSeller: boolean;
-  /** Frontend becslés — nincs külön DB mező */
-  responseLabelKey: 'sellerTrust.responseFast' | 'sellerTrust.responseNormal' | 'sellerTrust.responseNew';
+  responseLabelKey:
+    | 'sellerTrust.responseFast'
+    | 'sellerTrust.responseNormal'
+    | 'sellerTrust.responseSlow'
+    | 'sellerTrust.responseNew';
+  medianResponseHours: number | null;
 };
 
 export function computeTrustScore(input: {
@@ -36,7 +41,7 @@ export async function fetchSellerTrustSignals(
   supabase: SupabaseClient,
   sellerId: string,
 ): Promise<SellerTrustSignals> {
-  const [profileRes, productsRes, reviewsRes, followersRes] = await Promise.all([
+  const [profileRes, productsRes, reviewsRes, followersRes, responseStats] = await Promise.all([
     supabase.from('profiles').select('created_at, seller_verified').eq('id', sellerId).maybeSingle(),
     supabase
       .from('products')
@@ -48,6 +53,7 @@ export async function fetchSellerTrustSignals(
       .from('follows')
       .select('*', { count: 'exact', head: true })
       .eq('following_id', sellerId),
+    fetchSellerResponseStats(supabase, sellerId),
   ]);
 
   const ratings = (reviewsRes.data || []).map((r) => Number(r.rating)).filter((n) => n > 0);
@@ -61,12 +67,12 @@ export async function fetchSellerTrustSignals(
   const created = profileRes.data?.created_at as string | undefined;
   const verified = Boolean(profileRes.data?.seller_verified);
 
-  let responseLabelKey: SellerTrustSignals['responseLabelKey'] = 'sellerTrust.responseNew';
-  if (reviewCount >= 5 || listingsCount >= 10) {
-    responseLabelKey = 'sellerTrust.responseFast';
-  } else if (listingsCount >= 3) {
-    responseLabelKey = 'sellerTrust.responseNormal';
-  }
+  const responseLabelKey: SellerTrustSignals['responseLabelKey'] =
+    responseStats.sampleCount > 0
+      ? responseStats.labelKey
+      : listingsCount >= 10
+        ? 'sellerTrust.responseNormal'
+        : 'sellerTrust.responseNew';
 
   const trustScore = computeTrustScore({
     verified,
@@ -86,5 +92,6 @@ export async function fetchSellerTrustSignals(
     trustScore,
     activeSeller: listingsCount >= 1,
     responseLabelKey,
+    medianResponseHours: responseStats.medianHours,
   };
 }

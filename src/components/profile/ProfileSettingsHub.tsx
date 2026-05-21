@@ -18,11 +18,7 @@ import {
   saveDeliveryPrefs,
   type NotificationDeliveryPrefs,
 } from '@/lib/notificationChannels';
-import {
-  isPushSupported,
-  subscribeToWebPush,
-  unsubscribeFromWebPush,
-} from '@/lib/webPushClient';
+import PushDeliveryPanel from '@/components/profile/PushDeliveryPanel';
 import { toast } from 'sonner';
 
 type Props = {
@@ -116,7 +112,6 @@ export default function ProfileSettingsHub({ userId }: Props) {
   const [delivery, setDelivery] = useState<NotificationDeliveryPrefs>(DEFAULT_DELIVERY_PREFS);
   const [saving, setSaving] = useState(false);
   const [loaded, setLoaded] = useState(false);
-  const [pushStatus, setPushStatus] = useState<string | null>(null);
   const [gdprBusy, setGdprBusy] = useState(false);
   const [deleteConfirmOpen, setDeleteConfirmOpen] = useState(false);
 
@@ -233,35 +228,14 @@ export default function ProfileSettingsHub({ userId }: Props) {
       <ProfileSection title={t('settings.delivery.title')}>
         <p className="text-xs text-gray-500 mb-3">{t('settings.delivery.hint')}</p>
         <div className="space-y-2">
-          <ChannelToggle
-            label={t('settings.delivery.push')}
-            checked={delivery.pushEnabled}
-            onChange={(pushEnabled) => {
-              void (async () => {
-                if (pushEnabled) {
-                  if (!isPushSupported()) {
-                    setPushStatus(t('settings.delivery.pushUnsupported'));
-                    return;
-                  }
-                  const sub = await subscribeToWebPush();
-                  if (!sub.ok) {
-                    setPushStatus(t('settings.delivery.pushFailed'));
-                    return;
-                  }
-                  setPushStatus(t('settings.delivery.pushReady'));
-                } else {
-                  await unsubscribeFromWebPush();
-                  setPushStatus(null);
-                }
-                const next = { ...delivery, pushEnabled };
-                setDelivery(next);
-                await saveDeliveryPrefs(supabase, next);
-              })();
+          <PushDeliveryPanel
+            pushEnabled={delivery.pushEnabled}
+            onPushEnabledChange={(pushEnabled) => {
+              const next = { ...delivery, pushEnabled };
+              setDelivery(next);
+              void saveDeliveryPrefs(supabase, next);
             }}
           />
-          {pushStatus ? (
-            <p className="text-[11px] text-gray-600 mt-1">{pushStatus}</p>
-          ) : null}
           <ChannelToggle
             label={t('settings.delivery.email')}
             checked={delivery.emailEnabled}

@@ -281,7 +281,11 @@
       "hintEnv": "For production delivery, set VAPID keys and Resend/SMTP on Vercel (.env.example).",
       "pushReady": "Push subscription saved.",
       "pushFailed": "Could not enable push (permission or server keys).",
-      "pushUnsupported": "This browser does not support push notifications."
+      "pushUnsupported": "This browser does not support push notifications.",
+      "pushE2eHint": "Enable push, then send a test notification. Service worker: /sw.js",
+      "vapidMissing": "VAPID keys missing — set them in .env.local.",
+      "testPush": "Send test push",
+      "testPushOk": "Test push sent ({{sent}} device(s))."
     },
     "language": {
       "title": "Language"
@@ -306,6 +310,7 @@
     "responseFast": "Replies quickly",
     "responseNormal": "Active seller",
     "responseNew": "New on marketplace",
+    "responseSlow": "Slower response time",
     "trustScore": "Trust score: {{score}}",
     "active": "Active seller"
   },

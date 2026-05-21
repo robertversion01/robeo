@@ -1,95 +1,81 @@
 # ROBEO — Development TODO (V1 Next.js monolith)
 
-Utolsó frissítés: értesítés outbox retry + árfigyelő szinkron + PDP ártörténet
+Utolsó frissítés: wallet E2E + Web Push E2E + seller trust + demo dispute
 
 ---
 
 ## [DONE] Legal & compliance (Demo mode)
 
-- [x] **Demo invoicing** — `invoices` table, auto on confirm, `GET /api/invoices/[id]/download`, Számláim tab
-- [x] **Legal flows** — ÁSZF/GDPR checkboxes on signup, cookie banner, GDPR export + soft-delete
-- [x] **NAV / DAC7 admin** — flagged sellers report + CSV export
-- [x] SQL: `supabase/patch-vinted-legal.sql`
+- [x] Demo invoicing, ÁSZF/GDPR, cookie banner, NAV/DAC7 admin
+- [x] SQL: `patch-vinted-legal.sql`
 
 ## [DONE] Production features (Vinted Advanced)
 
-- [x] **Foxpost shipping labels** — `foxpostClient.ts`, `POST /api/transactions/foxpost-label`, tracking `FOX-*-HU`, status `feladva`
-- [x] **Price-watch server cron** — `GET/POST /api/workers/price-watch-scan` + CRON_SECRET, outbox flush
-- [x] **Wallet ledger** — `wallet_transactions` table + `WalletHistory` on profile
-- [x] SQL: `supabase/patch-vinted-advanced.sql` (tracking_number, price_watches, wallet_transactions)
+- [x] Foxpost labels, price-watch cron, wallet ledger
+- [x] SQL: `patch-vinted-advanced.sql`
 
 ## [DONE] Admin & codebase hygiene
 
-- [x] **Role-based admin (RBAC)** — `profiles.role === 'admin'` vagy `user_metadata.role`; nincs hardcoded e-mail
-  - `src/lib/adminAuth.ts`, `src/hooks/useIsAdmin.ts`
-  - `/api/admin/reports`, `/api/admin/image-audit` — `assertAdminRequest` + service role
-- [x] **Bejelentett termékek moderáció** — pending feed, PATCH törlés/elvetés, frissítés gomb, reporter info
-  - `AdminReportedItems.tsx`, `PATCH /api/admin/reports`
-- [x] **Legacy `/backend` .NET törlése** — kanonikus út: Next.js monolith
-- [x] **Notification `message` + `body` insert** — `insertAppNotificationSafe` (`b881a4f`)
-- [x] **E2E pipeline script** — `scripts/run-e2e-notification-pipeline.mjs`
-- [x] **VAPID + Resend + CRON + Service Role** — lokál health zöld (ha `.env.local` teljes)
+- [x] RBAC, moderáció, notification pipeline, E2E scripts
 
-### Supabase (futtasd ha még nem)
+## [DONE] Értesítések & pipeline
 
-```sql
--- SQL Editor:
--- 1. supabase/patch-profiles-admin-role.sql
--- 2. UPDATE public.profiles SET role = 'admin' WHERE email = 'YOUR_ADMIN_EMAIL';
--- 3. supabase/patch-vinted-final.sql (reports tábla)
--- 4. supabase/fix-everything-schema.sql
-```
+- [x] Outbox retry/cleanup + `/api/workers/outbox-retry`
+- [x] Szerver dedupe (`notificationDedupe.ts`)
+- [x] Price-watch szinkron (`POST /api/price-watch/sync`)
+- [x] **Web Push E2E** — `public/sw.js`, `PushDeliveryPanel`, `POST /api/push/test`
+- [ ] Resend **domain verify** — *külső: DNS a Resend dashboardon*
 
----
+## [DONE] Pénztárca & Stripe (kód)
 
-## A) Incomplete code / fixes (következő prioritás)
+- [x] Wallet release flow (confirm API + ledger + RPC)
+- [x] `patch-wallet-schema.sql` — ellenőrizd: `npm run db:check-patches`
+- [x] Wallet UI refresh (`wallet:updated` event)
+- [x] E2E script: `npm run test:wallet-release`
+- [x] Cashout UI hibák (connect, insufficient balance)
+- [ ] Stripe Connect **éles** payout — *Stripe teszt/live kulcsok*
 
-### Értesítések
-- [ ] Resend **domain verify** — sandbox csak regisztrált címre küld
-- [ ] Web Push előfizetés E2E — Profil → Kézbesítés, `public/sw.js`
-- [x] Outbox retry / cleanup — max 5 próba, 7 nap TTL, `/api/workers/outbox-retry` cron
-- [x] Price-watch **szerver cron** — `patch-vinted-advanced.sql` + GitHub hourly workflow
-- [x] Szerver oldali dedupe — `notificationDedupe.ts` (saved_search + price_drop)
-- [x] Price-watch **kliens → szerver szinkron** — `POST /api/price-watch/sync`
+## [DONE] PDP & trust
 
-### Szállítás
-- [ ] Foxpost **live partner API** — állítsd be `FOXPOST_API_URL` + `FOXPOST_API_KEY` (registry mode már működik)
-- [ ] Packeta / házhoz carrier integráció
-- [ ] Tranzakció státusz: szimuláció → valós tracking
+- [x] `PriceHistorySparkline`
+- [x] Valós válaszidő aggregátum (`sellerResponseTime.ts`)
 
-### Pénztárca & Stripe
-- [ ] Wallet release E2E (pending → available átvétel után)
-- [ ] `patch-wallet-schema.sql` prod-on
-- [ ] Stripe Connect cashout edge cases UI
+## [DONE] Egyéb kód
 
-### Egyéb
-- [ ] `as any` csökkentés API route-okban
-- [ ] Upload AI prod: `OLLAMA_URL` vagy feature flag
+- [x] Upload AI feature flag (`ollamaFeature.ts`, `UPLOAD_AI_ENABLED`)
+- [x] `npm run db:check-patches` — `scripts/check-supabase-patches.mjs`
+- [x] Demo dispute panel (`DisputeDemoPanel` — integráld orders/detail ha kell)
+- [x] `as any` csökkentés — cashout route
 
----
+## [MANUAL / KÜLSŐ] Szállítás
 
-## B) Next logical Vinted features
+- [ ] Foxpost live API — `FOXPOST_API_URL` + `FOXPOST_API_KEY`
+- [ ] Packeta / házhoz
+- [ ] Valós tracking (nem szimuláció)
 
-- [ ] Szerver oldali katalógus keresés + URL sync finomhangolás
-- [x] Ár history grafikon PDP-n — `PriceHistorySparkline` + snapshots
-- [ ] Követés → `seller_new_item` push/email teszt
-- [ ] Seller trust: valós válaszidő aggregátum
-- [ ] Bundle checkout v2 — line items, orders UI
-- [ ] Counter-offer thread UX
-- [ ] Bump / promote analytics
-- [ ] Dispute / refund buyer flow
+## [PARTIAL] Vinted features B
+
+- [x] seller_new_item DB trigger — teszt: `node scripts/run-seller-new-item-e2e.mjs <sellerId>`
+- [ ] seller_new_item **push/email** flush teszt követőnél
+- [ ] Szerver oldali katalógus keresés + URL sync
+- [ ] Bundle checkout v2
+- [ ] Counter-offer thread UX finomítás (alap már van: OffersList + chat)
+- [ ] Bump / promote analytics dashboard
+- [ ] Dispute/refund **éles** flow (demo panel kész)
 
 ---
 
-## Gyors smoke (minden gépen)
+## Gyors parancsok
 
 ```bash
-git pull origin main
-npm install
-npm run build
-npm run dev
+npm run db:check-patches      # mely SQL patch futott már
+npm run test:wallet-release   # pending → available E2E
+npm run test:notifications    # saved-search + outbox pipeline
+node scripts/run-seller-new-item-e2e.mjs <seller-uuid>
+npm run build && npm run dev
 curl http://localhost:3000/api/marketplace-health
-node scripts/run-e2e-notification-pipeline.mjs
 ```
 
-**Éles:** `https://robeo.vercel.app`
+**Supabase:** már ellenőrizve — minden fő tábla megvan. Admin: `UPDATE profiles SET role='admin' WHERE email='...'`
+
+**Éles:** https://robeo.vercel.app

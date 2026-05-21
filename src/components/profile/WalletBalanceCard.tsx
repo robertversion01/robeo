@@ -97,6 +97,16 @@ export default function WalletBalanceCard({ userId }: Props) {
   }, [userId, loadWallet]);
 
   useEffect(() => {
+    if (typeof window === 'undefined' || !userId) return;
+    const onWallet = (e: Event) => {
+      const detail = (e as CustomEvent<{ sellerId?: string }>).detail;
+      if (!detail?.sellerId || detail.sellerId === userId) void loadWallet();
+    };
+    window.addEventListener('wallet:updated', onWallet);
+    return () => window.removeEventListener('wallet:updated', onWallet);
+  }, [userId, loadWallet]);
+
+  useEffect(() => {
     if (typeof window === 'undefined') return;
     const params = new URLSearchParams(window.location.search);
     if (params.get('connect') === 'success') {
@@ -164,14 +174,25 @@ export default function WalletBalanceCard({ userId }: Props) {
         return;
       }
 
+      if (data.error === 'insufficient_balance') {
+        toast.error('Nincs kifizethető egyenleg.');
+        return;
+      }
       if (!res.ok) throw new Error(data.message || data.error || 'Kifizetés sikertelen');
 
       toast.success(
-        `Kifizetés elindítva: ${Number(data.amountHuf || wallet.available_balance).toLocaleString('hu-HU')} Ft`,
+        data.demoMode
+          ? `Demo kifizetés rögzítve: ${Number(data.amountHuf || wallet.available_balance).toLocaleString('hu-HU')} Ft`
+          : `Kifizetés elindítva: ${Number(data.amountHuf || wallet.available_balance).toLocaleString('hu-HU')} Ft`,
       );
       await loadWallet();
     } catch (e) {
-      toast.error(e instanceof Error ? e.message : 'Kifizetés sikertelen.');
+      const msg = e instanceof Error ? e.message : 'Kifizetés sikertelen.';
+      if (msg.includes('connect')) {
+        toast.error('Stripe Connect beállítás szükséges — csatlakoztasd a bankszámlát.');
+      } else {
+        toast.error(msg);
+      }
     } finally {
       setBusy(false);
     }
