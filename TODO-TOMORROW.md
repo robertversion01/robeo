@@ -49,7 +49,13 @@ git pull
 curl https://robeo.vercel.app/api/push/vapid-public-key
 curl https://robeo.vercel.app/api/marketplace-health
 node scripts/diagnose-notifications.mjs
+node scripts/trigger-saved-search-notification.mjs   # E2E: cron + resetWorkerState (823161e+)
 ```
+
+### E2E trigger script (823161e+)
+- `node scripts/trigger-saved-search-notification.mjs` — CRON_SECRET + Supabase anon elég
+- Várható reset után: `outboundQueued > 0` (push/email queue + flush)
+- `notified` = in-app insert; ha 0 marad → ellenőrizd `app_notifications` tábla (Supabase SQL patch)
 
 ### UI E2E (telefon / Chrome)
 - [ ] Profil → **Kézbesítés** → Push be (engedély + service worker)
@@ -68,8 +74,9 @@ node scripts/diagnose-notifications.mjs
 
 ### Következő gép
 ```bash
-git pull origin main   # legyen >= e60cf14
+git pull origin main   # legyen >= 823161e
 npm run build
+node scripts/trigger-saved-search-notification.mjs
 ```
 
 - ✅ **Vevővédelmi díj** (5%, min 200 Ft, max 5000 Ft)
