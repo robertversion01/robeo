@@ -30,6 +30,7 @@ import ProfileMarketplaceStats from '@/components/profile/ProfileMarketplaceStat
 import TrustSafetyBlock from '@/components/trust/TrustSafetyBlock';
 import { useTranslation } from 'react-i18next';
 import { useRouter } from 'next/navigation';
+import { useIsAdmin } from '@/hooks/useIsAdmin';
 
 export default function ProfilePage() {
   const { t, i18n } = useTranslation();
@@ -63,7 +64,7 @@ export default function ProfilePage() {
   };
 
   const { stats, loading: statsLoading } = useUserStats(user?.id, statsTick);
-  const isAdmin = user?.email === 'hevesi.tr@gmail.com';
+  const { isAdmin } = useIsAdmin(user?.id);
 
   useEffect(() => {
     checkUser();
@@ -91,9 +92,6 @@ export default function ProfilePage() {
       window.history.replaceState({}, '', nextUrl);
       if (user?.id) {
         loadUserProducts(user.id);
-        if (user.email === 'hevesi.tr@gmail.com') {
-          loadAllProductsForAdmin();
-        }
       }
     } else if (promoteStatus === 'cancelled') {
       toast.error('A kiemelési fizetés megszakadt.');
@@ -115,10 +113,13 @@ export default function ProfilePage() {
     loadUserProducts(user.id);
     loadSoldProducts(user.id);
     loadReceivedReviews(user.id);
-    if (user.email === 'hevesi.tr@gmail.com') {
+  };
+
+  useEffect(() => {
+    if (isAdmin && user?.id) {
       loadAllProductsForAdmin();
     }
-  };
+  }, [isAdmin, user?.id]);
 
   const formatDate = (dateStr: string) => {
     const date = new Date(dateStr);
@@ -398,16 +399,23 @@ export default function ProfilePage() {
   };
 
   const runImageAuditAsAdmin = async () => {
-    if (!isAdmin || !user?.email) return;
+    if (!isAdmin) return;
 
     setRunningImageAudit(true);
     try {
+      const {
+        data: { session },
+      } = await supabase.auth.getSession();
+      if (!session?.access_token) {
+        throw new Error('Nincs érvényes munkamenet.');
+      }
+
       const response = await fetch('/api/admin/image-audit', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
+          Authorization: `Bearer ${session.access_token}`,
         },
-        body: JSON.stringify({ userEmail: user.email }),
       });
 
       const data = await response.json();

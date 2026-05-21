@@ -1,90 +1,80 @@
-# 📋 ROBEO 1.5 — Vinted Total Clone — Holnapi teendők
+# ROBEO — Development TODO (V1 Next.js monolith)
 
-## 1. Húzd le a legfrissebb kódot a céges laptopon
-```bash
-git pull
+Utolsó frissítés: admin RBAC + moderáció + backend cleanup
+
+---
+
+## [DONE] Admin & codebase hygiene
+
+- [x] **Role-based admin (RBAC)** — `profiles.role === 'admin'` vagy `user_metadata.role`; nincs hardcoded e-mail
+  - `src/lib/adminAuth.ts`, `src/hooks/useIsAdmin.ts`
+  - `/api/admin/reports`, `/api/admin/image-audit` — `assertAdminRequest` + service role
+- [x] **Bejelentett termékek moderáció** — pending feed, PATCH törlés/elvetés, frissítés gomb, reporter info
+  - `AdminReportedItems.tsx`, `PATCH /api/admin/reports`
+- [x] **Legacy `/backend` .NET törlése** — kanonikus út: Next.js monolith
+- [x] **Notification `message` + `body` insert** — `insertAppNotificationSafe` (`b881a4f`)
+- [x] **E2E pipeline script** — `scripts/run-e2e-notification-pipeline.mjs`
+- [x] **VAPID + Resend + CRON + Service Role** — lokál health zöld (ha `.env.local` teljes)
+
+### Supabase (futtasd ha még nem)
+
+```sql
+-- SQL Editor:
+-- 1. supabase/patch-profiles-admin-role.sql
+-- 2. UPDATE public.profiles SET role = 'admin' WHERE email = 'YOUR_ADMIN_EMAIL';
+-- 3. supabase/patch-vinted-final.sql (reports tábla)
+-- 4. supabase/fix-everything-schema.sql
 ```
 
-## 2. Ellenőrző lista — elsőkörös tesztek
+---
 
-### 🔴 KRITIKUS (Ezt nézd meg először!)
-- [ ] **Főoldal** — Megjelenik a terméklista? Egy Navbar?
-- [ ] **Termékoldal** → **"Vásárlás" gomb** → Checkout oldal (Vinted-stílus!)
-- [ ] **Checkout UI** — Látod a **Vevővédelmi díjat** (5%)? A **Szállítási mód választást** (Foxpost/Packeta/Házhoz)?
-- [ ] **Végösszeg** helyes? (termék + 5% vevővédelem + szállítás)
-- [ ] **Bejelentkezés/Regisztráció** — toast üzenetek működnek?
+## A) Incomplete code / fixes (következő prioritás)
 
-### 🟠 FONTOS
-- [ ] **Termék feltöltés** — Tölts fel **több képet** (max 6)! Működik az átrendezés? Első kép a fő kép?
-- [ ] **Profil oldal** — Látod a "Tag since" információt? Az avatar betűjele megjelenik?
-- [ ] **Statisztikák** — Átlagos eladási ár (Ø Ft / eladás) megjelenik?
-- [ ] **Ajánlat küldése** (termékoldalról) → Eladó értesítést kap?
-- [ ] **Ajánlat elfogadása** (Profil / Beérkező ajánlatok) → Vevő kap egy rendszerüzenetet fizetési linkkel?
-- [ ] **Ajánlatból fizetés** — `?offer=...` paraméterrel működik a checkout?
+### Értesítések
+- [ ] Resend **domain verify** — sandbox csak regisztrált címre küld
+- [ ] Web Push előfizetés E2E — Profil → Kézbesítés, `public/sw.js`
+- [ ] Outbox retry / cleanup ha push/email fail
+- [ ] Price-watch **szerver cron** (jelenleg kliens payload)
+- [ ] Szerver oldali dedupe (ne csak `localStorage`)
 
-### 🟡 AJÁNLOTT
-- [ ] **Regisztráció** → `toast.success()` jelenik meg?
-- [ ] **Üzenetek mobil nézet** — Sidebar eltűnik chat-nézetben? "←" vissza gomb működik?
-- [ ] **Kedvencek oldal** — ProductGrid használja a ProductCard-ot?
-- [ ] **Kép lazy loading** — Ellenőrizd a Network tab-ban, hogy a képek `loading="lazy"` attribútummal töltődnek-e
+### Szállítás
+- [ ] Foxpost **valós címke API** (jelenleg HTML stub — `foxpostLabel.ts`)
+- [ ] Packeta / házhoz carrier integráció
+- [ ] Tranzakció státusz: szimuláció → valós tracking
 
-## 3. Vercel deployment
-- A push automatikusan elindítja a Vercel deploymentet
-- **Éles URL:** `https://robeo.vercel.app`
-- Várakozás a zöld pipára (~2-3 perc)
-- Ha piros: nézd meg a Vercel Dashboard-ot
+### Pénztárca & Stripe
+- [ ] Wallet release E2E (pending → available átvétel után)
+- [ ] `patch-wallet-schema.sql` prod-on
+- [ ] Stripe Connect cashout edge cases UI
 
-## 4. Ha valami elromlott
-- Ellenőrizd a hibakonzolt (F12 → Console / Network tab)
-- `.env.local` tartalma rendben van?
-- `npm run build` lefut lokálisan?
-- Ellenőrizd a Supabase tábla struktúrát: a `products` táblában van `images` (text[]) oszlop?
+### Egyéb
+- [ ] `as any` csökkentés API route-okban
+- [ ] Upload AI prod: `OLLAMA_URL` vagy feature flag
 
-## 5. Push / e-mail értesítések (e60cf14+)
+---
 
-**Állapot (2026-05-21):** VAPID + Resend élesben konfigurálva. Health: `webPushConfigured` + `emailConfigured` = true.
+## B) Next logical Vinted features
 
-### Gyors API ellenőrzés
-```powershell
-curl https://robeo.vercel.app/api/push/vapid-public-key
-curl https://robeo.vercel.app/api/marketplace-health
-node scripts/diagnose-notifications.mjs
-node scripts/trigger-saved-search-notification.mjs   # E2E: cron + resetWorkerState (823161e+)
-```
+- [ ] Szerver oldali katalógus keresés + URL sync finomhangolás
+- [ ] Ár history grafikon PDP-n (`PriceHistoryBadge` + snapshots)
+- [ ] Követés → `seller_new_item` push/email teszt
+- [ ] Seller trust: valós válaszidő aggregátum
+- [ ] Bundle checkout v2 — line items, orders UI
+- [ ] Counter-offer thread UX
+- [ ] Bump / promote analytics
+- [ ] Dispute / refund buyer flow
 
-### E2E trigger script (823161e+)
-- `node scripts/trigger-saved-search-notification.mjs` — CRON_SECRET + Supabase anon elég
-- Várható reset után: `outboundQueued > 0` (push/email queue + flush)
-- `notified` = in-app insert; ha 0 marad → ellenőrizd `app_notifications` tábla (Supabase SQL patch)
+---
 
-### UI E2E (telefon / Chrome)
-- [ ] Profil → **Kézbesítés** → Push be (engedély + service worker)
-- [ ] Profil → **Kézbesítés** → E-mail be
-- [ ] Profil → **Értesítések** → Mentett keresések be
-- [ ] Browse → mentett keresés **szűk szűrővel** (pl. egyedi szó)
-- [ ] Cron trigger: `Authorization: Bearer $CRON_SECRET` → `/api/workers/saved-search-scan`
-- [ ] `/notifications` — in-app sor megjelenik
-- [ ] Resend dashboard → Sent (csak regisztrált cím, ha `onboarding@resend.dev`)
-- [ ] Böngésző push notification
+## Gyors smoke (minden gépen)
 
-### Ha `notified: 0` a workerben
-- Normális, ha minden találat már **seen** (`robeo_saved_search_worker_state` metadata)
-- Új termék feltöltése vagy új mentett keresés szükséges
-- Deep check: add `SUPABASE_SERVICE_ROLE_KEY` a `.env.local`-hoz → `node scripts/diagnose-notifications.mjs`
-
-### Következő gép
 ```bash
-git pull origin main   # legyen >= 823161e
+git pull origin main
+npm install
 npm run build
-node scripts/trigger-saved-search-notification.mjs
+npm run dev
+curl http://localhost:3000/api/marketplace-health
+node scripts/run-e2e-notification-pipeline.mjs
 ```
 
-- ✅ **Vevővédelmi díj** (5%, min 200 Ft, max 5000 Ft)
-- ✅ **PriceBreakdown** komponens (Vinted-stílusú összegzés)
-- ✅ **ShippingSelector** (Foxpost/Packeta/Házhoz szállítási idővel)
-- ✅ **Checkout** 2 hasábos Vinted-stílus (bal: termék + szállítás, jobb: összegzés + fizetés)
-- ✅ **Multi-image upload** (max 6 kép, előnézet, átrendezés)
-- ✅ **ReviewForm** (csillagos értékelés + komment)
-- ✅ **Profil** — "Tag since", avatar betűjel, Ø eladási ár
-- ✅ **Ajánlat elfogadás → automatikus fizetési link** a vevőnek
-- ✅ **Státusz konzisztencia** (paid → completed)
+**Éles:** `https://robeo.vercel.app`

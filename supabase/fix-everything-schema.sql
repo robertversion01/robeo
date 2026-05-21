@@ -25,6 +25,7 @@ ALTER TABLE public.profiles ADD COLUMN IF NOT EXISTS stripe_connect_details_subm
 ALTER TABLE public.profiles ADD COLUMN IF NOT EXISTS bundle_discount_enabled BOOLEAN NOT NULL DEFAULT false;
 ALTER TABLE public.profiles ADD COLUMN IF NOT EXISTS bundle_discount_tiers JSONB NOT NULL DEFAULT
   '[{"items":2,"percent":10},{"items":3,"percent":15},{"items":5,"percent":20}]'::jsonb;
+ALTER TABLE public.profiles ADD COLUMN IF NOT EXISTS role TEXT NOT NULL DEFAULT 'user';
 
 ALTER TABLE public.profiles ENABLE ROW LEVEL SECURITY;
 

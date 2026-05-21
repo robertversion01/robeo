@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { createClient } from '@supabase/supabase-js';
+import { assertAdminRequest } from '@/lib/adminAuth';
+import { getSupabaseAdminClient } from '@/lib/supabase';
 
 export const dynamic = 'force-dynamic';
 
@@ -61,7 +62,10 @@ function sanitizeImages(imageUrl: unknown, images: unknown): string[] {
 
 function fillMissingImages(category: unknown, current: string[], seedNumber: number): string[] {
   const targetCount = 4;
-  const key = category === 'shoes' || category === 'clothing' || category === 'accessories' ? category : 'other';
+  const key =
+    category === 'shoes' || category === 'clothing' || category === 'accessories'
+      ? category
+      : 'other';
   const pool = DEMO_IMAGE_POOLS[key];
   const merged = [...current];
 
@@ -77,72 +81,70 @@ function fillMissingImages(category: unknown, current: string[], seedNumber: num
 
 export async function POST(req: NextRequest) {
   try {
-    const body = (await req.json().catch(() => ({}))) as { userEmail?: string };
-    const userEmail = body.userEmail || '';
+    const admin = await assertAdminRequest(req);
+    if (!admin.ok) return admin.res;
 
-    if (userEmail !== 'hevesi.tr@gmail.com') {
-      return NextResponse.json({ error: 'Forbidden' }, { status: 403 });
-    }
-
-    const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL || process.env.SUPABASE_URL;
-    const serviceRoleKey = process.env.SUPABASE_SERVICE_ROLE_KEY;
-    if (!supabaseUrl || !serviceRoleKey) {
+    const db = getSupabaseAdminClient();
+    if (!db) {
       return NextResponse.json(
         { error: 'Missing Supabase service role configuration' },
-        { status: 500 }
+        { status: 500 },
       );
     }
 
-    const supabase = createClient(supabaseUrl, serviceRoleKey);
-
-    const { data: products, error: productsError } = await supabase
+    const { data: products, error: productsError } = await db
       .from('products')
       .select('id, name, category, image_url, images')
+      .or('status.eq.active,status.is.null')
       .order('created_at', { ascending: false })
-      .limit(1000);
+      .limit(500);
 
     if (productsError) {
       return NextResponse.json({ error: productsError.message }, { status: 500 });
     }
 
     let fixed = 0;
-    let inspected = 0;
+    let unchanged = 0;
 
-    for (const [index, product] of (products || []).entries()) {
-      inspected += 1;
+    for (let i = 0; i < (products || []).length; i++) {
+      const product = products![i] as {
+        id: string;
+        category: string | null;
+        image_url: string | null;
+        images: string[] | null;
+      };
       const sanitized = sanitizeImages(product.image_url, product.images);
-      if (sanitized.length >= 3) continue;
+      const filled = fillMissingImages(product.category, sanitized, i);
+      const mainImage = filled[0] || null;
 
-      const replaced = fillMissingImages(product.category, sanitized, index);
-      const nextMain = replaced[0] || null;
+      const needsUpdate =
+        JSON.stringify(filled) !== JSON.stringify(product.images || []) ||
+        mainImage !== product.image_url;
 
-      const { error: updateError } = await supabase
+      if (!needsUpdate) {
+        unchanged += 1;
+        continue;
+      }
+
+      const { error: updateError } = await db
         .from('products')
-        .update({ image_url: nextMain, images: replaced })
+        .update({ image_url: mainImage, images: filled })
         .eq('id', product.id);
 
-      if (!updateError) {
-        fixed += 1;
-      } else {
+      if (updateError) {
         console.error('[admin-image-audit] update failed', {
           productId: product.id,
-          name: product.name,
-          error: updateError.message,
+          message: updateError.message,
         });
+        continue;
       }
+
+      fixed += 1;
     }
 
-    return NextResponse.json({
-      ok: true,
-      inspected,
-      fixed,
-      unchanged: inspected - fixed,
-    });
-  } catch (error: any) {
+    return NextResponse.json({ ok: true, fixed, unchanged, total: (products || []).length });
+  } catch (error) {
     console.error('[admin-image-audit] error', error);
-    return NextResponse.json(
-      { error: error?.message || 'Unexpected image audit error' },
-      { status: 500 }
-    );
+    return NextResponse.json({ error: 'Image audit failed' }, { status: 500 });
   }
 }

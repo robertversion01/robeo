@@ -1,7 +1,5 @@
 import type Stripe from 'stripe';
 
-export const ADMIN_EMAIL = 'hevesi.tr@gmail.com';
-
 export function appBaseUrl(): string {
   const fromEnv = process.env.NEXT_PUBLIC_APP_URL?.trim();
   if (fromEnv) return fromEnv.replace(/\/$/, '');
