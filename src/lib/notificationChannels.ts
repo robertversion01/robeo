@@ -2,44 +2,35 @@ import type { SupabaseClient } from '@supabase/supabase-js';
 import { insertAppNotificationSafe } from '@/lib/supabaseResilience';
 import {
   loadUserPreferences,
+  parseUserPreferences,
   type NotificationChannelPrefs,
   type UserPreferenceBundle,
 } from '@/lib/userPreferences';
+import { appendToNotificationOutbox, parseNotificationOutbox, QUEUE_META_KEY } from '@/lib/notificationOutboxStore';
+import {
+  DEFAULT_DELIVERY_PREFS,
+  NOTIFICATION_DELIVERY_META_KEY,
+  parseDeliveryPrefs,
+  type NotificationDeliveryPrefs,
+} from '@/lib/notificationDeliveryPrefs';
+import { isWebPushConfigured } from '@/lib/webPushConfig';
+import type {
+  DeliveryChannel,
+  NotificationEventType,
+  NotificationOutboxItem,
+  RoutedNotificationPayload,
+} from '@/lib/notificationTypes';
 
-export type NotificationEventType =
-  | 'favorite'
-  | 'price_drop'
-  | 'offer'
-  | 'message'
-  | 'follower'
-  | 'saved_search'
-  | 'seller_new_item'
-  | 'bundle_offer'
-  | 'general';
-
-export type DeliveryChannel = 'in_app' | 'push' | 'email';
-
-export type NotificationDeliveryPrefs = {
-  pushEnabled: boolean;
-  emailEnabled: boolean;
-  emailDigest: boolean;
+export type {
+  NotificationEventType,
+  DeliveryChannel,
+  RoutedNotificationPayload,
+  NotificationOutboxItem,
 };
+export type { NotificationDeliveryPrefs };
+export { DEFAULT_DELIVERY_PREFS, parseDeliveryPrefs };
 
-export type RoutedNotificationPayload = {
-  userId: string;
-  type: NotificationEventType;
-  title: string;
-  body?: string | null;
-  link?: string | null;
-};
-
-const DELIVERY_META_KEY = 'robeo_notification_delivery_v1';
-
-export const DEFAULT_DELIVERY_PREFS: NotificationDeliveryPrefs = {
-  pushEnabled: false,
-  emailEnabled: false,
-  emailDigest: true,
-};
+export { parseNotificationOutbox, QUEUE_META_KEY };
 
 function eventAllowed(
   type: NotificationEventType,
@@ -65,19 +56,6 @@ function eventAllowed(
   }
 }
 
-export function parseDeliveryPrefs(
-  metadata: Record<string, unknown> | undefined,
-): NotificationDeliveryPrefs {
-  const raw = metadata?.[DELIVERY_META_KEY];
-  if (!raw || typeof raw !== 'object') return { ...DEFAULT_DELIVERY_PREFS };
-  const o = raw as Record<string, unknown>;
-  return {
-    pushEnabled: o.pushEnabled === true,
-    emailEnabled: o.emailEnabled === true,
-    emailDigest: o.emailDigest !== false,
-  };
-}
-
 export async function loadDeliveryPrefs(
   supabase: SupabaseClient,
 ): Promise<NotificationDeliveryPrefs> {
@@ -86,6 +64,17 @@ export async function loadDeliveryPrefs(
   } = await supabase.auth.getUser();
   if (!user) return { ...DEFAULT_DELIVERY_PREFS };
   return parseDeliveryPrefs(user.user_metadata as Record<string, unknown>);
+}
+
+export async function loadDeliveryPrefsForUser(
+  supabase: SupabaseClient,
+  userId: string,
+): Promise<NotificationDeliveryPrefs> {
+  const admin = supabase.auth.admin;
+  if (!admin?.getUserById) return { ...DEFAULT_DELIVERY_PREFS };
+  const { data, error } = await admin.getUserById(userId);
+  if (error || !data?.user) return { ...DEFAULT_DELIVERY_PREFS };
+  return parseDeliveryPrefs(data.user.user_metadata as Record<string, unknown>);
 }
 
 export async function saveDeliveryPrefs(
@@ -98,63 +87,30 @@ export async function saveDeliveryPrefs(
   if (!user) return;
   const meta = (user.user_metadata || {}) as Record<string, unknown>;
   await supabase.auth.updateUser({
-    data: { ...meta, [DELIVERY_META_KEY]: prefs },
+    data: { ...meta, [NOTIFICATION_DELIVERY_META_KEY]: prefs },
   });
 }
 
-const QUEUE_META_KEY = 'robeo_notification_outbox_v1';
-
-export type NotificationOutboxItem = {
-  id: string;
-  channel: DeliveryChannel;
-  payload: RoutedNotificationPayload;
-  createdAt: string;
-};
-
-export function parseNotificationOutbox(
-  metadata: Record<string, unknown> | undefined,
-): NotificationOutboxItem[] {
-  const raw = metadata?.[QUEUE_META_KEY];
-  if (!Array.isArray(raw)) return [];
-  return raw as NotificationOutboxItem[];
+function hasAdminApi(supabase: SupabaseClient): boolean {
+  return Boolean(supabase.auth.admin?.getUserById);
 }
 
-async function appendToNotificationOutbox(
-  supabase: SupabaseClient,
-  channel: DeliveryChannel,
-  payload: RoutedNotificationPayload,
-): Promise<boolean> {
-  const {
-    data: { user },
-  } = await supabase.auth.getUser();
-  if (!user || user.id !== payload.userId) return false;
-  const meta = (user.user_metadata || {}) as Record<string, unknown>;
-  const outbox = parseNotificationOutbox(meta);
-  outbox.unshift({
-    id: crypto.randomUUID(),
-    channel,
-    payload,
-    createdAt: new Date().toISOString(),
-  });
-  const trimmed = outbox.slice(0, 50);
-  await supabase.auth.updateUser({
-    data: { ...meta, [QUEUE_META_KEY]: trimmed },
-  });
-  return true;
-}
-
-/** Push — előkészített integrációs pont (FCM / Web Push később) */
 export async function dispatchPushNotification(
   supabase: SupabaseClient,
   payload: RoutedNotificationPayload,
   prefs: NotificationDeliveryPrefs,
 ): Promise<{ queued: boolean; reason?: string }> {
   if (!prefs.pushEnabled) return { queued: false, reason: 'push_disabled' };
+  if (!isWebPushConfigured()) {
+    return { queued: false, reason: 'push_not_configured' };
+  }
   const queued = await appendToNotificationOutbox(supabase, 'push', payload);
-  return { queued, reason: queued ? 'push_queued_pending_fcm' : 'push_queue_failed' };
+  return {
+    queued,
+    reason: queued ? 'push_queued' : 'push_queue_failed',
+  };
 }
 
-/** Email — előkészített integrációs pont (Resend / SMTP később) */
 export async function dispatchEmailNotification(
   supabase: SupabaseClient,
   payload: RoutedNotificationPayload,
@@ -162,20 +118,30 @@ export async function dispatchEmailNotification(
 ): Promise<{ queued: boolean; reason?: string }> {
   if (!prefs.emailEnabled) return { queued: false, reason: 'email_disabled' };
   const queued = await appendToNotificationOutbox(supabase, 'email', payload);
-  return { queued, reason: queued ? 'email_queued_pending_smtp' : 'email_queue_failed' };
+  return {
+    queued,
+    reason: queued ? 'email_queued' : 'email_queue_failed',
+  };
 }
 
-/**
- * Kanonikus értesítés routing: in-app + opcionális push/email stub.
- */
 export async function routeMarketplaceNotification(
   supabase: SupabaseClient,
   payload: RoutedNotificationPayload,
+  _options?: { userEmail?: string | null },
 ): Promise<{ inApp: boolean; push: boolean; email: boolean }> {
-  const [userPrefs, deliveryPrefs] = await Promise.all([
-    loadUserPreferences(supabase),
-    loadDeliveryPrefs(supabase),
-  ]);
+  const deliveryPrefs = hasAdminApi(supabase)
+    ? await loadDeliveryPrefsForUser(supabase, payload.userId)
+    : await loadDeliveryPrefs(supabase);
+
+  let userPrefs: UserPreferenceBundle;
+  if (hasAdminApi(supabase)) {
+    const admin = supabase.auth.admin!;
+    const { data } = await admin.getUserById(payload.userId);
+    const meta = (data?.user?.user_metadata || {}) as Record<string, unknown>;
+    userPrefs = parseUserPreferences(meta);
+  } else {
+    userPrefs = await loadUserPreferences(supabase);
+  }
 
   if (!eventAllowed(payload.type, userPrefs.notifications)) {
     return { inApp: false, push: false, email: false };

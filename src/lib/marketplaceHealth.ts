@@ -6,6 +6,8 @@ import {
   VERCEL_CRON_SAVED_SEARCH_LABEL,
 } from '@/lib/cronSchedules';
 import { productsHasSizeColumn } from '@/lib/productSchema';
+import { isEmailSendingConfigured } from '@/lib/emailConfig';
+import { isWebPushConfigured } from '@/lib/webPushConfig';
 
 /** Közös health válasz — /api/health/marketplace és /api/marketplace-health */
 export async function getMarketplaceHealthResponse() {
@@ -42,6 +44,8 @@ export async function getMarketplaceHealthResponse() {
       serviceRole: hasServiceRole,
       publicSupabase: hasPublicSupabase,
       ollamaUrlConfigured: Boolean(process.env.NEXT_PUBLIC_OLLAMA_URL),
+      webPushConfigured: isWebPushConfigured(),
+      emailConfigured: isEmailSendingConfigured(),
     },
     database: {
       adminClient: adminDb,

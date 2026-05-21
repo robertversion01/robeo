@@ -277,12 +277,15 @@
       "savedSearches": "Mentett keresés riasztások"
     },
     "delivery": {
-      "title": "Push és e-mail (előkészítve)",
-      "hint": "Az in-app értesítések mindig működnek. Push és e-mail később kapcsolható.",
+      "title": "Push és e-mail",
+      "hint": "Az in-app értesítések mindig működnek. Push (böngésző) és e-mail a szerver env beállításaitól függ.",
       "push": "Push értesítések",
       "email": "E-mail értesítések",
       "digest": "Napi összefoglaló e-mail",
-      "comingSoon": "A külső csatornák integrációja a következő körben érkezik (FCM / e-mail szolgáltató)."
+      "hintEnv": "Éles küldéshez Vercelen állítsd be a VAPID kulcsokat és Resend/SMTP változókat (.env.example).",
+      "pushReady": "Push feliratkozás mentve.",
+      "pushFailed": "Push bekapcsolása sikertelen (engedély vagy szerver kulcs).",
+      "pushUnsupported": "A böngésző nem támogatja a push értesítést."
     },
     "language": {
       "title": "Nyelv"

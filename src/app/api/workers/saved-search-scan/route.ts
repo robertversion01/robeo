@@ -3,6 +3,7 @@ import { getSupabaseAdminClient } from '@/lib/supabase';
 import { runSavedSearchAlertScan } from '@/lib/savedSearchNotify';
 import { parseSavedSearchesFromMetadata } from '@/lib/savedSearchesServer';
 import { fetchProductsForScan } from '@/lib/productSchema';
+import { flushOutboxAfterRoute } from '@/lib/notificationOutbox';
 
 export const dynamic = 'force-dynamic';
 
@@ -58,7 +59,7 @@ export async function POST(req: NextRequest) {
         );
         if (saved.length === 0) continue;
         usersScanned += 1;
-        const result = await scanForUser(supabase, uid, saved);
+        const result = await scanForUser(supabase, uid, saved, authData.user.email);
         totalNotified += result.notified;
       }
 
@@ -86,7 +87,12 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ ok: true, notified: 0, searchesChecked: 0 });
     }
 
-    const result = await scanForUser(supabase, userId, saved);
+    const result = await scanForUser(
+      supabase,
+      userId,
+      saved,
+      authData.user.email,
+    );
     return NextResponse.json({ ok: true, ...result });
   } catch (e) {
     const msg = e instanceof Error ? e.message : 'scan failed';
@@ -98,6 +104,7 @@ async function scanForUser(
   supabase: NonNullable<ReturnType<typeof getSupabaseAdminClient>>,
   userId: string,
   saved: ReturnType<typeof parseSavedSearchesFromMetadata>,
+  userEmail?: string | null,
 ) {
   const { data: products, error } = await fetchProductsForScan(supabase, SCAN_LIMIT);
 
@@ -105,5 +112,9 @@ async function scanForUser(
     throw error;
   }
 
-  return runSavedSearchAlertScan(supabase, userId, saved, products);
+  const result = await runSavedSearchAlertScan(supabase, userId, saved, products, userEmail);
+  if (result.notified > 0) {
+    await flushOutboxAfterRoute(supabase, userId, userEmail);
+  }
+  return result;
 }

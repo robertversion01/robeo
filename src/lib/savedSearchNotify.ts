@@ -11,6 +11,7 @@ import {
   persistSavedSearchWorkerStateForUser,
 } from '@/lib/savedSearchWorkerState';
 import { routeMarketplaceNotification } from '@/lib/notificationChannels';
+import { requestNotificationFlush } from '@/lib/notificationFlushClient';
 
 const NOTIFY_DEDUPE_KEY = 'robeo_saved_search_notify_dedupe_v1';
 
@@ -71,6 +72,7 @@ export async function runSavedSearchAlertScan(
       'id' | 'name' | 'description' | 'brand' | 'category' | 'size' | 'condition' | 'price'
     >
   >,
+  userEmail?: string | null,
 ): Promise<SavedSearchScanResult> {
   let notified = 0;
   const { state: workerState, useAdmin } = await resolveWorkerState(supabase, userId);
@@ -91,13 +93,17 @@ export async function runSavedSearchAlertScan(
     }
 
     const extra = matches.length > 1 ? ` (+${matches.length - 1})` : '';
-    const routed = await routeMarketplaceNotification(supabase, {
-      userId,
-      type: 'saved_search',
-      title: 'Új találat a mentett keresésedben',
-      body: `${search.label}: ${top.name}${extra}`,
-      link: '/browse',
-    });
+    const routed = await routeMarketplaceNotification(
+      supabase,
+      {
+        userId,
+        type: 'saved_search',
+        title: 'Új találat a mentett keresésedben',
+        body: `${search.label}: ${top.name}${extra}`,
+        link: '/browse',
+      },
+      { userEmail },
+    );
 
     if (routed.inApp) {
       notified += 1;
@@ -113,6 +119,10 @@ export async function runSavedSearchAlertScan(
 
   writeDedupe(dedupe);
   await persistWorkerState(supabase, userId, nextState, useAdmin);
+
+  if (notified > 0 && typeof window !== 'undefined') {
+    void requestNotificationFlush();
+  }
 
   return { notified, searchesChecked: saved.filter((s) => isSavedSearchAlertEnabled(s.id)).length };
 }

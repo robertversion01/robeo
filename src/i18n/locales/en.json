@@ -270,12 +270,15 @@
       "savedSearches": "Saved search alerts"
     },
     "delivery": {
-      "title": "Push & email (preview)",
-      "hint": "In-app notifications always work. Push and email connect in a later release.",
+      "title": "Push & email",
+      "hint": "In-app notifications always work. Push (browser) and email depend on server env vars.",
       "push": "Push notifications",
       "email": "Email notifications",
       "digest": "Daily email digest",
-      "comingSoon": "External channels arrive next round (FCM / email provider)."
+      "hintEnv": "For production delivery, set VAPID keys and Resend/SMTP on Vercel (.env.example).",
+      "pushReady": "Push subscription saved.",
+      "pushFailed": "Could not enable push (permission or server keys).",
+      "pushUnsupported": "This browser does not support push notifications."
     },
     "language": {
       "title": "Language"

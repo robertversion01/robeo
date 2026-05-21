@@ -18,6 +18,11 @@ import {
   saveDeliveryPrefs,
   type NotificationDeliveryPrefs,
 } from '@/lib/notificationChannels';
+import {
+  isPushSupported,
+  subscribeToWebPush,
+  unsubscribeFromWebPush,
+} from '@/lib/webPushClient';
 
 type Props = {
   userId?: string;
@@ -110,6 +115,7 @@ export default function ProfileSettingsHub({ userId }: Props) {
   const [delivery, setDelivery] = useState<NotificationDeliveryPrefs>(DEFAULT_DELIVERY_PREFS);
   const [saving, setSaving] = useState(false);
   const [loaded, setLoaded] = useState(false);
+  const [pushStatus, setPushStatus] = useState<string | null>(null);
 
   const refresh = useCallback(async () => {
     if (!userId) return;
@@ -228,11 +234,31 @@ export default function ProfileSettingsHub({ userId }: Props) {
             label={t('settings.delivery.push')}
             checked={delivery.pushEnabled}
             onChange={(pushEnabled) => {
-              const next = { ...delivery, pushEnabled };
-              setDelivery(next);
-              void saveDeliveryPrefs(supabase, next);
+              void (async () => {
+                if (pushEnabled) {
+                  if (!isPushSupported()) {
+                    setPushStatus(t('settings.delivery.pushUnsupported'));
+                    return;
+                  }
+                  const sub = await subscribeToWebPush();
+                  if (!sub.ok) {
+                    setPushStatus(t('settings.delivery.pushFailed'));
+                    return;
+                  }
+                  setPushStatus(t('settings.delivery.pushReady'));
+                } else {
+                  await unsubscribeFromWebPush();
+                  setPushStatus(null);
+                }
+                const next = { ...delivery, pushEnabled };
+                setDelivery(next);
+                await saveDeliveryPrefs(supabase, next);
+              })();
             }}
           />
+          {pushStatus ? (
+            <p className="text-[11px] text-gray-600 mt-1">{pushStatus}</p>
+          ) : null}
           <ChannelToggle
             label={t('settings.delivery.email')}
             checked={delivery.emailEnabled}
@@ -252,7 +278,7 @@ export default function ProfileSettingsHub({ userId }: Props) {
             }}
           />
         </div>
-        <p className="text-[11px] text-amber-700 mt-2">{t('settings.delivery.comingSoon')}</p>
+        <p className="text-[11px] text-gray-500 mt-2">{t('settings.delivery.hintEnv')}</p>
       </ProfileSection>
 
       <ProfileSection title={t('settings.language.title')}>

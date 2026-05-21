@@ -22,6 +22,7 @@ function loadEnv(name) {
     if ((v.startsWith('"') && v.endsWith('"')) || (v.startsWith("'") && v.endsWith("'"))) {
       v = v.slice(1, -1);
     }
+    if (!v) continue;
     if (!process.env[k]) process.env[k] = v;
   }
 }
@@ -29,19 +30,33 @@ function loadEnv(name) {
 loadEnv('.env.local');
 loadEnv('.env.vercel.production');
 
-const url = process.env.NEXT_PUBLIC_SUPABASE_URL;
-const key = process.env.SUPABASE_SERVICE_ROLE_KEY;
+const url =
+  process.env.NEXT_PUBLIC_SUPABASE_URL ||
+  process.env.SUPABASE_URL;
+const key =
+  process.env.SUPABASE_SERVICE_ROLE_KEY ||
+  process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY ||
+  process.env.NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY ||
+  process.env.SUPABASE_ANON_KEY;
 
 async function probeSizeColumn() {
   if (!url || !key) {
-    console.log('SKIP probe — missing SUPABASE URL or SERVICE_ROLE');
+    const missing = [];
+    if (!url) missing.push('NEXT_PUBLIC_SUPABASE_URL');
+    if (!key) {
+      missing.push(
+        'SUPABASE_SERVICE_ROLE_KEY (vagy NEXT_PUBLIC_SUPABASE_ANON_KEY a probe-hoz)',
+      );
+    }
+    console.log('SKIP probe — hiányzó env:', missing.join(', '));
+    console.log('Töltsd ki .env.local-ban, vagy: vercel env pull .env.vercel.production');
     return null;
   }
   const res = await fetch(`${url}/rest/v1/products?select=size&limit=1`, {
     headers: { apikey: key, Authorization: `Bearer ${key}` },
   });
-  if (res.ok) return true;
   const text = await res.text();
+  if (res.ok) return true;
   if (text.includes('size') && text.includes('does not exist')) return false;
   console.log('probe unexpected', res.status, text.slice(0, 120));
   return null;
@@ -51,7 +66,7 @@ async function main() {
   const hasSize = await probeSizeColumn();
   if (hasSize === true) {
     console.log('OK products.size column exists');
-    process.exit(0);
+    return 0;
   }
 
   const dbUrl = process.env.SUPABASE_DB_URL || process.env.DATABASE_URL;
@@ -66,14 +81,21 @@ async function main() {
     if (r.status === 0) {
       const after = await probeSizeColumn();
       console.log(after ? 'OK patch applied' : 'WARN patch ran but size still missing');
-      process.exit(after ? 0 : 1);
+      return after ? 0 : 1;
     }
   }
 
   console.log('\nACTION REQUIRED: Supabase SQL Editor → futtasd:');
   console.log('  supabase/patch-products-marketplace-columns.sql');
   console.log('\nVagy állítsd be SUPABASE_DB_URL a .env.local-ban és futtasd újra.');
-  process.exit(hasSize === false ? 1 : 0);
+  return hasSize === false ? 1 : 0;
 }
 
-main();
+main()
+  .then((code) => {
+    process.exitCode = code ?? 0;
+  })
+  .catch((err) => {
+    console.error(err);
+    process.exitCode = 1;
+  });

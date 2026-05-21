@@ -23,6 +23,7 @@ function loadEnvFile(name) {
     if ((v.startsWith('"') && v.endsWith('"')) || (v.startsWith("'") && v.endsWith("'"))) {
       v = v.slice(1, -1);
     }
+    if (!v) continue;
     if (!process.env[k]) process.env[k] = v;
   }
 }
