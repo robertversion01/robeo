@@ -1,0 +1,43 @@
+# Óránkénti price-watch worker — Vercel Hobby napi cron mellett (06:30 UTC napi + ez óránként)
+
+name: Price Watch Scan (hourly)
+
+on:
+  schedule:
+    - cron: '30 * * * *'
+  workflow_dispatch:
+
+concurrency:
+  group: price-watch-scan-hourly
+  cancel-in-progress: false
+
+jobs:
+  scan:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - name: Require CRON_SECRET
+        env:
+          CRON_SECRET: ${{ secrets.CRON_SECRET }}
+        run: |
+          if [ -z "$CRON_SECRET" ]; then
+            echo "::error::CRON_SECRET missing"
+            exit 1
+          fi
+
+      - name: GET /api/workers/price-watch-scan
+        env:
+          CRON_SECRET: ${{ secrets.CRON_SECRET }}
+          BASE_URL: ${{ vars.PRODUCTION_URL }}
+        run: |
+          URL="${BASE_URL:-https://robeo.vercel.app}"
+          HTTP=$(curl -sS -o /tmp/pw.json -w "%{http_code}" \
+            -H "Authorization: Bearer ${CRON_SECRET}" \
+            "${URL}/api/workers/price-watch-scan")
+          cat /tmp/pw.json || true
+          echo ""
+          if [ "$HTTP" -lt 200 ] || [ "$HTTP" -ge 300 ]; then
+            echo "::error::Price watch worker failed HTTP $HTTP"
+            exit 1
+          fi
+          echo "Price watch scan OK (HTTP $HTTP)"

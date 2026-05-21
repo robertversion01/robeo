@@ -1,10 +1,11 @@
 import type { SupabaseClient } from '@supabase/supabase-js';
 import type { PriceDropHit } from '@/lib/priceWatch';
-import { loadUserPreferences } from '@/lib/userPreferences';
+import { loadUserPreferences, parseUserPreferences } from '@/lib/userPreferences';
 import { routeMarketplaceNotification } from '@/lib/notificationChannels';
 import { requestNotificationFlush } from '@/lib/notificationFlushClient';
 
 const DEDUPE_KEY = 'robeo_price_drop_notified_v1';
+const SERVER_DEDUPE_META = 'robeo_price_drop_dedupe_v1';
 
 function readDedupe(): Record<string, number> {
   if (typeof window === 'undefined') return {};
@@ -49,4 +50,86 @@ export async function notifyPriceDropsIfEnabled(
   }
   writeDedupe(dedupe);
   if (anyRouted) void requestNotificationFlush();
+}
+
+async function loadServerDedupe(
+  supabase: SupabaseClient,
+  userId: string,
+): Promise<Record<string, number>> {
+  const admin = supabase.auth.admin;
+  if (!admin?.getUserById) return {};
+  const { data } = await admin.getUserById(userId);
+  const raw = data?.user?.user_metadata?.[SERVER_DEDUPE_META];
+  if (!raw || typeof raw !== 'object') return {};
+  return raw as Record<string, number>;
+}
+
+async function saveServerDedupe(
+  supabase: SupabaseClient,
+  userId: string,
+  map: Record<string, number>,
+): Promise<void> {
+  const admin = supabase.auth.admin;
+  if (!admin?.getUserById || !admin?.updateUserById) return;
+  const { data } = await admin.getUserById(userId);
+  if (!data?.user) return;
+  const meta = (data.user.user_metadata || {}) as Record<string, unknown>;
+  await admin.updateUserById(userId, {
+    user_metadata: { ...meta, [SERVER_DEDUPE_META]: map },
+  });
+}
+
+/** Szerver cron — in-app + outbox, szerver oldali dedupe */
+export async function notifyPriceDropsServer(
+  supabase: SupabaseClient,
+  userId: string,
+  hits: PriceDropHit[],
+): Promise<{ notified: number; outboundQueued: number }> {
+  if (hits.length === 0) return { notified: 0, outboundQueued: 0 };
+
+  let priceDropsEnabled = true;
+  const admin = supabase.auth.admin;
+  if (admin?.getUserById) {
+    const { data } = await admin.getUserById(userId);
+    const prefs = parseUserPreferences(
+      (data?.user?.user_metadata || {}) as Record<string, unknown>,
+    );
+    priceDropsEnabled = prefs.notifications.priceDrops;
+  } else {
+    const prefs = await loadUserPreferences(supabase);
+    priceDropsEnabled = prefs.notifications.priceDrops;
+  }
+  if (!priceDropsEnabled) return { notified: 0, outboundQueued: 0 };
+
+  const dedupe = await loadServerDedupe(supabase, userId);
+  let notified = 0;
+  let outboundQueued = 0;
+
+  for (const hit of hits) {
+    const key = `${hit.productId}:${hit.newPrice}`;
+    if (dedupe[key]) continue;
+
+    const body = `Árcsökkenés! ${hit.productName} most ${hit.newPrice.toLocaleString('hu-HU')} Ft (${hit.oldPrice.toLocaleString('hu-HU')} Ft helyett).`;
+
+    const routed = await routeMarketplaceNotification(
+      supabase,
+      {
+        userId,
+        type: 'price_drop',
+        title: 'Árcsökkenés! A kiszemelt termék most olcsóbb lett!',
+        body,
+        link: `/products/${hit.productId}`,
+      },
+      { userEmail: null },
+    );
+
+    if (routed.inApp) notified += 1;
+    if (routed.push || routed.email) outboundQueued += 1;
+    if (routed.inApp || routed.push || routed.email) {
+      dedupe[key] = Date.now();
+    }
+  }
+
+  await saveServerDedupe(supabase, userId, dedupe);
+  return { notified, outboundQueued };
 }

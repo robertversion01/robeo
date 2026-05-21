@@ -3,6 +3,7 @@ import { randomUUID } from 'crypto';
 import { getStripeInstance } from '@/lib/stripe-client';
 import { isConnectAccountReady } from '@/lib/stripeConnect';
 import { getSupabaseAdminClient, getSupabaseClient } from '@/lib/supabase';
+import { insertWalletLedgerEntry } from '@/lib/walletLedger';
 
 export const dynamic = 'force-dynamic';
 
@@ -129,6 +130,15 @@ export async function POST(req: NextRequest) {
         status: 'completed',
       })
       .eq('id', payoutId);
+
+    await insertWalletLedgerEntry(db, {
+      userId,
+      entryType: 'cashout',
+      amountHuf: amount,
+      status: 'completed',
+      description: 'Kifizetés bankszámlára (Stripe)',
+      meta: { stripeTransferId: transfer.id, payoutId },
+    });
 
     await db
       .from('profiles')

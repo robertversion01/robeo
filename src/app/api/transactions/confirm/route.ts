@@ -101,6 +101,7 @@ export async function POST(req: NextRequest) {
       const walletTx = {
         id: transaction.id,
         seller_id: transaction.seller_id,
+        product_id: transaction.product_id,
         amount: transaction.amount,
         fee: transaction.fee,
         shipping_cost: transaction.shipping_cost,

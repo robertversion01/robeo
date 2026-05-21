@@ -5,8 +5,9 @@ import { supabase } from '@/lib/supabase';
 import { Download, Package, Truck, Loader2 } from 'lucide-react';
 import { toast } from 'sonner';
 import {
-  downloadFoxpostLabelStub,
+  downloadFoxpostLabel,
   hasFoxpostLabelDownloaded,
+  markFoxpostLabelDownloaded,
 } from '@/lib/foxpostLabel';
 import {
   canSellerMarkShipped,
@@ -26,6 +27,10 @@ type Props = {
 
 type TxRow = ShippingTransaction & {
   productName?: string;
+  tracking_number?: string | null;
+  foxpost_terminal_id?: string | null;
+  foxpost_terminal_name?: string | null;
+  foxpost_terminal_address?: string | null;
 };
 
 export default function ChatTransactionPanel({
@@ -53,7 +58,7 @@ export default function ChatTransactionPanel({
       const { data, error } = await supabase
         .from('transactions')
         .select(
-          'id, status, product_id, buyer_id, seller_id, foxpost_terminal_id, foxpost_terminal_name, foxpost_terminal_address',
+          'id, status, product_id, buyer_id, seller_id, tracking_number, foxpost_terminal_id, foxpost_terminal_name, foxpost_terminal_address',
         )
         .eq('product_id', productId)
         .or(
@@ -135,19 +140,67 @@ export default function ChatTransactionPanel({
   const canMarkShipped = isSeller && canSellerMarkShipped(transaction.status);
   const statusLabel = txStatusLabel(transaction.status);
 
-  const handleLabelDownload = () => {
-    downloadFoxpostLabelStub({
-      transactionId: transaction.id,
-      productName: transaction.productName || t('chatTransaction.defaultProduct'),
-      sellerEmail: userEmail || undefined,
-      foxpostTerminalId: (transaction as { foxpost_terminal_id?: string }).foxpost_terminal_id,
-      foxpostTerminalName: (transaction as { foxpost_terminal_name?: string }).foxpost_terminal_name,
-      foxpostTerminalAddress: (transaction as { foxpost_terminal_address?: string })
-        .foxpost_terminal_address,
-      buyerAddress: (transaction as { foxpost_terminal_address?: string }).foxpost_terminal_address,
-    });
-    setLabelDownloaded(true);
-    toast.success(t('chatTransaction.labelDownloaded'));
+  const handleLabelDownload = async () => {
+    setActing(true);
+    try {
+      const {
+        data: { session },
+      } = await supabase.auth.getSession();
+      if (!session?.access_token) {
+        throw new Error('Nincs bejelentkezve.');
+      }
+
+      const res = await fetch('/api/transactions/foxpost-label', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          Authorization: `Bearer ${session.access_token}`,
+        },
+        body: JSON.stringify({ transactionId: transaction.id }),
+      });
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.error || 'Címke generálás sikertelen');
+
+      const label = data.label;
+      downloadFoxpostLabel({
+        transactionId: transaction.id,
+        productName: label?.productName || transaction.productName || t('chatTransaction.defaultProduct'),
+        trackingNumber: data.trackingNumber,
+        sellerEmail: label?.sellerEmail || userEmail || undefined,
+        foxpostTerminalId: label?.foxpostTerminalId || transaction.foxpost_terminal_id,
+        foxpostTerminalName: label?.foxpostTerminalName || transaction.foxpost_terminal_name,
+        foxpostTerminalAddress:
+          label?.foxpostTerminalAddress || transaction.foxpost_terminal_address,
+        buyerAddress: label?.foxpostTerminalAddress || transaction.foxpost_terminal_address,
+      });
+
+      setTransaction((prev) =>
+        prev
+          ? {
+              ...prev,
+              status: data.status || 'feladva',
+              tracking_number: data.trackingNumber,
+            }
+          : prev,
+      );
+      setLabelDownloaded(true);
+      markFoxpostLabelDownloaded(transaction.id);
+      if (data.status === 'feladva') {
+        setSimulating(true);
+      }
+      toast.success(
+        data.trackingNumber
+          ? `${t('chatTransaction.labelDownloaded')} (${data.trackingNumber})`
+          : t('chatTransaction.labelDownloaded'),
+      );
+      window.dispatchEvent(
+        new CustomEvent('transaction:updated', { detail: { transactionId: transaction.id } }),
+      );
+    } catch (err) {
+      toast.error(err instanceof Error ? err.message : t('chatTransaction.updateFailed'));
+    } finally {
+      setActing(false);
+    }
   };
 
   const handleMarkShipped = async () => {
@@ -193,7 +246,7 @@ export default function ChatTransactionPanel({
         <div className="flex flex-col sm:flex-row gap-2">
           <button
             type="button"
-            onClick={handleLabelDownload}
+            onClick={() => void handleLabelDownload()}
             className="flex-1 inline-flex items-center justify-center gap-1.5 rounded-lg border border-[#007782] bg-white px-3 py-2 text-xs font-semibold text-[#007782] hover:bg-[#007782]/5"
           >
             <Download size={14} />
@@ -216,6 +269,12 @@ export default function ChatTransactionPanel({
           {t('chatTransaction.stepHint')}
         </p>
       )}
+
+      {transaction.tracking_number ? (
+        <p className="text-[11px] font-mono text-[#007782] bg-white/80 rounded px-2 py-1">
+          Foxpost: {transaction.tracking_number}
+        </p>
+      ) : null}
 
       {(sellerShowsWaitingHint(transaction.status) || simulating) && (
         <p className="text-[11px] text-gray-600">

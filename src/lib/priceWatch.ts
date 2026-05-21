@@ -6,6 +6,8 @@ export type PriceWatchEntry = {
   lastPrice: number;
   watchedAt: string;
   alertEnabled: boolean;
+  /** Opcionális célár — értesítés ha az aktuális ár <= target */
+  targetPrice?: number;
 };
 
 function readAll(): PriceWatchEntry[] {

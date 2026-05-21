@@ -4,6 +4,13 @@ Utolsó frissítés: admin RBAC + moderáció + backend cleanup
 
 ---
 
+## [DONE] Production features (Vinted Advanced)
+
+- [x] **Foxpost shipping labels** — `foxpostClient.ts`, `POST /api/transactions/foxpost-label`, tracking `FOX-*-HU`, status `feladva`
+- [x] **Price-watch server cron** — `GET/POST /api/workers/price-watch-scan` + CRON_SECRET, outbox flush
+- [x] **Wallet ledger** — `wallet_transactions` table + `WalletHistory` on profile
+- [x] SQL: `supabase/patch-vinted-advanced.sql` (tracking_number, price_watches, wallet_transactions)
+
 ## [DONE] Admin & codebase hygiene
 
 - [x] **Role-based admin (RBAC)** — `profiles.role === 'admin'` vagy `user_metadata.role`; nincs hardcoded e-mail
@@ -34,11 +41,11 @@ Utolsó frissítés: admin RBAC + moderáció + backend cleanup
 - [ ] Resend **domain verify** — sandbox csak regisztrált címre küld
 - [ ] Web Push előfizetés E2E — Profil → Kézbesítés, `public/sw.js`
 - [ ] Outbox retry / cleanup ha push/email fail
-- [ ] Price-watch **szerver cron** (jelenleg kliens payload)
+- [x] Price-watch **szerver cron** — `patch-vinted-advanced.sql` + GitHub hourly workflow
 - [ ] Szerver oldali dedupe (ne csak `localStorage`)
 
 ### Szállítás
-- [ ] Foxpost **valós címke API** (jelenleg HTML stub — `foxpostLabel.ts`)
+- [ ] Foxpost **live partner API** — állítsd be `FOXPOST_API_URL` + `FOXPOST_API_KEY` (registry mode már működik)
 - [ ] Packeta / házhoz carrier integráció
 - [ ] Tranzakció státusz: szimuláció → valós tracking
 

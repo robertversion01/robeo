@@ -1,4 +1,8 @@
 import type { SupabaseClient } from '@supabase/supabase-js';
+import {
+  completePendingLedgerForTransaction,
+  insertWalletLedgerEntry,
+} from '@/lib/walletLedger';
 
 export type WalletRow = {
   user_id: string;
@@ -11,6 +15,7 @@ export type WalletRow = {
 export type TransactionWalletFields = {
   id: string;
   seller_id: string;
+  product_id?: string | null;
   amount: number;
   fee?: number | null;
   shipping_cost?: number | null;
@@ -56,6 +61,16 @@ export async function creditSellerPendingForTransaction(
   if (markErr) {
     throw new Error(`wallet_pending_credited_at: ${markErr.message}`);
   }
+
+  await insertWalletLedgerEntry(db, {
+    userId: tx.seller_id,
+    entryType: 'credit_pending',
+    amountHuf: net,
+    status: 'pending',
+    transactionId: tx.id,
+    productId: tx.product_id ?? null,
+    description: 'Eladás — letét (függőben)',
+  });
 }
 
 /** „Minden rendben” után: pending → available. */
@@ -91,4 +106,16 @@ export async function releaseSellerWalletForTransaction(
   if (markErr) {
     throw new Error(`wallet_released_at: ${markErr.message}`);
   }
+
+  await completePendingLedgerForTransaction(db, tx.id, 'credit_pending');
+
+  await insertWalletLedgerEntry(db, {
+    userId: tx.seller_id,
+    entryType: 'release',
+    amountHuf: net,
+    status: 'completed',
+    transactionId: tx.id,
+    productId: tx.product_id ?? null,
+    description: 'Eladás — elérhető egyenleg',
+  });
 }

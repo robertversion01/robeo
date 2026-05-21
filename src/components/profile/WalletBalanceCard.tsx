@@ -7,6 +7,7 @@ import { formatPrice } from '@/lib/utils';
 import { toast } from 'sonner';
 import type { WalletRow } from '@/lib/wallet';
 import { fetchProfileRow } from '@/lib/supabaseResilience';
+import WalletHistory from '@/components/profile/WalletHistory';
 
 type Props = {
   userId: string | null | undefined;
@@ -232,6 +233,8 @@ export default function WalletBalanceCard({ userId }: Props) {
         {busy ? <Loader2 size={18} className="animate-spin" /> : <ArrowDownToLine size={18} />}
         Kifizetés bankszámlára
       </button>
+
+      <WalletHistory userId={userId} />
     </section>
   );
 }
