@@ -80,6 +80,8 @@ export interface Profile extends User {
   average_rating?: number;
   followers_count?: number;
   following_count?: number;
+  vacation_mode?: boolean;
+  seller_verified?: boolean;
 }
 
 export interface Message {

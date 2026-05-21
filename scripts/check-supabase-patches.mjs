@@ -73,6 +73,11 @@ const CHECKS = [
     label: 'products (promote analytics)',
     path: 'products?select=promote_demo_views,promote_last_boosted_at&limit=1',
   },
+  {
+    patch: 'patch-vacation-mode.sql',
+    label: 'profiles.vacation_mode',
+    path: 'profiles?select=vacation_mode&limit=1',
+  },
 ];
 
 async function probe(baseUrl, key, { patch, label, path: restPath }) {

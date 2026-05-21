@@ -247,6 +247,16 @@
   },
   "settings": {
     "saving": "Saving…",
+    "vacation": {
+      "title": "Seller settings",
+      "heading": "Vacation mode",
+      "hint": "When on, your listings are hidden from the main feed and browse — your profile and closet stay reachable.",
+      "onLabel": "On vacation",
+      "offLabel": "Shop open",
+      "enabled": "Vacation mode on — listings hidden from feed.",
+      "disabled": "Vacation mode off — listings visible again.",
+      "schemaMissing": "Run supabase/patch-vacation-mode.sql in the Supabase SQL Editor."
+    },
     "personalisation": {
       "title": "Personalisation",
       "hint": "Preferences tune your home feed ranking.",

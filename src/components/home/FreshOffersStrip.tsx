@@ -4,6 +4,10 @@ import { useEffect, useState } from 'react';
 import Link from 'next/link';
 import { useTranslation } from 'react-i18next';
 import { supabase } from '@/lib/supabase';
+import {
+  fetchVacationSellerIdSet,
+  filterProductsExcludingVacationSellers,
+} from '@/lib/vacationMode';
 
 type FreshItem = {
   id: string;
@@ -11,6 +15,7 @@ type FreshItem = {
   image_url: string | null;
   price: number;
   category: string;
+  user_id: string;
 };
 
 interface FreshOffersStripProps {
@@ -35,13 +40,21 @@ export default function FreshOffersStrip({
     const loadFreshOffers = async () => {
       const { data, error } = await supabase
         .from('products')
-        .select('id, name, image_url, price, category')
-        .or('status.is.null,status.neq.deleted')
+        .select('id, name, image_url, price, category, user_id')
+        .or('status.eq.active,status.is.null')
         .order('created_at', { ascending: false })
-        .limit(12);
+        .limit(24);
 
-      if (!error) {
-        setItems((data || []) as FreshItem[]);
+      if (!error && data) {
+        let rows = (data as FreshItem[]).filter(
+          (p) => p.user_id && (p.price == null || Number(p.price) >= 0),
+        );
+        const vacationIds = await fetchVacationSellerIdSet(
+          supabase,
+          rows.map((p) => p.user_id),
+        );
+        rows = filterProductsExcludingVacationSellers(rows, vacationIds);
+        setItems(rows.slice(0, 12));
       }
       setLoading(false);
     };

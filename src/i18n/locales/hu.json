@@ -254,6 +254,16 @@
   },
   "settings": {
     "saving": "Mentés…",
+    "vacation": {
+      "title": "Eladói beállítások",
+      "heading": "Szabadság üzemmód",
+      "hint": "Bekapcsolva a hirdetéseid eltűnnek a fő feedből és a böngészésből — a profilod és a szekrényed továbbra is elérhető marad.",
+      "onLabel": "Szabadság aktív",
+      "offLabel": "Bolt nyitva",
+      "enabled": "Szabadság üzemmód bekapcsolva — a hirdetéseid rejtve a feedben.",
+      "disabled": "Szabadság üzemmód kikapcsolva — a hirdetéseid újra láthatók.",
+      "schemaMissing": "Futtasd le a supabase/patch-vacation-mode.sql patch-et a Supabase SQL Editorban."
+    },
     "personalisation": {
       "title": "Személyre szabás",
       "hint": "A preferenciák a főoldali feed sorrendjét finomítják.",

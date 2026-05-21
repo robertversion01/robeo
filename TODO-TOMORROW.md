@@ -1,6 +1,8 @@
 # ROBEO — Development TODO (V1 Next.js monolith)
 
-Utolsó frissítés: wallet E2E + Web Push E2E + seller trust + demo dispute
+Utolsó frissítés: Vinted gap audit + vacation mode + ProductCard overlay
+
+Részletes gap lista: **`docs/VINTED-GAP-ANALYSIS.md`**
 
 ---
 
@@ -14,68 +16,68 @@ Utolsó frissítés: wallet E2E + Web Push E2E + seller trust + demo dispute
 - [x] Foxpost labels, price-watch cron, wallet ledger
 - [x] SQL: `patch-vinted-advanced.sql`
 
+## [DONE] Bundle v2 + Promote demo
+
+- [x] Bundle checkout API, line items, Foxpost, orders/success UI
+- [x] Promote analytics card + demo views/clicks
+- [x] SQL: `patch-bundle-v2-promote.sql`
+
+## [DONE] Vinted micro-parity (ma)
+
+- [x] ProductCard — méret + márka overlay (Vinted grid)
+- [x] Vacation mode toggle + feed filter
+- [x] SQL: `patch-vacation-mode.sql`
+
 ## [DONE] Admin & codebase hygiene
 
 - [x] RBAC, moderáció, notification pipeline, E2E scripts
 
-## [DONE] Értesítések & pipeline
+## [HIGH] Vinted parity — következő
 
-- [x] Outbox retry/cleanup + `/api/workers/outbox-retry`
-- [x] Szerver dedupe (`notificationDedupe.ts`)
-- [x] Price-watch szinkron (`POST /api/price-watch/sync`)
-- [x] **Web Push E2E** — `public/sw.js`, `PushDeliveryPanel`, `POST /api/push/test`
-- [ ] Resend **domain verify** — *külső: DNS a Resend dashboardon*
+- [ ] **Offer 24h expiry** — `offers.expires_at`, cron, chat countdown
+- [ ] **Checkout terms** — kötelező checkbox (single + bundle)
+- [ ] **Packeta picker** — Foxpost mintára
+- [ ] **ChatBuyerOffersPanel** — renderelés a messages oldalon
+- [ ] **Buyer counter-offer** — második kör vevőtől
+- [ ] **Profile bio** — `profiles.bio` + szerkesztés + publikus profil
+- [ ] **Verified seller flow** — admin/KYC, nem csak DB flag
+- [ ] **Favorite count on ProductCard** — aggregátum a grid-en
+- [ ] **Dispute éles** — refund state machine (demo panel → production)
 
-## [DONE] Pénztárca & Stripe (kód)
+## [PARTIAL] Értesítések & pipeline
 
-- [x] Wallet release flow (confirm API + ledger + RPC)
-- [x] `patch-wallet-schema.sql` — ellenőrizd: `npm run db:check-patches`
-- [x] Wallet UI refresh (`wallet:updated` event)
-- [x] E2E script: `npm run test:wallet-release`
-- [x] Cashout UI hibák (connect, insufficient balance)
-- [ ] Stripe Connect **éles** payout — *Stripe teszt/live kulcsok*
+- [x] Outbox retry, Web Push E2E, price-watch sync
+- [ ] Resend domain verify — *külső DNS*
+- [ ] seller_new_item push/email flush E2E
 
-## [DONE] PDP & trust
+## [PARTIAL] Pénztárca & Stripe
 
-- [x] `PriceHistorySparkline`
-- [x] Valós válaszidő aggregátum (`sellerResponseTime.ts`)
-
-## [DONE] Egyéb kód
-
-- [x] Upload AI feature flag (`ollamaFeature.ts`, `UPLOAD_AI_ENABLED`)
-- [x] `npm run db:check-patches` — `scripts/check-supabase-patches.mjs`
-- [x] Demo dispute panel (`DisputeDemoPanel` — integráld orders/detail ha kell)
-- [x] `as any` csökkentés — cashout route
+- [x] Wallet release E2E, cashout UI
+- [ ] Stripe Connect **éles** payout
 
 ## [MANUAL / KÜLSŐ] Szállítás
 
-- [ ] Foxpost live API — `FOXPOST_API_URL` + `FOXPOST_API_KEY`
-- [ ] Packeta / házhoz
-- [ ] Valós tracking (nem szimuláció)
+- [ ] Foxpost live API — `FOXPOST_API_URL` + key
+- [ ] Packeta live integration
+- [ ] Valós tracking
 
-## [PARTIAL] Vinted features B
+## [LOW] Polish
 
-- [x] seller_new_item DB trigger — teszt: `node scripts/run-seller-new-item-e2e.mjs <sellerId>`
-- [ ] seller_new_item **push/email** flush teszt követőnél
-- [ ] Szerver oldali katalógus keresés + URL sync
-- [ ] Bundle checkout v2
-- [ ] Counter-offer thread UX finomítás (alap már van: OffersList + chat)
-- [ ] Bump / promote analytics dashboard
-- [ ] Dispute/refund **éles** flow (demo panel kész)
+- [ ] Heart animation on favorite toggle
+- [ ] „Bump” badge copy (featured → Vinted wording)
+- [ ] Keresés teljes URL sync
+- [ ] `SellerTrustBadges` bekötése vagy törlése (dead code)
 
 ---
 
 ## Gyors parancsok
 
 ```bash
-npm run db:check-patches      # mely SQL patch futott már
-npm run test:wallet-release   # pending → available E2E
-npm run test:notifications    # saved-search + outbox pipeline
-node scripts/run-seller-new-item-e2e.mjs <seller-uuid>
+npm run db:check-patches
 npm run build && npm run dev
-curl http://localhost:3000/api/marketplace-health
+npm run test:wallet-release
 ```
 
-**Supabase:** már ellenőrizve — minden fő tábla megvan. Admin: `UPDATE profiles SET role='admin' WHERE email='...'`
+**Új SQL:** `patch-vacation-mode.sql` — Supabase SQL Editor
 
 **Éles:** https://robeo.vercel.app

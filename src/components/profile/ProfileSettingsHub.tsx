@@ -20,6 +20,9 @@ import {
 } from '@/lib/notificationChannels';
 import PushDeliveryPanel from '@/components/profile/PushDeliveryPanel';
 import { toast } from 'sonner';
+import { loadProfileVacationMode, setProfileVacationMode } from '@/lib/vacationMode';
+import { notifyCatalogUpdated } from '@/lib/catalogRefresh';
+import { Palmtree } from 'lucide-react';
 
 type Props = {
   userId?: string;
@@ -114,15 +117,19 @@ export default function ProfileSettingsHub({ userId }: Props) {
   const [loaded, setLoaded] = useState(false);
   const [gdprBusy, setGdprBusy] = useState(false);
   const [deleteConfirmOpen, setDeleteConfirmOpen] = useState(false);
+  const [vacationMode, setVacationMode] = useState(false);
+  const [vacationBusy, setVacationBusy] = useState(false);
 
   const refresh = useCallback(async () => {
     if (!userId) return;
-    const [p, d] = await Promise.all([
+    const [p, d, vacation] = await Promise.all([
       loadUserPreferences(supabase),
       loadDeliveryPrefs(supabase),
+      loadProfileVacationMode(supabase, userId),
     ]);
     setPrefs(p);
     setDelivery(d);
+    setVacationMode(vacation);
     setLoaded(true);
   }, [userId]);
 
@@ -151,8 +158,61 @@ export default function ProfileSettingsHub({ userId }: Props) {
     return <p className="text-sm text-gray-500 py-4">{t('common.loading')}</p>;
   }
 
+  const toggleVacationMode = async (next: boolean) => {
+    if (!userId) return;
+    setVacationBusy(true);
+    const prev = vacationMode;
+    setVacationMode(next);
+    try {
+      const result = await setProfileVacationMode(supabase, userId, next);
+      if (!result.ok) {
+        setVacationMode(prev);
+        if (result.error === 'vacation_mode_column_missing') {
+          toast.error(t('settings.vacation.schemaMissing'));
+        } else {
+          toast.error(result.error || t('auth.errors.generic'));
+        }
+        return;
+      }
+      notifyCatalogUpdated();
+      toast.success(next ? t('settings.vacation.enabled') : t('settings.vacation.disabled'));
+    } catch {
+      setVacationMode(prev);
+      toast.error(t('auth.errors.generic'));
+    } finally {
+      setVacationBusy(false);
+    }
+  };
+
   return (
     <div className="space-y-6">
+      <ProfileSection title={t('settings.vacation.title')}>
+        <div className="rounded-xl border border-amber-200/80 bg-amber-50/60 p-4">
+          <div className="flex items-start gap-3">
+            <div className="rounded-full bg-amber-100 p-2 shrink-0">
+              <Palmtree size={18} className="text-amber-800" />
+            </div>
+            <div className="min-w-0 flex-1">
+              <p className="text-sm font-semibold text-gray-900">{t('settings.vacation.heading')}</p>
+              <p className="text-xs text-gray-600 mt-1 leading-relaxed">{t('settings.vacation.hint')}</p>
+              <label className="mt-3 flex items-center justify-between gap-3 rounded-lg border border-amber-200/60 bg-white/80 px-3 py-2.5 cursor-pointer">
+                <span className="text-sm font-medium text-gray-800">
+                  {vacationMode ? t('settings.vacation.onLabel') : t('settings.vacation.offLabel')}
+                </span>
+                <input
+                  type="checkbox"
+                  checked={vacationMode}
+                  disabled={vacationBusy || !userId}
+                  onChange={(e) => void toggleVacationMode(e.target.checked)}
+                  className="h-4 w-4 accent-amber-700"
+                  aria-label={t('settings.vacation.heading')}
+                />
+              </label>
+            </div>
+          </div>
+        </div>
+      </ProfileSection>
+
       <ProfileSection title={t('settings.personalisation.title')}>
         <p className="text-xs text-gray-500 mb-4">{t('settings.personalisation.hint')}</p>
         <div className="space-y-4">

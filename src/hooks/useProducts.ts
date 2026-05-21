@@ -22,6 +22,10 @@ import {
   serializeCatalogFilters,
   conditionDbValues,
 } from '@/lib/catalogFilters';
+import {
+  fetchVacationSellerIdSet,
+  filterProductsExcludingVacationSellers,
+} from '@/lib/vacationMode';
 
 /** Csak böngészhető, megvásárolható termékek a főlistán. */
 function isListedProduct(status: string | null | undefined): boolean {
@@ -184,6 +188,12 @@ export function useProducts() {
           );
         });
       }
+
+      const vacationIds = await fetchVacationSellerIdSet(
+        supabase,
+        fetched.map((p) => p.user_id),
+      );
+      fetched = filterProductsExcludingVacationSellers(fetched, vacationIds);
 
       setProducts(fetched);
 
