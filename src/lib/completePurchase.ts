@@ -18,14 +18,30 @@ export type PaidTransactionRow = {
   checkout_completed_notified_at?: string | null;
   wallet_pending_credited_at?: string | null;
   foxpost_terminal_address?: string | null;
+  bundle_product_ids?: string | null;
+  bundle_item_count?: number | null;
 };
+
+function parseBundleProductIds(
+  transaction: PaidTransactionRow,
+  overrideIds?: string[],
+): string[] {
+  const fromOverride = (overrideIds ?? []).map(String).filter(Boolean);
+  if (fromOverride.length > 0) {
+    return [...new Set(fromOverride)];
+  }
+  const raw = transaction.bundle_product_ids?.trim();
+  if (!raw) return [transaction.product_id];
+  const ids = raw.split(',').map((s) => s.trim()).filter(Boolean);
+  return ids.length > 0 ? [...new Set(ids)] : [transaction.product_id];
+}
 
 /** Közös „fizetve” állapot — Stripe webhook és wallet fizetés. */
 export async function applyPaidTransactionEffects(
   db: SupabaseClient,
   transaction: PaidTransactionRow,
   paymentIntentId: string | null,
-  options?: { buyerAddressOverride?: string },
+  options?: { buyerAddressOverride?: string; bundleProductIds?: string[] },
 ): Promise<void> {
   const needsStatusUpdate = transaction.status !== 'fizetve';
   const alreadyNotified = Boolean(transaction.checkout_completed_notified_at);
@@ -42,10 +58,12 @@ export async function applyPaidTransactionEffects(
     if (error) throw new Error(`transactions update: ${error.message}`);
   }
 
+  const productIdsToLock = parseBundleProductIds(transaction, options?.bundleProductIds);
+
   const { error: productSoldErr } = await db
     .from('products')
     .update({ status: 'sold' })
-    .eq('id', transaction.product_id)
+    .in('id', productIdsToLock)
     .in('status', ['active', 'reserved']);
 
   if (productSoldErr) {

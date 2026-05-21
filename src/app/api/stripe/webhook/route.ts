@@ -84,7 +84,25 @@ type TxRow = {
   checkout_completed_notified_at: string | null;
   wallet_pending_credited_at?: string | null;
   wallet_released_at?: string | null;
+  bundle_product_ids?: string | null;
+  bundle_item_count?: number | null;
 };
+
+function bundleProductIdsFromSession(session: Stripe.Checkout.Session): string[] | undefined {
+  if (session.metadata?.bundle !== 'true') return undefined;
+  const raw = session.metadata?.productIds?.trim();
+  if (!raw) return undefined;
+  const ids = raw.split(',').map((s) => s.trim()).filter(Boolean);
+  return ids.length >= 2 ? ids : undefined;
+}
+
+function bundleProductIdsFromPaymentIntent(pi: Stripe.PaymentIntent): string[] | undefined {
+  if (pi.metadata?.bundle !== 'true') return undefined;
+  const raw = pi.metadata?.productIds?.trim();
+  if (!raw) return undefined;
+  const ids = raw.split(',').map((s) => s.trim()).filter(Boolean);
+  return ids.length >= 2 ? ids : undefined;
+}
 
 async function handleCheckoutSessionCompleted(event: Stripe.Event, db: any): Promise<void> {
   const session = event.data.object as Stripe.Checkout.Session;
@@ -149,7 +167,9 @@ async function handleCheckoutSessionCompleted(event: Stripe.Event, db: any): Pro
     throw new Error(`no transaction for checkout_session_id=${checkoutSessionId}`);
   }
 
-  await applyPaidTransactionEffects(db, transaction as TxRow, piFromSession);
+  await applyPaidTransactionEffects(db, transaction as TxRow, piFromSession, {
+    bundleProductIds: bundleProductIdsFromSession(session),
+  });
 }
 
 async function handlePaymentIntentSucceeded(event: Stripe.Event, db: any): Promise<void> {
@@ -182,7 +202,9 @@ async function handlePaymentIntentSucceeded(event: Stripe.Event, db: any): Promi
     return;
   }
 
-  await applyPaidTransactionEffects(db, transaction, paymentIntentId);
+  await applyPaidTransactionEffects(db, transaction, paymentIntentId, {
+    bundleProductIds: bundleProductIdsFromPaymentIntent(pi),
+  });
 }
 
 /** Ne írjuk felül a már „élő” vevői szállítási folyamatot */

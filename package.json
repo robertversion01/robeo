@@ -10,7 +10,8 @@
     "fix:product-images": "node scripts/fix-product-images.mjs",
     "deploy:trigger": "node scripts/trigger-vercel-deploy.mjs",
     "rotate:cron-secret": "node scripts/rotate-cron-secret.mjs",
-    "db:apply-patch": "node scripts/apply-supabase-patch.mjs"
+    "db:apply-patch": "node scripts/apply-supabase-patch.mjs",
+    "db:ensure-schema": "node scripts/ensure-marketplace-schema.mjs"
   },
   "dependencies": {
     "@stripe/stripe-js": "^9.4.0",

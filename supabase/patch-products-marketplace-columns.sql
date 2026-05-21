@@ -4,6 +4,8 @@
 ALTER TABLE public.products ADD COLUMN IF NOT EXISTS size TEXT;
 ALTER TABLE public.products ADD COLUMN IF NOT EXISTS color TEXT;
 
+ALTER TABLE public.transactions ADD COLUMN IF NOT EXISTS bundle_product_ids TEXT;
+
 CREATE INDEX IF NOT EXISTS idx_products_size ON public.products(size) WHERE size IS NOT NULL;
 CREATE INDEX IF NOT EXISTS idx_products_brand_size ON public.products(brand, size);
 

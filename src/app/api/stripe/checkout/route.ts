@@ -461,15 +461,27 @@ async function handleBundleCheckout(ctx: {
       capture_method: 'manual',
       application_fee_amount: buyerProtectionFee * 100,
       transfer_data: { destination: sellerStripeAccountId },
+      metadata: {
+        productIds: uniqueIds.join(','),
+        bundle: 'true',
+        transactionId,
+      },
     };
   } else {
-    checkoutSessionPayload.payment_intent_data = { capture_method: 'manual' };
+    checkoutSessionPayload.payment_intent_data = {
+      capture_method: 'manual',
+      metadata: {
+        productIds: uniqueIds.join(','),
+        bundle: 'true',
+        transactionId,
+      },
+    };
   }
 
   const session = await stripe.checkout.sessions.create(checkoutSessionPayload);
 
   try {
-    await supabase.from('transactions').insert({
+    const baseRow = {
       id: transactionId,
       product_id: primaryProductId,
       buyer_id: buyerId,
@@ -481,7 +493,15 @@ async function handleBundleCheckout(ctx: {
       status: 'payment_pending',
       checkout_session_id: session.id,
       payment_intent_id: (session.payment_intent as string) || null,
+    };
+    const { error: fullErr } = await supabase.from('transactions').insert({
+      ...baseRow,
+      bundle_item_count: products.length,
+      bundle_product_ids: uniqueIds.join(','),
     });
+    if (fullErr && /bundle_product_ids|bundle_item_count/i.test(fullErr.message)) {
+      await supabase.from('transactions').insert(baseRow);
+    }
   } catch {
     /* non-blocking */
   }
