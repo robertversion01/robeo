@@ -16,16 +16,9 @@ jobs:
   trigger:
     runs-on: ubuntu-latest
     timeout-minutes: 5
+    # Ha nincs hook secret, a job kihagyva — a Vercel Git integrációt külön kell beállítani.
+    if: ${{ secrets.VERCEL_DEPLOY_HOOK_URL != '' }}
     steps:
-      - name: Require deploy hook secret
-        env:
-          HOOK: ${{ secrets.VERCEL_DEPLOY_HOOK_URL }}
-        run: |
-          if [ -z "$HOOK" ]; then
-            echo "::error::VERCEL_DEPLOY_HOOK_URL nincs beállítva. Lásd docs/VERCEL_DEPLOY.md"
-            exit 1
-          fi
-
       - name: POST Vercel Deploy Hook (production / main)
         env:
           HOOK: ${{ secrets.VERCEL_DEPLOY_HOOK_URL }}
