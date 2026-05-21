@@ -42,7 +42,7 @@ export async function notifyPriceDropsIfEnabled(
       body: `${hit.productName}: ${hit.oldPrice} → ${hit.newPrice} Ft`,
       link: `/products/${hit.productId}`,
     });
-    if (routed.inApp) {
+    if (routed.inApp || routed.push || routed.email) {
       dedupe[key] = Date.now();
       anyRouted = true;
     }

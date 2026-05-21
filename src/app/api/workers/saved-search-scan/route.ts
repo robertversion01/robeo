@@ -40,6 +40,7 @@ export async function POST(req: NextRequest) {
 
     if (isCron) {
       let totalNotified = 0;
+      let totalOutbound = 0;
       let usersScanned = 0;
       const { data: profiles, error: profilesError } = await supabase
         .from('profiles')
@@ -61,11 +62,13 @@ export async function POST(req: NextRequest) {
         usersScanned += 1;
         const result = await scanForUser(supabase, uid, saved, authData.user.email);
         totalNotified += result.notified;
+        totalOutbound += result.outboundQueued;
       }
 
       return NextResponse.json({
         ok: true,
         notified: totalNotified,
+        outboundQueued: totalOutbound,
         usersScanned,
         mode: 'cron',
       });

@@ -107,24 +107,29 @@ export async function runSavedSearchAlertScan(
       { userEmail },
     );
 
-    if (routed.inApp) {
-      notified += 1;
+    const delivered = routed.inApp || routed.push || routed.email;
+    if (delivered) {
+      if (routed.inApp) notified += 1;
+      if (routed.push || routed.email) outboundQueued += 1;
       dedupe[dedupeKey] = Date.now();
+      nextState = mergeSeenIds(
+        nextState,
+        search.id,
+        matches.map((m) => m.id),
+      );
     }
-
-    nextState = mergeSeenIds(
-      nextState,
-      search.id,
-      matches.map((m) => m.id),
-    );
   }
 
   writeDedupe(dedupe);
   await persistWorkerState(supabase, userId, nextState, useAdmin);
 
-  if (notified > 0 && typeof window !== 'undefined') {
+  if ((notified > 0 || outboundQueued > 0) && typeof window !== 'undefined') {
     void requestNotificationFlush();
   }
 
-  return { notified, searchesChecked: saved.filter((s) => isSavedSearchAlertEnabled(s.id)).length };
+  return {
+    notified,
+    outboundQueued,
+    searchesChecked: saved.filter((s) => isSavedSearchAlertEnabled(s.id)).length,
+  };
 }
