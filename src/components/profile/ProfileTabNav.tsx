@@ -3,7 +3,7 @@
 import { useTranslation } from 'react-i18next';
 import { cn } from '@/lib/utils';
 
-export type ProfileTabId = 'shop' | 'reviews' | 'about';
+export type ProfileTabId = 'shop' | 'reviews' | 'invoices' | 'about';
 
 type Props = {
   active: ProfileTabId;
@@ -11,7 +11,7 @@ type Props = {
   counts?: Partial<Record<ProfileTabId, number>>;
 };
 
-const TABS: ProfileTabId[] = ['shop', 'reviews', 'about'];
+const TABS: ProfileTabId[] = ['shop', 'reviews', 'invoices', 'about'];
 
 export default function ProfileTabNav({ active, onChange, counts }: Props) {
   const { t } = useTranslation();

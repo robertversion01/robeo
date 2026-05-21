@@ -168,6 +168,7 @@
     "tabs": {
       "shop": "Shop",
       "reviews": "Reviews",
+      "invoices": "My invoices",
       "about": "About"
     },
     "stats": {
@@ -284,8 +285,14 @@
       "title": "Language"
     },
     "privacy": {
-      "title": "Privacy",
-      "body": "Your profile and listings follow marketplace rules. More controls coming soon."
+      "title": "Privacy (GDPR)",
+      "body": "Download your data as JSON or request demo account anonymization (soft-delete).",
+      "export": "GDPR data portability",
+      "exportDone": "Data export downloaded.",
+      "deleteAccount": "Delete account",
+      "deleteConfirm": "Anonymize your profile? In demo mode this clears name/email on the profile.",
+      "deleteConfirmBtn": "Yes, anonymize",
+      "deleteDone": "Profile anonymized."
     }
   },
   "sellerTrust": {
@@ -459,6 +466,9 @@
     "switchLogin": "Log in",
     "successLogin": "Logged in successfully!",
     "successRegister": "Account created!",
+    "acceptTerms": "I accept the",
+    "acceptPrivacy": "I accept the",
+    "legalRequired": "You must accept the Terms and Privacy Policy.",
     "errors": {
       "generic": "Something went wrong",
       "emailNotConfirmed": "Confirm your email before logging in.",
@@ -717,6 +727,7 @@
     "browse": "Browse catalog"
   },
   "common": {
+    "cancel": "Cancel",
     "loading": "Loading…",
     "currencyHuf": "Ft",
     "selectPlaceholder": "Select…"

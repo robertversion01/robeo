@@ -9,6 +9,7 @@ import { MAIN_TOP_PADDING } from '@/lib/layoutTokens';
 import { filterProductsWithValidImages } from '@/lib/productImageValidation';
 import { useImmersiveBrowse } from '@/context/ImmersiveBrowseContext';
 import { cn } from '@/lib/utils';
+import CookieConsentBanner from '@/components/legal/CookieConsentBanner';
 
 function HomePageContent() {
   const { t } = useTranslation();
@@ -23,6 +24,7 @@ function HomePageContent() {
   if (isGuest) {
     return (
       <div className="landing-page-root min-h-screen max-w-[100vw] overflow-x-hidden bg-white text-gray-900">
+        <CookieConsentBanner />
         <main className="w-full max-w-[100vw] overflow-x-hidden">
           <VintedHero products={heroProducts} fullScreen />
           <div className="landing-catalog mx-auto max-w-7xl px-2 pt-3 pb-6 md:px-6 md:pt-4 md:pb-8">
@@ -42,6 +44,7 @@ function HomePageContent() {
 
   return (
     <div className="landing-page-root min-h-screen max-w-[100vw] overflow-x-hidden bg-white text-gray-900">
+      <CookieConsentBanner />
       <main className={`w-full max-w-[100vw] overflow-x-hidden ${MAIN_TOP_PADDING} px-2 pb-4 md:px-6`}>
         <div className="mx-auto max-w-7xl">
           <div

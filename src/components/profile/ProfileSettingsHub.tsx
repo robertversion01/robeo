@@ -23,6 +23,7 @@ import {
   subscribeToWebPush,
   unsubscribeFromWebPush,
 } from '@/lib/webPushClient';
+import { toast } from 'sonner';
 
 type Props = {
   userId?: string;
@@ -116,6 +117,8 @@ export default function ProfileSettingsHub({ userId }: Props) {
   const [saving, setSaving] = useState(false);
   const [loaded, setLoaded] = useState(false);
   const [pushStatus, setPushStatus] = useState<string | null>(null);
+  const [gdprBusy, setGdprBusy] = useState(false);
+  const [deleteConfirmOpen, setDeleteConfirmOpen] = useState(false);
 
   const refresh = useCallback(async () => {
     if (!userId) return;
@@ -286,7 +289,105 @@ export default function ProfileSettingsHub({ userId }: Props) {
       </ProfileSection>
 
       <ProfileSection title={t('settings.privacy.title')}>
-        <p className="text-sm text-gray-600 leading-relaxed">{t('settings.privacy.body')}</p>
+        <p className="text-sm text-gray-600 leading-relaxed mb-4">{t('settings.privacy.body')}</p>
+        <div className="flex flex-wrap gap-2">
+          <button
+            type="button"
+            disabled={gdprBusy || !userId}
+            onClick={() => {
+              void (async () => {
+                setGdprBusy(true);
+                try {
+                  const {
+                    data: { session },
+                  } = await supabase.auth.getSession();
+                  if (!session?.access_token) throw new Error(t('auth.errors.generic'));
+
+                  const res = await fetch('/api/gdpr/export', {
+                    method: 'POST',
+                    headers: { Authorization: `Bearer ${session.access_token}` },
+                  });
+                  if (!res.ok) {
+                    const err = await res.json();
+                    throw new Error(err.error || 'Export failed');
+                  }
+                  const blob = await res.blob();
+                  const url = URL.createObjectURL(blob);
+                  const a = document.createElement('a');
+                  a.href = url;
+                  a.download = `robeo-gdpr-export-${new Date().toISOString().slice(0, 10)}.json`;
+                  a.click();
+                  URL.revokeObjectURL(url);
+                  toast.success(t('settings.privacy.exportDone'));
+                } catch (e) {
+                  toast.error(e instanceof Error ? e.message : t('auth.errors.generic'));
+                } finally {
+                  setGdprBusy(false);
+                }
+              })();
+            }}
+            className="btn-base btn-secondary text-xs"
+          >
+            {gdprBusy ? t('settings.saving') : t('settings.privacy.export')}
+          </button>
+          <button
+            type="button"
+            disabled={gdprBusy || !userId}
+            onClick={() => setDeleteConfirmOpen(true)}
+            className="btn-base btn-danger text-xs"
+          >
+            {t('settings.privacy.deleteAccount')}
+          </button>
+        </div>
+        {deleteConfirmOpen ? (
+          <div className="mt-4 rounded-xl border border-red-200 bg-red-50/80 p-4 text-sm">
+            <p className="text-gray-800 mb-3">{t('settings.privacy.deleteConfirm')}</p>
+            <div className="flex gap-2">
+              <button
+                type="button"
+                className="btn-base btn-danger text-xs"
+                disabled={gdprBusy}
+                onClick={() => {
+                  void (async () => {
+                    setGdprBusy(true);
+                    try {
+                      const {
+                        data: { session },
+                      } = await supabase.auth.getSession();
+                      if (!session?.access_token) throw new Error(t('auth.errors.generic'));
+
+                      const res = await fetch('/api/gdpr/delete-account', {
+                        method: 'POST',
+                        headers: {
+                          Authorization: `Bearer ${session.access_token}`,
+                          'Content-Type': 'application/json',
+                        },
+                        body: JSON.stringify({ confirm: true }),
+                      });
+                      const data = await res.json();
+                      if (!res.ok) throw new Error(data.error || 'Delete failed');
+                      toast.success(data.message || t('settings.privacy.deleteDone'));
+                      setDeleteConfirmOpen(false);
+                    } catch (e) {
+                      toast.error(e instanceof Error ? e.message : t('auth.errors.generic'));
+                    } finally {
+                      setGdprBusy(false);
+                    }
+                  })();
+                }}
+              >
+                {t('settings.privacy.deleteConfirmBtn')}
+              </button>
+              <button
+                type="button"
+                className="btn-base btn-secondary text-xs"
+                onClick={() => setDeleteConfirmOpen(false)}
+              >
+                {t('common.cancel')}
+              </button>
+            </div>
+          </div>
+        ) : null}
       </ProfileSection>
     </div>
   );

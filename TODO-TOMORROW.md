@@ -4,6 +4,13 @@ Utolsó frissítés: admin RBAC + moderáció + backend cleanup
 
 ---
 
+## [DONE] Legal & compliance (Demo mode)
+
+- [x] **Demo invoicing** — `invoices` table, auto on confirm, `GET /api/invoices/[id]/download`, Számláim tab
+- [x] **Legal flows** — ÁSZF/GDPR checkboxes on signup, cookie banner, GDPR export + soft-delete
+- [x] **NAV / DAC7 admin** — flagged sellers report + CSV export
+- [x] SQL: `supabase/patch-vinted-legal.sql`
+
 ## [DONE] Production features (Vinted Advanced)
 
 - [x] **Foxpost shipping labels** — `foxpostClient.ts`, `POST /api/transactions/foxpost-label`, tracking `FOX-*-HU`, status `feladva`

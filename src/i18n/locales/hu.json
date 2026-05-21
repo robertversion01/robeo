@@ -168,6 +168,7 @@
     "tabs": {
       "shop": "Bolt",
       "reviews": "Értékelések",
+      "invoices": "Számláim",
       "about": "Rólam"
     },
     "stats": {
@@ -291,8 +292,14 @@
       "title": "Nyelv"
     },
     "privacy": {
-      "title": "Adatvédelem",
-      "body": "A profilod és hirdetéseid csak a piactér szabályai szerint láthatók. Részletes beállítások hamarosan."
+      "title": "Adatvédelem (GDPR)",
+      "body": "Letöltheted az adataidat JSON formátumban, vagy kérheted a fiók demó anonimizálását (soft-delete).",
+      "export": "GDPR adathordozhatóság",
+      "exportDone": "Adatexport letöltve.",
+      "deleteAccount": "Fiók törlése",
+      "deleteConfirm": "Biztosan anonimizálod a profilodat? Ez demó módban visszafordíthatatlan név/e-mail törlés.",
+      "deleteConfirmBtn": "Igen, anonimizálás",
+      "deleteDone": "Profil anonimizálva."
     }
   },
   "sellerTrust": {
@@ -410,6 +417,9 @@
     "switchLogin": "Jelentkezz be",
     "successLogin": "Sikeres bejelentkezés!",
     "successRegister": "Sikeres regisztráció!",
+    "acceptTerms": "Elfogadom az",
+    "acceptPrivacy": "Elfogadom az",
+    "legalRequired": "Az ÁSZF és az adatvédelmi tájékoztató elfogadása kötelező.",
     "errors": {
       "generic": "Hiba történt",
       "emailNotConfirmed": "Igazold vissza az e-mail címedet a bejelentkezés előtt!",
@@ -724,6 +734,7 @@
     "browse": "Böngészés"
   },
   "common": {
+    "cancel": "Mégse",
     "loading": "Betöltés…",
     "currencyHuf": "Ft",
     "selectPlaceholder": "Válassz…"

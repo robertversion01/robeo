@@ -6,6 +6,7 @@ import {
   capturePaymentIntentSafe,
   resolveTransactionPaymentIntentId,
 } from '@/lib/transactionPaymentIntent';
+import { createDemoInvoiceForTransaction } from '@/lib/demoInvoice';
 import { creditSellerPendingForTransaction, releaseSellerWalletForTransaction } from '@/lib/wallet';
 
 export const dynamic = 'force-dynamic';
@@ -114,6 +115,29 @@ export async function POST(req: NextRequest) {
       }
 
       await releaseSellerWalletForTransaction(supabase, walletTx);
+
+      try {
+        const [{ data: product }, { data: buyerProfile }, { data: sellerProfile }] =
+          await Promise.all([
+            supabase.from('products').select('name').eq('id', transaction.product_id).maybeSingle(),
+            supabase.from('profiles').select('email').eq('id', transaction.buyer_id).maybeSingle(),
+            supabase.from('profiles').select('email').eq('id', transaction.seller_id).maybeSingle(),
+          ]);
+
+        await createDemoInvoiceForTransaction(supabase, {
+          transactionId: transaction.id,
+          buyerId: transaction.buyer_id,
+          productId: transaction.product_id,
+          amount: transaction.amount,
+          fee: transaction.fee,
+          shippingCost: transaction.shipping_cost,
+          productName: product?.name,
+          buyerEmail: buyerProfile?.email ?? undefined,
+          sellerEmail: sellerProfile?.email ?? undefined,
+        });
+      } catch (invoiceErr) {
+        console.warn('[transactions.confirm] demo invoice skipped', invoiceErr);
+      }
     } catch (walletErr) {
       console.error('[transactions.confirm] wallet release failed', walletErr);
       return NextResponse.json(

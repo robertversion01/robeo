@@ -5,6 +5,8 @@ import { supabase } from '@/lib/supabase';
 import { useRouter } from 'next/navigation';
 import { toast } from 'sonner';
 import { useTranslation } from 'react-i18next';
+import Link from 'next/link';
+import { LEGAL_VERSION } from '@/lib/legalConstants';
 
 const AUTH_ERROR_KEYS: Record<string, string> = {
   'Email not confirmed': 'auth.errors.emailNotConfirmed',
@@ -22,6 +24,8 @@ export default function AuthPage() {
   const [password, setPassword] = useState('');
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
+  const [acceptedTerms, setAcceptedTerms] = useState(false);
+  const [acceptedPrivacy, setAcceptedPrivacy] = useState(false);
   const router = useRouter();
 
   useEffect(() => {
@@ -53,11 +57,34 @@ export default function AuthPage() {
         toast.success(t('auth.successLogin'));
         router.push('/');
       } else {
-        const { error: signUpError } = await supabase.auth.signUp({
+        if (!acceptedTerms || !acceptedPrivacy) {
+          setError(t('auth.legalRequired'));
+          setLoading(false);
+          return;
+        }
+
+        const { data: signUpData, error: signUpError } = await supabase.auth.signUp({
           email,
           password,
         });
         if (signUpError) throw signUpError;
+
+        const newUserId = signUpData.user?.id;
+        if (newUserId) {
+          const now = new Date().toISOString();
+          const { error: legalErr } = await supabase
+            .from('profiles')
+            .update({
+              legal_accepted_at: now,
+              legal_version: LEGAL_VERSION,
+            })
+            .eq('id', newUserId);
+
+          if (legalErr) {
+            console.warn('[auth] legal_accepted update failed', legalErr.message);
+          }
+        }
+
         toast.success(t('auth.successRegister'));
         router.push('/profile');
       }
@@ -125,9 +152,44 @@ export default function AuthPage() {
               />
             </div>
 
+            {!isLogin ? (
+              <div className="space-y-2.5 rounded-xl border border-[#2a3f44] bg-[#102024] p-3 text-xs text-gray-300">
+                <label className="flex items-start gap-2 cursor-pointer">
+                  <input
+                    type="checkbox"
+                    checked={acceptedTerms}
+                    onChange={(e) => setAcceptedTerms(e.target.checked)}
+                    className="mt-0.5 h-4 w-4 accent-[#4baab5] shrink-0"
+                    required
+                  />
+                  <span>
+                    {t('auth.acceptTerms')}{' '}
+                    <Link href="/legal/terms" className="text-[#4baab5] font-semibold hover:underline" target="_blank">
+                      ÁSZF
+                    </Link>
+                  </span>
+                </label>
+                <label className="flex items-start gap-2 cursor-pointer">
+                  <input
+                    type="checkbox"
+                    checked={acceptedPrivacy}
+                    onChange={(e) => setAcceptedPrivacy(e.target.checked)}
+                    className="mt-0.5 h-4 w-4 accent-[#4baab5] shrink-0"
+                    required
+                  />
+                  <span>
+                    {t('auth.acceptPrivacy')}{' '}
+                    <Link href="/legal/privacy" className="text-[#4baab5] font-semibold hover:underline" target="_blank">
+                      Adatvédelmi tájékoztató (GDPR)
+                    </Link>
+                  </span>
+                </label>
+              </div>
+            ) : null}
+
             <button
               type="submit"
-              disabled={loading}
+              disabled={loading || (!isLogin && (!acceptedTerms || !acceptedPrivacy))}
               className="w-full h-12 rounded-xl bg-[#4baab5] text-black text-base font-semibold inline-flex items-center justify-center disabled:opacity-50 disabled:cursor-not-allowed mt-1"
             >
               {loading

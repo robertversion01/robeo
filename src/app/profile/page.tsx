@@ -21,6 +21,8 @@ import { softDeleteAllUserProducts, softDeleteProduct } from '@/lib/productSoftD
 import WalletBalanceCard from '@/components/profile/WalletBalanceCard';
 import BundleDiscountSettings from '@/components/profile/BundleDiscountSettings';
 import AdminReportedItems from '@/components/admin/AdminReportedItems';
+import AdminDac7Report from '@/components/admin/AdminDac7Report';
+import MyInvoices from '@/components/profile/MyInvoices';
 import ProfileTabNav, { type ProfileTabId } from '@/components/profile/ProfileTabNav';
 import ProfileSection from '@/components/profile/ProfileSection';
 import ProfileSettingsHub from '@/components/profile/ProfileSettingsHub';
@@ -73,7 +75,7 @@ export default function ProfilePage() {
   useEffect(() => {
     if (typeof window === 'undefined') return;
     const tab = new URLSearchParams(window.location.search).get('tab') as ProfileTabId | null;
-    if (tab && ['shop', 'reviews', 'about'].includes(tab)) {
+    if (tab && ['shop', 'reviews', 'invoices', 'about'].includes(tab)) {
       setActiveTab(tab);
     }
   }, []);
@@ -713,6 +715,7 @@ export default function ProfilePage() {
                 </div>
               )}
               <AdminReportedItems />
+              <AdminDac7Report />
               </div>
             </details>
           ) : null}
@@ -864,6 +867,12 @@ export default function ProfilePage() {
               </div>
             )}
           </ProfileSection>
+          ) : null}
+
+          {activeTab === 'invoices' ? (
+            <div className="mb-8">
+              <MyInvoices userId={user?.id} />
+            </div>
           ) : null}
 
           <ProfileSignOutBar />
