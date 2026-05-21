@@ -5,6 +5,9 @@ import AppChrome from "../components/layout/AppChrome";
 import { Toaster } from "sonner";
 import { buildPageMetadata, siteConfig } from "@/lib/seo";
 
+/** Next 16: client oldalak static prerenderje workStore hibát dob Vercelen — teljes app dinamikus. */
+export const dynamic = "force-dynamic";
+
 const interSans = Inter({
   variable: "--font-inter-sans",
   subsets: ["latin"],

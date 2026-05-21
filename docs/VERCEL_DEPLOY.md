@@ -63,7 +63,16 @@ npm run deploy:trigger
 
 A repóban **nincs** `ignoreCommand` — ha mégis skipel, a hiba a Vercel UI Ignored Build Step mezőjében van.
 
-## 4. Build azonnali indítása (rövid lista)
+## 4. Build sikertelen (`/_global-error` / workStore)
+
+Ha a Vercel deployment **Error** és a logban: `Expected workStore to be initialized` a `/_global-error` prerendernél:
+
+1. **Ne állíts** `NODE_ENV=development` értéket a Vercel Environment Variables-ban (Production / Preview).
+2. A repó `npm run build` már tartalmazza: `patch-next-workstore.mjs` + `next build --webpack` + Next **16.3.0-canary.8**.
+3. Deployments → utolsó failed → **Redeploy** (vagy új push `main`-re).
+4. Ellenőrzés: `GET https://robeo.vercel.app/api/marketplace-health` → 200.
+
+## 5. Build azonnali indítása (rövid lista)
 
 | # | Módszer | Lépés |
 |---|---------|--------|
@@ -86,7 +95,7 @@ GET https://robeo.vercel.app/api/health/marketplace
 
 GitHub: **Deployments** tabon új `vercel[bot]` sor a legújabb commit SHA-val.
 
-## 5. Cron — saved-search worker (Hobby plan)
+## 6. Cron — saved-search worker (Hobby plan)
 
 A **Vercel Hobby** csak **napi egyszeri** cron-t enged (`0 * * * *` óránként **nem** deployolható).
 
@@ -116,7 +125,7 @@ Várható: `{"ok":true,"mode":"cron",...}`
 
 GitHub: **Actions → Saved Search Scan (hourly) → Run workflow** (secret után).
 
-## 6. CRON_SECRET rotáció
+## 7. CRON_SECRET rotáció
 
 Új secret generálás + Vercel + GitHub + lokál `.env.local` + production redeploy:
 
