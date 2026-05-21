@@ -113,7 +113,7 @@ async function scanForUser(
   }
 
   const result = await runSavedSearchAlertScan(supabase, userId, saved, products, userEmail);
-  if (result.notified > 0) {
+  if (result.notified > 0 || result.outboundQueued > 0) {
     await flushOutboxAfterRoute(supabase, userId, userEmail);
   }
   return result;

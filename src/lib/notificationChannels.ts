@@ -13,7 +13,6 @@ import {
   parseDeliveryPrefs,
   type NotificationDeliveryPrefs,
 } from '@/lib/notificationDeliveryPrefs';
-import { isWebPushConfigured } from '@/lib/webPushConfig';
 import type {
   DeliveryChannel,
   NotificationEventType,
@@ -101,9 +100,7 @@ export async function dispatchPushNotification(
   prefs: NotificationDeliveryPrefs,
 ): Promise<{ queued: boolean; reason?: string }> {
   if (!prefs.pushEnabled) return { queued: false, reason: 'push_disabled' };
-  if (!isWebPushConfigured()) {
-    return { queued: false, reason: 'push_not_configured' };
-  }
+  // Kliens oldalon nincs VAPID_PRIVATE_KEY — queue mindig, küldés a szerver flush-nél ellenőriz.
   const queued = await appendToNotificationOutbox(supabase, 'push', payload);
   return {
     queued,

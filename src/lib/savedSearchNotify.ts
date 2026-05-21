@@ -32,6 +32,7 @@ function writeDedupe(map: Record<string, number>) {
 export type SavedSearchScanResult = {
   notified: number;
   searchesChecked: number;
+  outboundQueued: number;
 };
 
 async function resolveWorkerState(supabase: SupabaseClient, userId: string) {
@@ -75,6 +76,7 @@ export async function runSavedSearchAlertScan(
   userEmail?: string | null,
 ): Promise<SavedSearchScanResult> {
   let notified = 0;
+  let outboundQueued = 0;
   const { state: workerState, useAdmin } = await resolveWorkerState(supabase, userId);
   const dedupe = readDedupe();
   let nextState = { ...workerState };
