@@ -69,7 +69,7 @@ async function main() {
     const u = authData?.user;
     if (!u) continue;
     const meta = u.user_metadata || {};
-    const saved = meta.robeo_saved_searches_v1;
+    const saved = meta.robeo_saved_searches;
     if (!Array.isArray(saved) || saved.length === 0) continue;
 
     const delivery = meta.robeo_notification_delivery_v1;

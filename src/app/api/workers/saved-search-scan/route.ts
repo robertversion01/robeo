@@ -27,7 +27,10 @@ export async function GET(req: NextRequest) {
 export async function POST(req: NextRequest) {
   try {
     const body = await req.json();
-    const { userId } = body as { userId?: string };
+    const { userId, resetWorkerState } = body as {
+      userId?: string;
+      resetWorkerState?: boolean;
+    };
 
     const supabase = getSupabaseAdminClient();
     if (!supabase) {
@@ -39,6 +42,36 @@ export async function POST(req: NextRequest) {
     const isCron = Boolean(cronSecret && authHeader === `Bearer ${cronSecret}`);
 
     if (isCron) {
+      if (userId && resetWorkerState) {
+        const { data: authData, error: authError } = await supabase.auth.admin.getUserById(userId);
+        if (authError || !authData?.user) {
+          return NextResponse.json({ error: 'User not found' }, { status: 404 });
+        }
+        const meta = (authData.user.user_metadata || {}) as Record<string, unknown>;
+        await supabase.auth.admin.updateUserById(userId, {
+          user_metadata: {
+            ...meta,
+            robeo_saved_search_worker_state: {},
+            robeo_notification_delivery_v1: {
+              pushEnabled: true,
+              emailEnabled: true,
+              emailDigest: false,
+            },
+          },
+        });
+        const saved = parseSavedSearchesFromMetadata(meta);
+        if (saved.length === 0) {
+          return NextResponse.json({ ok: true, notified: 0, searchesChecked: 0, reset: true });
+        }
+        const result = await scanForUser(
+          supabase,
+          userId,
+          saved,
+          authData.user.email,
+        );
+        return NextResponse.json({ ok: true, reset: true, ...result });
+      }
+
       let totalNotified = 0;
       let totalOutbound = 0;
       let usersScanned = 0;
