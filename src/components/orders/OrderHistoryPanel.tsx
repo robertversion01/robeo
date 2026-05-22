@@ -228,6 +228,13 @@ export default function OrderHistoryPanel({ initialTab = 'purchases' }: Props) {
                   />
                 </div>
               ) : null}
+              {tab === 'sales' && tx.dispute_status ? (
+                <div className="px-3 pb-3">
+                  <p className="text-xs text-amber-800 bg-amber-50 border border-amber-200 rounded-lg px-2 py-1.5">
+                    {t('disputes.sellerNotice')}
+                  </p>
+                </div>
+              ) : null}
               {tab === 'purchases' &&
               (canBuyerOpenDispute(tx.status, tx.dispute_status) || tx.dispute_status) ? (
                 <div className="px-3 pb-3">

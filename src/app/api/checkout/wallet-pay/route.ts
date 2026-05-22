@@ -8,6 +8,8 @@ import {
   resolveCheckout,
 } from '@/lib/checkoutResolve';
 import type { FoxpostTerminal } from '@/lib/foxpostTerminal';
+import type { PacketaPoint } from '@/lib/packetaPoint';
+import { pickupFieldsForCheckout } from '@/lib/pickupPoint';
 
 export const dynamic = 'force-dynamic';
 
@@ -20,6 +22,8 @@ type Body = {
   bundleItemCount?: number;
   useWallet?: boolean;
   foxpostTerminal?: FoxpostTerminal | null;
+  packetaPoint?: PacketaPoint | null;
+  termsAccepted?: boolean;
 };
 
 export async function POST(req: NextRequest) {
@@ -34,6 +38,7 @@ export async function POST(req: NextRequest) {
       bundleItemCount = 1,
       useWallet = true,
       foxpostTerminal,
+      packetaPoint,
     } = body;
 
     if ((!productId && !offerId) || !buyerId) {
@@ -46,6 +51,14 @@ export async function POST(req: NextRequest) {
         { status: 400 },
       );
     }
+    if (shippingMethod === 'packeta' && !packetaPoint?.id) {
+      return NextResponse.json(
+        { error: 'Packeta szállításnál kötelező átvételi pont választás.' },
+        { status: 400 },
+      );
+    }
+
+    const pickupFields = pickupFieldsForCheckout(shippingMethod, foxpostTerminal, packetaPoint);
 
     const db = getSupabaseAdminClient();
     if (!db) {
@@ -94,14 +107,17 @@ export async function POST(req: NextRequest) {
         );
       }
 
-      const insertRow = buildTransactionInsertRow(resolved, {
-        buyerId,
-        shippingMethod,
-        status: 'fizetve',
-        paymentProvider: 'wallet',
-        walletAmountPaid: walletToUse,
-        foxpostTerminal: foxpostTerminal ?? null,
-      });
+      const insertRow = {
+        ...buildTransactionInsertRow(resolved, {
+          buyerId,
+          shippingMethod,
+          status: 'fizetve',
+          paymentProvider: 'wallet',
+          walletAmountPaid: walletToUse,
+          foxpostTerminal: foxpostTerminal ?? null,
+        }),
+        ...(pickupFields || {}),
+      };
 
       const { error: insertErr } = await db.from('transactions').insert(insertRow);
       if (insertErr) {
@@ -208,16 +224,19 @@ export async function POST(req: NextRequest) {
       checkoutSessionPayload as Parameters<typeof stripe.checkout.sessions.create>[0],
     );
 
-    const insertRow = buildTransactionInsertRow(resolved, {
-      buyerId,
-      shippingMethod,
-      status: 'payment_pending',
-      checkoutSessionId: session.id,
-      paymentIntentId: (session.payment_intent as string) || null,
-      paymentProvider: 'mixed',
-      walletAmountPaid: walletToUse,
-      foxpostTerminal: foxpostTerminal ?? null,
-    });
+    const insertRow = {
+      ...buildTransactionInsertRow(resolved, {
+        buyerId,
+        shippingMethod,
+        status: 'payment_pending',
+        checkoutSessionId: session.id,
+        paymentIntentId: (session.payment_intent as string) || null,
+        paymentProvider: 'mixed',
+        walletAmountPaid: walletToUse,
+        foxpostTerminal: foxpostTerminal ?? null,
+      }),
+      ...(pickupFields || {}),
+    };
 
     await db.from('transactions').insert(insertRow);
 

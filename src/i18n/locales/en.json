@@ -553,7 +553,10 @@
     "updateFailed": "Could not update.",
     "stepHint": "Step 1: download the Foxpost label. Then “Mark as shipped” unlocks.",
     "simulating": "Carrier simulation in progress… Buyer is notified at each step.",
-    "defaultProduct": "Product"
+    "defaultProduct": "Product",
+    "confirmReceipt": "Received — release funds",
+    "confirmSuccess": "Thanks! Funds released to the seller.",
+    "disputeOpen": "Dispute in progress — under admin review."
   },
   "publicSeller": {
     "defaultName": "Seller",
@@ -763,6 +766,11 @@
       "paymentFailed": "Payment failed",
       "foxpostRequired": "Foxpost delivery requires selecting a locker.",
       "packetaRequired": "Packeta delivery requires selecting a pickup point."
+    },
+    "wallet": {
+      "useBalance": "Use Robeo wallet balance",
+      "available": "Available: {{amount}}",
+      "willApply": "Will apply: {{amount}}"
     }
   },
   "uploadWizard": {
@@ -831,6 +839,7 @@
     "failed": "Could not submit dispute.",
     "loginRequired": "Please log in to open a dispute.",
     "activeHint": "Under review — you will also get a chat notification.",
+    "sellerNotice": "The buyer opened a dispute for this order — under admin review.",
     "status": {
       "open": "Dispute open",
       "under_review": "Under review",

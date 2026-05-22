@@ -1,44 +1,28 @@
 # ROBEO — Development TODO (V1 Next.js monolith)
 
-Utolsó frissítés: Packeta picker + buyer counter + disputes éles + polish
-
-Részletes gap lista: **`docs/VINTED-GAP-ANALYSIS.md`**
+Utolsó frissítés: disputes patch + wallet checkout + follower notify E2E
 
 ---
 
-## [DONE] Marketplace UI benchmark (P0–P2 home)
+## [DONE] V1 marketplace parity (kód)
 
-- [x] Browse / PDP / trust / profile P0–P2 (commit `0b78816`)
-
-## [DONE] Backlog folytatás
-
-- [x] Checkout terms, favorite count, saved search delete, filter counts
-- [x] Listed products search parity (`listedProducts.ts`)
-- [x] Offer 24h expiry + chat offers panel + profile bio
-- [x] **Packeta picker** — `PacketaPointPicker` + checkout/API
-- [x] **Buyer counter-offer** — 2. kör chatben
-- [x] **Dispute éles** — `disputes` tábla, API, admin panel, Stripe refund (`patch-disputes.sql`)
-- [x] Offer expiry cron — `saved-search-scan` worker végén
-- [x] SellerTrustBadges + Bump badge + heart animation + URL sync debounce
+- [x] Packeta picker, buyer counter-offer, offer expiry cron
+- [x] Dispute éles — `patch-disputes.sql` ✓
+- [x] Wallet checkout UI (egyenleg / mixed Stripe)
+- [x] `seller_new_item` push/email — upload → `/api/products/notify-followers`
+- [x] SaleSystemMessageCard a chatben
+- [x] Chat buyer confirm receipt + dispute banner
+- [x] SellerTrustBadges, Bump, heart animation, URL sync
 
 ---
 
-## [PARTIAL] Értesítések & pipeline
+## [MANUAL / KÜLSÖ] — nem kód
 
-- [x] Outbox retry, Web Push E2E, price-watch sync
-- [ ] Resend domain verify — *külső DNS*
-- [ ] seller_new_item push/email flush E2E
-
-## [PARTIAL] Pénztárca & Stripe
-
-- [x] Wallet release E2E, cashout UI
-- [ ] Stripe Connect **éles** payout
-
-## [MANUAL / KÜLSŐ] Szállítás
-
-- [ ] Foxpost live API — `FOXPOST_API_URL` + key
-- [ ] Packeta live widget — `NEXT_PUBLIC_PACKETA_API_KEY`
-- [ ] Valós tracking
+- [ ] Resend domain verify (DNS)
+- [ ] Stripe Connect éles payout
+- [ ] Foxpost live API (`FOXPOST_API_URL`)
+- [ ] Packeta live widget (`NEXT_PUBLIC_PACKETA_API_KEY`)
+- [ ] Valós futár tracking
 
 ---
 
@@ -47,13 +31,8 @@ Részletes gap lista: **`docs/VINTED-GAP-ANALYSIS.md`**
 ```bash
 npm run db:check-patches
 npm run build && npm run dev
-npm run test:wallet-release
 ```
 
-**Új SQL (futtasd Supabase SQL Editorban):**
-
-1. `patch-offer-expiry.sql` ✓
-2. `patch-profile-bio.sql` ✓
-3. **`patch-disputes.sql`** ← új
+**SQL patch-ek (futtatva):** offer-expiry, profile-bio, disputes ✓
 
 **Éles:** https://robeo.vercel.app

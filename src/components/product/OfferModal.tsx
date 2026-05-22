@@ -5,7 +5,7 @@ import { supabase } from '@/lib/supabase';
 import { toast } from 'sonner';
 import { X, Send } from 'lucide-react';
 import { isUuid } from '@/lib/validators';
-import { buildOfferInsertRow, formatSupabaseError } from '@/lib/offers';
+import { buildOfferInsertRow, formatSupabaseError, minimumOfferHuf } from '@/lib/offers';
 import { insertChatSystemMessage } from '@/lib/chatMessages';
 import PriceBreakdown from '@/components/product/PriceBreakdown';
 import { useTranslation } from 'react-i18next';
@@ -65,7 +65,7 @@ export default function OfferModal({
 
   if (!isOpen) return null;
 
-  const minimumOffer = Math.ceil(originalPrice * 0.6);
+  const minimumOffer = minimumOfferHuf(originalPrice);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();

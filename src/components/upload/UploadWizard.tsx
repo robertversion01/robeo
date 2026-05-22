@@ -257,7 +257,7 @@ export default function UploadWizard() {
 
       const imageUrls = images.length > 0 ? await uploadImages(user.id) : [];
 
-      const { error } = await supabase.from('products').insert({
+      const { data: inserted, error } = await supabase.from('products').insert({
         name: formData.name.trim(),
         description: formData.description.trim(),
         price: parseInt(formData.price, 10),
@@ -269,9 +269,25 @@ export default function UploadWizard() {
         images: imageUrls,
         user_id: user.id,
         status: 'active',
-      });
+      }).select('id, name').single();
 
       if (error) throw error;
+
+      try {
+        const { data: { session } } = await supabase.auth.getSession();
+        if (session?.access_token && inserted?.id) {
+          void fetch('/api/products/notify-followers', {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json',
+              Authorization: `Bearer ${session.access_token}`,
+            },
+            body: JSON.stringify({ productId: inserted.id }),
+          });
+        }
+      } catch {
+        /* non-fatal */
+      }
 
       try {
         await revalidateCatalog();

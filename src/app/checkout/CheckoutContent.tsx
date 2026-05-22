@@ -13,6 +13,7 @@ import TrustSafetyBlock from '@/components/trust/TrustSafetyBlock';
 import FoxpostTerminalPicker from '@/components/checkout/FoxpostTerminalPicker';
 import PacketaPointPicker from '@/components/checkout/PacketaPointPicker';
 import CheckoutTermsCheckbox from '@/components/checkout/CheckoutTermsCheckbox';
+import CheckoutWalletOption from '@/components/checkout/CheckoutWalletOption';
 import { calculateCheckoutTotal } from '@/lib/buyerProtection';
 import type { FoxpostTerminal } from '@/lib/foxpostTerminal';
 import type { PacketaPoint } from '@/lib/packetaPoint';
@@ -37,6 +38,8 @@ export default function CheckoutContent() {
   const [packetaPoint, setPacketaPoint] = useState<PacketaPoint | null>(null);
   const [processingPayment, setProcessingPayment] = useState(false);
   const [termsAccepted, setTermsAccepted] = useState(false);
+  const [useWallet, setUseWallet] = useState(false);
+  const [buyerId, setBuyerId] = useState<string | null>(null);
   const [isDirectPurchase, setIsDirectPurchase] = useState(false);
   const router = useRouter();
   const searchParams = useSearchParams();
@@ -96,6 +99,7 @@ export default function CheckoutContent() {
       router.push('/auth');
       return;
     }
+    setBuyerId(user.id);
 
     const { data: offerDataRaw, error: offerError } = await supabaseClient
       .from('offers')
@@ -144,6 +148,7 @@ export default function CheckoutContent() {
       router.push('/auth');
       return;
     }
+    setBuyerId(user.id);
 
     const { data: productDataRaw, error: productError } = await supabaseClient
       .from('products')
@@ -209,6 +214,37 @@ export default function CheckoutContent() {
           .from('offers')
           .update({ shipping_method: shippingMethod, shipping_cost: shippingCost })
           .eq('id', offerId);
+      }
+
+      const walletPayload = {
+        productId: effectiveProductId,
+        offerId,
+        buyerId: user.id,
+        shippingMethod,
+        shippingCost,
+        useWallet,
+        foxpostTerminal: shippingMethod === 'foxpost' ? foxpostTerminal : null,
+        packetaPoint: shippingMethod === 'packeta' ? packetaPoint : null,
+      };
+
+      if (useWallet) {
+        const walletRes = await fetch('/api/checkout/wallet-pay', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(walletPayload),
+        });
+        const walletData = await walletRes.json();
+        if (walletRes.ok && walletData.mode === 'wallet') {
+          window.location.href = walletData.successUrl;
+          return;
+        }
+        if (walletRes.ok && walletData.mode === 'mixed' && walletData.url) {
+          window.location.href = walletData.url;
+          return;
+        }
+        if (!walletRes.ok && walletData.error) {
+          throw new Error(walletData.error);
+        }
       }
 
       const response = await fetch('/api/stripe/checkout', {
@@ -373,6 +409,14 @@ export default function CheckoutContent() {
               </div>
 
               <CheckoutBuyerProtectionBanner />
+              {buyerId ? (
+                <CheckoutWalletOption
+                  buyerId={buyerId}
+                  useWallet={useWallet}
+                  onUseWalletChange={setUseWallet}
+                  total={total}
+                />
+              ) : null}
               <TrustSafetyBlock variant="full" />
               {product?.user_id ? (
                 <CheckoutBundleNudge

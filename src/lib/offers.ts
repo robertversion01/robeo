@@ -41,6 +41,13 @@ export function buildOfferInsertRow(input: {
 
 export type OfferStatus = 'pending' | 'accepted' | 'rejected' | 'countered';
 
+/** Minimum ajánlat a listaárhoz képest (Vinted ~60%). */
+export const MIN_OFFER_PERCENT = 0.6;
+
+export function minimumOfferHuf(listPriceHuf: number): number {
+  return Math.max(1, Math.ceil(Math.max(0, listPriceHuf) * MIN_OFFER_PERCENT));
+}
+
 export function buildOfferStatusUpdate(
   status: OfferStatus,
   options?: { offeredPriceHuf?: number; refreshExpiry?: boolean },

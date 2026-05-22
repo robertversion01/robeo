@@ -26,7 +26,11 @@ export async function GET(req: NextRequest) {
     .limit(80);
 
   if (statusFilter !== 'all') {
-    query = query.eq('status', statusFilter);
+    if (statusFilter === 'open') {
+      query = query.in('status', ['open', 'under_review']);
+    } else {
+      query = query.eq('status', statusFilter);
+    }
   }
 
   const { data, error } = await query;

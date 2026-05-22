@@ -2,7 +2,7 @@
 
 import { useCallback, useEffect, useState } from 'react';
 import { supabase } from '@/lib/supabase';
-import { Download, Package, Truck, Loader2 } from 'lucide-react';
+import { Download, Package, Truck, Loader2, CheckCircle } from 'lucide-react';
 import { toast } from 'sonner';
 import {
   downloadFoxpostLabel,
@@ -10,9 +10,11 @@ import {
   markFoxpostLabelDownloaded,
 } from '@/lib/foxpostLabel';
 import {
+  canBuyerConfirmReceipt,
   canSellerMarkShipped,
   isPaidStatus,
   sellerShowsWaitingHint,
+  TX_STATUS,
 } from '@/lib/transactionFlow';
 import { useTranslation } from 'react-i18next';
 import { orderStatusI18nKey } from '@/lib/orderStatusI18n';
@@ -28,6 +30,8 @@ type Props = {
 type TxRow = ShippingTransaction & {
   productName?: string;
   tracking_number?: string | null;
+  payment_intent_id?: string | null;
+  dispute_status?: string | null;
   foxpost_terminal_id?: string | null;
   foxpost_terminal_name?: string | null;
   foxpost_terminal_address?: string | null;
@@ -58,7 +62,7 @@ export default function ChatTransactionPanel({
       const { data, error } = await supabase
         .from('transactions')
         .select(
-          'id, status, product_id, buyer_id, seller_id, tracking_number, foxpost_terminal_id, foxpost_terminal_name, foxpost_terminal_address',
+          'id, status, product_id, buyer_id, seller_id, tracking_number, payment_intent_id, dispute_status, foxpost_terminal_id, foxpost_terminal_name, foxpost_terminal_address',
         )
         .eq('product_id', productId)
         .or(
@@ -136,9 +140,39 @@ export default function ChatTransactionPanel({
   if (!transaction) return null;
 
   const isSeller = transaction.seller_id === userId;
+  const isBuyer = transaction.buyer_id === userId;
   const canDownloadLabel = isSeller && isPaidStatus(transaction.status);
   const canMarkShipped = isSeller && canSellerMarkShipped(transaction.status);
+  const canConfirmReceipt = isBuyer && canBuyerConfirmReceipt(transaction.status);
   const statusLabel = txStatusLabel(transaction.status);
+  const hasDispute = Boolean(transaction.dispute_status);
+
+  const handleConfirmReceipt = async () => {
+    setActing(true);
+    try {
+      const response = await fetch('/api/transactions/confirm', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          transactionId: transaction.id,
+          buyerId: userId,
+          paymentIntentId: transaction.payment_intent_id?.trim() || undefined,
+        }),
+      });
+      const data = await response.json();
+      if (!response.ok) throw new Error(data.error || t('chatTransaction.updateFailed'));
+
+      setTransaction((prev) => (prev ? { ...prev, status: TX_STATUS.SIKERESEN_ATVEVE } : prev));
+      toast.success(t('chatTransaction.confirmSuccess'));
+      window.dispatchEvent(
+        new CustomEvent('transaction:updated', { detail: { transactionId: transaction.id } }),
+      );
+    } catch (err) {
+      toast.error(err instanceof Error ? err.message : t('chatTransaction.updateFailed'));
+    } finally {
+      setActing(false);
+    }
+  };
 
   const handleLabelDownload = async () => {
     setActing(true);
@@ -227,8 +261,26 @@ export default function ChatTransactionPanel({
 
   if (!isSeller && !canDownloadLabel) {
     return (
-      <div className="mx-4 mt-2 mb-1 rounded-xl border border-gray-200 bg-gray-50 px-3 py-2 text-sm text-gray-700">
-        {t('chatTransaction.orderStatus')} <strong>{statusLabel}</strong>
+      <div className="mx-4 mt-2 mb-1 rounded-xl border border-gray-200 bg-gray-50 px-3 py-2 text-sm text-gray-700 space-y-2">
+        <p>
+          {t('chatTransaction.orderStatus')} <strong>{statusLabel}</strong>
+        </p>
+        {hasDispute ? (
+          <p className="text-xs text-amber-800 bg-amber-50 border border-amber-200 rounded-lg px-2 py-1.5">
+            {t('chatTransaction.disputeOpen')}
+          </p>
+        ) : null}
+        {canConfirmReceipt ? (
+          <button
+            type="button"
+            disabled={acting}
+            onClick={() => void handleConfirmReceipt()}
+            className="inline-flex items-center gap-1.5 rounded-lg bg-[#007782] px-3 py-2 text-xs font-semibold text-white"
+          >
+            {acting ? <Loader2 size={14} className="animate-spin" /> : <CheckCircle size={14} />}
+            {t('chatTransaction.confirmReceipt')}
+          </button>
+        ) : null}
       </div>
     );
   }
@@ -241,6 +293,12 @@ export default function ChatTransactionPanel({
           {t('chatTransaction.orderLabel')} <strong>{statusLabel}</strong>
         </span>
       </div>
+
+      {hasDispute ? (
+        <p className="text-xs text-amber-800 bg-amber-50 border border-amber-200 rounded-lg px-2 py-1.5">
+          {t('chatTransaction.disputeOpen')}
+        </p>
+      ) : null}
 
       {canDownloadLabel && (
         <div className="flex flex-col sm:flex-row gap-2">

@@ -10,6 +10,9 @@ import ChatProductSummary from '@/components/messages/ChatProductSummary';
 import ChatTransactionPanel from '@/components/messages/ChatTransactionPanel';
 import ChatOfferActions from '@/components/messages/ChatOfferActions';
 import ChatBuyerOffersPanel from '@/components/messages/ChatBuyerOffersPanel';
+import SaleSystemMessageCard, {
+  shouldUseSaleSystemCard,
+} from '@/components/messages/SaleSystemMessageCard';
 import { buildOfferInsertRow } from '@/lib/offers';
 import {
   buildConversationsFromMessages,
@@ -555,6 +558,17 @@ export default function MessagesPage() {
                     const checkoutMatch = msg.content.match(/(\/checkout\?offer=[a-f0-9-]+)/i);
 
                     if (isSystem) {
+                      if (shouldUseSaleSystemCard(msg.content, msg.message_type, msg.product_id)) {
+                        return (
+                          <div key={msg.id} className="flex justify-center px-2">
+                            <SaleSystemMessageCard
+                              content={msg.content}
+                              productId={msg.product_id}
+                              createdAt={msg.created_at}
+                            />
+                          </div>
+                        );
+                      }
                       return (
                         <div key={msg.id} className="flex justify-center px-2">
                           <div className="max-w-md rounded-xl border border-[#007782]/20 bg-[#007782]/5 px-4 py-2.5 text-center text-sm text-gray-700">

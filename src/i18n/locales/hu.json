@@ -714,6 +714,11 @@
       "paymentFailed": "Hiba történt a fizetés során",
       "foxpostRequired": "Foxpost szállításnál kötelező automata választás.",
       "packetaRequired": "Packeta szállításnál kötelező átvételi pont választás."
+    },
+    "wallet": {
+      "useBalance": "Robeo egyenleg felhasználása",
+      "available": "Elérhető: {{amount}}",
+      "willApply": "Levonás: {{amount}}"
     }
   },
   "uploadWizard": {
@@ -782,6 +787,7 @@
     "failed": "Nem sikerült beküldeni.",
     "loginRequired": "Jelentkezz be a vitához.",
     "activeHint": "A csapat felülvizsgálja — chatben is kapsz értesítést.",
+    "sellerNotice": "A vevő vitát nyitott ehhez a rendeléshez — admin felülvizsgálat alatt.",
     "status": {
       "open": "Vitatás folyamatban",
       "under_review": "Felülvizsgálat alatt",
@@ -892,7 +898,10 @@
     "updateFailed": "Nem sikerült frissíteni.",
     "stepHint": "1. lépés: töltsd le a Foxpost címkét. Utána aktiválódik a „Csomag feladva” gomb.",
     "simulating": "Futár szimuláció folyamatban… A vevő értesítést kap minden lépésről.",
-    "defaultProduct": "Termék"
+    "defaultProduct": "Termék",
+    "confirmReceipt": "Megkaptam — pénz felszabadítása",
+    "confirmSuccess": "Köszönjük! Az eladó megkapta a pénzt.",
+    "disputeOpen": "Vitatás folyamatban — admin felülvizsgálat alatt."
   },
   "publicSeller": {
     "defaultName": "Eladó",
