@@ -10,6 +10,7 @@ import ShippingSelector, { type ShippingOption } from '@/components/product/Ship
 import CheckoutBuyerProtectionBanner from '@/components/checkout/CheckoutBuyerProtectionBanner';
 import TrustSafetyBlock from '@/components/trust/TrustSafetyBlock';
 import FoxpostTerminalPicker from '@/components/checkout/FoxpostTerminalPicker';
+import CheckoutTermsCheckbox from '@/components/checkout/CheckoutTermsCheckbox';
 import { calculateCheckoutTotal } from '@/lib/buyerProtection';
 import type { FoxpostTerminal } from '@/lib/foxpostTerminal';
 import { MAIN_TOP_PADDING } from '@/lib/layoutTokens';
@@ -33,6 +34,7 @@ export default function CheckoutBundleContent() {
   const [shippingMethod, setShippingMethod] = useState('');
   const [foxpostTerminal, setFoxpostTerminal] = useState<FoxpostTerminal | null>(null);
   const [processingPayment, setProcessingPayment] = useState(false);
+  const [termsAccepted, setTermsAccepted] = useState(false);
 
   const locale = i18n.language?.startsWith('en') ? 'en-HU' : 'hu-HU';
   const currency = t('common.currencyHuf');
@@ -108,6 +110,12 @@ export default function CheckoutBundleContent() {
         return;
       }
 
+      if (!termsAccepted) {
+        toast.error(t('checkout.terms.required'));
+        setProcessingPayment(false);
+        return;
+      }
+
       const response = await fetch('/api/stripe/checkout', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -117,6 +125,8 @@ export default function CheckoutBundleContent() {
           shippingMethod,
           shippingCost,
           bundleDiscountPercent: discountPercent,
+          foxpostTerminal: shippingMethod === 'foxpost' ? foxpostTerminal : null,
+          termsAccepted: true,
         }),
       });
 
@@ -176,20 +186,31 @@ export default function CheckoutBundleContent() {
     </>
   );
 
+  const canPay = Boolean(shippingMethod) && termsAccepted && !processingPayment;
+
   const payButton = (
-    <button
-      type="button"
-      onClick={() => void processPayment()}
-      disabled={!shippingMethod || processingPayment}
-      className="w-full btn-base btn-primary disabled:opacity-50 min-h-12"
-    >
-      {processingPayment ? t('checkout.redirecting') : t('checkout.payButton', { total: total.toLocaleString(locale) })}
-    </button>
+    <div className="space-y-3">
+      {!shippingMethod && !processingPayment ? (
+        <p className="text-xs text-amber-700 text-center">{t('checkout.selectShipping')}</p>
+      ) : null}
+      {!termsAccepted && shippingMethod && !processingPayment ? (
+        <p className="text-xs text-amber-700 text-center">{t('checkout.terms.required')}</p>
+      ) : null}
+      <CheckoutTermsCheckbox checked={termsAccepted} onChange={setTermsAccepted} />
+      <button
+        type="button"
+        onClick={() => void processPayment()}
+        disabled={!canPay}
+        className="w-full btn-base btn-primary disabled:opacity-50 min-h-12"
+      >
+        {processingPayment ? t('checkout.redirecting') : t('checkout.payButton', { total: total.toLocaleString(locale) })}
+      </button>
+    </div>
   );
 
   return (
     <div className="min-h-screen bg-white text-gray-900">
-      <main className={`min-h-screen ${MAIN_TOP_PADDING} pb-32 lg:pb-16`}>
+      <main className={`min-h-screen ${MAIN_TOP_PADDING} pb-44 lg:pb-16`}>
         <div className="max-w-4xl mx-auto px-4">
           <div className="flex items-center gap-3 mb-4 pt-3">
             <button

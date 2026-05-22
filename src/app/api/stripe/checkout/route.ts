@@ -39,6 +39,7 @@ export async function POST(req: NextRequest) {
       shippingMethod,
       bundleDiscountPercent,
       foxpostTerminal,
+      termsAccepted,
     } = body as {
       productId?: string;
       productIds?: string[];
@@ -48,7 +49,15 @@ export async function POST(req: NextRequest) {
       shippingMethod?: string;
       bundleDiscountPercent?: number;
       foxpostTerminal?: FoxpostTerminal | null;
+      termsAccepted?: boolean;
     };
+
+    if (termsAccepted !== true) {
+      return NextResponse.json(
+        { error: 'A vásárlási feltételek elfogadása kötelező a fizetéshez.' },
+        { status: 400 },
+      );
+    }
 
     const bundleIds = Array.isArray(productIds)
       ? productIds.map(String).filter(Boolean)

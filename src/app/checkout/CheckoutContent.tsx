@@ -11,6 +11,7 @@ import CheckoutBuyerProtectionBanner from '@/components/checkout/CheckoutBuyerPr
 import CheckoutBundleNudge from '@/components/checkout/CheckoutBundleNudge';
 import TrustSafetyBlock from '@/components/trust/TrustSafetyBlock';
 import FoxpostTerminalPicker from '@/components/checkout/FoxpostTerminalPicker';
+import CheckoutTermsCheckbox from '@/components/checkout/CheckoutTermsCheckbox';
 import { calculateCheckoutTotal } from '@/lib/buyerProtection';
 import type { FoxpostTerminal } from '@/lib/foxpostTerminal';
 import { MAIN_TOP_PADDING } from '@/lib/layoutTokens';
@@ -32,6 +33,7 @@ export default function CheckoutContent() {
   const [shippingMethod, setShippingMethod] = useState('');
   const [foxpostTerminal, setFoxpostTerminal] = useState<FoxpostTerminal | null>(null);
   const [processingPayment, setProcessingPayment] = useState(false);
+  const [termsAccepted, setTermsAccepted] = useState(false);
   const [isDirectPurchase, setIsDirectPurchase] = useState(false);
   const router = useRouter();
   const searchParams = useSearchParams();
@@ -187,6 +189,12 @@ export default function CheckoutContent() {
         return;
       }
 
+      if (!termsAccepted) {
+        toast.error(t('checkout.terms.required'));
+        setProcessingPayment(false);
+        return;
+      }
+
       if (offerId) {
         await supabaseClient
           .from('offers')
@@ -204,6 +212,7 @@ export default function CheckoutContent() {
           shippingMethod,
           shippingCost,
           foxpostTerminal: shippingMethod === 'foxpost' ? foxpostTerminal : null,
+          termsAccepted: true,
         }),
       });
 
@@ -259,19 +268,24 @@ export default function CheckoutContent() {
           <span className="text-[#007782] text-lg tabular-nums">{formatMoney(total)}</span>
         </div>
       </div>
-      <p className="text-[10px] text-gray-400 text-center mt-3">{t('checkout.termsHint')}</p>
     </>
   );
 
+  const canPay = Boolean(shippingMethod) && termsAccepted && !processingPayment;
+
   const payButton = (
-    <div>
+    <div className="space-y-3">
       {!shippingMethod && !processingPayment ? (
-        <p className="text-xs text-amber-700 text-center mb-2">{t('checkout.selectShipping')}</p>
+        <p className="text-xs text-amber-700 text-center">{t('checkout.selectShipping')}</p>
       ) : null}
+      {!termsAccepted && shippingMethod && !processingPayment ? (
+        <p className="text-xs text-amber-700 text-center">{t('checkout.terms.required')}</p>
+      ) : null}
+      <CheckoutTermsCheckbox checked={termsAccepted} onChange={setTermsAccepted} />
       <button
         type="button"
         onClick={() => void processPayment()}
-        disabled={!shippingMethod || processingPayment}
+        disabled={!canPay}
         className="w-full btn-base btn-primary disabled:opacity-50 disabled:cursor-not-allowed min-h-12"
       >
         {processingPayment ? (
@@ -288,7 +302,7 @@ export default function CheckoutContent() {
 
   return (
     <div className="min-h-screen bg-white text-gray-900">
-      <main className={`min-h-screen ${MAIN_TOP_PADDING} pb-32 lg:pb-16`}>
+      <main className={`min-h-screen ${MAIN_TOP_PADDING} pb-44 lg:pb-16`}>
         <div className="max-w-4xl mx-auto px-4">
           <div className="flex items-center gap-3 mb-4 pt-3">
             <button

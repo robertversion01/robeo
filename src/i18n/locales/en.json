@@ -703,6 +703,13 @@
     },
     "directPurchase": "Direct purchase",
     "termsHint": "By paying you accept the purchase terms.",
+    "terms": {
+      "prefix": "I accept the",
+      "termsLink": "Terms of Service",
+      "and": "and",
+      "privacyLink": "Privacy Policy",
+      "required": "You must accept the terms before paying."
+    },
     "shippingOptions": {
       "foxpost": "Foxpost locker",
       "packeta": "Packeta pickup point",

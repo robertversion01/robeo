@@ -654,6 +654,13 @@
     },
     "directPurchase": "Közvetlen vásárlás",
     "termsHint": "A fizetés gombra kattintva elfogadod a vásárlási feltételeket.",
+    "terms": {
+      "prefix": "Elfogadom az",
+      "termsLink": "ÁSZF-et",
+      "and": "és az",
+      "privacyLink": "Adatvédelmi tájékoztatót",
+      "required": "A fizetéshez el kell fogadnod a feltételeket."
+    },
     "shippingOptions": {
       "foxpost": "Foxpost automatába",
       "packeta": "Packeta pontba",
