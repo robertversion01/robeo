@@ -83,3 +83,71 @@ export function getProductImages(product: {
 export function shouldLazyLoad(index: number): boolean {
   return index >= 2;
 }
+
+export type CompressImageOptions = {
+  maxWidth?: number;
+  maxHeight?: number;
+  quality?: number;
+  maxBytes?: number;
+};
+
+/** Kliens oldali tömörítés — mobilon a 8–12 MP fotók base64/draft nélkül is kezelhetők. */
+export async function compressImageFileForUpload(
+  file: File,
+  options: CompressImageOptions = {},
+): Promise<File> {
+  const maxWidth = options.maxWidth ?? 1600;
+  const maxHeight = options.maxHeight ?? 1600;
+  const quality = options.quality ?? 0.82;
+  const maxBytes = options.maxBytes ?? 2.5 * 1024 * 1024;
+
+  const looksLikeImage =
+    file.type.startsWith('image/') || /\.(jpe?g|png|webp|gif|heic|heif)$/i.test(file.name);
+  if (!looksLikeImage) {
+    throw new Error('Not an image file');
+  }
+
+  if (file.size <= 350_000 && /image\/(jpeg|webp|png)/i.test(file.type)) {
+    return file;
+  }
+
+  if (typeof createImageBitmap !== 'function' || typeof document === 'undefined') {
+    return file.size <= maxBytes ? file : file;
+  }
+
+  let bitmap: ImageBitmap;
+  try {
+    bitmap = await createImageBitmap(file);
+  } catch {
+    return file.size <= maxBytes ? file : file;
+  }
+
+  let width = bitmap.width;
+  let height = bitmap.height;
+  const scale = Math.min(1, maxWidth / width, maxHeight / height);
+  width = Math.max(1, Math.round(width * scale));
+  height = Math.max(1, Math.round(height * scale));
+
+  const canvas = document.createElement('canvas');
+  canvas.width = width;
+  canvas.height = height;
+  const ctx = canvas.getContext('2d');
+  if (!ctx) {
+    bitmap.close?.();
+    return file;
+  }
+  ctx.drawImage(bitmap, 0, 0, width, height);
+  bitmap.close?.();
+
+  const blob = await new Promise<Blob | null>((resolve) => {
+    canvas.toBlob(resolve, 'image/jpeg', quality);
+  });
+  if (!blob) return file;
+  if (blob.size >= file.size && file.size <= maxBytes) return file;
+
+  const baseName = file.name.replace(/\.[^.]+$/, '') || 'photo';
+  return new File([blob], `${baseName}.jpg`, {
+    type: 'image/jpeg',
+    lastModified: Date.now(),
+  });
+}

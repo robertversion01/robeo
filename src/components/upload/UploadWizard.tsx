@@ -11,10 +11,12 @@ import { VINTED_BRANDS, VINTED_CATEGORIES, sizesForCategory } from '@/lib/vinted
 import { MAIN_TOP_PADDING, STICKY_ACTION_BAR_CLASS } from '@/lib/layoutTokens';
 import { revalidateCatalog } from '@/app/actions/revalidateCatalog';
 import { notifyCatalogUpdated } from '@/lib/catalogRefresh';
-import { clearUploadDraft, loadUploadDraft, saveUploadDraft } from '@/lib/uploadDraft';
+import { clearUploadDraft, loadUploadDraft, purgeCorruptUploadDrafts, saveUploadDraft } from '@/lib/uploadDraft';
 import { cn } from '@/lib/utils';
 import { suggestListingCopy } from '@/lib/uploadListingAi';
 import { isOllamaReachable } from '@/lib/ollamaClient';
+import { compressImageFileForUpload } from '@/lib/imageUtils';
+import { isMobileUploadContext, uploadProductImageFile } from '@/lib/uploadProductImageClient';
 import { Sparkles } from 'lucide-react';
 
 const STEPS = ['photos', 'category', 'brand', 'condition', 'price', 'details'] as const;
@@ -53,13 +55,20 @@ export default function UploadWizard() {
   const [formData, setFormData] = useState<FormState>(emptyForm);
   const [images, setImages] = useState<UploadedImage[]>([]);
   const [loading, setLoading] = useState(false);
+  const [processingImages, setProcessingImages] = useState(false);
   const [draftRestored, setDraftRestored] = useState(false);
   const [aiLoading, setAiLoading] = useState(false);
   const [ollamaOk, setOllamaOk] = useState<boolean | null>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
+  const imagesRef = useRef(images);
+  imagesRef.current = images;
 
   const stepId = STEPS[stepIndex];
   const progress = ((stepIndex + 1) / STEPS.length) * 100;
+
+  useEffect(() => {
+    purgeCorruptUploadDrafts();
+  }, []);
 
   useEffect(() => {
     if (stepId !== 'details') return;
@@ -112,9 +121,23 @@ export default function UploadWizard() {
     saveUploadDraft({
       step: stepIndex,
       ...formData,
-      images: images.map(({ id, preview }) => ({ id, preview })),
+      imageCount: images.length,
     });
-  }, [stepIndex, formData, images]);
+  }, [stepIndex, formData, images.length]);
+
+  const revokePreview = useCallback((preview: string) => {
+    if (preview.startsWith('blob:')) {
+      URL.revokeObjectURL(preview);
+    }
+  }, []);
+
+  useEffect(() => {
+    return () => {
+      imagesRef.current.forEach((img) => {
+        if (img.preview.startsWith('blob:')) URL.revokeObjectURL(img.preview);
+      });
+    };
+  }, []);
 
   useEffect(() => {
     const draft = loadUploadDraft();
@@ -138,7 +161,7 @@ export default function UploadWizard() {
   useEffect(() => {
     if (!draftRestored && stepIndex === 0 && images.length === 0) return;
     persistDraft();
-  }, [persistDraft, draftRestored, stepIndex, formData, images]);
+  }, [persistDraft, draftRestored, stepIndex, formData, images.length]);
 
   const stepLabels = useMemo(
     () =>
@@ -189,7 +212,7 @@ export default function UploadWizard() {
 
   const goBack = () => setStepIndex((i) => Math.max(i - 1, 0));
 
-  const handleImagesChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+  const handleImagesChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
     if (!e.target.files) return;
     const maxImages = 6;
     const remaining = maxImages - images.length;
@@ -198,24 +221,42 @@ export default function UploadWizard() {
       return;
     }
     const newFiles = Array.from(e.target.files).slice(0, remaining);
-    newFiles.forEach((file) => {
-      if (!file.type.startsWith('image/')) {
-        toast.error(t('upload.notImage', { name: file.name }));
-        return;
-      }
-      const reader = new FileReader();
-      reader.onload = (ev) => {
-        setImages((prev) => [
-          ...prev,
-          { file, preview: ev.target?.result as string, id: Math.random().toString(36).slice(2) },
-        ]);
-      };
-      reader.readAsDataURL(file);
-    });
     if (fileInputRef.current) fileInputRef.current.value = '';
+    setProcessingImages(true);
+    try {
+      const mobileOpts = isMobileUploadContext()
+        ? { maxWidth: 1200, maxHeight: 1200, quality: 0.78, maxBytes: 1.5 * 1024 * 1024 }
+        : undefined;
+      for (const rawFile of newFiles) {
+        if (!rawFile.type.startsWith('image/') && !/\.(jpe?g|png|webp|gif|heic|heif)$/i.test(rawFile.name)) {
+          toast.error(t('upload.notImage', { name: rawFile.name }));
+          continue;
+        }
+        try {
+          const file = await compressImageFileForUpload(rawFile, mobileOpts);
+          const preview = URL.createObjectURL(file);
+          setImages((prev) => [
+            ...prev,
+            { file, preview, id: crypto.randomUUID() },
+          ]);
+        } catch {
+          toast.error(t('upload.notImage', { name: rawFile.name }));
+        }
+      }
+    } catch {
+      toast.error(t('upload.processFailed'));
+    } finally {
+      setProcessingImages(false);
+    }
   };
 
-  const removeImage = (imageId: string) => setImages((prev) => prev.filter((img) => img.id !== imageId));
+  const removeImage = (imageId: string) => {
+    setImages((prev) => {
+      const target = prev.find((img) => img.id === imageId);
+      if (target) revokePreview(target.preview);
+      return prev.filter((img) => img.id !== imageId);
+    });
+  };
 
   const moveImage = (index: number, direction: 'up' | 'down') => {
     const newImages = [...images];
@@ -225,17 +266,10 @@ export default function UploadWizard() {
     setImages(newImages);
   };
 
-  const uploadImages = async (userId: string): Promise<string[]> => {
+  const uploadImages = async (userId: string, accessToken: string): Promise<string[]> => {
     const urls: string[] = [];
     for (const image of images) {
-      const fileExt = image.file.name.split('.').pop();
-      const fileName = `${userId}/${Math.random().toString(36).slice(2)}.${fileExt}`;
-      const { error: uploadError } = await supabase.storage
-        .from('product-images')
-        .upload(fileName, image.file);
-      if (uploadError) throw uploadError;
-      const { data: { publicUrl } } = supabase.storage.from('product-images').getPublicUrl(fileName);
-      urls.push(publicUrl);
+      urls.push(await uploadProductImageFile(supabase, image.file, userId, accessToken));
     }
     return urls;
   };
@@ -252,10 +286,15 @@ export default function UploadWizard() {
 
     setLoading(true);
     try {
-      const { data: { user } } = await supabase.auth.getUser();
-      if (!user) throw new Error(t('upload.loginRequired'));
+      const {
+        data: { user },
+      } = await supabase.auth.getUser();
+      const {
+        data: { session },
+      } = await supabase.auth.getSession();
+      if (!user || !session?.access_token) throw new Error(t('upload.loginRequired'));
 
-      const imageUrls = images.length > 0 ? await uploadImages(user.id) : [];
+      const imageUrls = images.length > 0 ? await uploadImages(user.id, session.access_token) : [];
 
       const { data: inserted, error } = await supabase.from('products').insert({
         name: formData.name.trim(),
@@ -386,14 +425,24 @@ export default function UploadWizard() {
                 <button
                   type="button"
                   onClick={() => fileInputRef.current?.click()}
-                  className="w-full border-2 border-dashed border-gray-300 rounded-xl p-8 text-center hover:border-[#007782] bg-gray-50 touch-manipulation"
+                  disabled={processingImages}
+                  className="w-full border-2 border-dashed border-gray-300 rounded-xl p-8 text-center hover:border-[#007782] bg-gray-50 touch-manipulation disabled:opacity-60"
                 >
                   <Plus size={32} className="mx-auto text-gray-400 mb-2" />
-                  <p className="text-sm font-medium">{t('upload.tapToSelect')}</p>
+                  <p className="text-sm font-medium">
+                    {processingImages ? t('upload.processingImages') : t('upload.tapToSelect')}
+                  </p>
                   <p className="text-xs text-gray-500 mt-1">{t('upload.imagesCount', { count: images.length })}</p>
                 </button>
               )}
-              <input ref={fileInputRef} type="file" accept="image/*" multiple className="hidden" onChange={handleImagesChange} />
+              <input
+                ref={fileInputRef}
+                type="file"
+                accept="image/jpeg,image/png,image/webp,image/gif,image/heic,image/heif,.heic,.heif"
+                multiple
+                className="hidden"
+                onChange={(e) => void handleImagesChange(e)}
+              />
             </div>
           )}
 
@@ -499,6 +548,7 @@ export default function UploadWizard() {
         <button
           type="button"
           onClick={() => {
+            images.forEach((img) => revokePreview(img.preview));
             clearUploadDraft();
             setFormData(emptyForm);
             setImages([]);

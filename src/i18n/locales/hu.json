@@ -608,6 +608,8 @@
     "images": "Képek",
     "imagesCount": "{{count}}/6",
     "tapToSelect": "Kattints a képek kiválasztásához",
+    "processingImages": "Képek feldolgozása…",
+    "processFailed": "A kép feldolgozása sikertelen. Próbálj kisebb képet, vagy töröld a piszkozatot.",
     "imagesHintFirst": "Az első kép lesz a fő kép (PNG, JPG, WEBP)",
     "imagesHintMore": "Válassz további képeket",
     "submit": "Termék feltöltése",

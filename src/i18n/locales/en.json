@@ -660,6 +660,8 @@
     "images": "Photos",
     "imagesCount": "{{count}}/6",
     "tapToSelect": "Tap to add photos",
+    "processingImages": "Processing photos…",
+    "processFailed": "Could not process the photo. Try a smaller image or clear the draft.",
     "imagesHintFirst": "First photo becomes the cover (PNG, JPG, WEBP)",
     "imagesHintMore": "Add more photos",
     "submit": "Publish listing",
