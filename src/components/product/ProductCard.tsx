@@ -8,6 +8,7 @@ import { cn, formatPrice } from '@/lib/utils';
 import { getOptimizedImageUrl } from '@/lib/imageUtils';
 import { normalizePrimaryProductImageUrl } from '@/lib/productImageValidation';
 import ProductImage from '@/components/product/ProductImage';
+import Badge from '@/components/ui/Badge';
 import type { Product } from '@/types';
 
 interface ProductCardProps {
@@ -27,8 +28,10 @@ export default function ProductCard({ product, isFavorite, onToggleFavorite }: P
     typeof product.featured_until === 'string' &&
     new Date(product.featured_until).getTime() > Date.now();
 
-  const brandLabel = product.brand?.trim() || '';
-  const sizeLabel = product.size?.trim() || '';
+  const brandOrName = product.brand || product.name;
+  const sizePart = product.size || '—';
+  const categoryShort =
+    typeof product.category === 'string' ? product.category.replace(/_/g, ' ') : '';
 
   return (
     <div className="group card-base overflow-hidden transition-all duration-200 relative border border-gray-200/90 hover:border-[#007782]/50 hover:shadow-md active:scale-[0.98] touch-manipulation">
@@ -43,28 +46,10 @@ export default function ProductCard({ product, isFavorite, onToggleFavorite }: P
           className="w-full h-full object-cover transition-transform duration-300 ease-out group-hover:scale-[1.07] group-active:scale-[1.04]"
           onError={() => setImageVisible(false)}
         />
-
         {isFeatured ? (
-          <span className="pointer-events-none absolute top-1 left-1 z-10 rounded px-1 py-0.5 text-[9px] font-bold uppercase tracking-wide text-white bg-[#007782] shadow-sm">
+          <Badge variant="featured" className="pointer-events-none absolute bottom-1 left-1 text-[9px] px-1 py-0.5">
             {t('product.featured')}
-          </span>
-        ) : null}
-
-        {(sizeLabel || brandLabel) ? (
-          <div className="pointer-events-none absolute inset-x-0 bottom-0 z-10 flex items-end justify-between gap-1 px-1.5 pb-1.5 pt-8 bg-gradient-to-t from-black/50 via-black/20 to-transparent">
-            {sizeLabel ? (
-              <span className="shrink-0 rounded-sm px-1.5 py-0.5 text-[10px] font-bold uppercase tracking-wide text-white bg-black/40 backdrop-blur-[2px]">
-                {sizeLabel}
-              </span>
-            ) : (
-              <span className="shrink-0" />
-            )}
-            {brandLabel ? (
-              <span className="min-w-0 max-w-[58%] truncate rounded-sm px-1.5 py-0.5 text-[10px] font-semibold text-white/95 bg-black/35 backdrop-blur-[2px] text-right">
-                {brandLabel}
-              </span>
-            ) : null}
-          </div>
+          </Badge>
         ) : null}
       </Link>
 
@@ -75,29 +60,32 @@ export default function ProductCard({ product, isFavorite, onToggleFavorite }: P
           e.preventDefault();
           onToggleFavorite();
         }}
-        className={cn(
-          'absolute top-0.5 right-0.5 z-20 h-7 w-7 rounded-full flex items-center justify-center active:scale-90 transition-all shadow-sm border',
-          isFavorite
-            ? 'bg-rose-50 border-rose-200/90'
-            : 'bg-white/95 backdrop-blur-sm border-gray-200/80 hover:bg-white',
-        )}
+        className="absolute top-0.5 right-0.5 z-50 h-7 w-7 rounded-full bg-white/95 backdrop-blur-sm flex items-center justify-center hover:bg-white active:scale-90 transition-transform shadow-sm border border-gray-200/80"
         aria-label={isFavorite ? t('product.favoriteRemove') : t('product.favoriteAdd')}
       >
         <Heart
           size={14}
           className={cn(
-            'transition-all duration-200',
-            isFavorite
-              ? 'fill-rose-500 text-rose-500 scale-110'
-              : 'fill-transparent text-gray-500 group-hover:text-rose-400',
+            'transition-colors',
+            isFavorite ? 'fill-rose-500 text-rose-500' : 'fill-transparent text-gray-500',
           )}
         />
       </button>
 
-      <div className="px-1 pt-1 pb-1.5 text-left">
+      <div className="px-1 pt-1 pb-1.5 text-left space-y-0.5">
         <div className="text-[15px] sm:text-base font-extrabold text-[#007782] tabular-nums leading-tight tracking-tight">
           {formatPrice(product.price)}
         </div>
+        <p className="text-[10px] sm:text-[11px] text-gray-600 leading-snug truncate">
+          <span className="font-medium text-gray-800">{brandOrName}</span>
+          <span className="text-gray-400 mx-0.5">·</span>
+          <span className="text-gray-500">{sizePart}</span>
+        </p>
+        {categoryShort ? (
+          <p className="text-[9px] uppercase tracking-wide text-gray-400 truncate leading-none pt-0.5">
+            {categoryShort}
+          </p>
+        ) : null}
       </div>
     </div>
   );

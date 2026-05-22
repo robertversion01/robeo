@@ -70,6 +70,20 @@
       "clear": "Törlés",
       "clearAll": "Szűrők törlése ({{count}})"
     },
+    "activeFilters": {
+      "remove": "Szűrő eltávolítása",
+      "clearAll": "Összes törlése",
+      "minPrice": "Min. {{value}} Ft",
+      "maxPrice": "Max. {{value}} Ft"
+    },
+    "empty": {
+      "title": "Még nincs termék",
+      "description": "Nézz vissza később, vagy tölts fel egy hirdetést!",
+      "filteredTitle": "Nincs találat",
+      "filteredDescription": "Próbáld lazítani a szűrőket, vagy más keresőkifejezést.",
+      "clearFilters": "Szűrők törlése",
+      "browseAll": "Összes termék"
+    },
     "sort": {
       "newest": "Legújabb előre",
       "priceAsc": "Legolcsóbb előre",
@@ -103,10 +117,13 @@
     "immersive": {
       "showFilters": "Szűrők",
       "filterSheetTitle": "Szűrők és rendezés",
-      "applyFilters": "Alkalmaz"
+      "applyFilters": "Alkalmaz",
+      "activeFilters": "{{count}} aktív szűrő"
     },
     "feed": {
       "default": "Friss hirdetések a közösségtől — böngéssz, szűrj, ments kedvenceket.",
+      "searchHint": "Szűrj pontosabban a chip-ekkel és a szűrősávval.",
+      "searchCategoryHint": "Kategória: {{category}} — finomítsd a szűrőket alább.",
       "favoritesHint": "{{count}} kedvenc terméked van — hasonló ajánlatok a listában.",
       "categoryHint": "Most a(z) {{category}} kategóriát böngészed.",
       "trendingBrands": "Népszerű most: {{brands}}",
@@ -154,10 +171,9 @@
   "pdp": {
     "moreFromSeller": "Több ettől az eladótól",
     "viewCloset": "Szekrény",
+    "similar": "Hasonló termékek",
     "priceDropped": "{{from}} → {{to}} Ft",
-    "priceDroppedShort": "Árcsökkenés",
-    "priceHistory": "Ártörténet",
-    "priceTrendDown": "Csökkenő trend"
+    "priceDroppedShort": "Árcsökkenés"
   },
   "closet": {
     "pageTitle": "Eladó szekrénye",
@@ -170,8 +186,9 @@
     "tabs": {
       "shop": "Bolt",
       "reviews": "Értékelések",
-      "invoices": "Számláim",
-      "about": "Rólam"
+      "settings": "Beállítások",
+      "admin": "Admin",
+      "about": "Beállítások"
     },
     "stats": {
       "revenue": "Összes bevétel",
@@ -254,16 +271,6 @@
   },
   "settings": {
     "saving": "Mentés…",
-    "vacation": {
-      "title": "Eladói beállítások",
-      "heading": "Szabadság üzemmód",
-      "hint": "Bekapcsolva a hirdetéseid eltűnnek a fő feedből és a böngészésből — a profilod és a szekrényed továbbra is elérhető marad.",
-      "onLabel": "Szabadság aktív",
-      "offLabel": "Bolt nyitva",
-      "enabled": "Szabadság üzemmód bekapcsolva — a hirdetéseid rejtve a feedben.",
-      "disabled": "Szabadság üzemmód kikapcsolva — a hirdetéseid újra láthatók.",
-      "schemaMissing": "Futtasd le a supabase/patch-vacation-mode.sql patch-et a Supabase SQL Editorban."
-    },
     "personalisation": {
       "title": "Személyre szabás",
       "hint": "A preferenciák a főoldali feed sorrendjét finomítják.",
@@ -298,24 +305,14 @@
       "hintEnv": "Éles küldéshez Vercelen állítsd be a VAPID kulcsokat és Resend/SMTP változókat (.env.example).",
       "pushReady": "Push feliratkozás mentve.",
       "pushFailed": "Push bekapcsolása sikertelen (engedély vagy szerver kulcs).",
-      "pushUnsupported": "A böngésző nem támogatja a push értesítést.",
-      "pushE2eHint": "Kapcsold be, majd küldj teszt értesítést. A service worker: /sw.js",
-      "vapidMissing": "VAPID kulcs hiányzik — állítsd be a .env.local-ban.",
-      "testPush": "Teszt push küldése",
-      "testPushOk": "Teszt push elküldve ({{sent}} eszköz)."
+      "pushUnsupported": "A böngésző nem támogatja a push értesítést."
     },
     "language": {
       "title": "Nyelv"
     },
     "privacy": {
-      "title": "Adatvédelem (GDPR)",
-      "body": "Letöltheted az adataidat JSON formátumban, vagy kérheted a fiók demó anonimizálását (soft-delete).",
-      "export": "GDPR adathordozhatóság",
-      "exportDone": "Adatexport letöltve.",
-      "deleteAccount": "Fiók törlése",
-      "deleteConfirm": "Biztosan anonimizálod a profilodat? Ez demó módban visszafordíthatatlan név/e-mail törlés.",
-      "deleteConfirmBtn": "Igen, anonimizálás",
-      "deleteDone": "Profil anonimizálva."
+      "title": "Adatvédelem",
+      "body": "A profilod és hirdetéseid csak a piactér szabályai szerint láthatók. Részletes beállítások hamarosan."
     }
   },
   "sellerTrust": {
@@ -326,8 +323,8 @@
     "memberSince": "Tag {{date}} óta",
     "responseFast": "Gyorsan válaszol",
     "responseNormal": "Aktív eladó",
-    "responseNew": "Új eladó a piactéren",
     "responseSlow": "Lassabb válaszidő",
+    "responseNew": "Új eladó a piactéren",
     "trustScore": "Bizalmi pont: {{score}}",
     "active": "Aktív eladó"
   },
@@ -434,9 +431,6 @@
     "switchLogin": "Jelentkezz be",
     "successLogin": "Sikeres bejelentkezés!",
     "successRegister": "Sikeres regisztráció!",
-    "acceptTerms": "Elfogadom az",
-    "acceptPrivacy": "Elfogadom az",
-    "legalRequired": "Az ÁSZF és az adatvédelmi tájékoztató elfogadása kötelező.",
     "errors": {
       "generic": "Hiba történt",
       "emailNotConfirmed": "Igazold vissza az e-mail címedet a bejelentkezés előtt!",
@@ -528,20 +522,7 @@
     "toastSuccess": "Sikeres vásárlás! A rendelésed rögzítve lett.",
     "errorTitle": "Hiba történt",
     "missingId": "Hiányzó tranzakció azonosító",
-    "notFound": "A tranzakció nem található",
-    "bundleTitle": "Csomag vásárlás ({{count}} tétel)",
-    "bundleItems": "Csomag tételei"
-  },
-  "promote": {
-    "statsTitle": "Kiemelés statisztika",
-    "statsHint": "Demo megtekintések és kattintások a kiemelt termékeidre.",
-    "activeBoosts": "Aktív kiemelés",
-    "views": "Megtekintés",
-    "clicks": "Kattintás",
-    "viewsShort": "néz.",
-    "empty": "Még nincs kiemelt terméked — indíts kiemelést a listádból.",
-    "live": "Élő",
-    "ended": "Lejárt"
+    "notFound": "A tranzakció nem található"
   },
   "checkout": {
     "title": "Fizetés",
@@ -643,7 +624,6 @@
     "browse": "Böngéssz a kínálatban",
     "salesHint": "Fizetés után jelöld feladottnak a csomagot az üzenetekben vagy itt.",
     "confirmHint": "Van csomag átvételre vár — erősítsd meg az üzenetekben, ha megkaptad.",
-    "bundleTitle": "Csomag ({{count}} tétel)",
     "status": {
       "paymentPending": "Fizetésre vár",
       "paymentFailed": "Fizetés sikertelen",
@@ -765,7 +745,6 @@
     "browse": "Böngészés"
   },
   "common": {
-    "cancel": "Mégse",
     "loading": "Betöltés…",
     "currencyHuf": "Ft",
     "selectPlaceholder": "Válassz…"

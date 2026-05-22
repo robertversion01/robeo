@@ -14,40 +14,32 @@ import { formatPrice } from '@/lib/utils';
 import { getOptimizedImageUrl } from '@/lib/imageUtils';
 import type { Product } from '@/types';
 import { MAIN_TOP_PADDING, MOBILE_PAGE_BOTTOM_CLASS } from '@/lib/layoutTokens';
-import { Bell, ChevronDown } from 'lucide-react';
+import { Bell } from 'lucide-react';
 import { revalidateCatalog } from '@/app/actions/revalidateCatalog';
 import { notifyCatalogUpdated } from '@/lib/catalogRefresh';
 import { softDeleteAllUserProducts, softDeleteProduct } from '@/lib/productSoftDelete';
 import WalletBalanceCard from '@/components/profile/WalletBalanceCard';
 import BundleDiscountSettings from '@/components/profile/BundleDiscountSettings';
-import AdminReportedItems from '@/components/admin/AdminReportedItems';
-import AdminDac7Report from '@/components/admin/AdminDac7Report';
-import MyInvoices from '@/components/profile/MyInvoices';
+import AdminHub from '@/components/admin/AdminHub';
 import ProfileTabNav, { type ProfileTabId } from '@/components/profile/ProfileTabNav';
 import ProfileSection from '@/components/profile/ProfileSection';
 import ProfileSettingsHub from '@/components/profile/ProfileSettingsHub';
 import ProfileSignOutBar from '@/components/profile/ProfileSignOutBar';
 import SellerEngagementHub from '@/components/seller/SellerEngagementHub';
-import PromoteAnalyticsCard from '@/components/profile/PromoteAnalyticsCard';
 import ProfileMarketplaceStats from '@/components/profile/ProfileMarketplaceStats';
 import TrustSafetyBlock from '@/components/trust/TrustSafetyBlock';
 import { useTranslation } from 'react-i18next';
 import { useRouter } from 'next/navigation';
 import { useIsAdmin } from '@/hooks/useIsAdmin';
-import { markProductPromoteBoosted } from '@/lib/promoteAnalytics';
 
 export default function ProfilePage() {
   const { t, i18n } = useTranslation();
   const [products, setProducts] = useState<Product[]>([]);
-  const [adminProducts, setAdminProducts] = useState<Product[]>([]);
   const [soldProducts, setSoldProducts] = useState<Product[]>([]);
   const [receivedReviews, setReceivedReviews] = useState<Array<{ id: string; rating: number; comment: string | null; created_at: string }>>([]);
   const [loading, setLoading] = useState(true);
   const [user, setUser] = useState<any>(null);
   const [promotingProductIds, setPromotingProductIds] = useState<Set<string>>(new Set());
-  const [updatingFeaturedIds, setUpdatingFeaturedIds] = useState<Set<string>>(new Set());
-  const [runningImageAudit, setRunningImageAudit] = useState(false);
-  const [featuredDrafts, setFeaturedDrafts] = useState<Record<string, string>>({});
   const [favorites, setFavorites] = useState<Set<string>>(new Set());
   const [createdAt, setCreatedAt] = useState<string>('');
   const [deleteTarget, setDeleteTarget] = useState<{ id: string; name: string } | null>(null);
@@ -61,6 +53,7 @@ export default function ProfilePage() {
   const shopCount = products.length + soldProducts.length;
 
   const setProfileTab = (tab: ProfileTabId) => {
+    if (tab === 'admin' && !isAdmin) return;
     setActiveTab(tab);
     const params = new URLSearchParams(typeof window !== 'undefined' ? window.location.search : '');
     params.set('tab', tab);
@@ -76,11 +69,23 @@ export default function ProfilePage() {
 
   useEffect(() => {
     if (typeof window === 'undefined') return;
-    const tab = new URLSearchParams(window.location.search).get('tab') as ProfileTabId | null;
-    if (tab && ['shop', 'reviews', 'invoices', 'about'].includes(tab)) {
-      setActiveTab(tab);
+    const params = new URLSearchParams(window.location.search);
+    let tab = params.get('tab') as ProfileTabId | 'about' | null;
+    if (tab === 'about') {
+      tab = 'settings';
+      params.set('tab', 'settings');
+      router.replace(`/profile?${params.toString()}`, { scroll: false });
     }
-  }, []);
+    if (tab === 'admin' && !isAdmin) {
+      setActiveTab('shop');
+      params.set('tab', 'shop');
+      router.replace(`/profile?${params.toString()}`, { scroll: false });
+      return;
+    }
+    if (tab && ['shop', 'reviews', 'settings', 'admin'].includes(tab)) {
+      setActiveTab(tab as ProfileTabId);
+    }
+  }, [isAdmin, router]);
 
   useEffect(() => {
     if (typeof window === 'undefined') return;
@@ -117,13 +122,8 @@ export default function ProfilePage() {
     loadUserProducts(user.id);
     loadSoldProducts(user.id);
     loadReceivedReviews(user.id);
+    void loadListingFavoriteCount(user.id);
   };
-
-  useEffect(() => {
-    if (isAdmin && user?.id) {
-      loadAllProductsForAdmin();
-    }
-  }, [isAdmin, user?.id]);
 
   const formatDate = (dateStr: string) => {
     const date = new Date(dateStr);
@@ -196,30 +196,6 @@ export default function ProfilePage() {
       setReceivedReviews((data || []) as Array<{ id: string; rating: number; comment: string | null; created_at: string }>);
     } catch (error) {
       console.error('Error fetching reviews:', error);
-    }
-  };
-
-  const loadAllProductsForAdmin = async () => {
-    try {
-      const { data, error } = await supabase
-        .from('products')
-        .select('*')
-        .order('created_at', { ascending: false });
-
-      if (error) throw error;
-      const allProducts = (data || []) as Product[];
-      setAdminProducts(allProducts);
-      setFeaturedDrafts(
-        allProducts.reduce<Record<string, string>>((acc, item) => {
-          acc[item.id] = item.featured_until
-            ? new Date(item.featured_until).toISOString().slice(0, 16)
-            : '';
-          return acc;
-        }, {})
-      );
-    } catch (error) {
-      console.error('Error fetching admin products:', error);
-      toast.error('Nem sikerult betolteni az admin termeklistat');
     }
   };
 
@@ -356,94 +332,6 @@ export default function ProfilePage() {
         next.delete(productId);
         return next;
       });
-    }
-  };
-
-  const updateFeaturedUntilAsAdmin = async (productId: string) => {
-    if (!isAdmin) return;
-
-    setUpdatingFeaturedIds((prev) => {
-      const next = new Set(prev);
-      next.add(productId);
-      return next;
-    });
-
-    try {
-      const rawValue = featuredDrafts[productId];
-      const featuredUntil = rawValue ? new Date(rawValue).toISOString() : null;
-
-      if (featuredUntil && new Date(featuredUntil).getTime() > Date.now()) {
-        await markProductPromoteBoosted(supabase, productId, featuredUntil);
-      } else {
-        const { error } = await supabase
-          .from('products')
-          .update({
-            featured_until: featuredUntil,
-            promote_demo_views: 0,
-            promote_demo_clicks: 0,
-          })
-          .eq('id', productId);
-        if (error) throw error;
-      }
-
-      setAdminProducts((prev) =>
-        prev.map((item) =>
-          item.id === productId ? { ...item, featured_until: featuredUntil } : item
-        )
-      );
-      setProducts((prev) =>
-        prev.map((item) =>
-          item.id === productId ? { ...item, featured_until: featuredUntil } : item
-        )
-      );
-      toast.success('Kiemelesi datum frissitve');
-    } catch (error) {
-      console.error('Error updating featured_until:', error);
-      toast.error('Nem sikerult frissiteni a kiemelesi datumot');
-    } finally {
-      setUpdatingFeaturedIds((prev) => {
-        const next = new Set(prev);
-        next.delete(productId);
-        return next;
-      });
-    }
-  };
-
-  const runImageAuditAsAdmin = async () => {
-    if (!isAdmin) return;
-
-    setRunningImageAudit(true);
-    try {
-      const {
-        data: { session },
-      } = await supabase.auth.getSession();
-      if (!session?.access_token) {
-        throw new Error('Nincs érvényes munkamenet.');
-      }
-
-      const response = await fetch('/api/admin/image-audit', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          Authorization: `Bearer ${session.access_token}`,
-        },
-      });
-
-      const data = await response.json();
-      if (!response.ok) {
-        throw new Error(data?.error || 'A képek audit futtatása sikertelen.');
-      }
-
-      toast.success(
-        `Képek audit kész: ${data.fixed} javítva, ${data.unchanged} változatlan.`
-      );
-      await loadAllProductsForAdmin();
-      await loadUserProducts(user.id);
-    } catch (error: any) {
-      console.error('Error running admin image audit:', error);
-      toast.error(error?.message || 'Nem sikerült lefuttatni a képek auditot.');
-    } finally {
-      setRunningImageAudit(false);
     }
   };
 
@@ -585,12 +473,15 @@ export default function ProfilePage() {
           <ProfileTabNav
             active={activeTab}
             onChange={setProfileTab}
+            showAdmin={isAdmin}
             counts={{
               shop: shopCount,
               reviews: receivedReviews.length,
             }}
           />
 
+          {activeTab === 'shop' ? (
+            <>
           <ProfileMarketplaceStats
             soldCount={stats.soldProducts}
             revenue={stats.totalRevenue}
@@ -599,139 +490,6 @@ export default function ProfilePage() {
             favoritesOnListings={listingFavoriteCount}
           />
           <TrustSafetyBlock variant="compact" className="mb-6" />
-
-          {activeTab === 'about' ? (
-            <>
-              <ProfileSettingsHub userId={user?.id} />
-              <ProfileSection title={t('profile.incomingOffers')}>
-                <OffersList />
-              </ProfileSection>
-              <ProfileSection title={t('profile.sentOffers')}>
-                <BuyerOffersList />
-              </ProfileSection>
-              <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-6">
-                <div className="bg-gray-50 border border-gray-200 rounded-lg p-4">
-                  <div className="text-[#007782] text-xs uppercase tracking-wider mb-1">
-                    {t('profile.stats.revenue')}
-                  </div>
-                  <div className="text-xl font-bold">{formatPrice(stats.totalRevenue)}</div>
-                </div>
-                <div className="bg-gray-50 border border-gray-200 rounded-lg p-4">
-                  <div className="text-[#007782] text-xs uppercase tracking-wider mb-1">
-                    {t('profile.stats.sold')}
-                  </div>
-                  <div className="text-xl font-bold">{stats.soldProducts}</div>
-                </div>
-                <div className="bg-gray-50 border border-gray-200 rounded-lg p-4">
-                  <div className="text-[#007782] text-xs uppercase tracking-wider mb-1">
-                    {t('profile.stats.listings')}
-                  </div>
-                  <div className="text-xl font-bold">{stats.totalProducts}</div>
-                </div>
-                <div className="bg-gray-50 border border-gray-200 rounded-lg p-4">
-                  <div className="text-[#007782] text-xs uppercase tracking-wider mb-1">
-                    {t('profile.stats.rating')}
-                  </div>
-                  <div className="flex items-center gap-2">
-                    <span className="text-xl font-bold">{stats.averageRating.toFixed(1)}</span>
-                    <StarRating rating={stats.averageRating} size={16} />
-                  </div>
-                </div>
-              </div>
-              <div className="mb-8">
-                <div className="flex items-center justify-between mb-3">
-                  <h2 className="text-lg font-bold">{t('profile.transactions')}</h2>
-                  <Link href="/orders" className="text-xs font-semibold text-[#007782] hover:underline">
-                    {t('orders.viewAll')} →
-                  </Link>
-                </div>
-                <Suspense fallback={<div className="text-sm text-gray-500 py-4">{t('common.loading')}</div>}>
-                  <TransactionList />
-                </Suspense>
-              </div>
-              <WalletBalanceCard userId={user?.id} />
-              <Link
-                href="/notifications"
-                className="mb-6 flex items-center justify-between rounded-xl border border-gray-200 bg-white px-4 py-3 hover:bg-gray-50 transition-colors"
-              >
-                <span className="flex items-center gap-2 text-sm font-semibold text-gray-900">
-                  <Bell size={18} className="text-[#007782]" />
-                  {t('nav.notifications')}
-                </span>
-                <span className="text-xs text-gray-500">→</span>
-              </Link>
-              <BundleDiscountSettings userId={user?.id} />
-            </>
-          ) : null}
-
-          {isAdmin && activeTab === 'about' ? (
-            <details className="group mb-8 rounded-xl border border-gray-200 bg-gray-50 overflow-hidden">
-              <summary className="flex cursor-pointer list-none items-center justify-between gap-2 px-4 py-3 text-sm font-medium text-gray-700 hover:bg-gray-100/80 [&::-webkit-details-marker]:hidden">
-                <span>🛠️ Adminisztrációs beállítások (Kattints a megnyitáshoz)</span>
-                <ChevronDown
-                  size={18}
-                  className="shrink-0 text-gray-500 transition-transform group-open:rotate-180"
-                  aria-hidden
-                />
-              </summary>
-              <div className="border-t border-gray-200 p-4">
-              <div className="mb-3 flex flex-wrap items-center justify-between gap-2">
-                <h2 className="text-base font-semibold text-gray-900">Kiemelés kezelése</h2>
-                <button
-                  type="button"
-                  onClick={runImageAuditAsAdmin}
-                  disabled={runningImageAudit}
-                  className="h-9 rounded-md border border-[#007782] bg-white px-3 text-xs font-semibold text-[#007782] hover:bg-[#007782]/5 disabled:cursor-wait disabled:opacity-60"
-                >
-                  {runningImageAudit ? 'Képek audit fut...' : 'Képek audit futtatása'}
-                </button>
-              </div>
-              {adminProducts.length === 0 ? (
-                <p className="text-sm text-gray-500">Nincs megjeleníthető termék.</p>
-              ) : (
-                <div className="space-y-2">
-                  {adminProducts.map((item) => (
-                    <div
-                      key={item.id}
-                      className="flex flex-col md:flex-row md:items-center gap-2 justify-between rounded-lg border border-gray-200 bg-white p-2.5"
-                    >
-                      <div className="min-w-0">
-                        <p className="text-sm font-medium truncate">{item.name}</p>
-                        <p className="text-xs text-gray-500 truncate">
-                          {item.category} · {item.id}
-                        </p>
-                      </div>
-                      <div className="flex items-center gap-2">
-                        <input
-                          type="datetime-local"
-                          value={featuredDrafts[item.id] || ''}
-                          onChange={(e) =>
-                            setFeaturedDrafts((prev) => ({ ...prev, [item.id]: e.target.value }))
-                          }
-                          className="h-9 rounded-md border border-gray-300 px-2 text-xs"
-                        />
-                        <button
-                          type="button"
-                          disabled={updatingFeaturedIds.has(item.id)}
-                          onClick={() => updateFeaturedUntilAsAdmin(item.id)}
-                          className="h-9 rounded-md bg-[#007782] px-3 text-xs font-semibold text-white hover:bg-[#00616b] disabled:opacity-60"
-                        >
-                          {updatingFeaturedIds.has(item.id) ? 'Mentés...' : 'Mentés'}
-                        </button>
-                      </div>
-                    </div>
-                  ))}
-                </div>
-              )}
-              <AdminReportedItems />
-              <AdminDac7Report />
-              </div>
-            </details>
-          ) : null}
-
-          {activeTab === 'shop' ? (
-            <>
-          <PromoteAnalyticsCard userId={user?.id} />
           <SellerEngagementHub products={products} />
           <ProfileSection
             title={t('profile.myListings')}
@@ -853,6 +611,76 @@ export default function ProfilePage() {
             </>
           ) : null}
 
+          {activeTab === 'settings' ? (
+            <>
+              <ProfileSettingsHub userId={user?.id} />
+              <ProfileSection title={t('profile.incomingOffers')}>
+                <OffersList />
+              </ProfileSection>
+              <ProfileSection title={t('profile.sentOffers')}>
+                <BuyerOffersList />
+              </ProfileSection>
+              <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-6">
+                <div className="bg-gray-50 border border-gray-200 rounded-lg p-4">
+                  <div className="text-[#007782] text-xs uppercase tracking-wider mb-1">
+                    {t('profile.stats.revenue')}
+                  </div>
+                  <div className="text-xl font-bold">{formatPrice(stats.totalRevenue)}</div>
+                </div>
+                <div className="bg-gray-50 border border-gray-200 rounded-lg p-4">
+                  <div className="text-[#007782] text-xs uppercase tracking-wider mb-1">
+                    {t('profile.stats.sold')}
+                  </div>
+                  <div className="text-xl font-bold">{stats.soldProducts}</div>
+                </div>
+                <div className="bg-gray-50 border border-gray-200 rounded-lg p-4">
+                  <div className="text-[#007782] text-xs uppercase tracking-wider mb-1">
+                    {t('profile.stats.listings')}
+                  </div>
+                  <div className="text-xl font-bold">{stats.totalProducts}</div>
+                </div>
+                <div className="bg-gray-50 border border-gray-200 rounded-lg p-4">
+                  <div className="text-[#007782] text-xs uppercase tracking-wider mb-1">
+                    {t('profile.stats.rating')}
+                  </div>
+                  <div className="flex items-center gap-2">
+                    <span className="text-xl font-bold">{stats.averageRating.toFixed(1)}</span>
+                    <StarRating rating={stats.averageRating} size={16} />
+                  </div>
+                </div>
+              </div>
+              <div className="mb-8">
+                <div className="flex items-center justify-between mb-3">
+                  <h2 className="text-lg font-bold">{t('profile.transactions')}</h2>
+                  <Link href="/orders" className="text-xs font-semibold text-[#007782] hover:underline">
+                    {t('orders.viewAll')} →
+                  </Link>
+                </div>
+                <Suspense fallback={<div className="text-sm text-gray-500 py-4">{t('common.loading')}</div>}>
+                  <TransactionList />
+                </Suspense>
+              </div>
+              <WalletBalanceCard userId={user?.id} />
+              <Link
+                href="/notifications"
+                className="mb-6 flex items-center justify-between rounded-xl border border-gray-200 bg-white px-4 py-3 hover:bg-gray-50 transition-colors"
+              >
+                <span className="flex items-center gap-2 text-sm font-semibold text-gray-900">
+                  <Bell size={18} className="text-[#007782]" />
+                  {t('nav.notifications')}
+                </span>
+                <span className="text-xs text-gray-500">→</span>
+              </Link>
+              <BundleDiscountSettings userId={user?.id} />
+            </>
+          ) : null}
+
+          {isAdmin && activeTab === 'admin' ? (
+            <ProfileSection title={t('profile.adminTitle')}>
+              <AdminHub userId={user?.id} />
+            </ProfileSection>
+          ) : null}
+
           {activeTab === 'reviews' ? (
           <ProfileSection title={t('profile.reviews')}>
             {receivedReviews.length === 0 ? (
@@ -877,12 +705,6 @@ export default function ProfilePage() {
               </div>
             )}
           </ProfileSection>
-          ) : null}
-
-          {activeTab === 'invoices' ? (
-            <div className="mb-8">
-              <MyInvoices userId={user?.id} />
-            </div>
           ) : null}
 
           <ProfileSignOutBar />

@@ -117,7 +117,6 @@ export default function CheckoutBundleContent() {
           shippingMethod,
           shippingCost,
           bundleDiscountPercent: discountPercent,
-          foxpostTerminal: shippingMethod === 'foxpost' ? foxpostTerminal : null,
         }),
       });
 
@@ -242,7 +241,7 @@ export default function CheckoutBundleContent() {
               </div>
 
               <CheckoutBuyerProtectionBanner />
-              <TrustSafetyBlock variant="compact" />
+              <TrustSafetyBlock variant="full" />
 
               {sellerId ? (
                 <p className="text-xs text-gray-500">

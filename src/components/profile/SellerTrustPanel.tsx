@@ -6,6 +6,7 @@ import { useTranslation } from 'react-i18next';
 import { supabase } from '@/lib/supabase';
 import { fetchSellerTrustSignals, type SellerTrustSignals } from '@/lib/sellerTrust';
 import StarRating from '@/components/review/StarRating';
+import Badge from '@/components/ui/Badge';
 import { cn } from '@/lib/utils';
 
 type Props = {
@@ -40,10 +41,10 @@ export default function SellerTrustPanel({ sellerId, className }: Props) {
   return (
     <div className={cn('flex flex-wrap gap-2', className)}>
       {signals.verified ? (
-        <span className="inline-flex items-center gap-1 rounded-full border border-[#007782]/30 bg-[#007782]/10 px-2.5 py-1 text-xs font-semibold text-[#007782]">
+        <Badge variant="verified" className="inline-flex items-center gap-1 px-2.5 py-1 text-xs">
           <BadgeCheck size={14} />
           {t('sellerTrust.verified')}
-        </span>
+        </Badge>
       ) : null}
       {signals.avgRating != null && signals.reviewCount > 0 ? (
         <span className="inline-flex items-center gap-1 rounded-full border border-gray-200 bg-white px-2.5 py-1 text-xs">

@@ -346,7 +346,7 @@ export default function CheckoutContent() {
               </div>
 
               <CheckoutBuyerProtectionBanner />
-              <TrustSafetyBlock variant="compact" />
+              <TrustSafetyBlock variant="full" />
               {product?.user_id ? (
                 <CheckoutBundleNudge
                   sellerId={product.user_id}

@@ -6,7 +6,7 @@ import { supabase } from '@/lib/supabase';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { toast } from 'sonner';
-import { Star, ZoomIn, ZoomOut } from 'lucide-react';
+import { ZoomIn, ZoomOut } from 'lucide-react';
 import { getOptimizedImageUrl, shouldLazyLoad } from '@/lib/imageUtils';
 import { getValidProductImageUrls } from '@/lib/productImageValidation';
 import ProductImage from '@/components/product/ProductImage';
@@ -16,8 +16,9 @@ import OfferModal from '@/components/product/OfferModal';
 import SellerBundleHint from '@/components/product/SellerBundleHint';
 import SellerClosetBundle from '@/components/product/SellerClosetBundle';
 import SellerMoreListings from '@/components/product/SellerMoreListings';
+import SimilarProductsRail from '@/components/product/SimilarProductsRail';
+import ProductStickyCta from '@/components/product/ProductStickyCta';
 import PriceHistoryBadge from '@/components/product/PriceHistoryBadge';
-import PriceHistorySparkline from '@/components/product/PriceHistorySparkline';
 import TrustSafetyBlock from '@/components/trust/TrustSafetyBlock';
 import SellerTrustPanel from '@/components/profile/SellerTrustPanel';
 import BundleOfferModal from '@/components/product/BundleOfferModal';
@@ -34,8 +35,6 @@ export default function ProductPage({ params }: { params: Promise<{ id: string }
   const [isZoomed, setIsZoomed] = useState(false);
   const [touchStartX, setTouchStartX] = useState<number | null>(null);
   const [sellerProfile, setSellerProfile] = useState<{ full_name?: string | null; email?: string | null } | null>(null);
-  const [sellerReviewSummary, setSellerReviewSummary] = useState<{ avg: number; count: number }>({ avg: 5, count: 0 });
-  
   // Modal States
   const [showMessageModal, setShowMessageModal] = useState(false);
   const [showOfferModal, setShowOfferModal] = useState(false);
@@ -93,24 +92,6 @@ export default function ProductPage({ params }: { params: Promise<{ id: string }
 
       if (error) throw error;
       setProduct(data);
-
-      const featuredUntil = (data as Product).featured_until;
-      if (
-        featuredUntil &&
-        new Date(featuredUntil).getTime() > Date.now() &&
-        typeof window !== 'undefined'
-      ) {
-        const viewKey = `robeo_promote_view_${data.id}`;
-        if (!sessionStorage.getItem(viewKey)) {
-          sessionStorage.setItem(viewKey, '1');
-          void fetch('/api/products/promote-event', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ productId: data.id, type: 'view' }),
-          }).catch(() => undefined);
-        }
-      }
-
       void recordPriceSnapshot(supabase, data.id, data.price);
       setSelectedImageIndex(0);
 
@@ -141,16 +122,6 @@ export default function ProductPage({ params }: { params: Promise<{ id: string }
         .maybeSingle();
 
       setSellerProfile((sellerData as { full_name?: string | null; email?: string | null }) || null);
-
-      const { data: reviewData } = await supabase
-        .from('reviews')
-        .select('rating')
-        .eq('reviewed_id', data.user_id);
-
-      const ratings = (reviewData || []).map((entry: any) => Number(entry.rating)).filter(Boolean);
-      const count = ratings.length;
-      const avg = count > 0 ? ratings.reduce((sum, value) => sum + value, 0) / count : 5;
-      setSellerReviewSummary({ avg, count });
     } catch (error) {
       console.error('Error fetching product:', error);
     } finally {
@@ -320,7 +291,7 @@ export default function ProductPage({ params }: { params: Promise<{ id: string }
         </div>
       )}
 
-      <main className={`${MAIN_TOP_PADDING} ${MOBILE_PAGE_BOTTOM_CLASS} px-0 md:px-6`}>
+      <main className={`${MAIN_TOP_PADDING} ${MOBILE_PAGE_BOTTOM_CLASS} px-0 md:px-6 max-md:pb-52`}>
         <Link href="/browse" className="inline-flex items-center gap-2 text-gray-500 hover:text-gray-900 mb-3 transition-colors px-3 md:px-0 md:mb-6">
           ← {t('product.backToBrowse')}
         </Link>
@@ -392,7 +363,7 @@ export default function ProductPage({ params }: { params: Promise<{ id: string }
             </div>
 
             {/* Product Details */}
-            <div className="flex flex-col p-3 md:p-0 pb-48">
+            <div className="flex flex-col p-3 md:p-0 pb-4 md:pb-0">
               <Link
                 href={categoryBrowseHref}
                 className="text-[#007782] text-xs uppercase tracking-wider mb-1 inline-block hover:underline"
@@ -408,7 +379,6 @@ export default function ProductPage({ params }: { params: Promise<{ id: string }
                 </div>
                 <PriceHistoryBadge productId={product.id} currentPrice={product.price} />
               </div>
-              <PriceHistorySparkline productId={product.id} currentPrice={product.price} />
 
               <SellerBundleHint sellerId={product.user_id} />
               <TrustSafetyBlock variant="compact" className="mb-3" />
@@ -448,9 +418,15 @@ export default function ProductPage({ params }: { params: Promise<{ id: string }
                 {product.description}
               </div>
 
+              <SimilarProductsRail
+                productId={product.id}
+                category={product.category}
+                brand={product.brand}
+                size={product.size}
+              />
+
               <div className="mb-4 rounded-xl border border-gray-200 bg-gray-50 p-3">
-                <SellerTrustPanel sellerId={product.user_id} className="mb-3" />
-                <div className="flex items-center gap-3">
+                <div className="flex items-center gap-3 mb-3">
                   <Link
                     href={`/profile/${product.user_id}`}
                     className="flex items-center gap-3 flex-1 min-w-0 hover:opacity-90"
@@ -460,67 +436,32 @@ export default function ProductPage({ params }: { params: Promise<{ id: string }
                     </div>
                     <div className="min-w-0">
                       <p className="text-sm font-semibold text-gray-900 truncate">{sellerDisplayName}</p>
-                      <div className="flex items-center gap-1 text-amber-500">
-                        {Array.from({ length: 5 }).map((_, idx) => (
-                          <Star
-                            key={idx}
-                            size={12}
-                            fill={idx < Math.round(sellerReviewSummary.avg) ? 'currentColor' : 'none'}
-                          />
-                        ))}
-                        <span className="ml-1 text-xs text-gray-500">
-                          {sellerReviewSummary.avg.toFixed(1)} ({sellerReviewSummary.count})
-                        </span>
-                      </div>
+                      <p className="text-xs text-[#007782] font-medium">{t('product.viewSeller')}</p>
                     </div>
                   </Link>
                 </div>
+                <SellerTrustPanel sellerId={product.user_id} className="mb-2" />
+                <TrustSafetyBlock variant="full" className="mt-2" />
                 <Link
                   href={categoryBrowseHref}
-                  className="mt-2 inline-block text-xs font-semibold text-[#007782] hover:underline"
+                  className="mt-3 inline-block text-xs font-semibold text-[#007782] hover:underline"
                 >
                   {t('product.browseCategory')} →
                 </Link>
               </div>
 
-               <div className="fixed bottom-0 left-0 right-0 md:static mt-auto p-2 md:p-0 md:mt-4 bg-white backdrop-blur-md border-t border-gray-200 md:border-t-0 md:bg-transparent md:backdrop-blur-none md:space-y-3 space-y-1.5 shadow-lg md:shadow-none">
-                 <button 
-                  onClick={async () => {
-                    const { data: { user } } = await supabase.auth.getUser();
-                    if (!user) {
-                      router.push('/auth');
-                      return;
-                    }
-                    if (product.user_id === user.id) {
-                      toast.error(t('checkout.errors.ownProduct'));
-                      return;
-                    }
-                    router.push(
-                      acceptedOffer
-                        ? `/checkout?offer=${acceptedOffer.id}`
-                        : `/checkout?id=${id}`,
-                    );
+              {viewerId !== product.user_id ? (
+                <ProductStickyCta
+                  productId={product.id}
+                  sellerId={product.user_id}
+                  acceptedOffer={acceptedOffer}
+                  onOffer={openOfferModal}
+                  onMessage={() => {
+                    setMessageText(t('product.messagePrefill', { name: product.name }));
+                    setShowMessageModal(true);
                   }}
-                   className="w-full btn-base btn-primary"
-                 >
-                  {acceptedOffer ? t('product.buyOfferPrice') : t('product.buy')}
-                 </button>
-                  <button 
-                    onClick={openOfferModal}
-                    className="w-full btn-base btn-secondary"
-                  >
-                    {t('product.makeOffer')}
-                  </button>
-                  <button 
-                    onClick={() => {
-                      setMessageText(t('product.messagePrefill', { name: product.name }));
-                      setShowMessageModal(true);
-                    }}
-                    className="w-full btn-base btn-secondary"
-                  >
-                    {t('product.messageSeller')}
-                  </button>
-               </div>
+                />
+              ) : null}
             </div>
           </div>
         </div>

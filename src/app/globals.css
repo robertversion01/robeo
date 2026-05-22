@@ -21,6 +21,8 @@
   --input: #f5f5f5;
   --ring: #007782;
   --radius: 0.5rem;
+  --space-section: 1rem;
+  --space-chip-gap: 0.375rem;
 }
 
 .dark {

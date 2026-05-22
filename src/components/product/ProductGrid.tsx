@@ -1,6 +1,7 @@
 'use client';
 
 import { useEffect, useState } from 'react';
+import { useTranslation } from 'react-i18next';
 import { motion, AnimatePresence } from 'framer-motion';
 import ProductCard from './ProductCard';
 import ProductGridSkeleton from './ProductGridSkeleton';
@@ -14,6 +15,8 @@ interface ProductGridProps {
   favorites: Set<string>;
   onToggleFavorite: (productId: string) => void;
   transitionKey?: string;
+  hasActiveFilters?: boolean;
+  onClearFilters?: () => void;
 }
 
 export default function ProductGrid({
@@ -22,7 +25,10 @@ export default function ProductGrid({
   favorites,
   onToggleFavorite,
   transitionKey = 'default',
+  hasActiveFilters = false,
+  onClearFilters,
 }: ProductGridProps) {
+  const { t } = useTranslation();
   const [visible, setVisible] = useState(true);
 
   useEffect(() => {
@@ -41,8 +47,23 @@ export default function ProductGrid({
     return (
       <EmptyState
         icon="search"
-        title="Nincs találat"
-        description="Próbáld meg más kategóriát vagy keresőkifejezést!"
+        title={
+          hasActiveFilters
+            ? t('browse.empty.filteredTitle')
+            : t('browse.empty.title')
+        }
+        description={
+          hasActiveFilters
+            ? t('browse.empty.filteredDescription')
+            : t('browse.empty.description')
+        }
+        actionLabel={
+          hasActiveFilters
+            ? t('browse.empty.clearFilters')
+            : t('browse.empty.browseAll')
+        }
+        actionHref={hasActiveFilters ? undefined : '/browse'}
+        onAction={hasActiveFilters ? onClearFilters : undefined}
       />
     );
   }

@@ -3,25 +3,28 @@
 import { useTranslation } from 'react-i18next';
 import { cn } from '@/lib/utils';
 
-export type ProfileTabId = 'shop' | 'reviews' | 'invoices' | 'about';
+export type ProfileTabId = 'shop' | 'reviews' | 'settings' | 'admin';
 
 type Props = {
   active: ProfileTabId;
   onChange: (tab: ProfileTabId) => void;
   counts?: Partial<Record<ProfileTabId, number>>;
+  showAdmin?: boolean;
 };
 
-const TABS: ProfileTabId[] = ['shop', 'reviews', 'invoices', 'about'];
-
-export default function ProfileTabNav({ active, onChange, counts }: Props) {
+export default function ProfileTabNav({ active, onChange, counts, showAdmin = false }: Props) {
   const { t } = useTranslation();
+
+  const tabs: ProfileTabId[] = showAdmin
+    ? ['shop', 'reviews', 'settings', 'admin']
+    : ['shop', 'reviews', 'settings'];
 
   return (
     <div
       className="mb-6 flex gap-1 overflow-x-auto border-b border-gray-200 pb-0 no-scrollbar"
       role="tablist"
     >
-      {TABS.map((id) => {
+      {tabs.map((id) => {
         const count = counts?.[id];
         return (
           <button
@@ -35,6 +38,7 @@ export default function ProfileTabNav({ active, onChange, counts }: Props) {
               active === id
                 ? 'border-[#007782] text-[#007782]'
                 : 'border-transparent text-gray-500 hover:text-gray-800',
+              id === 'admin' && 'text-amber-800',
             )}
           >
             {t(`profile.tabs.${id}`)}

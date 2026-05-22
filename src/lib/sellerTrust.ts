@@ -11,12 +11,13 @@ export type SellerTrustSignals = {
   /** 0–100 heurisztikus bizalmi pont (frontend) */
   trustScore: number;
   activeSeller: boolean;
+  medianResponseHours: number | null;
+  responseSampleCount: number;
   responseLabelKey:
     | 'sellerTrust.responseFast'
     | 'sellerTrust.responseNormal'
     | 'sellerTrust.responseSlow'
     | 'sellerTrust.responseNew';
-  medianResponseHours: number | null;
 };
 
 export function computeTrustScore(input: {
@@ -67,12 +68,9 @@ export async function fetchSellerTrustSignals(
   const created = profileRes.data?.created_at as string | undefined;
   const verified = Boolean(profileRes.data?.seller_verified);
 
-  const responseLabelKey: SellerTrustSignals['responseLabelKey'] =
-    responseStats.sampleCount > 0
-      ? responseStats.labelKey
-      : listingsCount >= 10
-        ? 'sellerTrust.responseNormal'
-        : 'sellerTrust.responseNew';
+  const responseLabelKey = responseStats.labelKey;
+  const medianResponseHours = responseStats.medianHours;
+  const responseSampleCount = responseStats.sampleCount;
 
   const trustScore = computeTrustScore({
     verified,
@@ -91,7 +89,8 @@ export async function fetchSellerTrustSignals(
     followers,
     trustScore,
     activeSeller: listingsCount >= 1,
+    medianResponseHours,
+    responseSampleCount,
     responseLabelKey,
-    medianResponseHours: responseStats.medianHours,
   };
 }

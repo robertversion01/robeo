@@ -26,7 +26,7 @@ export function parseCatalogFromUrl(params: URLSearchParams): Partial<CatalogFil
   const size = params.get('size');
   if (size) next.size = size;
 
-  const cond = params.get('cond');
+  const cond = params.get('cond') ?? params.get('condition');
   if (cond) next.condition = cond;
 
   const min = params.get('min');
@@ -35,7 +35,7 @@ export function parseCatalogFromUrl(params: URLSearchParams): Partial<CatalogFil
     if (!Number.isNaN(n) && n >= 0) next.minPrice = n;
   }
 
-  const max = params.get('max');
+  const max = params.get('max') ?? params.get('maxPrice');
   if (max != null && max !== '') {
     const n = Number(max);
     if (!Number.isNaN(n) && n > 0) next.maxPrice = n;

@@ -70,6 +70,20 @@
       "clear": "Clear",
       "clearAll": "Clear filters ({{count}})"
     },
+    "activeFilters": {
+      "remove": "Remove filter",
+      "clearAll": "Clear all",
+      "minPrice": "Min. {{value}} Ft",
+      "maxPrice": "Max. {{value}} Ft"
+    },
+    "empty": {
+      "title": "No listings yet",
+      "description": "Check back later or list an item yourself!",
+      "filteredTitle": "No results",
+      "filteredDescription": "Try loosening your filters or a different search term.",
+      "clearFilters": "Clear filters",
+      "browseAll": "Browse all"
+    },
     "sort": {
       "newest": "Newest first",
       "priceAsc": "Price: low to high",
@@ -103,10 +117,13 @@
     "immersive": {
       "showFilters": "Filters",
       "filterSheetTitle": "Filters & sort",
-      "applyFilters": "Apply"
+      "applyFilters": "Apply",
+      "activeFilters": "{{count}} active filters"
     },
     "feed": {
       "default": "Fresh listings from the community — browse, filter, save favorites.",
+      "searchHint": "Refine results with chips and the filter bar below.",
+      "searchCategoryHint": "Category: {{category}} — adjust filters below.",
       "favoritesHint": "You have {{count}} favorites — similar items may appear below.",
       "categoryHint": "Browsing {{category}} right now.",
       "trendingBrands": "Popular now: {{brands}}",
@@ -154,10 +171,9 @@
   "pdp": {
     "moreFromSeller": "More from this seller",
     "viewCloset": "Closet",
+    "similar": "Similar items",
     "priceDropped": "{{from}} → {{to}} Ft",
-    "priceDroppedShort": "Price drop",
-    "priceHistory": "Price history",
-    "priceTrendDown": "Downward trend"
+    "priceDroppedShort": "Price drop"
   },
   "closet": {
     "pageTitle": "Seller closet",
@@ -170,8 +186,9 @@
     "tabs": {
       "shop": "Shop",
       "reviews": "Reviews",
-      "invoices": "My invoices",
-      "about": "About"
+      "settings": "Settings",
+      "admin": "Admin",
+      "about": "Settings"
     },
     "stats": {
       "revenue": "Total revenue",
@@ -247,16 +264,6 @@
   },
   "settings": {
     "saving": "Saving…",
-    "vacation": {
-      "title": "Seller settings",
-      "heading": "Vacation mode",
-      "hint": "When on, your listings are hidden from the main feed and browse — your profile and closet stay reachable.",
-      "onLabel": "On vacation",
-      "offLabel": "Shop open",
-      "enabled": "Vacation mode on — listings hidden from feed.",
-      "disabled": "Vacation mode off — listings visible again.",
-      "schemaMissing": "Run supabase/patch-vacation-mode.sql in the Supabase SQL Editor."
-    },
     "personalisation": {
       "title": "Personalisation",
       "hint": "Preferences tune your home feed ranking.",
@@ -291,24 +298,14 @@
       "hintEnv": "For production delivery, set VAPID keys and Resend/SMTP on Vercel (.env.example).",
       "pushReady": "Push subscription saved.",
       "pushFailed": "Could not enable push (permission or server keys).",
-      "pushUnsupported": "This browser does not support push notifications.",
-      "pushE2eHint": "Enable push, then send a test notification. Service worker: /sw.js",
-      "vapidMissing": "VAPID keys missing — set them in .env.local.",
-      "testPush": "Send test push",
-      "testPushOk": "Test push sent ({{sent}} device(s))."
+      "pushUnsupported": "This browser does not support push notifications."
     },
     "language": {
       "title": "Language"
     },
     "privacy": {
-      "title": "Privacy (GDPR)",
-      "body": "Download your data as JSON or request demo account anonymization (soft-delete).",
-      "export": "GDPR data portability",
-      "exportDone": "Data export downloaded.",
-      "deleteAccount": "Delete account",
-      "deleteConfirm": "Anonymize your profile? In demo mode this clears name/email on the profile.",
-      "deleteConfirmBtn": "Yes, anonymize",
-      "deleteDone": "Profile anonymized."
+      "title": "Privacy",
+      "body": "Your profile and listings follow marketplace rules. More controls coming soon."
     }
   },
   "sellerTrust": {
@@ -319,8 +316,8 @@
     "memberSince": "Member since {{date}}",
     "responseFast": "Replies quickly",
     "responseNormal": "Active seller",
-    "responseNew": "New on marketplace",
     "responseSlow": "Slower response time",
+    "responseNew": "New on marketplace",
     "trustScore": "Trust score: {{score}}",
     "active": "Active seller"
   },
@@ -483,9 +480,6 @@
     "switchLogin": "Log in",
     "successLogin": "Logged in successfully!",
     "successRegister": "Account created!",
-    "acceptTerms": "I accept the",
-    "acceptPrivacy": "I accept the",
-    "legalRequired": "You must accept the Terms and Privacy Policy.",
     "errors": {
       "generic": "Something went wrong",
       "emailNotConfirmed": "Confirm your email before logging in.",
@@ -577,20 +571,7 @@
     "toastSuccess": "Purchase successful! Your order is recorded.",
     "errorTitle": "Something went wrong",
     "missingId": "Missing transaction ID",
-    "notFound": "Transaction not found",
-    "bundleTitle": "Bundle purchase ({{count}} items)",
-    "bundleItems": "Bundle items"
-  },
-  "promote": {
-    "statsTitle": "Boost analytics",
-    "statsHint": "Demo views and clicks for your featured listings.",
-    "activeBoosts": "Active boosts",
-    "views": "Views",
-    "clicks": "Clicks",
-    "viewsShort": "views",
-    "empty": "No boosted items yet — promote a listing from your shop tab.",
-    "live": "Live",
-    "ended": "Ended"
+    "notFound": "Transaction not found"
   },
   "checkout": {
     "title": "Checkout",
@@ -692,7 +673,6 @@
     "browse": "Browse catalog",
     "salesHint": "After payment, mark the parcel as shipped in messages or here.",
     "confirmHint": "Some orders await pickup confirmation — confirm in messages when received.",
-    "bundleTitle": "Bundle ({{count}} items)",
     "status": {
       "paymentPending": "Awaiting payment",
       "paymentFailed": "Payment failed",
@@ -758,7 +738,6 @@
     "browse": "Browse catalog"
   },
   "common": {
-    "cancel": "Cancel",
     "loading": "Loading…",
     "currencyHuf": "Ft",
     "selectPlaceholder": "Select…"

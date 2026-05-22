@@ -21,11 +21,8 @@ import {
   productMatchesCategory,
   serializeCatalogFilters,
   conditionDbValues,
+  categoryDbValues,
 } from '@/lib/catalogFilters';
-import {
-  fetchVacationSellerIdSet,
-  filterProductsExcludingVacationSellers,
-} from '@/lib/vacationMode';
 
 /** Csak böngészhető, megvásárolható termékek a főlistán. */
 function isListedProduct(status: string | null | undefined): boolean {
@@ -127,6 +124,23 @@ export function useProducts() {
         query = query.ilike('brand', catalogFilters.brand);
       }
 
+      if (catalogFilters.category !== 'all') {
+        const catValues = categoryDbValues(catalogFilters.category);
+        if (catValues.length === 1) {
+          query = query.eq('category', catValues[0]);
+        } else if (catValues.length > 1) {
+          query = query.in('category', catValues);
+        }
+      }
+
+      const searchTerm = catalogFilters.search.trim();
+      if (searchTerm) {
+        const escaped = searchTerm.replace(/[%_\\]/g, '\\$&');
+        query = query.or(
+          `name.ilike.%${escaped}%,description.ilike.%${escaped}%,brand.ilike.%${escaped}%`,
+        );
+      }
+
       let sizeFilterOnServer = false;
       if (catalogFilters.size !== 'all') {
         sizeFilterOnServer = await canFilterProductsBySize(supabase);
@@ -176,24 +190,6 @@ export function useProducts() {
         const sizeQ = catalogFilters.size.toLowerCase();
         fetched = fetched.filter((p) => (p.size || '').toLowerCase().includes(sizeQ));
       }
-
-      if (catalogFilters.search.trim()) {
-        const q = catalogFilters.search.trim().toLowerCase();
-        fetched = fetched.filter((p) => {
-          const brand = (p.brand || '').toLowerCase();
-          return (
-            p.name.toLowerCase().includes(q) ||
-            p.description.toLowerCase().includes(q) ||
-            brand.includes(q)
-          );
-        });
-      }
-
-      const vacationIds = await fetchVacationSellerIdSet(
-        supabase,
-        fetched.map((p) => p.user_id),
-      );
-      fetched = filterProductsExcludingVacationSellers(fetched, vacationIds);
 
       setProducts(fetched);
 
@@ -357,8 +353,44 @@ export function useProducts() {
     setSelectedCondition('all');
     setSelectedMinPrice(0);
     setSelectedMaxPrice(maxPriceLimit);
+    setSelectedSort('newest');
     bumpFilterRevision();
   }, [maxPriceLimit, bumpFilterRevision, setSearchQuery]);
+
+  const removeFilter = useCallback(
+    (key: keyof CatalogFilterState | 'search') => {
+      switch (key) {
+        case 'search':
+          setSearchQuery('');
+          break;
+        case 'category':
+          setSelectedCategory('all');
+          break;
+        case 'brand':
+          setSelectedBrand('all');
+          break;
+        case 'size':
+          setSelectedSize('all');
+          break;
+        case 'condition':
+          setSelectedCondition('all');
+          break;
+        case 'minPrice':
+          setSelectedMinPrice(0);
+          break;
+        case 'maxPrice':
+          setSelectedMaxPrice(maxPriceLimit);
+          break;
+        case 'sort':
+          setSelectedSort('newest');
+          break;
+        default:
+          break;
+      }
+      bumpFilterRevision();
+    },
+    [maxPriceLimit, bumpFilterRevision, setSearchQuery],
+  );
 
   return {
     allProducts: products,
@@ -378,6 +410,7 @@ export function useProducts() {
     setSelectedCondition: setSelectedConditionWrapped,
     activeFilterCount,
     clearAllFilters,
+    removeFilter,
     selectedSort,
     setSelectedSort: setSelectedSortWrapped,
     favorites,

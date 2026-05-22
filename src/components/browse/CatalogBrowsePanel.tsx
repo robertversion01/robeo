@@ -11,6 +11,7 @@ import CategoryQuickChips from '@/components/browse/CategoryQuickChips';
 import SavedSearchesStrip from '@/components/browse/SavedSearchesStrip';
 import FeedPersonalizationBanner from '@/components/browse/FeedPersonalizationBanner';
 import BrowseDiscoveryRails from '@/components/browse/BrowseDiscoveryRails';
+import ActiveFilterBar from '@/components/browse/ActiveFilterBar';
 import { cn } from '@/lib/utils';
 import { filterProductsWithValidImages } from '@/lib/productImageValidation';
 import type { CatalogFilterState } from '@/lib/catalogFilters';
@@ -105,6 +106,7 @@ function CatalogBrowsePanelInner({
     setSelectedCondition,
     activeFilterCount,
     clearAllFilters,
+    removeFilter,
     filterKey,
   } = useProducts();
 
@@ -207,13 +209,23 @@ function CatalogBrowsePanelInner({
       />
 
       <div className={chromeCollapse}>
-        {showPersonalization && user ? (
+        {showPersonalization && user && isFeed ? (
           <FeedPersonalizationBanner
+            mode="feed"
             products={catalogProducts}
             favoriteIds={favorites}
             preferredCategory={
               selectedCategory !== 'all' ? t(`browse.categories.${selectedCategory}`) : undefined
             }
+          />
+        ) : null}
+
+        {showPersonalization && user && isSearch && selectedCategory !== 'all' ? (
+          <FeedPersonalizationBanner
+            mode="search"
+            products={catalogProducts}
+            favoriteIds={favorites}
+            preferredCategory={t(`browse.categories.${selectedCategory}`)}
           />
         ) : null}
 
@@ -224,6 +236,7 @@ function CatalogBrowsePanelInner({
               brandChips={discoveryChips.topBrands}
               sizeChips={discoveryChips.topSizes}
               prefBrands={feedPrefs.brands}
+              allowFallback={false}
               compact
               onBrandPick={(brand) => setSelectedBrand(brand)}
               onSizePick={(size) => setSelectedSize(size)}
@@ -249,10 +262,14 @@ function CatalogBrowsePanelInner({
             {isSearch ? (
               <BrowseDiscoveryRails
                 browsePath={browsePath}
+                brandChips={discoveryChips.topBrands}
+                sizeChips={discoveryChips.topSizes}
+                allowFallback={false}
                 onBrandPick={(brand) => setSelectedBrand(brand)}
                 onSizePick={(size) => setSelectedSize(size)}
                 onConditionPick={(condition) => setSelectedCondition(condition)}
                 onSortPick={(sort) => setSelectedSort(sort)}
+                onMaxPricePick={(max) => setSelectedMaxPrice(max)}
               />
             ) : null}
             <CatalogSearchBar
@@ -294,6 +311,18 @@ function CatalogBrowsePanelInner({
             activeFilterCount={activeFilterCount}
             onClearAll={clearAllFilters}
           />
+          <ActiveFilterBar
+            filters={catalogFilters}
+            maxPriceLimit={maxPriceLimit}
+            categories={categories.map((c) => ({
+              id: c.id,
+              label: t(`browse.categories.${c.id}`, { defaultValue: c.label }),
+            }))}
+            sortOptions={localizedSortOptions}
+            onRemove={removeFilter}
+            onClearAll={clearAllFilters}
+            className="pb-2"
+          />
         </div>
         )}
       </div>
@@ -307,17 +336,23 @@ function CatalogBrowsePanelInner({
         {loading ? t('landing.catalog.loading') : t('landing.catalog.results', { count: catalogProducts.length })}
       </p>
       <ProductGrid
-        products={products}
+        products={catalogProducts}
         loading={loading}
         favorites={favorites}
         onToggleFavorite={toggleFavorite}
         transitionKey={filterKey}
+        hasActiveFilters={hasActiveFilters}
+        onClearFilters={clearAllFilters}
       />
 
       <ImmersiveFilterSheet
         catalogFilters={catalogFilters}
         activeFilterCount={activeFilterCount}
-        onApply={() => {}}
+        onApply={() => {
+          if (typeof document !== 'undefined') {
+            document.getElementById('catalog')?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+          }
+        }}
         filtersProps={{
           categories,
           selectedCategory,

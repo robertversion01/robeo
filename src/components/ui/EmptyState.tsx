@@ -7,6 +7,7 @@ interface EmptyStateProps {
   description: string;
   actionLabel?: string;
   actionHref?: string;
+  onAction?: () => void;
 }
 
 const icons = {
@@ -14,10 +15,17 @@ const icons = {
   favorites: Heart,
   messages: MessageSquare,
   products: Package,
-  cart: ShoppingBag
+  cart: ShoppingBag,
 };
 
-export default function EmptyState({ icon, title, description, actionLabel, actionHref }: EmptyStateProps) {
+export default function EmptyState({
+  icon,
+  title,
+  description,
+  actionLabel,
+  actionHref,
+  onAction,
+}: EmptyStateProps) {
   const Icon = icons[icon];
 
   return (
@@ -25,18 +33,28 @@ export default function EmptyState({ icon, title, description, actionLabel, acti
       <div className="w-20 h-20 rounded-full bg-accent/10 flex items-center justify-center mb-6">
         <Icon size={36} className="text-accent" />
       </div>
-      
+
       <h3 className="text-xl font-semibold mb-2">{title}</h3>
       <p className="text-muted-foreground mb-6 max-w-sm">{description}</p>
-      
-      {actionLabel && actionHref && (
-        <Link 
-          href={actionHref} 
+
+      {actionLabel && onAction ? (
+        <button
+          type="button"
+          onClick={onAction}
+          className="px-6 py-2 bg-accent text-accent-foreground rounded-full font-medium hover:bg-accent/90 transition-colors"
+        >
+          {actionLabel}
+        </button>
+      ) : null}
+
+      {actionLabel && actionHref && !onAction ? (
+        <Link
+          href={actionHref}
           className="px-6 py-2 bg-accent text-accent-foreground rounded-full font-medium hover:bg-accent/90 transition-colors"
         >
           {actionLabel}
         </Link>
-      )}
+      ) : null}
     </div>
   );
 }
