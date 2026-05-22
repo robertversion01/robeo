@@ -23,7 +23,7 @@ import TrustSafetyBlock from '@/components/trust/TrustSafetyBlock';
 import SellerTrustPanel from '@/components/profile/SellerTrustPanel';
 import BundleOfferModal from '@/components/product/BundleOfferModal';
 import type { Product } from '@/types';
-import { isListedProduct } from '@/lib/listedProducts';
+import { canViewProductDetail, isListedProduct, isSoldListing } from '@/lib/listedProducts';
 import { recordPriceSnapshot } from '@/lib/priceHistory';
 import { MAIN_TOP_PADDING, MOBILE_PAGE_BOTTOM_CLASS } from '@/lib/layoutTokens';
 
@@ -92,17 +92,22 @@ export default function ProductPage({ params }: { params: Promise<{ id: string }
         .single();
 
       if (error) throw error;
-      if (!isListedProduct(data.status)) {
-        setProduct(null);
-        return;
-      }
-      setProduct(data);
-      void recordPriceSnapshot(supabase, data.id, data.price);
-      setSelectedImageIndex(0);
 
       const { data: { user } } = await supabase.auth.getUser();
       setViewerId(user?.id ?? null);
-      if (user?.id) {
+
+      if (!canViewProductDetail(data.status, user?.id ?? null, data.user_id)) {
+        setProduct(null);
+        return;
+      }
+
+      setProduct(data);
+      if (isListedProduct(data.status)) {
+        void recordPriceSnapshot(supabase, data.id, data.price);
+      }
+      setSelectedImageIndex(0);
+
+      if (user?.id && isListedProduct(data.status)) {
         const { data: acceptedOfferData } = await supabase
           .from('offers')
           .select('id, offered_price')
@@ -118,6 +123,8 @@ export default function ProductPage({ params }: { params: Promise<{ id: string }
         } else {
           setAcceptedOffer(null);
         }
+      } else {
+        setAcceptedOffer(null);
       }
 
       const { data: sellerData } = await supabase
@@ -224,6 +231,8 @@ export default function ProductPage({ params }: { params: Promise<{ id: string }
 
   const sellerDisplayName = sellerProfile?.full_name || sellerProfile?.email?.split('@')[0] || t('product.seller');
   const sellerInitial = sellerDisplayName?.charAt(0).toUpperCase() || 'E';
+  const isSold = isSoldListing(product.status);
+  const isPurchasable = isListedProduct(product.status);
 
   const handleImageTouchStart = (event: React.TouchEvent<HTMLDivElement>) => {
     setTouchStartX(event.touches[0]?.clientX ?? null);
@@ -315,9 +324,16 @@ export default function ProductPage({ params }: { params: Promise<{ id: string }
                   src={getOptimizedImageUrl(activeImage, 800, 90)}
                   alt={product.name}
                   loading="eager"
-                  className={`w-full h-full object-cover transition-transform duration-300 ${isZoomed ? 'scale-150' : 'scale-100'}`}
+                  className={`w-full h-full object-cover transition-transform duration-300 ${isZoomed ? 'scale-150' : 'scale-100'} ${isSold ? 'opacity-70 grayscale' : ''}`}
                   onError={() => markGalleryUrlFailed(activeImage)}
                 />
+                {isSold ? (
+                  <div className="pointer-events-none absolute inset-0 flex items-center justify-center bg-black/30">
+                    <span className="rounded-md bg-black/75 px-3 py-1.5 text-xs font-bold uppercase tracking-wide text-white">
+                      {t('product.sold')}
+                    </span>
+                  </div>
+                ) : null}
                 <ProductShareReportBar
                   productId={product.id}
                   productName={product.name}
@@ -377,6 +393,21 @@ export default function ProductPage({ params }: { params: Promise<{ id: string }
               </Link>
               
               <h1 className="text-xl md:text-2xl font-bold mb-2">{product.name}</h1>
+
+              {isSold ? (
+                <div className="mb-3 rounded-xl border border-gray-200 bg-gray-50 p-3">
+                  <p className="text-sm font-semibold text-gray-900">{t('product.soldOwnerTitle')}</p>
+                  <p className="text-xs text-gray-600 mt-1">{t('product.soldOwnerHint')}</p>
+                  {viewerId === product.user_id ? (
+                    <Link
+                      href="/profile?tab=shop"
+                      className="mt-2 inline-block text-xs font-semibold text-[#007782] hover:underline"
+                    >
+                      {t('product.soldOwnerBack')}
+                    </Link>
+                  ) : null}
+                </div>
+              ) : null}
               
               <div className="flex flex-wrap items-center gap-2 mb-3">
                 <div className="text-[#007782] font-bold text-2xl">
@@ -387,7 +418,7 @@ export default function ProductPage({ params }: { params: Promise<{ id: string }
 
               <SellerBundleHint sellerId={product.user_id} />
               <TrustSafetyBlock variant="compact" className="mb-3" />
-              {viewerId && viewerId !== product.user_id ? (
+              {isPurchasable && viewerId && viewerId !== product.user_id ? (
                 <>
                   <SellerMoreListings
                     sellerId={product.user_id}
@@ -455,7 +486,7 @@ export default function ProductPage({ params }: { params: Promise<{ id: string }
                 </Link>
               </div>
 
-              {viewerId !== product.user_id ? (
+              {isPurchasable && viewerId !== product.user_id ? (
                 <ProductStickyCta
                   productId={product.id}
                   sellerId={product.user_id}

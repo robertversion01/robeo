@@ -2,35 +2,79 @@
 
 import { useEffect, useState } from 'react';
 import Link from 'next/link';
+import { Printer } from 'lucide-react';
 import { supabase } from '@/lib/supabase';
 import { formatPrice } from '@/lib/utils';
-import { isSaleSystemMessage, SALE_NOTIFICATION_MARKER } from '@/lib/saleNotifications';
+import { isPaidStatus } from '@/lib/transactionFlow';
+import ClientFormattedTime from '@/components/ui/ClientFormattedTime';
+import { useTranslation } from 'react-i18next';
+import { focusOrderPanel, requestPrintLabel } from '@/lib/orderPanelActions';
+import { printTransactionLabel } from '@/lib/printTransactionLabel';
+import { useResolvedTransactionRole } from '@/hooks/useResolvedTransactionRole';
+import SystemMessageRoleBadge from '@/components/messages/SystemMessageRoleBadge';
+import { toast } from 'sonner';
 
 type Props = {
   content: string;
   productId: string | null;
   createdAt: string;
+  viewerId: string;
+  senderId: string;
+  receiverId: string;
+  sellerId?: string | null;
+  timeLocale?: string;
 };
 
-type ProductSnippet = { id: string; name: string; price: number };
+type ProductSnippet = { id: string; name: string; price: number; user_id?: string };
 
-export default function SaleSystemMessageCard({ content, productId, createdAt }: Props) {
+export default function SaleSystemMessageCard({
+  productId,
+  createdAt,
+  viewerId,
+  sellerId: sellerIdProp = null,
+  timeLocale = 'hu-HU',
+}: Props) {
+  const { t } = useTranslation();
   const [product, setProduct] = useState<ProductSnippet | null>(null);
+  const [txPaid, setTxPaid] = useState(false);
+  const [txId, setTxId] = useState<string | null>(null);
 
   useEffect(() => {
     if (!productId) {
       setProduct(null);
+      setTxPaid(false);
+      setTxId(null);
       return;
     }
     let cancelled = false;
     (async () => {
-      const { data } = await supabase
+      const { data: productRow } = await supabase
         .from('products')
-        .select('id, name, price')
+        .select('id, name, price, user_id')
         .eq('id', productId)
         .maybeSingle();
-      if (!cancelled && data) {
-        setProduct({ id: data.id, name: data.name, price: Number(data.price) || 0 });
+
+      if (cancelled) return;
+      if (productRow) {
+        setProduct({
+          id: productRow.id,
+          name: productRow.name,
+          price: Number(productRow.price) || 0,
+          user_id: productRow.user_id,
+        });
+      }
+
+      const { data: tx } = await supabase
+        .from('transactions')
+        .select('id, status')
+        .eq('product_id', productId)
+        .order('created_at', { ascending: false })
+        .limit(1)
+        .maybeSingle();
+
+      if (!cancelled) {
+        setTxId(tx?.id ?? null);
+        setTxPaid(Boolean(tx?.status && isPaidStatus(String(tx.status))));
       }
     })();
     return () => {
@@ -38,14 +82,66 @@ export default function SaleSystemMessageCard({ content, productId, createdAt }:
     };
   }, [productId]);
 
-  const displayText = content
-    .replace(SALE_NOTIFICATION_MARKER, '')
-    .replace(/\n\n📦[\s\S]*/, '')
-    .trim();
+  const sellerId = product?.user_id ?? sellerIdProp;
+  const role = useResolvedTransactionRole(viewerId, sellerId);
+  const isSeller = role === 'seller';
+
+  const title =
+    role === null
+      ? t('systemMessage.loading')
+      : isSeller
+        ? t('saleMessage.sellerTitle')
+        : t('saleMessage.buyerTitle');
+  const body =
+    role === null
+      ? t('systemMessage.loadingHint')
+      : isSeller
+        ? t('saleMessage.sellerBody')
+        : t('saleMessage.buyerBody');
+
+  const runDirectPrint = async () => {
+    if (!txId) {
+      toast.info(t('chatTransaction.panelUnavailable'));
+      return;
+    }
+    try {
+      const data = await printTransactionLabel(txId, {
+        productNameFallback: product?.name,
+      });
+      toast.success(t('chatTransaction.labelDownloaded'));
+      if (!data.openedPopup) {
+        toast.info(t('chatTransaction.printPopupBlocked'));
+      }
+    } catch (err) {
+      toast.error(err instanceof Error ? err.message : t('chatTransaction.updateFailed'));
+    }
+  };
+
+  const handleSellerAction = () => {
+    if (!txPaid) {
+      if (!focusOrderPanel()) toast.info(t('chatTransaction.panelUnavailable'));
+      return;
+    }
+    const { panelFound } = requestPrintLabel(productId);
+    if (!panelFound) {
+      toast.info(t('chatTransaction.panelUnavailable'));
+      void runDirectPrint();
+    }
+  };
+
+  const handleBuyerAction = () => {
+    if (!focusOrderPanel()) toast.info(t('chatTransaction.panelUnavailable'));
+  };
 
   return (
     <div className="max-w-md rounded-xl border border-emerald-500/30 bg-emerald-50/80 px-4 py-3 text-sm text-gray-800">
-      <p className="text-center leading-snug">{displayText}</p>
+      {role ? (
+        <div className="flex justify-center mb-1">
+          <SystemMessageRoleBadge role={role} />
+        </div>
+      ) : null}
+      <p className="text-center font-semibold text-emerald-900">{title}</p>
+      <p className="text-center text-xs text-gray-700 mt-1 leading-snug">{body}</p>
       {product && (
         <Link
           href={`/products/${product.id}`}
@@ -55,8 +151,31 @@ export default function SaleSystemMessageCard({ content, productId, createdAt }:
           <span className="shrink-0 font-bold tabular-nums">{formatPrice(product.price)}</span>
         </Link>
       )}
+      {role === 'seller' ? (
+        <button
+          type="button"
+          disabled={!txPaid && !txId}
+          onClick={handleSellerAction}
+          className="mt-3 inline-flex w-full items-center justify-center gap-1.5 rounded-full bg-[#007782] px-4 py-2 text-xs font-semibold text-white disabled:opacity-50"
+        >
+          <Printer size={14} />
+          {txPaid ? t('chatTransaction.printLabel') : t('chatTransaction.openShipping')}
+        </button>
+      ) : null}
+      {role === 'buyer' ? (
+        <button
+          type="button"
+          onClick={handleBuyerAction}
+          className="mt-3 inline-flex w-full items-center justify-center rounded-full border border-[#007782]/40 bg-white px-4 py-2 text-xs font-semibold text-[#007782]"
+        >
+          {t('chatTransaction.viewOrderThread')}
+        </button>
+      ) : null}
+      {role === 'seller' && !txPaid ? (
+        <p className="mt-2 text-[10px] text-center text-amber-800">{t('saleMessage.awaitingPaymentSync')}</p>
+      ) : null}
       <div className="mt-2 text-center text-[10px] text-gray-400">
-        {new Date(createdAt).toLocaleTimeString('hu-HU', { hour: '2-digit', minute: '2-digit' })}
+        <ClientFormattedTime iso={createdAt} locale={timeLocale} />
       </div>
     </div>
   );
@@ -67,5 +186,10 @@ export function shouldUseSaleSystemCard(
   messageType?: string | null,
   productId?: string | null,
 ): boolean {
-  return Boolean(productId && isSaleSystemMessage(content, messageType));
+  if (!productId || messageType !== 'system') return false;
+  return (
+    content.includes('[ROBEO_SALE]') ||
+    content.includes('sikeresen kifizették') ||
+    content.includes('Sikeresen kifizetted')
+  );
 }

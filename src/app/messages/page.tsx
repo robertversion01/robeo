@@ -8,11 +8,13 @@ import { ChevronDown, ChevronLeft } from 'lucide-react';
 import OffersList from '@/components/product/OffersList';
 import ChatProductSummary from '@/components/messages/ChatProductSummary';
 import ChatTransactionPanel from '@/components/messages/ChatTransactionPanel';
-import ChatOfferActions from '@/components/messages/ChatOfferActions';
 import ChatBuyerOffersPanel from '@/components/messages/ChatBuyerOffersPanel';
+import ChatSellerOfferStatusPanel from '@/components/messages/ChatSellerOfferStatusPanel';
+import ChatSystemMessageBubble from '@/components/messages/ChatSystemMessageBubble';
 import SaleSystemMessageCard, {
   shouldUseSaleSystemCard,
 } from '@/components/messages/SaleSystemMessageCard';
+import ClientFormattedTime from '@/components/ui/ClientFormattedTime';
 import { buildOfferInsertRow } from '@/lib/offers';
 import {
   buildConversationsFromMessages,
@@ -63,6 +65,7 @@ export default function MessagesPage() {
   const router = useRouter();
   const timeLocale = i18n.language?.startsWith('en') ? 'en-HU' : 'hu-HU';
   const [offersOpen, setOffersOpen] = useState(true);
+  const [activeProductSellerId, setActiveProductSellerId] = useState<string | null>(null);
 
   useEffect(() => {
     checkUser();
@@ -378,6 +381,25 @@ export default function MessagesPage() {
 
   const activeProductId = [...messages].reverse().find((msg) => msg.product_id)?.product_id ?? null;
 
+  useEffect(() => {
+    if (!activeProductId) {
+      setActiveProductSellerId(null);
+      return;
+    }
+    let cancelled = false;
+    (async () => {
+      const { data } = await supabase
+        .from('products')
+        .select('user_id')
+        .eq('id', activeProductId)
+        .maybeSingle();
+      if (!cancelled) setActiveProductSellerId(data?.user_id ?? null);
+    })();
+    return () => {
+      cancelled = true;
+    };
+  }, [activeProductId]);
+
   return (
     <div className="min-h-screen bg-white text-gray-900">
 
@@ -536,26 +558,33 @@ export default function MessagesPage() {
                   </div>
                   <span className="font-medium truncate">{selectedEmail}</span>
                 </div>
-                <ChatProductSummary productId={activeProductId} />
-                {user && selectedConversation ? (
-                  <ChatTransactionPanel
-                    userId={user.id}
-                    otherUserId={selectedConversation}
+                <div className="flex-1 min-h-0 overflow-y-auto">
+                  <ChatProductSummary productId={activeProductId} />
+                  {user && selectedConversation ? (
+                    <ChatTransactionPanel
+                      userId={user.id}
+                      otherUserId={selectedConversation}
+                      productId={activeProductId}
+                      userEmail={user.email}
+                    />
+                  ) : null}
+                  {user && selectedConversation && activeProductId ? (
+                    <ChatSellerOfferStatusPanel
+                      viewerId={user.id}
+                      otherUserId={selectedConversation}
+                      productId={activeProductId}
+                    />
+                  ) : null}
+                  <ChatBuyerOffersPanel
+                    buyerId={user.id}
                     productId={activeProductId}
-                    userEmail={user.email}
+                    sellerId={selectedConversation}
                   />
-                ) : null}
-                <ChatBuyerOffersPanel
-                  buyerId={user.id}
-                  productId={activeProductId}
-                  sellerId={selectedConversation}
-                />
-                <div className="flex-1 min-h-0 overflow-y-auto p-4 md:p-6 space-y-4">
+                  <div className="p-4 md:p-6 space-y-4">
                   {messages.map((msg) => {
                     const isSystem =
                       msg.message_type === 'system' ||
                       (msg as { is_system_message?: boolean }).is_system_message;
-                    const checkoutMatch = msg.content.match(/(\/checkout\?offer=[a-f0-9-]+)/i);
 
                     if (isSystem) {
                       if (shouldUseSaleSystemCard(msg.content, msg.message_type, msg.product_id)) {
@@ -565,40 +594,24 @@ export default function MessagesPage() {
                               content={msg.content}
                               productId={msg.product_id}
                               createdAt={msg.created_at}
+                              viewerId={user.id}
+                              senderId={msg.sender_id}
+                              receiverId={msg.receiver_id}
+                              sellerId={activeProductSellerId}
+                              timeLocale={timeLocale}
                             />
                           </div>
                         );
                       }
                       return (
-                        <div key={msg.id} className="flex justify-center px-2">
-                          <div className="max-w-md rounded-xl border border-[#007782]/20 bg-[#007782]/5 px-4 py-2.5 text-center text-sm text-gray-700">
-                            {checkoutMatch ? (
-                              <>
-                                {msg.content.split(checkoutMatch[0])[0]}
-                                <Link
-                                  href={checkoutMatch[1]}
-                                  className="font-semibold text-[#007782] underline underline-offset-2"
-                                >
-                                  {t('messages.payLink')}
-                                </Link>
-                              </>
-                            ) : (
-                              msg.content
-                            )}
-                            <ChatOfferActions
-                              content={msg.content}
-                              viewerId={user.id}
-                              otherUserId={selectedConversation!}
-                              productId={msg.product_id}
-                            />
-                            <div className="mt-1 text-[10px] text-gray-400">
-                              {new Date(msg.created_at).toLocaleTimeString(timeLocale, {
-                                hour: '2-digit',
-                                minute: '2-digit',
-                              })}
-                            </div>
-                          </div>
-                        </div>
+                        <ChatSystemMessageBubble
+                          key={msg.id}
+                          msg={msg}
+                          viewerId={user.id}
+                          otherUserId={selectedConversation!}
+                          timeLocale={timeLocale}
+                          sellerId={activeProductSellerId}
+                        />
                       );
                     }
 
@@ -620,13 +633,14 @@ export default function MessagesPage() {
                           msg.content
                         )}
                         <div className={`mt-1 text-[10px] ${msg.sender_id === user.id ? 'text-white/80' : 'text-gray-500'}`}>
-                          {new Date(msg.created_at).toLocaleTimeString(timeLocale, { hour: '2-digit', minute: '2-digit' })}
+                          <ClientFormattedTime iso={msg.created_at} locale={timeLocale} />
                         </div>
                       </div>
                     </div>
                     );
                   })}
                   <div ref={messagesEndRef} />
+                </div>
                 </div>
 
                 {/* Message Input */}

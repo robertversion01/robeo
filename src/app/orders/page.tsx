@@ -24,6 +24,7 @@ export default function OrdersPage() {
       if (typeof window !== 'undefined') {
         const view = new URLSearchParams(window.location.search).get('view');
         if (view === 'sales') setInitialTab('sales');
+        else if (view === 'purchases') setInitialTab('purchases');
       }
       setReady(true);
     };

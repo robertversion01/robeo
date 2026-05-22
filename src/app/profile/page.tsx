@@ -19,6 +19,11 @@ import { revalidateCatalog } from '@/app/actions/revalidateCatalog';
 import { notifyCatalogUpdated } from '@/lib/catalogRefresh';
 import { enrichProductsWithFavoriteCounts } from '@/lib/favoriteCounts';
 import { softDeleteAllUserProducts, softDeleteProduct } from '@/lib/productSoftDelete';
+import {
+  ACTIVE_LISTING_STATUS_FILTER,
+  canPromoteProduct,
+  isActiveListing,
+} from '@/lib/listedProducts';
 import WalletBalanceCard from '@/components/profile/WalletBalanceCard';
 import BundleDiscountSettings from '@/components/profile/BundleDiscountSettings';
 import AdminHub from '@/components/admin/AdminHub';
@@ -26,6 +31,7 @@ import ProfileTabNav, { type ProfileTabId } from '@/components/profile/ProfileTa
 import ProfileSection from '@/components/profile/ProfileSection';
 import ProfileSettingsHub from '@/components/profile/ProfileSettingsHub';
 import ProfileSignOutBar from '@/components/profile/ProfileSignOutBar';
+import OrdersQuickHub from '@/components/profile/OrdersQuickHub';
 import SellerEngagementHub from '@/components/seller/SellerEngagementHub';
 import ProfileMarketplaceStats from '@/components/profile/ProfileMarketplaceStats';
 import TrustSafetyBlock from '@/components/trust/TrustSafetyBlock';
@@ -138,11 +144,12 @@ export default function ProfilePage() {
         .from('products')
         .select('*')
         .eq('user_id', userId)
-        .or('status.is.null,status.neq.deleted')
+        .or(ACTIVE_LISTING_STATUS_FILTER)
         .order('created_at', { ascending: false });
 
       if (error) throw error;
-      const enriched = await enrichProductsWithFavoriteCounts(supabase, (data || []) as Product[]);
+      const rows = ((data || []) as Product[]).filter((p) => isActiveListing(p.status));
+      const enriched = await enrichProductsWithFavoriteCounts(supabase, rows);
       setProducts(enriched);
     } catch (error) {
       console.error('Error fetching products:', error);
@@ -210,7 +217,7 @@ export default function ProfilePage() {
     }
     notifyCatalogUpdated();
     await loadUserProducts(userId);
-    setSoldProducts([]);
+    await loadSoldProducts(userId);
     router.refresh();
   };
 
@@ -306,6 +313,12 @@ export default function ProfilePage() {
   const promoteProductToHero = async (productId: string) => {
     if (!user?.id) {
       toast.error('A kiemeleshez be kell jelentkezned.');
+      return;
+    }
+
+    const target = products.find((p) => p.id === productId);
+    if (target && !canPromoteProduct(target.status)) {
+      toast.error(t('profile.cannotPromoteSold'));
       return;
     }
 
@@ -485,6 +498,7 @@ export default function ProfilePage() {
 
           {activeTab === 'shop' ? (
             <>
+          <OrdersQuickHub />
           <ProfileMarketplaceStats
             soldCount={stats.soldProducts}
             revenue={stats.totalRevenue}
@@ -523,7 +537,7 @@ export default function ProfilePage() {
                     key={product.id} 
                     className="group bg-white border border-gray-200 rounded-lg overflow-hidden relative"
                   >
-                    <Link href={`/products/${product.id}`} className="aspect-[4/5] overflow-hidden block">
+                    <Link href={`/products/${product.id}`} className="aspect-[4/5] overflow-hidden block relative">
                       {product.image_url ? (
                         <img 
                           src={getOptimizedImageUrl(product.image_url, 300, 85)} 
@@ -556,24 +570,26 @@ export default function ProfilePage() {
                       </div>
                       <h3 className="font-medium text-[11px] truncate leading-tight text-gray-800">{product.name}</h3>
                       <div className="text-accent font-bold text-xs">{formatPrice(product.price)}</div>
-                      <button
-                        type="button"
-                        disabled={isProductFeatured(product) || promotingProductIds.has(product.id)}
-                        onClick={() => promoteProductToHero(product.id)}
-                        className={`w-full mt-1 rounded-md px-2 py-1 text-[10px] font-semibold transition-colors ${
-                          isProductFeatured(product)
-                            ? 'bg-emerald-50 text-emerald-700 border border-emerald-200 cursor-not-allowed'
+                      {canPromoteProduct(product.status) ? (
+                        <button
+                          type="button"
+                          disabled={isProductFeatured(product) || promotingProductIds.has(product.id)}
+                          onClick={() => promoteProductToHero(product.id)}
+                          className={`w-full mt-1 rounded-md px-2 py-1 text-[10px] font-semibold transition-colors ${
+                            isProductFeatured(product)
+                              ? 'bg-emerald-50 text-emerald-700 border border-emerald-200 cursor-not-allowed'
+                              : promotingProductIds.has(product.id)
+                                ? 'bg-gray-100 text-gray-500 border border-gray-200 cursor-wait'
+                                : 'bg-[#007782] text-white hover:bg-[#00616b]'
+                          }`}
+                        >
+                          {isProductFeatured(product)
+                            ? t('profile.promoted')
                             : promotingProductIds.has(product.id)
-                              ? 'bg-gray-100 text-gray-500 border border-gray-200 cursor-wait'
-                              : 'bg-[#007782] text-white hover:bg-[#00616b]'
-                        }`}
-                      >
-                        {isProductFeatured(product)
-                          ? t('profile.promoted')
-                          : promotingProductIds.has(product.id)
-                            ? t('profile.promoting')
-                            : t('profile.promoteHero')}
-                      </button>
+                              ? t('profile.promoting')
+                              : t('profile.promoteHero')}
+                        </button>
+                      ) : null}
                     </div>
                   </div>
                 ))}
@@ -588,22 +604,28 @@ export default function ProfilePage() {
             ) : (
               <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-2">
                 {soldProducts.map((product) => (
-                  <Link key={product.id} href={`/products/${product.id}`} className="group bg-white border border-gray-200 rounded-lg overflow-hidden">
-                    <div className="aspect-[4/5] overflow-hidden">
+                  <Link key={product.id} href={`/products/${product.id}`} className="group bg-white border border-gray-200 rounded-lg overflow-hidden relative">
+                    <div className="aspect-[4/5] overflow-hidden relative">
                       {product.image_url ? (
                         <img
                           src={getOptimizedImageUrl(product.image_url, 300, 85)}
                           alt={product.name}
                           loading="lazy"
-                          className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
+                          className="w-full h-full object-cover opacity-70 grayscale group-hover:scale-105 transition-transform duration-500"
                         />
                       ) : (
                         <div className="w-full h-full bg-gray-100 flex items-center justify-center text-gray-400">📷</div>
                       )}
+                      <div className="pointer-events-none absolute inset-0 flex items-center justify-center bg-black/30">
+                        <span className="rounded-md bg-black/75 px-2 py-1 text-[10px] font-bold uppercase tracking-wide text-white">
+                          {t('product.sold')}
+                        </span>
+                      </div>
                     </div>
                     <div className="p-1.5">
                       <h3 className="font-medium text-[11px] truncate leading-tight text-gray-800">{product.name}</h3>
-                      <div className="text-accent font-bold text-xs">{formatPrice(product.price)}</div>
+                      <div className="text-gray-500 font-bold text-xs">{formatPrice(product.price)}</div>
+                      <p className="text-[9px] text-gray-400 mt-0.5">{t('profile.soldListingHint')}</p>
                     </div>
                   </Link>
                 ))}

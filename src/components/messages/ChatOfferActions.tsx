@@ -14,6 +14,7 @@ type Props = {
   viewerId: string;
   otherUserId: string;
   productId?: string | null;
+  viewerRole?: 'buyer' | 'seller' | 'other';
 };
 
 function parseCheckoutOfferId(content: string): string | null {
@@ -28,7 +29,13 @@ function parseCounterPrice(content: string): number | null {
   return Number.isFinite(n) ? n : null;
 }
 
-export default function ChatOfferActions({ content, viewerId, otherUserId, productId }: Props) {
+export default function ChatOfferActions({
+  content,
+  viewerId,
+  otherUserId,
+  productId,
+  viewerRole = 'other',
+}: Props) {
   const { t } = useTranslation();
   const [busy, setBusy] = useState(false);
   const [resolvedOfferId, setResolvedOfferId] = useState<string | null>(parseCheckoutOfferId(content));
@@ -62,6 +69,12 @@ export default function ChatOfferActions({ content, viewerId, otherUserId, produ
   if (!resolvedOfferId && !isCounter) return null;
   if (isRejected && !isAccepted) {
     return <p className="mt-2 text-xs text-gray-500">{t('chatOffer.closed')}</p>;
+  }
+  if (viewerRole === 'seller' && isAccepted) {
+    return null;
+  }
+  if (viewerRole !== 'buyer' && (isAccepted || isCounter)) {
+    return null;
   }
 
   const acceptCounter = async () => {

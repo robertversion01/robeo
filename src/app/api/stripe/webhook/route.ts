@@ -3,6 +3,7 @@ import { revalidatePath } from 'next/cache';
 import { NextRequest, NextResponse } from 'next/server';
 import { getStripeInstance } from '@/lib/stripe-client';
 import { applyPaidTransactionEffects } from '@/lib/completePurchase';
+import { canPromoteProduct } from '@/lib/listedProducts';
 import { getSupabaseAdminClient } from '@/lib/supabase';
 
 export const dynamic = 'force-dynamic';
@@ -130,12 +131,20 @@ async function handleCheckoutSessionCompleted(event: Stripe.Event, db: any): Pro
     if (promotedProductId && promoterId) {
       const { data: productRow } = await db
         .from('products')
-        .select('featured_checkout_session_id')
+        .select('featured_checkout_session_id, status')
         .eq('id', promotedProductId)
         .eq('user_id', promoterId)
         .maybeSingle();
 
       if (productRow?.featured_checkout_session_id === checkoutSessionId) {
+        return;
+      }
+
+      if (!canPromoteProduct(productRow?.status)) {
+        console.warn(WEBHOOK_LOG, 'skip promotion for non-active product', {
+          promotedProductId,
+          status: productRow?.status,
+        });
         return;
       }
 

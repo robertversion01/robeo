@@ -25,6 +25,7 @@
     "favorites": "Kedvencek",
     "upload": "Feltöltés",
     "messages": "Üzenetek",
+    "orders": "Rendelések",
     "notifications": "Értesítések",
     "profile": "Profil",
     "register": "Regisztráció",
@@ -260,7 +261,10 @@
     "share": "Megosztás",
     "report": "Jelentés",
     "shareCopied": "Link a vágólapra másolva",
-    "shareFailed": "Megosztás sikertelen"
+    "shareFailed": "Megosztás sikertelen",
+    "soldOwnerTitle": "Ez a hirdetés eladva",
+    "soldOwnerHint": "A termék már nem aktív — vásárlás és ajánlat nem lehetséges.",
+    "soldOwnerBack": "Vissza a profilomhoz"
   },
   "pdp": {
     "moreFromSeller": "Több ettől az eladótól",
@@ -295,6 +299,8 @@
     "promoteHero": "Kiemelés a főoldalon",
     "promoted": "Kiemelve",
     "promoting": "Átirányítás…",
+    "cannotPromoteSold": "Eladott hirdetést nem lehet kiemelni.",
+    "soldListingHint": "Lezárt hirdetés",
     "emptyListings": "Még nincs feltöltött terméked.",
     "uploadFirst": "Töltsd fel az első termékedet",
     "emptySold": "Még nincs eladott termék.",
@@ -566,7 +572,39 @@
     "counterPlaceholder": "Új ár",
     "counterInvalid": "Adj meg érvényes árat.",
     "counterSent": "Ellenajánlat elküldve",
-    "productFallback": "termék"
+    "productFallback": "termék",
+    "sellerWaitingTitle": "Ajánlat elfogadva — várakozás a fizetésre",
+    "sellerWaitingBody": "A vevő most fizethet. Amint kifizette, értesítünk, és csomagolhatod a terméket.",
+    "sellerAcceptedBody": "Elfogadtad az ajánlatot. A vevő kapja a fizetési linket.",
+    "buyerAcceptedBody": "Az eladó elfogadta az ajánlatodat. Most kifizetheted a terméket.",
+    "buyerRejectedBody": "Az eladó elutasította az ajánlatodat.",
+    "sellerRejectedBody": "Elutasítottad a vevő ajánlatát.",
+    "sellerCounterSentBody": "Ellenajánlatot küldtél — a vevő válaszolhat."
+  },
+  "saleMessage": {
+    "sellerTitle": "Sikeres eladás — kifizetve!",
+    "sellerBody": "A vevő kifizette a terméket. Csomagold össze, töltsd le a Foxpost címkét, majd jelöld feladottnak.",
+    "buyerTitle": "Sikeres vásárlás — kifizetve!",
+    "buyerBody": "A fizetésed megérkezett. Az eladó hamarosan feladja a csomagot — itt követheted a státuszt.",
+    "awaitingPaymentSync": "A fizetés feldolgozása folyamatban — a csomagfeladás hamarosan elérhető."
+  },
+  "orderTimeline": {
+    "title": "Rendelés állapota",
+    "openOrders": "Rendelések",
+    "disputed": "Vitatás alatt — admin felülvizsgálat",
+    "buyerWaitingShip": "Az eladó csomagolja / feladja a csomagot. Értesítünk, ha úton van.",
+    "steps": {
+      "offer_made": "Ajánlat elküldve",
+      "offer_accepted": "Ajánlat elfogadva",
+      "payment_pending": "Várakozás a fizetésre",
+      "paid": "Kifizetve",
+      "packing": "Eladó csomagol",
+      "shipped": "Feladva",
+      "in_transit": "Úton",
+      "ready_for_pickup": "Átvételre vár",
+      "completed": "Lezárva",
+      "disputed": "Vitatás"
+    }
   },
   "offerExpiry": {
     "remaining": "Lejár {{time}} múlva",
@@ -754,6 +792,16 @@
       "descriptionRequired": "Írj leírást a termékhez."
     }
   },
+  "systemMessage": {
+    "forSeller": "Neked, eladóként",
+    "forBuyer": "Neked, vevőként",
+    "loading": "Rendszerüzenet",
+    "loadingHint": "A rendelés állapota betölt…"
+  },
+  "ordersHub": {
+    "purchasesHint": "Fizetés, szállítás, átvétel — vásárlásaid státusza.",
+    "salesHint": "Csomagolás, címke, feladás — eladásaid kezelése."
+  },
   "orders": {
     "title": "Rendeléstörténet",
     "subtitle": "Vásárlásaid és eladásaid",
@@ -903,7 +951,12 @@
     "defaultProduct": "Termék",
     "confirmReceipt": "Megkaptam — pénz felszabadítása",
     "confirmSuccess": "Köszönjük! Az eladó megkapta a pénzt.",
-    "disputeOpen": "Vitatás folyamatban — admin felülvizsgálat alatt."
+    "disputeOpen": "Vitatás folyamatban — admin felülvizsgálat alatt.",
+    "openShipping": "Csomagfeladás megnyitása",
+    "viewOrderThread": "Rendelés megtekintése",
+    "printLabel": "Címke nyomtatása",
+    "panelUnavailable": "A rendelés panel még betölt — próbáld újra másodperc múlva.",
+    "printPopupBlocked": "A címke letöltődött — ha nem jött nyomtató ablak, engedélyezd a felugró ablakokat."
   },
   "publicSeller": {
     "defaultName": "Eladó",

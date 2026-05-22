@@ -25,6 +25,7 @@
     "favorites": "Favorites",
     "upload": "List item",
     "messages": "Inbox",
+    "orders": "Orders",
     "notifications": "Notifications",
     "profile": "Profile",
     "register": "Sign up",
@@ -260,7 +261,10 @@
     "share": "Share",
     "report": "Report",
     "shareCopied": "Link copied to clipboard",
-    "shareFailed": "Could not share"
+    "shareFailed": "Could not share",
+    "soldOwnerTitle": "This listing has been sold",
+    "soldOwnerHint": "This item is no longer active — buying and offers are not available.",
+    "soldOwnerBack": "Back to my profile"
   },
   "pdp": {
     "moreFromSeller": "More from this seller",
@@ -295,6 +299,8 @@
     "promoteHero": "Feature on homepage",
     "promoted": "Featured",
     "promoting": "Redirecting…",
+    "cannotPromoteSold": "Sold listings cannot be featured.",
+    "soldListingHint": "Closed listing",
     "emptyListings": "No listings yet.",
     "uploadFirst": "List your first item",
     "emptySold": "No sold items yet.",
@@ -556,7 +562,12 @@
     "defaultProduct": "Product",
     "confirmReceipt": "Received — release funds",
     "confirmSuccess": "Thanks! Funds released to the seller.",
-    "disputeOpen": "Dispute in progress — under admin review."
+    "disputeOpen": "Dispute in progress — under admin review.",
+    "openShipping": "Open shipping steps",
+    "viewOrderThread": "View order",
+    "printLabel": "Print shipping label",
+    "panelUnavailable": "Order panel is still loading — try again in a moment.",
+    "printPopupBlocked": "Label saved — allow pop-ups if the print window did not open."
   },
   "publicSeller": {
     "defaultName": "Seller",
@@ -618,7 +629,39 @@
     "counterPlaceholder": "New price",
     "counterInvalid": "Enter a valid price.",
     "counterSent": "Counter-offer sent",
-    "productFallback": "item"
+    "productFallback": "item",
+    "sellerWaitingTitle": "Offer accepted — awaiting payment",
+    "sellerWaitingBody": "The buyer can pay now. Once paid, you'll get a notification to pack and ship.",
+    "sellerAcceptedBody": "You accepted the offer. The buyer receives the payment link.",
+    "buyerAcceptedBody": "The seller accepted your offer. You can pay now.",
+    "buyerRejectedBody": "The seller declined your offer.",
+    "sellerRejectedBody": "You declined the buyer's offer.",
+    "sellerCounterSentBody": "You sent a counter-offer — waiting for the buyer."
+  },
+  "saleMessage": {
+    "sellerTitle": "Sale complete — paid!",
+    "sellerBody": "The buyer paid. Pack the item, download the Foxpost label, then mark as shipped.",
+    "buyerTitle": "Purchase complete — paid!",
+    "buyerBody": "Payment received. The seller will ship soon — track status here.",
+    "awaitingPaymentSync": "Payment is processing — shipping steps unlock shortly."
+  },
+  "orderTimeline": {
+    "title": "Order progress",
+    "openOrders": "Orders",
+    "disputed": "Dispute open — under admin review",
+    "buyerWaitingShip": "The seller is packing / shipping. We'll notify you when it's on the way.",
+    "steps": {
+      "offer_made": "Offer sent",
+      "offer_accepted": "Offer accepted",
+      "payment_pending": "Awaiting payment",
+      "paid": "Paid",
+      "packing": "Seller packing",
+      "shipped": "Shipped",
+      "in_transit": "In transit",
+      "ready_for_pickup": "Ready for pickup",
+      "completed": "Completed",
+      "disputed": "Disputed"
+    }
   },
   "offerExpiry": {
     "remaining": "Expires in {{time}}",
@@ -805,6 +848,16 @@
       "nameRequired": "Enter the item title.",
       "descriptionRequired": "Add a description."
     }
+  },
+  "systemMessage": {
+    "forSeller": "For you as seller",
+    "forBuyer": "For you as buyer",
+    "loading": "System message",
+    "loadingHint": "Loading order status…"
+  },
+  "ordersHub": {
+    "purchasesHint": "Payment, shipping, receipt — your purchase status.",
+    "salesHint": "Pack, label, ship — manage your sales."
   },
   "orders": {
     "title": "Order history",

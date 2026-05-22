@@ -5,10 +5,36 @@ import { fetchAllVacationSellerIds } from '@/lib/vacationMode';
 /** Supabase OR — csak böngészhető / megvásárolható termékek. */
 export const LISTED_PRODUCT_STATUS_FILTER = 'status.eq.active,status.is.null';
 
+/** Saját shop — csak még eladható hirdetések (sold külön szekció). */
+export const ACTIVE_LISTING_STATUS_FILTER = LISTED_PRODUCT_STATUS_FILTER;
+
 /** Csak aktív katalógus — soft-deleted és sold kizárva. */
 export function isListedProduct(status: string | null | undefined): boolean {
   if (status === 'sold' || status === 'deleted') return false;
   return status === 'active' || status == null;
+}
+
+export function isActiveListing(status: string | null | undefined): boolean {
+  return status === 'active' || status == null;
+}
+
+export function isSoldListing(status: string | null | undefined): boolean {
+  return status === 'sold';
+}
+
+/** Kiemelés / boost — kizárólag aktív hirdetés. */
+export function canPromoteProduct(status: string | null | undefined): boolean {
+  return isActiveListing(status);
+}
+
+/** PDP — böngészhető vagy eladó saját sold hirdetése. */
+export function canViewProductDetail(
+  status: string | null | undefined,
+  viewerId: string | null | undefined,
+  ownerId: string,
+): boolean {
+  if (isListedProduct(status)) return true;
+  return isSoldListing(status) && viewerId === ownerId;
 }
 
 export function escapeIlikePattern(value: string): string {

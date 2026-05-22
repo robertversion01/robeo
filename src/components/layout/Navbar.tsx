@@ -4,7 +4,7 @@ import { useEffect, useRef, useState } from 'react';
 import { supabase } from '@/lib/supabase';
 import Link from 'next/link';
 import { usePathname, useRouter } from 'next/navigation';
-import { MessageCircle, Heart, User, Plus, LogOut, Bell } from 'lucide-react';
+import { MessageCircle, Heart, User, Plus, LogOut, Bell, Package } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 import { useBrowseSearch } from '@/context/BrowseContext';
 import { FeedNavBadge, MessagesNavBadge } from '@/context/NotificationContext';
@@ -143,19 +143,20 @@ export default function Navbar({ searchQuery, onSearchChange }: NavbarProps) {
             <LanguageSwitcher variant="light" className="w-full justify-center" />
           </div>
           <Link
+            href="/orders"
+            className="w-full min-h-9 flex items-center gap-2 px-3 py-2 rounded-lg text-sm text-gray-700 hover:bg-gray-100"
+            onClick={() => setShowProfileMenu(false)}
+          >
+            <Package size={15} />
+            {t('nav.orders')}
+          </Link>
+          <Link
             href="/profile"
             className="w-full min-h-9 flex items-center gap-2 px-3 py-2 rounded-lg text-sm text-gray-700 hover:bg-gray-100"
             onClick={() => setShowProfileMenu(false)}
           >
             <User size={15} />
             {t('nav.myProfile')}
-          </Link>
-          <Link
-            href="/orders"
-            className="w-full min-h-9 flex items-center gap-2 px-3 py-2 rounded-lg text-sm text-gray-700 hover:bg-gray-100"
-            onClick={() => setShowProfileMenu(false)}
-          >
-            {t('orders.title')}
           </Link>
           <Link
             href="/help"
@@ -229,6 +230,9 @@ export default function Navbar({ searchQuery, onSearchChange }: NavbarProps) {
       </Link>
       {notificationsLink}
       {messagesLink}
+      <Link href="/orders" className="icon-btn text-gray-700 shrink-0" aria-label={t('nav.orders')} title={t('nav.orders')}>
+        <Package size={18} />
+      </Link>
       <Link href="/favorites" className="icon-btn text-gray-700 shrink-0" aria-label={t('nav.favorites')}>
         <Heart size={18} />
       </Link>

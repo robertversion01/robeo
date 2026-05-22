@@ -16,7 +16,9 @@
     "db:check-patches": "node scripts/check-supabase-patches.mjs",
     "grant-admin": "node scripts/grant-admin-role.mjs",
     "test:wallet-release": "node scripts/run-wallet-release-e2e.mjs",
-    "test:notifications": "node scripts/run-e2e-notification-pipeline.mjs"
+    "test:notifications": "node scripts/run-e2e-notification-pipeline.mjs",
+    "reset:test-env": "node scripts/reset-test-environment.mjs",
+    "reset:marketplace": "node scripts/reset-test-environment.mjs"
   },
   "dependencies": {
     "@stripe/stripe-js": "^9.4.0",

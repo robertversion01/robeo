@@ -9,6 +9,8 @@ import {
   offerRemainingMs,
 } from '@/lib/offerExpiry';
 
+import { useClientMounted } from '@/hooks/useClientMounted';
+
 type Props = {
   expiresAt: string | null | undefined;
   className?: string;
@@ -16,6 +18,7 @@ type Props = {
 
 export default function OfferExpiryCountdown({ expiresAt, className = '' }: Props) {
   const { t, i18n } = useTranslation();
+  const mounted = useClientMounted();
   const locale = i18n.language?.startsWith('en') ? 'en' : 'hu';
   const [, tick] = useState(0);
 
@@ -26,6 +29,14 @@ export default function OfferExpiryCountdown({ expiresAt, className = '' }: Prop
   }, [expiresAt]);
 
   if (!expiresAt) return null;
+  if (!mounted) {
+    return (
+      <p className={`inline-flex items-center gap-1 text-xs text-gray-400 ${className}`}>
+        <Clock size={12} className="shrink-0" />
+        …
+      </p>
+    );
+  }
 
   if (isOfferPastExpiry(expiresAt) || offerRemainingMs(expiresAt) <= 0) {
     return (

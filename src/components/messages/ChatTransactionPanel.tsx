@@ -1,14 +1,10 @@
 'use client';
 
-import { useCallback, useEffect, useState } from 'react';
+import { useCallback, useEffect, useRef, useState } from 'react';
 import { supabase } from '@/lib/supabase';
 import { Download, Package, Truck, Loader2, CheckCircle } from 'lucide-react';
 import { toast } from 'sonner';
-import {
-  downloadFoxpostLabel,
-  hasFoxpostLabelDownloaded,
-  markFoxpostLabelDownloaded,
-} from '@/lib/foxpostLabel';
+import { hasFoxpostLabelDownloaded } from '@/lib/foxpostLabel';
 import {
   canBuyerConfirmReceipt,
   canSellerMarkShipped,
@@ -19,6 +15,10 @@ import {
 import { useTranslation } from 'react-i18next';
 import { orderStatusI18nKey } from '@/lib/orderStatusI18n';
 import { markPackageShipped, type ShippingTransaction } from '@/lib/sellerShipping';
+import OrderTimelinePanel from '@/components/messages/OrderTimelinePanel';
+import { focusOrderPanel, ORDER_PANEL_FOCUS_EVENT, ORDER_PANEL_PRINT_EVENT } from '@/lib/orderPanelActions';
+import { printTransactionLabel } from '@/lib/printTransactionLabel';
+import Link from 'next/link';
 
 type Props = {
   userId: string;
@@ -45,35 +45,53 @@ export default function ChatTransactionPanel({
 }: Props) {
   const { t } = useTranslation();
   const [transaction, setTransaction] = useState<TxRow | null>(null);
-
-  const txStatusLabel = (status: string) => t(orderStatusI18nKey(status));
+  const [offerStatus, setOfferStatus] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
   const [acting, setActing] = useState(false);
   const [labelDownloaded, setLabelDownloaded] = useState(false);
   const [simulating, setSimulating] = useState(false);
+  const [highlight, setHighlight] = useState(false);
+  const printHandlerRef = useRef<(() => Promise<void>) | null>(null);
+
+  const txStatusLabel = (status: string) => t(orderStatusI18nKey(status));
 
   const loadTransaction = useCallback(async () => {
     if (!productId) {
       setTransaction(null);
+      setOfferStatus(null);
       return;
     }
     setLoading(true);
     try {
-      const { data, error } = await supabase
-        .from('transactions')
-        .select(
-          'id, status, product_id, buyer_id, seller_id, tracking_number, payment_intent_id, dispute_status, foxpost_terminal_id, foxpost_terminal_name, foxpost_terminal_address',
-        )
-        .eq('product_id', productId)
-        .or(
-          `and(buyer_id.eq.${userId},seller_id.eq.${otherUserId}),and(buyer_id.eq.${otherUserId},seller_id.eq.${userId})`,
-        )
-        .order('created_at', { ascending: false })
-        .limit(1)
-        .maybeSingle();
+      const [txRes, offerRes] = await Promise.all([
+        supabase
+          .from('transactions')
+          .select(
+            'id, status, product_id, buyer_id, seller_id, tracking_number, payment_intent_id, dispute_status, foxpost_terminal_id, foxpost_terminal_name, foxpost_terminal_address',
+          )
+          .eq('product_id', productId)
+          .or(
+            `and(buyer_id.eq.${userId},seller_id.eq.${otherUserId}),and(buyer_id.eq.${otherUserId},seller_id.eq.${userId})`,
+          )
+          .order('created_at', { ascending: false })
+          .limit(1)
+          .maybeSingle(),
+        supabase
+          .from('offers')
+          .select('status')
+          .eq('product_id', productId)
+          .or(
+            `and(buyer_id.eq.${userId},seller_id.eq.${otherUserId}),and(buyer_id.eq.${otherUserId},seller_id.eq.${userId})`,
+          )
+          .order('created_at', { ascending: false })
+          .limit(1)
+          .maybeSingle(),
+      ]);
 
-      if (error) throw error;
-      if (!data) {
+      if (txRes.error) throw txRes.error;
+      setOfferStatus(offerRes.data?.status ?? null);
+
+      if (!txRes.data) {
         setTransaction(null);
         return;
       }
@@ -81,17 +99,17 @@ export default function ChatTransactionPanel({
       const { data: product } = await supabase
         .from('products')
         .select('name')
-        .eq('id', data.product_id)
+        .eq('id', txRes.data.product_id)
         .maybeSingle();
 
       setTransaction({
-        ...data,
+        ...txRes.data,
         productName: product?.name,
         product: { name: product?.name },
       });
-      setLabelDownloaded(hasFoxpostLabelDownloaded(data.id));
+      setLabelDownloaded(hasFoxpostLabelDownloaded(txRes.data.id));
       setSimulating(
-        data.status === 'feladva' || data.status === 'uton' || data.status === 'atvetelre_var',
+        txRes.data.status === 'feladva' || txRes.data.status === 'uton' || txRes.data.status === 'atvetelre_var',
       );
     } catch (err) {
       console.error('[ChatTransactionPanel]', err);
@@ -126,28 +144,58 @@ export default function ChatTransactionPanel({
 
     const onSale = () => void loadTransaction();
     const onTx = () => void loadTransaction();
+    const onFocus = () => {
+      setHighlight(true);
+      focusOrderPanel();
+      window.setTimeout(() => setHighlight(false), 1800);
+    };
+    const onPrint = (event: Event) => {
+      const detail = (event as CustomEvent<{ productId?: string | null; panelFound?: boolean }>).detail;
+      if (detail?.productId && detail.productId !== productId) return;
+
+      const attempt = (n: number) => {
+        if (printHandlerRef.current) {
+          void printHandlerRef.current();
+          return;
+        }
+        if (n >= 8) {
+          toast.info(t('chatTransaction.panelUnavailable'));
+          return;
+        }
+        window.setTimeout(() => attempt(n + 1), 300);
+      };
+      attempt(0);
+    };
+
     window.addEventListener('sale:completed', onSale);
     window.addEventListener('transaction:updated', onTx);
+    window.addEventListener(ORDER_PANEL_FOCUS_EVENT, onFocus);
+    window.addEventListener(ORDER_PANEL_PRINT_EVENT, onPrint);
 
     return () => {
       window.removeEventListener('sale:completed', onSale);
       window.removeEventListener('transaction:updated', onTx);
+      window.removeEventListener(ORDER_PANEL_FOCUS_EVENT, onFocus);
+      window.removeEventListener(ORDER_PANEL_PRINT_EVENT, onPrint);
       void supabase.removeChannel(channel);
     };
   }, [userId, productId, loadTransaction]);
 
-  if (!productId || loading) return null;
-  if (!transaction) return null;
+  if (!productId) return null;
 
-  const isSeller = transaction.seller_id === userId;
-  const isBuyer = transaction.buyer_id === userId;
-  const canDownloadLabel = isSeller && isPaidStatus(transaction.status);
-  const canMarkShipped = isSeller && canSellerMarkShipped(transaction.status);
-  const canConfirmReceipt = isBuyer && canBuyerConfirmReceipt(transaction.status);
-  const statusLabel = txStatusLabel(transaction.status);
-  const hasDispute = Boolean(transaction.dispute_status);
+  const isSeller = transaction?.seller_id === userId;
+  const isBuyer = transaction?.buyer_id === userId;
+  const canDownloadLabel = Boolean(transaction && isSeller && isPaidStatus(transaction.status));
+  const canMarkShipped = Boolean(transaction && isSeller && canSellerMarkShipped(transaction.status));
+  const canConfirmReceipt = Boolean(transaction && isBuyer && canBuyerConfirmReceipt(transaction.status));
+  const statusLabel = transaction ? txStatusLabel(transaction.status) : t('orders.status.paymentPending');
+  const hasDispute = Boolean(transaction?.dispute_status);
+  const showPanel = loading || Boolean(transaction) || Boolean(offerStatus);
+
+  if (!showPanel) return null;
 
   const handleConfirmReceipt = async () => {
+    if (!transaction) return;
     setActing(true);
     try {
       const response = await fetch('/api/transactions/confirm', {
@@ -175,37 +223,19 @@ export default function ChatTransactionPanel({
   };
 
   const handleLabelDownload = async () => {
+    if (!transaction) {
+      toast.error(t('chatTransaction.panelUnavailable'));
+      return;
+    }
+    if (!canDownloadLabel) {
+      toast.error(t('chatTransaction.downloadLabelFirst'));
+      return;
+    }
     setActing(true);
     try {
-      const {
-        data: { session },
-      } = await supabase.auth.getSession();
-      if (!session?.access_token) {
-        throw new Error('Nincs bejelentkezve.');
-      }
-
-      const res = await fetch('/api/transactions/foxpost-label', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          Authorization: `Bearer ${session.access_token}`,
-        },
-        body: JSON.stringify({ transactionId: transaction.id }),
-      });
-      const data = await res.json();
-      if (!res.ok) throw new Error(data.error || 'Címke generálás sikertelen');
-
-      const label = data.label;
-      downloadFoxpostLabel({
-        transactionId: transaction.id,
-        productName: label?.productName || transaction.productName || t('chatTransaction.defaultProduct'),
-        trackingNumber: data.trackingNumber,
-        sellerEmail: label?.sellerEmail || userEmail || undefined,
-        foxpostTerminalId: label?.foxpostTerminalId || transaction.foxpost_terminal_id,
-        foxpostTerminalName: label?.foxpostTerminalName || transaction.foxpost_terminal_name,
-        foxpostTerminalAddress:
-          label?.foxpostTerminalAddress || transaction.foxpost_terminal_address,
-        buyerAddress: label?.foxpostTerminalAddress || transaction.foxpost_terminal_address,
+      const data = await printTransactionLabel(transaction.id, {
+        userEmail,
+        productNameFallback: transaction.productName || t('chatTransaction.defaultProduct'),
       });
 
       setTransaction((prev) =>
@@ -213,12 +243,11 @@ export default function ChatTransactionPanel({
           ? {
               ...prev,
               status: data.status || 'feladva',
-              tracking_number: data.trackingNumber,
+              tracking_number: data.trackingNumber ?? prev.tracking_number,
             }
           : prev,
       );
       setLabelDownloaded(true);
-      markFoxpostLabelDownloaded(transaction.id);
       if (data.status === 'feladva') {
         setSimulating(true);
       }
@@ -227,6 +256,9 @@ export default function ChatTransactionPanel({
           ? `${t('chatTransaction.labelDownloaded')} (${data.trackingNumber})`
           : t('chatTransaction.labelDownloaded'),
       );
+      if (!data.openedPopup) {
+        toast.info(t('chatTransaction.printPopupBlocked'));
+      }
       window.dispatchEvent(
         new CustomEvent('transaction:updated', { detail: { transactionId: transaction.id } }),
       );
@@ -237,7 +269,10 @@ export default function ChatTransactionPanel({
     }
   };
 
+  printHandlerRef.current = handleLabelDownload;
+
   const handleMarkShipped = async () => {
+    if (!transaction) return;
     if (!labelDownloaded) {
       toast.error(t('chatTransaction.downloadLabelFirst'));
       return;
@@ -259,86 +294,108 @@ export default function ChatTransactionPanel({
     }
   };
 
-  if (!isSeller && !canDownloadLabel) {
-    return (
-      <div className="mx-4 mt-2 mb-1 rounded-xl border border-gray-200 bg-gray-50 px-3 py-2 text-sm text-gray-700 space-y-2">
-        <p>
-          {t('chatTransaction.orderStatus')} <strong>{statusLabel}</strong>
-        </p>
-        {hasDispute ? (
-          <p className="text-xs text-amber-800 bg-amber-50 border border-amber-200 rounded-lg px-2 py-1.5">
-            {t('chatTransaction.disputeOpen')}
-          </p>
-        ) : null}
-        {canConfirmReceipt ? (
-          <button
-            type="button"
-            disabled={acting}
-            onClick={() => void handleConfirmReceipt()}
-            className="inline-flex items-center gap-1.5 rounded-lg bg-[#007782] px-3 py-2 text-xs font-semibold text-white"
-          >
-            {acting ? <Loader2 size={14} className="animate-spin" /> : <CheckCircle size={14} />}
-            {t('chatTransaction.confirmReceipt')}
-          </button>
-        ) : null}
-      </div>
-    );
-  }
-
   return (
-    <div className="mx-4 mt-2 mb-1 rounded-xl border border-[#007782]/25 bg-[#007782]/5 p-3 space-y-3">
-      <div className="flex items-center gap-2 text-sm text-gray-800">
-        <Package size={16} className="text-[#007782]" />
-        <span>
-          {t('chatTransaction.orderLabel')} <strong>{statusLabel}</strong>
-        </span>
+    <div
+      id="chat-shipping-panel"
+      className={`mx-4 mt-2 mb-1 rounded-xl border p-3 space-y-3 transition-shadow ${
+        highlight
+          ? 'border-[#007782] bg-[#007782]/10 ring-2 ring-[#007782]/30'
+          : 'border-[#007782]/25 bg-[#007782]/5'
+      }`}
+    >
+      <div className="flex items-center justify-between gap-2">
+        <div className="flex items-center gap-2 text-sm text-gray-800">
+          <Package size={16} className="text-[#007782]" />
+          <span>
+            {t('chatTransaction.orderLabel')} <strong>{statusLabel}</strong>
+          </span>
+        </div>
+        <Link href="/orders" className="text-[10px] font-semibold text-[#007782] hover:underline shrink-0">
+          {t('orderTimeline.openOrders')} →
+        </Link>
       </div>
 
-      {hasDispute ? (
+      <OrderTimelinePanel
+        compact
+        context={{
+          offerStatus,
+          txStatus: transaction?.status ?? null,
+          disputeStatus: transaction?.dispute_status ?? null,
+        }}
+        onStepClick={() => focusOrderPanel()}
+      />
+
+      {loading ? (
+        <p className="text-xs text-gray-500 animate-pulse">{t('common.loading')}</p>
+      ) : null}
+
+      {!loading && hasDispute ? (
         <p className="text-xs text-amber-800 bg-amber-50 border border-amber-200 rounded-lg px-2 py-1.5">
           {t('chatTransaction.disputeOpen')}
         </p>
       ) : null}
 
-      {canDownloadLabel && (
-        <div className="flex flex-col sm:flex-row gap-2">
-          <button
-            type="button"
-            onClick={() => void handleLabelDownload()}
-            className="flex-1 inline-flex items-center justify-center gap-1.5 rounded-lg border border-[#007782] bg-white px-3 py-2 text-xs font-semibold text-[#007782] hover:bg-[#007782]/5"
-          >
-            <Download size={14} />
-            {t('chatTransaction.downloadLabel')}
-          </button>
-          <button
-            type="button"
-            disabled={acting || !labelDownloaded}
-            onClick={() => void handleMarkShipped()}
-            className="flex-1 inline-flex items-center justify-center gap-1.5 rounded-lg bg-[#007782] px-3 py-2 text-xs font-semibold text-white hover:bg-[#006670] disabled:opacity-50 disabled:cursor-not-allowed"
-          >
-            {acting ? <Loader2 size={14} className="animate-spin" /> : <Truck size={14} />}
-            {t('chatTransaction.markShipped')}
-          </button>
-        </div>
-      )}
+      {!loading && isSeller && canDownloadLabel ? (
+        <>
+          <div className="flex flex-col sm:flex-row gap-2">
+            <button
+              type="button"
+              disabled={acting}
+              onClick={() => void handleLabelDownload()}
+              className="flex-1 inline-flex items-center justify-center gap-1.5 rounded-lg border border-[#007782] bg-white px-3 py-2 text-xs font-semibold text-[#007782] hover:bg-[#007782]/5"
+            >
+              {acting ? <Loader2 size={14} className="animate-spin" /> : <Download size={14} />}
+              {t('chatTransaction.printLabel')}
+            </button>
+            <button
+              type="button"
+              disabled={acting || !labelDownloaded}
+              onClick={() => void handleMarkShipped()}
+              className="flex-1 inline-flex items-center justify-center gap-1.5 rounded-lg bg-[#007782] px-3 py-2 text-xs font-semibold text-white hover:bg-[#006670] disabled:opacity-50 disabled:cursor-not-allowed"
+            >
+              {acting ? <Loader2 size={14} className="animate-spin" /> : <Truck size={14} />}
+              {t('chatTransaction.markShipped')}
+            </button>
+          </div>
+          {!labelDownloaded ? (
+            <p className="text-[11px] text-amber-800 bg-amber-50 border border-amber-200 rounded-lg px-2 py-1.5">
+              {t('chatTransaction.stepHint')}
+            </p>
+          ) : null}
+        </>
+      ) : null}
 
-      {canDownloadLabel && !labelDownloaded && (
-        <p className="text-[11px] text-amber-800 bg-amber-50 border border-amber-200 rounded-lg px-2 py-1.5">
-          {t('chatTransaction.stepHint')}
+      {!loading && isBuyer && canConfirmReceipt ? (
+        <button
+          type="button"
+          disabled={acting}
+          onClick={() => void handleConfirmReceipt()}
+          className="inline-flex w-full items-center justify-center gap-1.5 rounded-lg bg-[#007782] px-3 py-2 text-xs font-semibold text-white"
+        >
+          {acting ? <Loader2 size={14} className="animate-spin" /> : <CheckCircle size={14} />}
+          {t('chatTransaction.confirmReceipt')}
+        </button>
+      ) : null}
+
+      {!loading && isBuyer && transaction && isPaidStatus(transaction.status) && !canConfirmReceipt ? (
+        <p className="text-[11px] text-gray-600">{t('orderTimeline.buyerWaitingShip')}</p>
+      ) : null}
+
+      {!loading && isSeller && transaction && !canDownloadLabel && offerStatus === 'accepted' ? (
+        <p className="text-[11px] text-amber-900 bg-amber-50 border border-amber-200 rounded-lg px-2 py-1.5">
+          {t('chatOffer.sellerWaitingBody')}
         </p>
-      )}
+      ) : null}
 
-      {transaction.tracking_number ? (
+      {transaction?.tracking_number ? (
         <p className="text-[11px] font-mono text-[#007782] bg-white/80 rounded px-2 py-1">
           Foxpost: {transaction.tracking_number}
         </p>
       ) : null}
 
-      {(sellerShowsWaitingHint(transaction.status) || simulating) && (
-        <p className="text-[11px] text-gray-600">
-          {t('chatTransaction.simulating')}
-        </p>
-      )}
+      {transaction && (sellerShowsWaitingHint(transaction.status) || simulating) ? (
+        <p className="text-[11px] text-gray-600">{t('chatTransaction.simulating')}</p>
+      ) : null}
     </div>
   );
 }

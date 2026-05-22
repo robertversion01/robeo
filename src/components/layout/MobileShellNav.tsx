@@ -3,7 +3,7 @@
 import { useEffect, useState } from 'react';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
-import { Home, MessageCircle, Search, User, Plus, LogIn } from 'lucide-react';
+import { Home, MessageCircle, Search, User, Plus, LogIn, Package } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 import { supabase } from '@/lib/supabase';
 import { cn } from '@/lib/utils';
@@ -103,6 +103,12 @@ export default function MobileShellNav() {
       Icon: MessageCircle,
       match: (p: string) => p.startsWith('/messages'),
       messagesBadge: true,
+    },
+    {
+      href: '/orders',
+      labelKey: 'nav.orders',
+      Icon: Package,
+      match: (p: string) => p.startsWith('/orders'),
     },
     {
       href: '/profile',

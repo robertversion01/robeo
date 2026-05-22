@@ -27,6 +27,7 @@ function loadEnv(name) {
 }
 
 loadEnv('.env.local');
+loadEnv('.env.vercel.pull');
 
 async function main() {
   const cron = process.env.CRON_SECRET;

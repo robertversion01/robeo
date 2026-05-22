@@ -11,6 +11,7 @@ import SellerTrustBadges from '@/components/profile/SellerTrustBadges';
 import TrustSafetyBlock from '@/components/trust/TrustSafetyBlock';
 import ProductGrid from '@/components/product/ProductGrid';
 import type { Product } from '@/types';
+import { isActiveListing } from '@/lib/listedProducts';
 import { MAIN_TOP_PADDING, MOBILE_PAGE_BOTTOM_CLASS } from '@/lib/layoutTokens';
 import { useTranslation } from 'react-i18next';
 
@@ -59,7 +60,7 @@ export default function PublicSellerProfile({ sellerId }: Props) {
       setBio(profile?.bio?.trim() || '');
       setFollowers(counts.followers);
       setFollowing(counts.following);
-      setProducts(((productsRes.data || []) as Product[]).filter((p) => p.status !== 'sold' && p.status !== 'deleted'));
+      setProducts(((productsRes.data || []) as Product[]).filter((p) => isActiveListing(p.status)));
 
       const ratings = (reviewsRes.data || []).map((r) => Number(r.rating)).filter((n) => n > 0);
       setReviewCount(ratings.length);

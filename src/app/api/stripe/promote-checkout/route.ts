@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { getStripeInstance } from '@/lib/stripe-client';
 import { getSupabaseClient } from '@/lib/supabase';
+import { canPromoteProduct } from '@/lib/listedProducts';
 
 export const dynamic = 'force-dynamic';
 
@@ -27,7 +28,7 @@ export async function POST(req: NextRequest) {
 
     const { data: product, error: productError } = await supabase
       .from('products')
-      .select('id, user_id, name, featured_until')
+      .select('id, user_id, name, featured_until, status')
       .eq('id', productId)
       .single();
 
@@ -44,6 +45,10 @@ export async function POST(req: NextRequest) {
 
     if (product.user_id !== userId) {
       return NextResponse.json({ error: 'You can only promote your own product' }, { status: 403 });
+    }
+
+    if (!canPromoteProduct(product.status)) {
+      return NextResponse.json({ error: 'Only active listings can be promoted' }, { status: 409 });
     }
 
     const isCurrentlyFeatured =

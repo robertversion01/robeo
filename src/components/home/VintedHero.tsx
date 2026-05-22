@@ -14,6 +14,7 @@ import {
   normalizeProductImageUrl,
 } from '@/lib/productImageValidation';
 import type { Product } from '@/types';
+import { isListedProduct } from '@/lib/listedProducts';
 
 interface VintedHeroProps {
   products: Product[];
@@ -60,6 +61,7 @@ function getFeaturedProducts(products: Product[]): HeroProduct[] {
   const now = Date.now();
   return withImages.filter(
     (product) =>
+      isListedProduct(product.status) &&
       typeof product.featured_until === 'string' &&
       new Date(product.featured_until).getTime() > now,
   );

@@ -14,6 +14,8 @@ import DisputePanel from '@/components/orders/DisputePanel';
 import BundleOrderLineItems from '@/components/orders/BundleOrderLineItems';
 import { isBundleTransaction } from '@/lib/bundleLineItems';
 import { canBuyerOpenDispute } from '@/lib/disputes';
+import OrderTimelinePanel from '@/components/messages/OrderTimelinePanel';
+import ClientFormattedDate from '@/components/ui/ClientFormattedDate';
 
 type OrderTab = 'purchases' | 'sales';
 
@@ -205,11 +207,7 @@ export default function OrderHistoryPanel({ initialTab = 'purchases' }: Props) {
                     </span>
                   </div>
                   <p className="text-xs text-gray-500 mt-0.5">
-                    {new Date(tx.created_at).toLocaleDateString(locale, {
-                      year: 'numeric',
-                      month: 'short',
-                      day: 'numeric',
-                    })}
+                    <ClientFormattedDate iso={tx.created_at} locale={locale} />
                     {tx.counterparty_email ? ` · ${tx.counterparty_email}` : ''}
                   </p>
                   <span className="inline-block mt-2 rounded-full bg-gray-100 px-2.5 py-0.5 text-[10px] font-semibold text-gray-700">
@@ -228,6 +226,15 @@ export default function OrderHistoryPanel({ initialTab = 'purchases' }: Props) {
                   />
                 </div>
               ) : null}
+              <div className="px-3 pb-3 border-t border-gray-100 bg-gray-50/50">
+                <OrderTimelinePanel
+                  compact
+                  context={{
+                    txStatus: tx.status,
+                    disputeStatus: tx.dispute_status,
+                  }}
+                />
+              </div>
               {tab === 'sales' && tx.dispute_status ? (
                 <div className="px-3 pb-3">
                   <p className="text-xs text-amber-800 bg-amber-50 border border-amber-200 rounded-lg px-2 py-1.5">

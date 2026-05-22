@@ -25,9 +25,47 @@ export function hasFoxpostLabelDownloaded(transactionId: string): boolean {
   return localStorage.getItem(`${LABEL_DOWNLOADED_PREFIX}${transactionId}`) === '1';
 }
 
-export function downloadFoxpostLabel(input: FoxpostLabelInput): void {
+export function downloadFoxpostLabel(input: FoxpostLabelInput): { openedPopup: boolean } {
   const trackingUrl = buildFoxpostTrackingUrl(input.trackingNumber);
-  const html = `<!DOCTYPE html>
+  const html = buildLabelHtml(input, trackingUrl);
+
+  const popup = window.open('', '_blank', 'noopener,noreferrer,width=520,height=720');
+  if (popup) {
+    popup.document.open();
+    popup.document.write(html);
+    popup.document.close();
+    popup.focus();
+    const triggerPrint = () => {
+      try {
+        popup.print();
+      } catch {
+        /* Safari / popup policy — user can print manually */
+      }
+    };
+    if (popup.document.readyState === 'complete') {
+      window.setTimeout(triggerPrint, 300);
+    } else {
+      popup.onload = () => window.setTimeout(triggerPrint, 300);
+    }
+    markFoxpostLabelDownloaded(input.transactionId);
+    return { openedPopup: true };
+  }
+
+  // Popup blocked — letöltés fallback (toast a hívó oldalon)
+  const blob = new Blob([html], { type: 'text/html;charset=utf-8' });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url;
+  a.download = `foxpost-${input.trackingNumber}.html`;
+  a.rel = 'noopener';
+  a.click();
+  URL.revokeObjectURL(url);
+  markFoxpostLabelDownloaded(input.transactionId);
+  return { openedPopup: false };
+}
+
+function buildLabelHtml(input: FoxpostLabelInput, trackingUrl: string): string {
+  return `<!DOCTYPE html>
 <html lang="hu">
 <head>
   <meta charset="utf-8" />
@@ -40,11 +78,12 @@ export function downloadFoxpostLabel(input: FoxpostLabelInput): void {
     .muted { color: #666; font-size: 12px; }
     .box { border: 1px solid #ccc; border-radius: 8px; padding: 12px; margin-top: 12px; }
     .track a { color: #007782; font-weight: 600; }
+    @media print { body { padding: 12px; } }
   </style>
 </head>
 <body>
   <div class="logo">FOXPOST</div>
-  <p class="muted">ROBEO szállítási címke — nyomtasd PDF-be vagy vidd a csomagpontra.</p>
+  <p class="muted">ROBEO szállítási címke — nyomtasd ki vagy mentsd PDF-be.</p>
   <div class="barcode">${escapeHtml(input.trackingNumber)}</div>
   <p class="track muted">Követés: <a href="${escapeHtml(trackingUrl)}">${escapeHtml(trackingUrl)}</a></p>
   <h1>${escapeHtml(input.productName)}</h1>
@@ -68,18 +107,9 @@ export function downloadFoxpostLabel(input: FoxpostLabelInput): void {
     ${escapeHtml(input.sellerEmail || 'Eladó')}
   </div>
   <p class="muted">Tranzakció: ${escapeHtml(input.transactionId)}</p>
-  <script>window.onload = () => window.print();</script>
+  <p class="muted">Ha a nyomtató ablak nem jött fel, használd a böngésző Nyomtatás menüt (Ctrl+P).</p>
 </body>
 </html>`;
-
-  const blob = new Blob([html], { type: 'text/html;charset=utf-8' });
-  const url = URL.createObjectURL(blob);
-  const a = document.createElement('a');
-  a.href = url;
-  a.download = `foxpost-${input.trackingNumber}.html`;
-  a.click();
-  URL.revokeObjectURL(url);
-  markFoxpostLabelDownloaded(input.transactionId);
 }
 
 /** @deprecated Use downloadFoxpostLabel — kept for import compatibility */

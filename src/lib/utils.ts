@@ -16,5 +16,6 @@ export function formatDate(date: string): string {
     year: 'numeric',
     month: 'short',
     day: 'numeric',
+    timeZone: 'Europe/Budapest',
   }).format(new Date(date));
 }
