@@ -14,9 +14,11 @@ import {
 } from '@/lib/vintedCategoryTree';
 import { cn } from '@/lib/utils';
 import type { FiltersProps } from '@/components/product/Filters';
+import { useCatalogFilterCounts } from '@/hooks/useCatalogFilterCounts';
 
 type Props = FiltersProps & {
   className?: string;
+  catalogFilters?: import('@/lib/catalogFilters').CatalogFilterState;
 };
 
 function SidebarSection({
@@ -39,10 +41,12 @@ function SidebarSection({
 function SidebarRadio({
   active,
   label,
+  count,
   onClick,
 }: {
   active: boolean;
   label: string;
+  count?: number;
   onClick: () => void;
 }) {
   return (
@@ -65,7 +69,10 @@ function SidebarRadio({
       >
         {active ? <span className="h-2 w-2 rounded-full bg-[#007782]" /> : null}
       </span>
-      <span className="truncate">{label}</span>
+      <span className="min-w-0 flex-1 truncate">{label}</span>
+      {typeof count === 'number' ? (
+        <span className="shrink-0 text-[11px] tabular-nums text-gray-400">{count}</span>
+      ) : null}
     </button>
   );
 }
@@ -104,6 +111,7 @@ export default function CatalogFilterSidebar({
   onClearAll,
   activeFilterCount = 0,
   className,
+  catalogFilters,
 }: Props) {
   const { t, i18n } = useTranslation();
   const [brandQuery, setBrandQuery] = useState('');
@@ -145,6 +153,24 @@ export default function CatalogFilterSidebar({
   const pricePresets = useMemo(
     () => PRICE_PRESET_KEYS.map((p) => ({ ...p, label: t(p.labelKey) })),
     [t],
+  );
+
+  const filterCounts = useCatalogFilterCounts(
+    catalogFilters ?? {
+      category: selectedCategory,
+      subcategory: selectedSubcategory,
+      brand: selectedBrand,
+      size: selectedSize,
+      condition: selectedCondition,
+      color: selectedColor,
+      minPrice: selectedMinPrice,
+      maxPrice: selectedMaxPrice,
+      sort: selectedSort,
+      search: '',
+    },
+    categoryOptions.map((o) => o.id),
+    subcategoryOptions.map((o) => o.id),
+    brandOptions,
   );
 
   const pricePresetId = (() => {
@@ -198,6 +224,7 @@ export default function CatalogFilterSidebar({
                 key={opt.id}
                 active={selectedCategory === opt.id}
                 label={opt.label}
+                count={filterCounts.categories[opt.id]}
                 onClick={() => onCategoryChange(opt.id)}
               />
             ))}
@@ -212,6 +239,7 @@ export default function CatalogFilterSidebar({
                   key={opt.id}
                   active={selectedSubcategory === opt.id}
                   label={opt.label}
+                  count={filterCounts.subcategories[opt.id]}
                   onClick={() => onSubcategoryChange(opt.id)}
                 />
               ))}
@@ -241,6 +269,7 @@ export default function CatalogFilterSidebar({
                 key={brand}
                 active={selectedBrand === brand}
                 label={brand}
+                count={filterCounts.brands[brand]}
                 onClick={() => onBrandChange(brand)}
               />
             ))}

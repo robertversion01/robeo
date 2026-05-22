@@ -17,6 +17,7 @@ import { MAIN_TOP_PADDING, MOBILE_PAGE_BOTTOM_CLASS } from '@/lib/layoutTokens';
 import { Bell } from 'lucide-react';
 import { revalidateCatalog } from '@/app/actions/revalidateCatalog';
 import { notifyCatalogUpdated } from '@/lib/catalogRefresh';
+import { enrichProductsWithFavoriteCounts } from '@/lib/favoriteCounts';
 import { softDeleteAllUserProducts, softDeleteProduct } from '@/lib/productSoftDelete';
 import WalletBalanceCard from '@/components/profile/WalletBalanceCard';
 import BundleDiscountSettings from '@/components/profile/BundleDiscountSettings';
@@ -141,7 +142,8 @@ export default function ProfilePage() {
         .order('created_at', { ascending: false });
 
       if (error) throw error;
-      setProducts(data || []);
+      const enriched = await enrichProductsWithFavoriteCounts(supabase, (data || []) as Product[]);
+      setProducts(enriched);
     } catch (error) {
       console.error('Error fetching products:', error);
     } finally {
@@ -179,7 +181,8 @@ export default function ProfilePage() {
         .eq('status', 'sold')
         .order('created_at', { ascending: false });
       if (error) throw error;
-      setSoldProducts((data || []) as Product[]);
+      const enriched = await enrichProductsWithFavoriteCounts(supabase, (data || []) as Product[]);
+      setSoldProducts(enriched);
     } catch (error) {
       console.error('Error fetching sold products:', error);
     }

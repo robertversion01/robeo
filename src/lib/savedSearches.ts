@@ -1,5 +1,7 @@
 import type { SupabaseClient } from '@supabase/supabase-js';
 import type { CatalogFilterState } from '@/lib/catalogFilters';
+import { removeSavedSearchAlert } from '@/lib/savedSearchAlerts';
+import { purgeSavedSearchMatcherData } from '@/lib/savedSearchMatcher';
 
 export type SavedSearch = {
   id: string;
@@ -120,14 +122,49 @@ export async function saveSearchEntry(
   return entry;
 }
 
+function purgeSavedSearchSidecarData(id: string) {
+  removeSavedSearchAlert(id);
+  purgeSavedSearchMatcherData(id);
+}
+
 export async function removeSavedSearchEntry(
   supabase: SupabaseClient,
   id: string,
-): Promise<void> {
-  const current = await loadSavedSearchesMerged(supabase);
-  const next = current.filter((s) => s.id !== id);
+): Promise<SavedSearch[]> {
+  const local = readLocal();
+  const remote = await fetchSavedSearchesFromUser(supabase);
+  const merged = mergeLists(local, remote);
+  const target = merged.find((s) => s.id === id);
+  const idsToPurge = new Set<string>([id]);
+
+  let next = merged.filter((s) => s.id !== id);
+  if (target) {
+    next = next.filter((s) => !isSameFilters(s.filters, target.filters));
+    for (const ghost of merged.filter((s) => isSameFilters(s.filters, target.filters))) {
+      idsToPurge.add(ghost.id);
+    }
+  }
+
   writeLocal(next);
-  await persistSavedSearchesToUser(supabase, next);
+
+  const {
+    data: { user },
+    error: userError,
+  } = await supabase.auth.getUser();
+  if (userError) throw userError;
+
+  if (user) {
+    const { error } = await supabase.auth.updateUser({
+      data: { [METADATA_KEY]: next.slice(0, MAX_SAVED) },
+    });
+    if (error) throw error;
+  }
+
+  for (const purgeId of idsToPurge) {
+    purgeSavedSearchSidecarData(purgeId);
+  }
+
+  return next;
 }
 
 /** @deprecated use loadSavedSearchesMerged */

@@ -410,6 +410,7 @@ function CatalogBrowsePanelInner({
           <aside className="hidden lg:block">
             <CatalogFilterSidebar
               {...filtersProps}
+              catalogFilters={catalogFilters}
               className="sticky top-[5.25rem] z-30"
             />
           </aside>

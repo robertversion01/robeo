@@ -13,6 +13,7 @@ import FavoritesSortBar, { type FavoritesSortId } from '@/components/favorites/F
 import FavoritePriceWatchPanel from '@/components/favorites/FavoritePriceWatchPanel';
 import TrustSafetyBlock from '@/components/trust/TrustSafetyBlock';
 import { detectPriceDrops } from '@/lib/priceWatch';
+import { enrichProductsWithFavoriteCounts } from '@/lib/favoriteCounts';
 import { notifyPriceDropsIfEnabled } from '@/lib/priceWatchNotify';
 import type { Product } from '@/types';
 import { MAIN_TOP_PADDING, MOBILE_PAGE_BOTTOM_CLASS } from '@/lib/layoutTokens';
@@ -54,6 +55,7 @@ export default function FavoritesPage() {
       fetchedProducts = (((data || []) as FavoriteRow[])
         .map((item) => item?.product)
         .filter(Boolean) as unknown) as Product[];
+      fetchedProducts = await enrichProductsWithFavoriteCounts(supabase, fetchedProducts);
       setProducts(fetchedProducts);
       setFavorites(new Set(fetchedProducts.map((p) => p.id)));
     }

@@ -1,8 +1,9 @@
 'use client';
 
 import { useCallback, useEffect, useState } from 'react';
-import { Bell, BellOff, Bookmark, X } from 'lucide-react';
+import { Bell, BellOff, Bookmark, Trash2 } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
+import { toast } from 'sonner';
 import { supabase } from '@/lib/supabase';
 import type { CatalogFilterState } from '@/lib/catalogFilters';
 import {
@@ -71,6 +72,19 @@ export default function SavedSearchesStrip({ filters, onApply, hasActiveFilters 
       await refresh();
     } finally {
       setSyncing(false);
+    }
+  };
+
+  const handleRemove = async (item: SavedSearch) => {
+    if (!window.confirm(t('browse.saved.removeConfirm', { label: item.label }))) return;
+
+    setItems((prev) => prev.filter((i) => i.id !== item.id));
+    try {
+      const next = await removeSavedSearchEntry(supabase, item.id);
+      setItems(next);
+    } catch {
+      toast.error(t('browse.saved.removeFailed'));
+      await refresh();
     }
   };
 
@@ -143,13 +157,12 @@ export default function SavedSearchesStrip({ filters, onApply, hasActiveFilters 
               </button>
               <button
                 type="button"
-                onClick={() => {
-                  void removeSavedSearchEntry(supabase, item.id).then(refresh);
-                }}
-                className="rounded-full p-1 text-gray-400 hover:bg-gray-100 hover:text-gray-600"
+                onClick={() => void handleRemove(item)}
+                className="rounded-full p-1.5 text-gray-400 hover:bg-red-50 hover:text-red-600"
                 aria-label={t('browse.saved.remove')}
+                title={t('browse.saved.remove')}
               >
-                <X size={12} />
+                <Trash2 size={12} />
               </button>
             </div>
           ))}

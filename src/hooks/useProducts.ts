@@ -24,6 +24,7 @@ import {
 } from '@/lib/catalogFilters';
 import { VINTED_DEPARTMENTS } from '@/lib/vintedCategoryTree';
 import { fetchAllVacationSellerIds } from '@/lib/vacationMode';
+import { enrichProductsWithFavoriteCounts, adjustProductFavoriteCount } from '@/lib/favoriteCounts';
 
 /** Szerver-oldali lapozás — Supabase range chunk méret. */
 export const CATALOG_PAGE_SIZE = 48;
@@ -229,6 +230,8 @@ export function useProducts() {
           fetched = fetched.filter((p) => (p.size || '').toLowerCase().includes(sizeQ));
         }
 
+        fetched = await enrichProductsWithFavoriteCounts(supabase, fetched);
+
         setTotalCount(count ?? fetched.length);
         setPage(pageIndex);
         setProducts((prev) => (append ? [...prev, ...fetched] : fetched));
@@ -333,6 +336,7 @@ export function useProducts() {
       isFav ? next.delete(productId) : next.add(productId);
       return next;
     });
+    setProducts((prev) => adjustProductFavoriteCount(prev, productId, isFav ? -1 : 1));
 
     try {
       if (isFav) {
@@ -364,6 +368,7 @@ export function useProducts() {
         isFav ? next.add(productId) : next.delete(productId);
         return next;
       });
+      setProducts((prev) => adjustProductFavoriteCount(prev, productId, isFav ? 1 : -1));
     }
   };
 

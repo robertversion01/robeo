@@ -34,6 +34,7 @@ export default function ProductCard({ product, isFavorite, onToggleFavorite }: P
     typeof product.category === 'string' ? product.category.replace(/_/g, ' ') : '';
 
   const isSold = product.status === 'sold';
+  const favoriteCount = Math.max(0, Number(product.favorite_count) || 0);
 
   return (
     <div className="group card-base overflow-hidden transition-all duration-200 relative border border-gray-200/90 hover:border-[#007782]/50 hover:shadow-md active:scale-[0.98] touch-manipulation">
@@ -72,16 +73,30 @@ export default function ProductCard({ product, isFavorite, onToggleFavorite }: P
           e.preventDefault();
           onToggleFavorite();
         }}
-        className="absolute top-0.5 right-0.5 z-50 h-7 w-7 rounded-full bg-white/95 backdrop-blur-sm flex items-center justify-center hover:bg-white active:scale-90 transition-transform shadow-sm border border-gray-200/80"
-        aria-label={isFavorite ? t('product.favoriteRemove') : t('product.favoriteAdd')}
+        className={cn(
+          'absolute top-0.5 right-0.5 z-50 flex items-center gap-0.5 rounded-full bg-white/95 backdrop-blur-sm hover:bg-white active:scale-90 transition-transform shadow-sm border border-gray-200/80',
+          favoriteCount > 0 ? 'h-7 min-w-[1.75rem] px-1.5' : 'h-7 w-7 justify-center',
+        )}
+        aria-label={
+          favoriteCount > 0
+            ? t('product.favoriteCountAria', { count: favoriteCount })
+            : isFavorite
+              ? t('product.favoriteRemove')
+              : t('product.favoriteAdd')
+        }
       >
         <Heart
           size={14}
           className={cn(
-            'transition-colors',
+            'shrink-0 transition-colors',
             isFavorite ? 'fill-rose-500 text-rose-500' : 'fill-transparent text-gray-500',
           )}
         />
+        {favoriteCount > 0 ? (
+          <span className="text-[10px] font-semibold tabular-nums leading-none text-gray-600">
+            {favoriteCount}
+          </span>
+        ) : null}
       </button>
 
       <div className="px-1 pt-1 pb-1.5 text-left space-y-0.5">

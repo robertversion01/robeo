@@ -77,3 +77,12 @@ export function clearSavedSearchNewBadge(searchId: string) {
   counts[searchId] = 0;
   writeCounts(counts);
 }
+
+export function purgeSavedSearchMatcherData(searchId: string) {
+  const seen = readSeen();
+  delete seen[searchId];
+  writeSeen(seen);
+  const counts = readCounts();
+  delete counts[searchId];
+  writeCounts(counts);
+}

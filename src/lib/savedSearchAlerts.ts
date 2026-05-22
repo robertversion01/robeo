@@ -31,6 +31,12 @@ export function setSavedSearchAlertEnabled(id: string, enabled: boolean) {
   writeAlerts(state);
 }
 
+export function removeSavedSearchAlert(id: string) {
+  const state = readAlerts();
+  delete state[id];
+  writeAlerts(state);
+}
+
 export function countEnabledAlerts(items: SavedSearch[]): number {
   return items.filter((i) => isSavedSearchAlertEnabled(i.id)).length;
 }

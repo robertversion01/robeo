@@ -24,6 +24,7 @@ export interface Product {
   featured_until?: string | null;
   size?: string | null;
   color?: string;
+  favorite_count?: number;
   transaction_id?: string;
   created_at: string;
   updated_at: string;
