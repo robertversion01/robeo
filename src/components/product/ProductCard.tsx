@@ -88,9 +88,9 @@ export default function ProductCard({ product, isFavorite, onToggleFavorite }: P
         <Heart
           size={14}
           className={cn(
-            'shrink-0 transition-colors',
-            isFavorite ? 'fill-rose-500 text-rose-500' : 'fill-transparent text-gray-500',
-          )}
+          'shrink-0 transition-all duration-200',
+          isFavorite ? 'fill-rose-500 text-rose-500 scale-110' : 'fill-transparent text-gray-500',
+        )}
         />
         {favoriteCount > 0 ? (
           <span className="text-[10px] font-semibold tabular-nums leading-none text-gray-600">

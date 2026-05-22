@@ -21,6 +21,7 @@ import {
 import PushDeliveryPanel from '@/components/profile/PushDeliveryPanel';
 import { toast } from 'sonner';
 import { loadProfileVacationMode, setProfileVacationMode } from '@/lib/vacationMode';
+import { loadProfileBio, saveProfileBio } from '@/lib/profileBio';
 import { notifyCatalogUpdated } from '@/lib/catalogRefresh';
 import { Palmtree } from 'lucide-react';
 
@@ -119,17 +120,21 @@ export default function ProfileSettingsHub({ userId }: Props) {
   const [deleteConfirmOpen, setDeleteConfirmOpen] = useState(false);
   const [vacationMode, setVacationMode] = useState(false);
   const [vacationBusy, setVacationBusy] = useState(false);
+  const [bio, setBio] = useState('');
+  const [bioBusy, setBioBusy] = useState(false);
 
   const refresh = useCallback(async () => {
     if (!userId) return;
-    const [p, d, vacation] = await Promise.all([
+    const [p, d, vacation, profileBio] = await Promise.all([
       loadUserPreferences(supabase),
       loadDeliveryPrefs(supabase),
       loadProfileVacationMode(supabase, userId),
+      loadProfileBio(supabase, userId),
     ]);
     setPrefs(p);
     setDelivery(d);
     setVacationMode(vacation);
+    setBio(profileBio);
     setLoaded(true);
   }, [userId]);
 
@@ -210,6 +215,45 @@ export default function ProfileSettingsHub({ userId }: Props) {
               </label>
             </div>
           </div>
+        </div>
+      </ProfileSection>
+
+      <ProfileSection title={t('settings.bio.title')}>
+        <p className="text-xs text-gray-500 mb-3">{t('settings.bio.hint')}</p>
+        <textarea
+          value={bio}
+          onChange={(e) => setBio(e.target.value)}
+          maxLength={280}
+          rows={4}
+          placeholder={t('settings.bio.placeholder')}
+          className="w-full rounded-xl border border-gray-200 px-3 py-2.5 text-sm text-gray-900 resize-y min-h-[96px]"
+        />
+        <div className="mt-2 flex items-center justify-between gap-2">
+          <span className="text-[11px] text-gray-400 tabular-nums">{bio.length}/280</span>
+          <button
+            type="button"
+            disabled={bioBusy || !userId}
+            onClick={() => {
+              if (!userId) return;
+              setBioBusy(true);
+              void saveProfileBio(supabase, userId, bio)
+                .then((result) => {
+                  if (!result.ok) {
+                    if (result.error === 'bio_column_missing') {
+                      toast.error(t('settings.bio.schemaMissing'));
+                    } else {
+                      toast.error(result.error);
+                    }
+                    return;
+                  }
+                  toast.success(t('settings.bio.saved'));
+                })
+                .finally(() => setBioBusy(false));
+            }}
+            className="btn-base btn-secondary text-xs min-h-9 px-4 disabled:opacity-60"
+          >
+            {bioBusy ? t('settings.saving') : t('settings.bio.save')}
+          </button>
         </div>
       </ProfileSection>
 

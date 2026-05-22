@@ -10,6 +10,7 @@ import ChatProductSummary from '@/components/messages/ChatProductSummary';
 import ChatTransactionPanel from '@/components/messages/ChatTransactionPanel';
 import ChatOfferActions from '@/components/messages/ChatOfferActions';
 import ChatBuyerOffersPanel from '@/components/messages/ChatBuyerOffersPanel';
+import { buildOfferInsertRow } from '@/lib/offers';
 import {
   buildConversationsFromMessages,
   type MessageRow,
@@ -333,13 +334,14 @@ export default function MessagesPage() {
 
     setOfferSending(true);
     try {
-      const { error: offerErr } = await supabase.from('offers').insert({
-        product_id: latestProductMessage.product_id,
-        buyer_id: user.id,
-        seller_id: selectedConversation,
-        offered_price: amount,
-        status: 'pending',
-      });
+      const { error: offerErr } = await supabase.from('offers').insert(
+        buildOfferInsertRow({
+          productId: latestProductMessage.product_id,
+          buyerId: user.id,
+          sellerId: selectedConversation,
+          offeredPriceHuf: amount,
+        }),
+      );
 
       if (offerErr) {
         if (offerErr.code === '23505') {
@@ -540,6 +542,11 @@ export default function MessagesPage() {
                     userEmail={user.email}
                   />
                 ) : null}
+                <ChatBuyerOffersPanel
+                  buyerId={user.id}
+                  productId={activeProductId}
+                  sellerId={selectedConversation}
+                />
                 <div className="flex-1 min-h-0 overflow-y-auto p-4 md:p-6 space-y-4">
                   {messages.map((msg) => {
                     const isSystem =

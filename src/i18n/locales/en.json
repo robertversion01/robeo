@@ -397,6 +397,14 @@
     "language": {
       "title": "Language"
     },
+    "bio": {
+      "title": "Profile bio",
+      "hint": "Short intro on your public seller profile — max 280 characters.",
+      "placeholder": "e.g. fast replies, only clean condition items…",
+      "save": "Save bio",
+      "saved": "Bio saved.",
+      "schemaMissing": "Run supabase/patch-profile-bio.sql first."
+    },
     "privacy": {
       "title": "Privacy",
       "body": "Your profile and listings follow marketplace rules. More controls coming soon."
@@ -599,7 +607,12 @@
       "pending": "Waiting for seller",
       "countered": "Counter-offer — your move",
       "accepted": "Accepted — pay now"
-    }
+    },
+    "pendingHint": "Waiting for the seller — expires within 24 hours."
+  },
+  "offerExpiry": {
+    "remaining": "Expires in {{time}}",
+    "expired": "Expired"
   },
   "upload": {
     "title": "List an item",

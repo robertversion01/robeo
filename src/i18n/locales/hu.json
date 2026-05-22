@@ -404,6 +404,14 @@
     "language": {
       "title": "Nyelv"
     },
+    "bio": {
+      "title": "Profil bemutatkozás",
+      "hint": "Rövid szöveg a publikus eladói profilodon — max. 280 karakter.",
+      "placeholder": "Pl. gyors válasz, csak tiszta állapotú darabok…",
+      "save": "Bio mentése",
+      "saved": "Bio mentve.",
+      "schemaMissing": "Futtasd a supabase/patch-profile-bio.sql patch-et."
+    },
     "privacy": {
       "title": "Adatvédelem",
       "body": "A profilod és hirdetéseid csak a piactér szabályai szerint láthatók. Részletes beállítások hamarosan."
@@ -550,7 +558,12 @@
       "pending": "Várakozik az eladóra",
       "countered": "Ellenajánlat — válasz szükséges",
       "accepted": "Elfogadva — fizethetsz"
-    }
+    },
+    "pendingHint": "Az eladó válaszára vársz — 24 órán belül lejár."
+  },
+  "offerExpiry": {
+    "remaining": "Lejár {{time}} múlva",
+    "expired": "Lejárt"
   },
   "upload": {
     "title": "Termék feltöltése",
@@ -813,7 +826,7 @@
       "payment_pending": "Fizetés folyamatban",
       "payment_completed": "Kifizetve",
       "completed": "Lezárva",
-      "cancelled": "Visszavonva"
+      "cancelled": "Lejárt"
     }
   },
   "chatTransaction": {

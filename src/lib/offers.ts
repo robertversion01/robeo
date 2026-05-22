@@ -2,6 +2,8 @@
  * Supabase `offers` sor — éles DB-n a legacy `price` oszlop NOT NULL,
  * a checkout/ajánlat flow pedig az `offered_price` mezőt használja.
  */
+import { offerExpiresAt } from '@/lib/offerExpiry';
+
 export type OfferInsertRow = {
   product_id: string;
   buyer_id: string;
@@ -9,6 +11,7 @@ export type OfferInsertRow = {
   offered_price: number;
   price: number;
   status: string;
+  expires_at: string;
   message?: string | null;
 };
 
@@ -28,6 +31,7 @@ export function buildOfferInsertRow(input: {
     offered_price: amount,
     price: amount,
     status: input.status ?? 'pending',
+    expires_at: offerExpiresAt(),
   };
   if (input.message !== undefined) {
     row.message = input.message?.trim() ? input.message.trim() : null;
@@ -39,7 +43,7 @@ export type OfferStatus = 'pending' | 'accepted' | 'rejected' | 'countered';
 
 export function buildOfferStatusUpdate(
   status: OfferStatus,
-  options?: { offeredPriceHuf?: number },
+  options?: { offeredPriceHuf?: number; refreshExpiry?: boolean },
 ): Record<string, string | number> {
   const patch: Record<string, string | number> = {
     status,
@@ -49,6 +53,9 @@ export function buildOfferStatusUpdate(
     const amount = Math.max(1, Math.round(options.offeredPriceHuf));
     patch.offered_price = amount;
     patch.price = amount;
+  }
+  if (options?.refreshExpiry) {
+    patch.expires_at = offerExpiresAt();
   }
   return patch;
 }

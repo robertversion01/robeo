@@ -7,6 +7,8 @@ import { Loader2 } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 import { buyerRejectCounterOffer } from '@/lib/offerActions';
 import { buildOfferStatusUpdate } from '@/lib/offers';
+import { isOfferAwaitingAction } from '@/lib/offerExpiry';
+import OfferExpiryCountdown from '@/components/offers/OfferExpiryCountdown';
 import { toast } from 'sonner';
 
 type OfferRow = {
@@ -15,6 +17,7 @@ type OfferRow = {
   status: string;
   seller_id: string;
   product_id: string;
+  expires_at?: string | null;
 };
 
 type Props = {
@@ -38,7 +41,7 @@ export default function ChatBuyerOffersPanel({ buyerId, productId, sellerId }: P
     setLoading(true);
     const { data } = await supabase
       .from('offers')
-      .select('id, offered_price, status, seller_id, product_id')
+      .select('id, offered_price, status, seller_id, product_id, expires_at')
       .eq('buyer_id', buyerId)
       .eq('product_id', productId)
       .order('created_at', { ascending: false })
@@ -56,7 +59,25 @@ export default function ChatBuyerOffersPanel({ buyerId, productId, sellerId }: P
   }, [load]);
 
   if (!productId || loading) return null;
-  if (!offer || !['countered', 'accepted', 'pending'].includes(offer.status)) return null;
+  if (!offer || !isOfferAwaitingAction(offer.status, offer.expires_at)) {
+    if (offer?.status === 'accepted') {
+      return (
+        <div className="mx-4 mb-2 rounded-xl border border-[#007782]/25 bg-[#007782]/5 px-3 py-2.5 text-sm">
+          <p className="font-semibold text-gray-900">
+            {t('chatOffer.panelTitle', { price: offer.offered_price.toLocaleString('hu-HU') })}
+          </p>
+          <p className="text-xs text-gray-600 mt-0.5">{t('chatOffer.status.accepted')}</p>
+          <Link
+            href={`/checkout?offer=${offer.id}`}
+            className="mt-2 inline-flex rounded-full bg-[#007782] px-3 py-1.5 text-xs font-semibold text-white"
+          >
+            {t('messages.payLink')}
+          </Link>
+        </div>
+      );
+    }
+    return null;
+  }
 
   const accept = async () => {
     setBusy(true);
@@ -102,6 +123,7 @@ export default function ChatBuyerOffersPanel({ buyerId, productId, sellerId }: P
         {t('chatOffer.panelTitle', { price: offer.offered_price.toLocaleString('hu-HU') })}
       </p>
       <p className="text-xs text-gray-600 mt-0.5">{t(`chatOffer.status.${offer.status}`)}</p>
+      <OfferExpiryCountdown expiresAt={offer.expires_at} className="mt-1" />
       <div className="mt-2 flex flex-wrap gap-2">
         {offer.status === 'countered' ? (
           <>
@@ -123,13 +145,8 @@ export default function ChatBuyerOffersPanel({ buyerId, productId, sellerId }: P
             </button>
           </>
         ) : null}
-        {offer.status === 'accepted' ? (
-          <Link
-            href={`/checkout?offer=${offer.id}`}
-            className="rounded-full bg-[#007782] px-3 py-1.5 text-xs font-semibold text-white"
-          >
-            {t('messages.payLink')}
-          </Link>
+        {offer.status === 'pending' ? (
+          <p className="text-[11px] text-gray-500">{t('chatOffer.pendingHint')}</p>
         ) : null}
       </div>
     </div>

@@ -1,6 +1,6 @@
 # ROBEO — Development TODO (V1 Next.js monolith)
 
-Utolsó frissítés: backlog folytatás — verified seller admin, szerver lapozás, filter chip polish
+Utolsó frissítés: offer expiry + chat offers panel + profile bio + search filter fix
 
 Részletes gap lista: **`docs/VINTED-GAP-ANALYSIS.md`**
 
@@ -12,15 +12,22 @@ Részletes gap lista: **`docs/VINTED-GAP-ANALYSIS.md`**
 
 ## [DONE] Backlog folytatás (office session)
 
-- [x] **P1-4 Verified seller admin** — `/api/admin/seller-verified` (role auth) + AdminHub toggle
+- [x] **P1-4 Verified seller admin** — `/api/admin/seller-verified` + AdminHub toggle
 - [x] **P2 FilterChipDropdown** — aktív chip: `Márka: Nike` formátum
-- [x] **P0 Szerver lapozás** — `useProducts` `.range()` + load more + vacation szűrés vissza
-- [x] **Allegro desktop sidebar** — `/browse` lg+ bal szűrőpanel (`CatalogFilterSidebar`)
-- [x] **Hacoo discovery chip polish** — aktív chip, darabszám, Felfedezés kártya desktopon
-- [x] **Browse scroll stabil** — nincs layout shift alsó floating szűrő / tab bar / chrome collapse
-- [x] **Vinted kategória-fa** — department + alkategória + szín szűrő (mobil + desktop)
-- [x] **Globális discovery trending** — `fetchGlobalDiscoveryChips` a /browse-on
-- [x] **Sold overlay** — ProductCard grid (ha sold státusz megjelenik)
+- [x] **P0 Szerver lapozás** — `useProducts` `.range()` + load more + vacation szűrés
+- [x] **Allegro desktop sidebar** — `CatalogFilterSidebar` + DB count
+- [x] **Hacoo discovery chip polish** — aktív chip, darabszám, Felfedezés kártya
+- [x] **Browse scroll stabil** — immersive chrome + padding fix
+- [x] **Vinted kategória-fa** — department + alkategória + szín szűrő
+- [x] **Globális discovery trending** — `fetchGlobalDiscoveryChips`
+- [x] **Sold overlay** — ProductCard grid (profil / sold státusz)
+- [x] **Checkout terms checkbox** — single + bundle + API validáció
+- [x] **Favorite count** — ProductCard batch count + toggle sync
+- [x] **Mentett keresés törlés** — confirm + metadata + sidecar cleanup
+- [x] **Keresés aktív katalógus** — `listedProducts.ts` typeahead + grid parity
+- [x] **Offer 24h expiry** — `expires_at`, worker, countdown UI (`patch-offer-expiry.sql`)
+- [x] **ChatBuyerOffersPanel** — bekötve `/messages` chat flow-ba
+- [x] **Profile bio** — settings + publikus profil (`patch-profile-bio.sql`)
 
 ---
 
@@ -40,9 +47,9 @@ Részletes gap lista: **`docs/VINTED-GAP-ANALYSIS.md`**
 - [x] Promote analytics card + demo views/clicks
 - [x] SQL: `patch-bundle-v2-promote.sql`
 
-## [DONE] Vinted micro-parity (ma)
+## [DONE] Vinted micro-parity
 
-- [x] ProductCard — méret + márka overlay (Vinted grid)
+- [x] ProductCard — méret + márka overlay
 - [x] Vacation mode toggle + feed filter
 - [x] SQL: `patch-vacation-mode.sql`
 
@@ -52,14 +59,8 @@ Részletes gap lista: **`docs/VINTED-GAP-ANALYSIS.md`**
 
 ## [HIGH] Vinted parity — következő
 
-- [ ] **Offer 24h expiry** — `offers.expires_at`, cron, chat countdown
-- [ ] **Checkout terms** — kötelező checkbox (single + bundle)
 - [ ] **Packeta picker** — Foxpost mintára
-- [ ] **ChatBuyerOffersPanel** — renderelés a messages oldalon
-- [ ] **Buyer counter-offer** — második kör vevőtől
-- [ ] **Profile bio** — `profiles.bio` + szerkesztés + publikus profil
-- [x] **Verified seller flow** — admin API + hub toggle (`seller_verified`)
-- [ ] **Favorite count on ProductCard** — aggregátum a grid-en
+- [ ] **Buyer counter-offer** — második kör vevőtől (vevő counter ajánlat küldése)
 - [ ] **Dispute éles** — refund state machine (demo panel → production)
 
 ## [PARTIAL] Értesítések & pipeline
@@ -67,6 +68,7 @@ Részletes gap lista: **`docs/VINTED-GAP-ANALYSIS.md`**
 - [x] Outbox retry, Web Push E2E, price-watch sync
 - [ ] Resend domain verify — *külső DNS*
 - [ ] seller_new_item push/email flush E2E
+- [ ] Offer expiry cron Vercel — `/api/workers/offer-expiry` (Hobby: 1 cron slot)
 
 ## [PARTIAL] Pénztárca & Stripe
 
@@ -96,6 +98,10 @@ npm run build && npm run dev
 npm run test:wallet-release
 ```
 
-**Új SQL:** `patch-vacation-mode.sql` — Supabase SQL Editor
+**Új SQL (futtasd Supabase SQL Editorban):**
+
+1. `patch-vacation-mode.sql`
+2. `patch-offer-expiry.sql`
+3. `patch-profile-bio.sql`
 
 **Éles:** https://robeo.vercel.app

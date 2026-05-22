@@ -66,7 +66,7 @@ export async function sellerSendCounterOffer(
 ): Promise<OfferActionResult> {
   const { error: updateError } = await supabase
     .from('offers')
-    .update(buildOfferStatusUpdate('countered', { offeredPriceHuf: input.counterPriceHuf }))
+    .update(buildOfferStatusUpdate('countered', { offeredPriceHuf: input.counterPriceHuf, refreshExpiry: true }))
     .eq('id', input.offerId)
     .eq('seller_id', input.sellerId);
 

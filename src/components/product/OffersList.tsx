@@ -8,6 +8,8 @@ import { Check, X, Clock, ExternalLink, Loader2 } from 'lucide-react';
 import Link from 'next/link';
 import { getOptimizedImageUrl } from '@/lib/imageUtils';
 import { offerBadgeClass } from '@/lib/offerUi';
+import { isOfferAwaitingAction } from '@/lib/offerExpiry';
+import OfferExpiryCountdown from '@/components/offers/OfferExpiryCountdown';
 import { sellerSendCounterOffer, sellerSetOfferStatus } from '@/lib/offerActions';
 import { useTranslation } from 'react-i18next';
 
@@ -17,6 +19,7 @@ interface Offer {
   message: string | null;
   status: string;
   created_at: string;
+  expires_at?: string | null;
   buyer_id: string;
   seller_id?: string;
   product: {
@@ -54,6 +57,7 @@ export default function OffersList() {
           message,
           status,
           created_at,
+          expires_at,
           buyer_id,
           product:products(id, name, price, image_url, images)
         `
@@ -268,6 +272,7 @@ export default function OffersList() {
       {offers.map((offer) => {
         const thumb = offerThumbUrl(offer.product);
         const label = statusLabel(offer.status);
+        const actionable = isOfferAwaitingAction(offer.status, offer.expires_at);
 
         return (
           <div
@@ -319,10 +324,11 @@ export default function OffersList() {
                   {offer.status === 'rejected' && <X size={13} />}
                   {label}
                 </span>
+                <OfferExpiryCountdown expiresAt={offer.expires_at} className="mt-1 block" />
               </div>
 
               <div className="flex flex-col gap-3 sm:items-end sm:min-w-[200px]">
-                {offer.status === 'pending' && (
+                {offer.status === 'pending' && actionable && (
                   <>
                     <div className="flex flex-col gap-2 w-full sm:w-auto">
                       <div className="flex gap-2">

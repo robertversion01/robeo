@@ -23,6 +23,7 @@ export default function PublicSellerProfile({ sellerId }: Props) {
   const [loading, setLoading] = useState(true);
   const [products, setProducts] = useState<Product[]>([]);
   const [displayName, setDisplayName] = useState('');
+  const [bio, setBio] = useState('');
   const [followers, setFollowers] = useState(0);
   const [following, setFollowing] = useState(0);
   const [avgRating, setAvgRating] = useState<number | null>(null);
@@ -55,6 +56,7 @@ export default function PublicSellerProfile({ sellerId }: Props) {
       ]);
 
       setDisplayName(getSellerDisplayName(profile));
+      setBio(profile?.bio?.trim() || '');
       setFollowers(counts.followers);
       setFollowing(counts.following);
       setProducts(((productsRes.data || []) as Product[]).filter((p) => p.status !== 'sold' && p.status !== 'deleted'));
@@ -101,6 +103,9 @@ export default function PublicSellerProfile({ sellerId }: Props) {
       <div className="max-w-4xl mx-auto">
         <div className="rounded-2xl border border-gray-200 bg-gradient-to-br from-[#007782]/5 to-white p-5 mb-6">
           <h1 className="text-2xl font-bold text-gray-900">{displayName || t('publicSeller.defaultName')}</h1>
+          {bio ? (
+            <p className="mt-2 text-sm text-gray-600 leading-relaxed whitespace-pre-wrap">{bio}</p>
+          ) : null}
           {avgRating != null ? (
             <div className="mt-2 flex items-center gap-2 text-sm text-gray-600">
               <StarRating rating={avgRating} size={16} />
