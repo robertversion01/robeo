@@ -25,15 +25,15 @@ import {
 import { VINTED_DEPARTMENTS } from '@/lib/vintedCategoryTree';
 import { fetchAllVacationSellerIds } from '@/lib/vacationMode';
 import { enrichProductsWithFavoriteCounts, adjustProductFavoriteCount } from '@/lib/favoriteCounts';
+import {
+  applyListedProductFilter,
+  applyProductTextSearch,
+  isListedProduct,
+  LISTED_PRODUCT_STATUS_FILTER,
+} from '@/lib/listedProducts';
 
 /** Szerver-oldali lapozás — Supabase range chunk méret. */
 export const CATALOG_PAGE_SIZE = 48;
-
-/** Csak böngészhető, megvásárolható termékek a főlistán. */
-function isListedProduct(status: string | null | undefined): boolean {
-  if (status === 'sold' || status === 'deleted') return false;
-  return status === 'active' || status == null;
-}
 
 const SORT_OPTIONS = [
   { id: 'newest', label: 'Legújabb előre', column: 'created_at', order: 'desc' as const },
@@ -134,7 +134,7 @@ export function useProducts() {
     void supabase
       .from('products')
       .select('price')
-      .or('status.eq.active,status.is.null')
+      .or(LISTED_PRODUCT_STATUS_FILTER)
       .order('price', { ascending: false })
       .limit(1)
       .maybeSingle()
@@ -160,8 +160,9 @@ export function useProducts() {
 
         let query = supabase
           .from('products')
-          .select('*', { count: 'exact' })
-          .or('status.eq.active,status.is.null');
+          .select('*', { count: 'exact' });
+
+        query = applyListedProductFilter(query);
 
         if (catalogFilters.brand !== 'all') {
           query = query.ilike('brand', catalogFilters.brand);
@@ -169,10 +170,7 @@ export function useProducts() {
 
         const searchTerm = catalogFilters.search.trim();
         if (searchTerm) {
-          const escaped = searchTerm.replace(/[%_\\]/g, '\\$&');
-          query = query.or(
-            `name.ilike.%${escaped}%,description.ilike.%${escaped}%,brand.ilike.%${escaped}%`,
-          );
+          query = applyProductTextSearch(query, searchTerm);
         }
 
         let sizeFilterOnServer = false;

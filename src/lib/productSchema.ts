@@ -3,6 +3,7 @@
  */
 import type { SupabaseClient } from '@supabase/supabase-js';
 import type { Product } from '@/types';
+import { LISTED_PRODUCT_STATUS_FILTER } from '@/lib/listedProducts';
 
 export type ProductScanRow = Pick<
   Product,
@@ -54,7 +55,7 @@ export async function fetchProductsForScan(
   const { data, error } = await supabase
     .from('products')
     .select(select)
-    .or('status.eq.active,status.is.null')
+    .or(LISTED_PRODUCT_STATUS_FILTER)
     .order('created_at', { ascending: false })
     .limit(limit);
 

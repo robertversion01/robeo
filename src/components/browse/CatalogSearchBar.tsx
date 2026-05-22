@@ -7,7 +7,7 @@ import { useTranslation } from 'react-i18next';
 import { supabase } from '@/lib/supabase';
 import { catalogUrlFromFilters } from '@/lib/catalogUrlParams';
 import type { CatalogFilterState } from '@/lib/catalogFilters';
-import type { Product } from '@/types';
+import { fetchListedProductTypeahead, type ProductTypeaheadRow } from '@/lib/listedProducts';
 
 type Props = {
   value: string;
@@ -33,9 +33,7 @@ export default function SearchTypeahead({
   browsePath = '/browse',
 }: Props) {
   const { t } = useTranslation();
-  const [liveResults, setLiveResults] = useState<
-    Array<Pick<Product, 'id' | 'name' | 'category' | 'brand'>>
-  >([]);
+  const [liveResults, setLiveResults] = useState<ProductTypeaheadRow[]>([]);
   const [open, setOpen] = useState(false);
   const containerRef = useRef<HTMLDivElement>(null);
 
@@ -47,15 +45,8 @@ export default function SearchTypeahead({
     }
 
     const timeout = setTimeout(async () => {
-      const { data, error } = await supabase
-        .from('products')
-        .select('id, name, category, brand')
-        .or(`name.ilike.%${query}%,category.ilike.%${query}%,brand.ilike.%${query}%`)
-        .limit(8);
-
-      if (!error) {
-        setLiveResults((data || []) as Array<Pick<Product, 'id' | 'name' | 'category' | 'brand'>>);
-      }
+      const results = await fetchListedProductTypeahead(supabase, query, 8);
+      setLiveResults(results);
     }, 220);
 
     return () => clearTimeout(timeout);

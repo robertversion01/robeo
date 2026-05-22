@@ -6,6 +6,10 @@ import {
   subcategoryFilterDbValues,
 } from '@/lib/catalogFilters';
 import { fetchAllVacationSellerIds } from '@/lib/vacationMode';
+import {
+  applyListedProductFilter,
+  applyProductTextSearch,
+} from '@/lib/listedProducts';
 
 type CountMap = Record<string, number>;
 
@@ -26,8 +30,9 @@ async function applySharedFilters(
 ): Promise<CountQuery> {
   let query = supabase
     .from('products')
-    .select('*', { count: 'exact', head: true })
-    .or('status.eq.active,status.is.null');
+    .select('*', { count: 'exact', head: true });
+
+  query = applyListedProductFilter(query);
 
   if (exclude !== 'brand' && filters.brand !== 'all') {
     query = query.ilike('brand', filters.brand);
@@ -35,10 +40,7 @@ async function applySharedFilters(
 
   const searchTerm = filters.search.trim();
   if (searchTerm) {
-    const escaped = searchTerm.replace(/[%_\\]/g, '\\$&');
-    query = query.or(
-      `name.ilike.%${escaped}%,description.ilike.%${escaped}%,brand.ilike.%${escaped}%`,
-    );
+    query = applyProductTextSearch(query, searchTerm);
   }
 
   if (filters.condition !== 'all') {

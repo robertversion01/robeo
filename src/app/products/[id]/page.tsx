@@ -23,6 +23,7 @@ import TrustSafetyBlock from '@/components/trust/TrustSafetyBlock';
 import SellerTrustPanel from '@/components/profile/SellerTrustPanel';
 import BundleOfferModal from '@/components/product/BundleOfferModal';
 import type { Product } from '@/types';
+import { isListedProduct } from '@/lib/listedProducts';
 import { recordPriceSnapshot } from '@/lib/priceHistory';
 import { MAIN_TOP_PADDING, MOBILE_PAGE_BOTTOM_CLASS } from '@/lib/layoutTokens';
 
@@ -91,6 +92,10 @@ export default function ProductPage({ params }: { params: Promise<{ id: string }
         .single();
 
       if (error) throw error;
+      if (!isListedProduct(data.status)) {
+        setProduct(null);
+        return;
+      }
       setProduct(data);
       void recordPriceSnapshot(supabase, data.id, data.price);
       setSelectedImageIndex(0);

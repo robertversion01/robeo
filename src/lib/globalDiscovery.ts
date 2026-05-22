@@ -1,5 +1,6 @@
 import type { SupabaseClient } from '@supabase/supabase-js';
 import type { DiscoveryChipStat } from '@/lib/discoveryStats';
+import { LISTED_PRODUCT_STATUS_FILTER } from '@/lib/listedProducts';
 
 function norm(s: string | null | undefined) {
   return (s || '').trim();
@@ -13,7 +14,7 @@ export async function fetchGlobalDiscoveryChips(
   const { data, error } = await db
     .from('products')
     .select('brand, size')
-    .or('status.eq.active,status.is.null')
+    .or(LISTED_PRODUCT_STATUS_FILTER)
     .order('created_at', { ascending: false })
     .limit(600);
 
