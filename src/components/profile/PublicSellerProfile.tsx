@@ -7,9 +7,9 @@ import { fetchFollowCounts } from '@/lib/followCounts';
 import { fetchSellerDisplayProfile, getSellerDisplayName } from '@/lib/sellerProfile';
 import FollowSellerButton from '@/components/product/FollowSellerButton';
 import SellerTrustPanel from '@/components/profile/SellerTrustPanel';
+import SellerTrustBadges from '@/components/profile/SellerTrustBadges';
 import TrustSafetyBlock from '@/components/trust/TrustSafetyBlock';
 import ProductGrid from '@/components/product/ProductGrid';
-import StarRating from '@/components/review/StarRating';
 import type { Product } from '@/types';
 import { MAIN_TOP_PADDING, MOBILE_PAGE_BOTTOM_CLASS } from '@/lib/layoutTokens';
 import { useTranslation } from 'react-i18next';
@@ -62,6 +62,7 @@ export default function PublicSellerProfile({ sellerId }: Props) {
       setProducts(((productsRes.data || []) as Product[]).filter((p) => p.status !== 'sold' && p.status !== 'deleted'));
 
       const ratings = (reviewsRes.data || []).map((r) => Number(r.rating)).filter((n) => n > 0);
+      setReviewCount(ratings.length);
       setAvgRating(ratings.length ? ratings.reduce((a, b) => a + b, 0) / ratings.length : null);
 
       if (user) {
@@ -106,12 +107,14 @@ export default function PublicSellerProfile({ sellerId }: Props) {
           {bio ? (
             <p className="mt-2 text-sm text-gray-600 leading-relaxed whitespace-pre-wrap">{bio}</p>
           ) : null}
-          {avgRating != null ? (
-            <div className="mt-2 flex items-center gap-2 text-sm text-gray-600">
-              <StarRating rating={avgRating} size={16} />
-              <span>{avgRating.toFixed(1)} / 5</span>
-            </div>
-          ) : null}
+
+          <SellerTrustBadges
+            avgRating={avgRating}
+            reviewCount={reviewCount}
+            followers={followers}
+            listingsCount={products.length}
+            className="mt-3"
+          />
 
           <div className="flex gap-6 mt-4 text-sm">
             <div>

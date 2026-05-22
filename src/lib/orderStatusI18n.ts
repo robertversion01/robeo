@@ -11,6 +11,7 @@ export function orderStatusI18nKey(status: string): string {
     sikeresen_atveve: 'orders.status.completed',
     completed: 'orders.status.completed',
     refunded: 'orders.status.refunded',
+    dispute_open: 'orders.status.disputeOpen',
   };
   return map[status] || 'orders.status.unknown';
 }

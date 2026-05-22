@@ -92,6 +92,52 @@ export async function sellerSendCounterOffer(
   };
 }
 
+/** Vevő: ellenajánlat az eladó ellenajánlata után (második kör). */
+export async function buyerSendCounterOffer(
+  supabase: SupabaseClient,
+  input: {
+    offerId: string;
+    buyerId: string;
+    sellerId: string;
+    productId: string;
+    productName: string;
+    counterPriceHuf: number;
+  },
+): Promise<OfferActionResult> {
+  const { error: updateError } = await supabase
+    .from('offers')
+    .update(
+      buildOfferStatusUpdate('pending', {
+        offeredPriceHuf: input.counterPriceHuf,
+        refreshExpiry: true,
+      }),
+    )
+    .eq('id', input.offerId)
+    .eq('buyer_id', input.buyerId)
+    .eq('status', 'countered');
+
+  if (updateError) {
+    return { ok: false, error: formatSupabaseError(updateError) };
+  }
+
+  const msg = await insertChatSystemMessage(supabase, {
+    senderId: input.buyerId,
+    receiverId: input.sellerId,
+    content: `A vevő ellenajánlatot tett: ${input.counterPriceHuf.toLocaleString('hu-HU')} Ft — ${input.productName}`,
+    productId: input.productId,
+  });
+
+  if (typeof window !== 'undefined') {
+    window.dispatchEvent(new CustomEvent('offers:updated'));
+  }
+
+  return {
+    ok: true,
+    status: 'pending',
+    messageWarning: msg.ok ? undefined : msg.error,
+  };
+}
+
 /** Vevő: ellenajánlat elutasítása. */
 export async function buyerRejectCounterOffer(
   supabase: SupabaseClient,

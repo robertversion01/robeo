@@ -78,6 +78,16 @@ const CHECKS = [
     label: 'profiles.vacation_mode',
     path: 'profiles?select=vacation_mode&limit=1',
   },
+  {
+    patch: 'patch-disputes.sql',
+    label: 'disputes',
+    path: 'disputes?select=id&limit=1',
+  },
+  {
+    patch: 'patch-disputes.sql',
+    label: 'transactions.dispute_status',
+    path: 'transactions?select=dispute_status&limit=1',
+  },
 ];
 
 async function probe(baseUrl, key, { patch, label, path: restPath }) {

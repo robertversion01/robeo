@@ -10,9 +10,10 @@ import { orderStatusI18nKey } from '@/lib/orderStatusI18n';
 import { TX_STATUS } from '@/lib/transactionFlow';
 import { cn } from '@/lib/utils';
 import { Package, ChevronRight } from 'lucide-react';
-import DisputeDemoPanel from '@/components/orders/DisputeDemoPanel';
+import DisputePanel from '@/components/orders/DisputePanel';
 import BundleOrderLineItems from '@/components/orders/BundleOrderLineItems';
 import { isBundleTransaction } from '@/lib/bundleLineItems';
+import { canBuyerOpenDispute } from '@/lib/disputes';
 
 type OrderTab = 'purchases' | 'sales';
 
@@ -26,6 +27,7 @@ type TransactionRow = {
   created_at: string;
   bundle_product_ids?: string | null;
   bundle_item_count?: number | null;
+  dispute_status?: string | null;
   product?: { id: string; name: string; image_url: string | null };
   counterparty_email?: string | null;
 };
@@ -227,9 +229,14 @@ export default function OrderHistoryPanel({ initialTab = 'purchases' }: Props) {
                 </div>
               ) : null}
               {tab === 'purchases' &&
-              [TX_STATUS.ATVETELRE_VAR, TX_STATUS.SIKERESEN_ATVEVE, 'completed'].includes(tx.status) ? (
+              (canBuyerOpenDispute(tx.status, tx.dispute_status) || tx.dispute_status) ? (
                 <div className="px-3 pb-3">
-                  <DisputeDemoPanel transactionId={tx.id} productName={tx.product?.name} />
+                  <DisputePanel
+                    transactionId={tx.id}
+                    productName={tx.product?.name}
+                    txStatus={tx.status}
+                    disputeStatus={tx.dispute_status}
+                  />
                 </div>
               ) : null}
             </li>

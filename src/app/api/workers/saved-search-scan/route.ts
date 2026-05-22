@@ -4,6 +4,7 @@ import { runSavedSearchAlertScan } from '@/lib/savedSearchNotify';
 import { parseSavedSearchesFromMetadata } from '@/lib/savedSearchesServer';
 import { fetchProductsForScan } from '@/lib/productSchema';
 import { flushOutboxAfterRoute } from '@/lib/notificationOutbox';
+import { expireStaleOffers } from '@/lib/offerExpiry';
 
 export const dynamic = 'force-dynamic';
 
@@ -98,11 +99,15 @@ export async function POST(req: NextRequest) {
         totalOutbound += result.outboundQueued;
       }
 
+      const offerExpiry = await expireStaleOffers(supabase);
+
       return NextResponse.json({
         ok: true,
         notified: totalNotified,
         outboundQueued: totalOutbound,
         usersScanned,
+        offersExpired: offerExpiry.expired,
+        offerExpiryError: offerExpiry.error,
         mode: 'cron',
       });
     }

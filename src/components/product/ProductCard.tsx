@@ -21,6 +21,7 @@ export default function ProductCard({ product, isFavorite, onToggleFavorite }: P
   const { t } = useTranslation();
   const primaryImage = normalizePrimaryProductImageUrl(product);
   const [imageVisible, setImageVisible] = useState(true);
+  const [heartBump, setHeartBump] = useState(false);
 
   if (!primaryImage || !imageVisible) return null;
 
@@ -71,6 +72,8 @@ export default function ProductCard({ product, isFavorite, onToggleFavorite }: P
         onClick={(e) => {
           e.stopPropagation();
           e.preventDefault();
+          setHeartBump(true);
+          window.setTimeout(() => setHeartBump(false), 420);
           onToggleFavorite();
         }}
         className={cn(
@@ -89,6 +92,7 @@ export default function ProductCard({ product, isFavorite, onToggleFavorite }: P
           size={14}
           className={cn(
           'shrink-0 transition-all duration-200',
+          heartBump && 'scale-125',
           isFavorite ? 'fill-rose-500 text-rose-500 scale-110' : 'fill-transparent text-gray-500',
         )}
         />

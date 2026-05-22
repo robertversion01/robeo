@@ -10,9 +10,11 @@ import ShippingSelector, { type ShippingOption } from '@/components/product/Ship
 import CheckoutBuyerProtectionBanner from '@/components/checkout/CheckoutBuyerProtectionBanner';
 import TrustSafetyBlock from '@/components/trust/TrustSafetyBlock';
 import FoxpostTerminalPicker from '@/components/checkout/FoxpostTerminalPicker';
+import PacketaPointPicker from '@/components/checkout/PacketaPointPicker';
 import CheckoutTermsCheckbox from '@/components/checkout/CheckoutTermsCheckbox';
 import { calculateCheckoutTotal } from '@/lib/buyerProtection';
 import type { FoxpostTerminal } from '@/lib/foxpostTerminal';
+import type { PacketaPoint } from '@/lib/packetaPoint';
 import { MAIN_TOP_PADDING } from '@/lib/layoutTokens';
 import {
   clearBundleCart,
@@ -33,6 +35,7 @@ export default function CheckoutBundleContent() {
   const [discountPercent, setDiscountPercent] = useState(0);
   const [shippingMethod, setShippingMethod] = useState('');
   const [foxpostTerminal, setFoxpostTerminal] = useState<FoxpostTerminal | null>(null);
+  const [packetaPoint, setPacketaPoint] = useState<PacketaPoint | null>(null);
   const [processingPayment, setProcessingPayment] = useState(false);
   const [termsAccepted, setTermsAccepted] = useState(false);
 
@@ -57,6 +60,7 @@ export default function CheckoutBundleContent() {
 
   useEffect(() => {
     if (shippingMethod !== 'foxpost') setFoxpostTerminal(null);
+    if (shippingMethod !== 'packeta') setPacketaPoint(null);
   }, [shippingMethod]);
 
   const shippingOptions: ShippingOption[] = useMemo(
@@ -109,6 +113,11 @@ export default function CheckoutBundleContent() {
         setProcessingPayment(false);
         return;
       }
+      if (shippingMethod === 'packeta' && !packetaPoint) {
+        toast.error(t('checkout.errors.packetaRequired'));
+        setProcessingPayment(false);
+        return;
+      }
 
       if (!termsAccepted) {
         toast.error(t('checkout.terms.required'));
@@ -126,6 +135,7 @@ export default function CheckoutBundleContent() {
           shippingCost,
           bundleDiscountPercent: discountPercent,
           foxpostTerminal: shippingMethod === 'foxpost' ? foxpostTerminal : null,
+          packetaPoint: shippingMethod === 'packeta' ? packetaPoint : null,
           termsAccepted: true,
         }),
       });
@@ -258,6 +268,9 @@ export default function CheckoutBundleContent() {
                 />
                 {shippingMethod === 'foxpost' ? (
                   <FoxpostTerminalPicker value={foxpostTerminal} onChange={setFoxpostTerminal} />
+                ) : null}
+                {shippingMethod === 'packeta' ? (
+                  <PacketaPointPicker value={packetaPoint} onChange={setPacketaPoint} />
                 ) : null}
               </div>
 

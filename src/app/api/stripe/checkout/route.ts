@@ -6,11 +6,10 @@ import { getStripeInstance } from '@/lib/stripe-client';
 import { getSupabaseAdminClient, getSupabaseClient } from '@/lib/supabase';
 import { insertTransactionLineItems } from '@/lib/bundleLineItems';
 import {
-  foxpostTerminalAddress,
-  foxpostTerminalId,
-  foxpostTerminalLabel,
   type FoxpostTerminal,
 } from '@/lib/foxpostTerminal';
+import type { PacketaPoint } from '@/lib/packetaPoint';
+import { pickupFieldsForCheckout } from '@/lib/pickupPoint';
 
 // Force dynamic rendering
 export const dynamic = 'force-dynamic';
@@ -39,6 +38,7 @@ export async function POST(req: NextRequest) {
       shippingMethod,
       bundleDiscountPercent,
       foxpostTerminal,
+      packetaPoint,
       termsAccepted,
     } = body as {
       productId?: string;
@@ -49,6 +49,7 @@ export async function POST(req: NextRequest) {
       shippingMethod?: string;
       bundleDiscountPercent?: number;
       foxpostTerminal?: FoxpostTerminal | null;
+      packetaPoint?: PacketaPoint | null;
       termsAccepted?: boolean;
     };
 
@@ -95,6 +96,7 @@ export async function POST(req: NextRequest) {
         shippingMethod,
         bundleDiscountPercent,
         foxpostTerminal: foxpostTerminal ?? null,
+        packetaPoint: packetaPoint ?? null,
       });
     }
 
@@ -229,6 +231,21 @@ export async function POST(req: NextRequest) {
         { status: 400 },
       );
     }
+
+    if (shippingMethod === 'foxpost' && !foxpostTerminal) {
+      return NextResponse.json(
+        { error: 'Foxpost szállításnál kötelező automata választás.' },
+        { status: 400 },
+      );
+    }
+    if (shippingMethod === 'packeta' && !packetaPoint) {
+      return NextResponse.json(
+        { error: 'Packeta szállításnál kötelező átvételi pont választás.' },
+        { status: 400 },
+      );
+    }
+
+    const pickupFields = pickupFieldsForCheckout(shippingMethod, foxpostTerminal, packetaPoint);
     const { data: sellerDataFromUsers, error: sellerUsersError } = await supabase
       .from('users')
       .select('stripe_account_id, email')
@@ -342,11 +359,28 @@ export async function POST(req: NextRequest) {
           status: 'payment_pending',
           checkout_session_id: session.id,
           payment_intent_id: (session.payment_intent as string) || null,
+          ...(pickupFields || {}),
         })
         .select('id')
         .single();
 
-      if (transactionError) {
+      if (transactionError && pickupFields && /foxpost_terminal/i.test(transactionError.message)) {
+        const { foxpost_terminal_id, foxpost_terminal_name, foxpost_terminal_address, ...withoutPickup } = {
+          id: transactionId,
+          product_id: resolvedProductId,
+          buyer_id: buyerId,
+          seller_id: sellerId,
+          amount: totalAmount,
+          fee: buyerProtectionFee,
+          shipping_method: shippingMethod || null,
+          shipping_cost: normalizedShippingCost,
+          status: 'payment_pending',
+          checkout_session_id: session.id,
+          payment_intent_id: (session.payment_intent as string) || null,
+          ...pickupFields,
+        };
+        await supabase.from('transactions').insert(withoutPickup);
+      } else if (transactionError) {
         console.error('[checkout] Transaction creation error (non-blocking):', transactionError);
       } else {
         console.log('[checkout] Transaction saved', {
@@ -382,6 +416,7 @@ async function handleBundleCheckout(ctx: {
   shippingMethod?: string;
   bundleDiscountPercent?: number;
   foxpostTerminal?: FoxpostTerminal | null;
+  packetaPoint?: PacketaPoint | null;
 }) {
   const {
     stripe,
@@ -392,6 +427,7 @@ async function handleBundleCheckout(ctx: {
     shippingMethod,
     bundleDiscountPercent,
     foxpostTerminal,
+    packetaPoint,
   } = ctx;
 
   if (shippingMethod === 'foxpost' && !foxpostTerminal) {
@@ -400,6 +436,14 @@ async function handleBundleCheckout(ctx: {
       { status: 400 },
     );
   }
+  if (shippingMethod === 'packeta' && !packetaPoint) {
+    return NextResponse.json(
+      { error: 'Packeta szállításnál kötelező átvételi pont választás.' },
+      { status: 400 },
+    );
+  }
+
+  const pickupFields = pickupFieldsForCheckout(shippingMethod, foxpostTerminal, packetaPoint);
 
   const uniqueIds = [...new Set(bundleIds)].slice(0, 8);
   const { data: productsData, error: productsError } = await supabase
@@ -528,15 +572,7 @@ async function handleBundleCheckout(ctx: {
   const session = await stripe.checkout.sessions.create(checkoutSessionPayload);
 
   try {
-    const foxpostFields =
-      shippingMethod === 'foxpost' && foxpostTerminal
-        ? {
-            foxpost_terminal_id: foxpostTerminalId(foxpostTerminal) || null,
-            foxpost_terminal_name: foxpostTerminalLabel(foxpostTerminal),
-            foxpost_terminal_address: foxpostTerminalAddress(foxpostTerminal) || null,
-          }
-        : {};
-
+    const pickupDbFields = pickupFields || {};
     const baseRow = {
       id: transactionId,
       product_id: primaryProductId,
@@ -549,17 +585,21 @@ async function handleBundleCheckout(ctx: {
       status: 'payment_pending',
       checkout_session_id: session.id,
       payment_intent_id: (session.payment_intent as string) || null,
-      ...foxpostFields,
+      ...pickupDbFields,
     };
-    const bundleRow = {
+    const bundleRow: Record<string, unknown> = {
       ...baseRow,
       bundle_item_count: products.length,
       bundle_product_ids: uniqueIds.join(','),
     };
     const { error: fullErr } = await supabase.from('transactions').insert(bundleRow);
     if (fullErr && /bundle_product_ids|bundle_item_count|foxpost_terminal/i.test(fullErr.message)) {
-      const { foxpost_terminal_id, foxpost_terminal_name, foxpost_terminal_address, ...withoutFoxpost } =
-        bundleRow;
+      const {
+        foxpost_terminal_id: _id,
+        foxpost_terminal_name: _name,
+        foxpost_terminal_address: _addr,
+        ...withoutFoxpost
+      } = bundleRow;
       const { error: bundleOnlyErr } = await supabase.from('transactions').insert({
         ...withoutFoxpost,
         bundle_item_count: products.length,

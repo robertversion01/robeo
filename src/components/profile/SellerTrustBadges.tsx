@@ -9,6 +9,7 @@ type Props = {
   reviewCount: number;
   followers: number;
   listingsCount: number;
+  className?: string;
 };
 
 export default function SellerTrustBadges({
@@ -16,11 +17,12 @@ export default function SellerTrustBadges({
   reviewCount,
   followers,
   listingsCount,
+  className = '',
 }: Props) {
   const { t } = useTranslation();
 
   return (
-    <div className="mb-4 flex flex-wrap gap-2">
+    <div className={`flex flex-wrap gap-2 ${className}`}>
       {avgRating != null && reviewCount > 0 ? (
         <span className="inline-flex items-center gap-1 rounded-full border border-gray-200 bg-white px-2.5 py-1 text-xs font-medium text-gray-800">
           <Star size={12} className="text-amber-500" />

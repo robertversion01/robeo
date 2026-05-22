@@ -254,7 +254,7 @@
     "favoriteAdd": "Add to favorites",
     "favoriteRemove": "Remove from favorites",
     "favoriteCountAria": "{{count}} favorites",
-    "featured": "Featured",
+    "featured": "Bump",
     "bundleHint": "Bundle from this seller: {{percent}}% off when buying {{items}}+ items.",
     "browseCategory": "More in this category",
     "share": "Share",
@@ -608,7 +608,14 @@
       "countered": "Counter-offer — your move",
       "accepted": "Accepted — pay now"
     },
-    "pendingHint": "Waiting for the seller — expires within 24 hours."
+    "pendingHint": "Waiting for the seller — expires within 24 hours.",
+    "counter": "Counter-offer",
+    "sendCounter": "Send",
+    "cancelCounter": "Cancel",
+    "counterPlaceholder": "New price",
+    "counterInvalid": "Enter a valid price.",
+    "counterSent": "Counter-offer sent",
+    "productFallback": "item"
   },
   "offerExpiry": {
     "remaining": "Expires in {{time}}",
@@ -708,6 +715,18 @@
       "changeTerminal": "Choose another locker",
       "terminalId": "Locker ID: {{id}}"
     },
+    "packeta": {
+      "title": "Packeta / Z-BOX pickup point",
+      "openPicker": "Choose pickup point",
+      "pickerTitle": "Choose a Packeta point",
+      "pickerAria": "Packeta point picker",
+      "close": "Close",
+      "changePoint": "Choose another point",
+      "pointId": "Point ID: {{id}}",
+      "searchPlaceholder": "Search by city or name…",
+      "listHint": "Dev mode: common points list. Set NEXT_PUBLIC_PACKETA_API_KEY for the live Packeta widget.",
+      "noResults": "No results"
+    },
     "bundle": {
       "title": "Bundle checkout",
       "summaryTitle": "Bundle summary",
@@ -742,7 +761,8 @@
       "ownProduct": "You cannot buy your own item.",
       "missingIds": "Missing payment identifiers.",
       "paymentFailed": "Payment failed",
-      "foxpostRequired": "Foxpost delivery requires selecting a locker."
+      "foxpostRequired": "Foxpost delivery requires selecting a locker.",
+      "packetaRequired": "Packeta delivery requires selecting a pickup point."
     }
   },
   "uploadWizard": {
@@ -796,7 +816,39 @@
       "readyForPickup": "Ready for pickup",
       "completed": "Completed",
       "refunded": "Refunded",
+      "disputeOpen": "Dispute open",
       "unknown": "Unknown"
+    }
+  },
+  "disputes": {
+    "openCta": "Problem with this order?",
+    "formHint": "Describe the issue — our team will review within 24–48 hours.",
+    "reasonLabel": "Reason",
+    "detailsPlaceholder": "e.g. not received / not as described…",
+    "detailsTooShort": "At least 10 characters required.",
+    "submit": "Submit dispute",
+    "submitted": "Dispute submitted — we will get back to you soon.",
+    "failed": "Could not submit dispute.",
+    "loginRequired": "Please log in to open a dispute.",
+    "activeHint": "Under review — you will also get a chat notification.",
+    "status": {
+      "open": "Dispute open",
+      "under_review": "Under review",
+      "resolved_refund": "Refunded",
+      "resolved_reject": "Rejected",
+      "cancelled": "Cancelled"
+    },
+    "admin": {
+      "title": "Open disputes",
+      "refresh": "Refresh",
+      "loading": "Loading…",
+      "empty": "No open disputes.",
+      "review": "Mark reviewing",
+      "refund": "Refund buyer",
+      "reject": "Reject",
+      "refundDone": "Refund initiated.",
+      "rejectDone": "Dispute rejected.",
+      "reviewDone": "Marked under review."
     }
   },
   "help": {

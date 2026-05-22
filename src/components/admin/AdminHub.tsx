@@ -7,6 +7,7 @@ import { supabase } from '@/lib/supabase';
 import type { Product } from '@/types';
 import { markProductPromoteBoosted } from '@/lib/promoteAnalytics';
 import AdminReportedItems from '@/components/admin/AdminReportedItems';
+import AdminDisputesPanel from '@/components/admin/AdminDisputesPanel';
 import AdminDac7Report from '@/components/admin/AdminDac7Report';
 import ProfileSection from '@/components/profile/ProfileSection';
 import { cn } from '@/lib/utils';
@@ -325,6 +326,10 @@ export default function AdminHub({ userId }: Props) {
             ))}
           </ul>
         )}
+      </ProfileSection>
+
+      <ProfileSection title="Vitatások" description="Vevői refund kérelmek — jóváhagyás vagy elutasítás.">
+        <AdminDisputesPanel />
       </ProfileSection>
 
       <ProfileSection title="Jelentések" description="Felhasználók által jelentett hirdetések.">

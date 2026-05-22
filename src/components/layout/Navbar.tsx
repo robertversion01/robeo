@@ -3,7 +3,7 @@
 import { useEffect, useRef, useState } from 'react';
 import { supabase } from '@/lib/supabase';
 import Link from 'next/link';
-import { usePathname } from 'next/navigation';
+import { usePathname, useRouter } from 'next/navigation';
 import { MessageCircle, Heart, User, Plus, LogOut, Bell } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 import { useBrowseSearch } from '@/context/BrowseContext';
@@ -34,6 +34,7 @@ export default function Navbar({ searchQuery, onSearchChange }: NavbarProps) {
   const [loading, setLoading] = useState(true);
   const [showProfileMenu, setShowProfileMenu] = useState(false);
   const pathname = usePathname();
+  const router = useRouter();
   const profileMenuRef = useRef<HTMLDivElement | null>(null);
   const resolvedSearchQuery = searchQuery ?? browse.searchQuery;
   const isGuest = !loading && !user;
@@ -100,6 +101,8 @@ export default function Navbar({ searchQuery, onSearchChange }: NavbarProps) {
     search: resolvedSearchQuery,
   };
 
+  const catalogBrowsePath = pathname === '/' ? '/' : '/browse';
+
   const searchField = (
     <CatalogSearchBar
       value={resolvedSearchQuery}
@@ -107,10 +110,12 @@ export default function Navbar({ searchQuery, onSearchChange }: NavbarProps) {
       catalogFilters={catalogFilters}
       inputId="navbar-search"
       className="min-w-0 flex-1 w-full max-w-none"
-      browsePath="/browse"
+      browsePath={catalogBrowsePath}
       onSeeAll={() => {
-        if (pathname !== '/') {
-          window.location.href = `/browse?q=${encodeURIComponent(resolvedSearchQuery.trim())}#catalog`;
+        const q = encodeURIComponent(resolvedSearchQuery.trim());
+        const href = q ? `${catalogBrowsePath}?q=${q}#catalog` : `${catalogBrowsePath}#catalog`;
+        if (pathname !== catalogBrowsePath) {
+          router.push(href);
         } else {
           document.getElementById('catalog')?.scrollIntoView({ behavior: 'smooth' });
         }

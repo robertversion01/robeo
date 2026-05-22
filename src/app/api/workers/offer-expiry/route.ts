@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { getSupabaseAdminClient } from '@/lib/supabase';
+import { expireStaleOffers } from '@/lib/offerExpiry';
 
 export const dynamic = 'force-dynamic';
 
@@ -9,32 +10,22 @@ async function runOfferExpiryScan() {
     return NextResponse.json({ error: 'Service role required' }, { status: 500 });
   }
 
-  const now = new Date().toISOString();
-  const { data, error } = await supabase
-    .from('offers')
-    .update({
-      status: 'cancelled',
-      updated_at: now,
-    })
-    .in('status', ['pending', 'countered'])
-    .lt('expires_at', now)
-    .select('id');
-
-  if (error) {
-    if (error.message?.includes('expires_at') && error.message.includes('does not exist')) {
-      return NextResponse.json({
+  const result = await expireStaleOffers(supabase);
+  if (result.error) {
+    return NextResponse.json(
+      {
         ok: false,
-        hint: 'Run supabase/patch-offer-expiry.sql',
-        error: error.message,
-      });
-    }
-    return NextResponse.json({ error: error.message }, { status: 500 });
+        hint: result.error.includes('patch-offer-expiry') ? 'Run supabase/patch-offer-expiry.sql' : undefined,
+        error: result.error,
+      },
+      { status: result.error.includes('patch-offer-expiry') ? 200 : 500 },
+    );
   }
 
   return NextResponse.json({
     ok: true,
-    expired: data?.length ?? 0,
-    timestamp: now,
+    expired: result.expired,
+    timestamp: new Date().toISOString(),
   });
 }
 

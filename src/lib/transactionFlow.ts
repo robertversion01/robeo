@@ -58,6 +58,7 @@ export const TX_STATUS_LABELS: Record<string, string> = {
   delivered: 'Kézbesítve',
   completed: 'Befejezve',
   refunded: 'Visszatérítve',
+  dispute_open: 'Vitatás alatt',
 };
 
 export const TX_STATUS_MESSAGES: Record<string, string> = {

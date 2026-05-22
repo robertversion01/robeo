@@ -254,7 +254,7 @@
     "favoriteAdd": "Kedvencekhez adás",
     "favoriteRemove": "Eltávolítás a kedvencekből",
     "favoriteCountAria": "{{count}} kedvenc",
-    "featured": "Kiemelt",
+    "featured": "Bump",
     "bundleHint": "Több termék egy eladótól: {{percent}}% kedvezmény {{items}}+ darabnál.",
     "browseCategory": "Több ebben a kategóriában",
     "share": "Megosztás",
@@ -559,7 +559,14 @@
       "countered": "Ellenajánlat — válasz szükséges",
       "accepted": "Elfogadva — fizethetsz"
     },
-    "pendingHint": "Az eladó válaszára vársz — 24 órán belül lejár."
+    "pendingHint": "Az eladó válaszára vársz — 24 órán belül lejár.",
+    "counter": "Ellenajánlat",
+    "sendCounter": "Küldés",
+    "cancelCounter": "Mégse",
+    "counterPlaceholder": "Új ár",
+    "counterInvalid": "Adj meg érvényes árat.",
+    "counterSent": "Ellenajánlat elküldve",
+    "productFallback": "termék"
   },
   "offerExpiry": {
     "remaining": "Lejár {{time}} múlva",
@@ -659,6 +666,18 @@
       "changeTerminal": "Másik automata",
       "terminalId": "Automata ID: {{id}}"
     },
+    "packeta": {
+      "title": "Packeta / Z-BOX átvételi pont",
+      "openPicker": "Átvételi pont kiválasztása",
+      "pickerTitle": "Válassz Packeta pontot",
+      "pickerAria": "Packeta pont választó",
+      "close": "Bezárás",
+      "changePoint": "Másik pont",
+      "pointId": "Pont ID: {{id}}",
+      "searchPlaceholder": "Keresés város vagy név alapján…",
+      "listHint": "Dev mód: gyakori pontok listája. Éles Packeta widgethez állítsd be a NEXT_PUBLIC_PACKETA_API_KEY env változót.",
+      "noResults": "Nincs találat"
+    },
     "bundle": {
       "title": "Csomag vásárlás",
       "summaryTitle": "Csomag összegzés",
@@ -693,7 +712,8 @@
       "ownProduct": "A saját termékedet nem vásárolhatod meg.",
       "missingIds": "Hiányzó azonosítók a fizetéshez.",
       "paymentFailed": "Hiba történt a fizetés során",
-      "foxpostRequired": "Foxpost szállításnál kötelező automata választás."
+      "foxpostRequired": "Foxpost szállításnál kötelező automata választás.",
+      "packetaRequired": "Packeta szállításnál kötelező átvételi pont választás."
     }
   },
   "uploadWizard": {
@@ -747,7 +767,39 @@
       "readyForPickup": "Átvételre vár",
       "completed": "Befejezve",
       "refunded": "Visszatérítve",
+      "disputeOpen": "Vitatás alatt",
       "unknown": "Ismeretlen"
+    }
+  },
+  "disputes": {
+    "openCta": "Probléma a rendeléssel?",
+    "formHint": "Írd le a problémát — admin felülvizsgálja 24–48 órán belül.",
+    "reasonLabel": "Indok",
+    "detailsPlaceholder": "Pl. nem érkezett meg / nem egyezik a leírással…",
+    "detailsTooShort": "Legalább 10 karakter szükséges.",
+    "submit": "Vitatás beküldése",
+    "submitted": "Vitatás rögzítve — hamarosan jelzünk.",
+    "failed": "Nem sikerült beküldeni.",
+    "loginRequired": "Jelentkezz be a vitához.",
+    "activeHint": "A csapat felülvizsgálja — chatben is kapsz értesítést.",
+    "status": {
+      "open": "Vitatás folyamatban",
+      "under_review": "Felülvizsgálat alatt",
+      "resolved_refund": "Visszatérítve",
+      "resolved_reject": "Elutasítva",
+      "cancelled": "Visszavonva"
+    },
+    "admin": {
+      "title": "Nyitott vitatások",
+      "refresh": "Frissítés",
+      "loading": "Betöltés…",
+      "empty": "Nincs nyitott vitatás.",
+      "review": "Felülvizsgálat",
+      "refund": "Visszatérítés",
+      "reject": "Elutasítás",
+      "refundDone": "Visszatérítés elindítva.",
+      "rejectDone": "Vitatás elutasítva.",
+      "reviewDone": "Felülvizsgálat alá véve."
     }
   },
   "help": {

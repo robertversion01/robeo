@@ -6,6 +6,7 @@ import type { CatalogFilterState } from '@/lib/catalogFilters';
 import { buildCatalogUrlParams, parseCatalogFromUrl } from '@/lib/catalogUrlParams';
 
 const CATALOG_PATHS = new Set(['/', '/browse']);
+const URL_SYNC_DEBOUNCE_MS = 320;
 
 type CatalogUrlSyncArgs = {
   browsePath?: string;
@@ -43,6 +44,9 @@ export function useCatalogUrlSync({
   const searchParams = useSearchParams();
   const hydratedRef = useRef(false);
   const skipWriteRef = useRef(false);
+  const debounceRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const filtersRef = useRef(filters);
+  filtersRef.current = filters;
 
   const activePath = browsePath ?? pathname;
   const syncEnabled = CATALOG_PATHS.has(pathname) && activePath === pathname;
@@ -93,13 +97,21 @@ export function useCatalogUrlSync({
     if (!hydratedRef.current) return;
     if (skipWriteRef.current) return;
 
-    const params = buildCatalogUrlParams(filters, maxPriceLimit);
-    const next = params.toString();
-    const current = searchParams.toString();
+    if (debounceRef.current) clearTimeout(debounceRef.current);
 
-    if (next === current) return;
+    debounceRef.current = setTimeout(() => {
+      const params = buildCatalogUrlParams(filtersRef.current, maxPriceLimit);
+      const next = params.toString();
+      const current = searchParams.toString();
 
-    const url = next ? `${activePath}?${next}` : activePath;
-    router.replace(url, { scroll: false });
+      if (next === current) return;
+
+      const url = next ? `${activePath}?${next}` : activePath;
+      router.replace(url, { scroll: false });
+    }, URL_SYNC_DEBOUNCE_MS);
+
+    return () => {
+      if (debounceRef.current) clearTimeout(debounceRef.current);
+    };
   }, [filters, maxPriceLimit, activePath, router, searchParams, syncEnabled]);
 }
