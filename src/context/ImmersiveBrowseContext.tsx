@@ -16,6 +16,7 @@ import { isImmersiveBrowsePath } from '@/lib/navVisibility';
 const SCROLL_DOWN_THRESHOLD = 6;
 const SCROLL_UP_THRESHOLD = 4;
 const TOP_REVEAL_Y = 40;
+const BOTTOM_EDGE_GUARD_PX = 96;
 
 type ImmersiveBrowseContextValue = {
   /** Immersive mód aktív ezen az oldalon */
@@ -79,6 +80,7 @@ export function ImmersiveBrowseProvider({ children, loggedIn }: ProviderProps) {
       return;
     }
 
+    const isBrowseSearchPage = pathname.startsWith('/browse');
     lastYRef.current = window.scrollY;
 
     const onScroll = () => {
@@ -87,8 +89,14 @@ export function ImmersiveBrowseProvider({ children, loggedIn }: ProviderProps) {
       requestAnimationFrame(() => {
         const y = window.scrollY;
         const dy = y - lastYRef.current;
+        const docHeight = document.documentElement.scrollHeight;
+        const nearBottom = y + window.innerHeight >= docHeight - BOTTOM_EDGE_GUARD_PX;
 
-        if (y <= TOP_REVEAL_Y) {
+        if (isBrowseSearchPage) {
+          setChromeHidden(false);
+        } else if (y <= TOP_REVEAL_Y) {
+          setChromeHidden(false);
+        } else if (nearBottom && dy > 0) {
           setChromeHidden(false);
         } else if (dy > SCROLL_DOWN_THRESHOLD) {
           setChromeHidden(true);

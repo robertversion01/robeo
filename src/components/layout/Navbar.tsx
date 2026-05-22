@@ -11,6 +11,7 @@ import { FeedNavBadge, MessagesNavBadge } from '@/context/NotificationContext';
 import CatalogSearchBar from '@/components/browse/CatalogSearchBar';
 import LanguageSwitcher from '@/components/home/LanguageSwitcher';
 import type { CatalogFilterState } from '@/lib/catalogFilters';
+import { CATALOG_FILTER_DEFAULTS } from '@/lib/catalogUrlParams';
 import { cn } from '@/lib/utils';
 import { useImmersiveBrowse } from '@/context/ImmersiveBrowseContext';
 import {
@@ -95,13 +96,7 @@ export default function Navbar({ searchQuery, onSearchChange }: NavbarProps) {
     !shouldShowMobileHeaderQuickActions(pathname, loggedIn);
 
   const catalogFilters: CatalogFilterState = {
-    category: 'all',
-    brand: 'all',
-    size: 'all',
-    condition: 'all',
-    minPrice: 0,
-    maxPrice: 0,
-    sort: 'newest',
+    ...CATALOG_FILTER_DEFAULTS,
     search: resolvedSearchQuery,
   };
 

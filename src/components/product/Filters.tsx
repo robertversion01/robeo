@@ -7,22 +7,28 @@ import { useTranslation } from 'react-i18next';
 import {
   VINTED_BRANDS,
   VINTED_CONDITIONS,
-  sizesForCategory,
-  CLOTHING_SIZES,
-  SHOE_SIZES,
 } from '@/lib/vintedCatalog';
+import {
+  getSubcategoriesForDepartment,
+  sizesForDepartment,
+  VINTED_COLORS,
+} from '@/lib/vintedCategoryTree';
 import FilterChipDropdown from '@/components/product/FilterChipDropdown';
 
 export interface FiltersProps {
   categories: { id: string; label: string }[];
   selectedCategory: string;
   onCategoryChange: (id: string) => void;
+  selectedSubcategory: string;
+  onSubcategoryChange: (id: string) => void;
   selectedBrand: string;
   onBrandChange: (id: string) => void;
   selectedSize: string;
   onSizeChange: (id: string) => void;
   selectedCondition: string;
   onConditionChange: (id: string) => void;
+  selectedColor: string;
+  onColorChange: (id: string) => void;
   selectedMinPrice: number;
   selectedMaxPrice: number;
   maxPriceLimit: number;
@@ -38,10 +44,14 @@ export interface FiltersProps {
 function buildCategoryOptions(
   categories: { id: string; label: string }[],
   allLabel: string,
+  labelFor: (id: string, fallback: string) => string,
 ) {
   return [
     { id: 'all', label: allLabel },
-    ...categories.filter((c) => c.id !== 'all').map((c) => ({ id: c.id, label: c.label })),
+    ...categories.filter((c) => c.id !== 'all').map((c) => ({
+      id: c.id,
+      label: labelFor(c.id, c.label),
+    })),
   ];
 }
 
@@ -59,9 +69,11 @@ const PRICE_PRESET_KEYS = [
 
 const PANEL = {
   category: 'category',
+  subcategory: 'subcategory',
   brand: 'brand',
   size: 'size',
   condition: 'condition',
+  color: 'color',
   price: 'price',
 } as const;
 
@@ -69,12 +81,16 @@ export default function Filters({
   categories,
   selectedCategory,
   onCategoryChange,
+  selectedSubcategory,
+  onSubcategoryChange,
   selectedBrand,
   onBrandChange,
   selectedSize,
   onSizeChange,
   selectedCondition,
   onConditionChange,
+  selectedColor,
+  onColorChange,
   selectedMinPrice,
   selectedMaxPrice,
   maxPriceLimit,
@@ -102,7 +118,12 @@ export default function Filters({
   );
 
   const categoryOptions = useMemo(
-    () => buildCategoryOptions(categories, t('browse.filters.allCategories')),
+    () =>
+      buildCategoryOptions(categories, t('browse.filters.allCategories'), (id, fallback) =>
+        t(`browse.departments.${id}`, {
+          defaultValue: t(`browse.categories.${id}`, { defaultValue: fallback }),
+        }),
+      ),
     [categories, t],
   );
 
@@ -116,13 +137,26 @@ export default function Filters({
     [t],
   );
 
-  const sizeOptions = useMemo(() => {
-    const sizes =
-      selectedCategory === 'all'
-        ? Array.from(new Set([...CLOTHING_SIZES, ...SHOE_SIZES]))
-        : [...sizesForCategory(selectedCategory)];
-    return [{ id: 'all', label: t('browse.filters.allSizes') }, ...sizes.map((s) => ({ id: s, label: s }))];
+  const subcategoryOptions = useMemo(() => {
+    const subs = getSubcategoriesForDepartment(selectedCategory);
+    return [
+      { id: 'all', label: t('browse.filters.allSubcategories') },
+      ...subs.map((s) => ({ id: s.id, label: t(s.labelKey) })),
+    ];
   }, [selectedCategory, t]);
+
+  const colorOptions = useMemo(
+    () => [
+      { id: 'all', label: t('browse.filters.allColors') },
+      ...VINTED_COLORS.map((c) => ({ id: c.id, label: t(c.labelKey) })),
+    ],
+    [t],
+  );
+
+  const sizeOptions = useMemo(() => {
+    const sizes = sizesForDepartment(selectedCategory, selectedSubcategory);
+    return [{ id: 'all', label: t('browse.filters.allSizes') }, ...sizes.map((s) => ({ id: s, label: s }))];
+  }, [selectedCategory, selectedSubcategory, t]);
 
   const locale = i18n.language?.startsWith('en') ? 'en-HU' : 'hu-HU';
 
@@ -277,6 +311,17 @@ export default function Filters({
           value={selectedCategory}
           onChange={onCategoryChange}
         />
+        {selectedCategory !== 'all' ? (
+          <FilterChipDropdown
+            panelId={PANEL.subcategory}
+            openPanelId={openPanelId}
+            onOpenPanelChange={setOpenPanelId}
+            label={t('browse.filters.subcategory')}
+            options={subcategoryOptions}
+            value={selectedSubcategory}
+            onChange={onSubcategoryChange}
+          />
+        ) : null}
         <FilterChipDropdown
           panelId={PANEL.brand}
           openPanelId={openPanelId}
@@ -303,6 +348,15 @@ export default function Filters({
           options={conditionOptions}
           value={selectedCondition}
           onChange={onConditionChange}
+        />
+        <FilterChipDropdown
+          panelId={PANEL.color}
+          openPanelId={openPanelId}
+          onOpenPanelChange={setOpenPanelId}
+          label={t('browse.filters.color')}
+          options={colorOptions}
+          value={selectedColor}
+          onChange={onColorChange}
         />
 
         <div className="relative shrink-0">

@@ -33,6 +33,8 @@ export default function ProductCard({ product, isFavorite, onToggleFavorite }: P
   const categoryShort =
     typeof product.category === 'string' ? product.category.replace(/_/g, ' ') : '';
 
+  const isSold = product.status === 'sold';
+
   return (
     <div className="group card-base overflow-hidden transition-all duration-200 relative border border-gray-200/90 hover:border-[#007782]/50 hover:shadow-md active:scale-[0.98] touch-manipulation">
       <Link
@@ -43,9 +45,19 @@ export default function ProductCard({ product, isFavorite, onToggleFavorite }: P
           src={getOptimizedImageUrl(primaryImage, 320, 82)}
           alt={product.name}
           loading="lazy"
-          className="w-full h-full object-cover transition-transform duration-300 ease-out group-hover:scale-[1.07] group-active:scale-[1.04]"
+          className={cn(
+            'w-full h-full object-cover transition-transform duration-300 ease-out group-hover:scale-[1.07] group-active:scale-[1.04]',
+            isSold && 'opacity-60 grayscale',
+          )}
           onError={() => setImageVisible(false)}
         />
+        {isSold ? (
+          <div className="pointer-events-none absolute inset-0 flex items-center justify-center bg-black/35">
+            <span className="rounded-md bg-black/70 px-2.5 py-1 text-[11px] font-bold uppercase tracking-wide text-white">
+              {t('product.sold')}
+            </span>
+          </div>
+        ) : null}
         {isFeatured ? (
           <Badge variant="featured" className="pointer-events-none absolute bottom-1 left-1 text-[9px] px-1 py-0.5">
             {t('product.featured')}

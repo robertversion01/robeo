@@ -14,11 +14,18 @@ type Props = {
 
 const CATEGORY_I18N: Record<string, string> = {
   all: 'browse.categories.all',
+  women: 'browse.departments.women',
+  men: 'browse.departments.men',
+  kids: 'browse.departments.kids',
+  home: 'browse.departments.home',
+  electronics: 'browse.departments.electronics',
+  entertainment: 'browse.departments.entertainment',
+  sports: 'browse.departments.sports',
+  pets: 'browse.departments.pets',
+  other: 'browse.departments.other',
   clothing: 'browse.categories.clothing',
   shoes: 'browse.categories.shoes',
   accessories: 'browse.categories.accessories',
-  electronics: 'browse.categories.electronics',
-  other: 'browse.categories.other',
 };
 
 export default function CategoryQuickChips({

@@ -17,6 +17,10 @@ Részletes gap lista: **`docs/VINTED-GAP-ANALYSIS.md`**
 - [x] **P0 Szerver lapozás** — `useProducts` `.range()` + load more + vacation szűrés vissza
 - [x] **Allegro desktop sidebar** — `/browse` lg+ bal szűrőpanel (`CatalogFilterSidebar`)
 - [x] **Hacoo discovery chip polish** — aktív chip, darabszám, Felfedezés kártya desktopon
+- [x] **Browse scroll stabil** — nincs layout shift alsó floating szűrő / tab bar / chrome collapse
+- [x] **Vinted kategória-fa** — department + alkategória + szín szűrő (mobil + desktop)
+- [x] **Globális discovery trending** — `fetchGlobalDiscoveryChips` a /browse-on
+- [x] **Sold overlay** — ProductCard grid (ha sold státusz megjelenik)
 
 ---
 

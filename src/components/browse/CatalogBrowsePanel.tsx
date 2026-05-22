@@ -25,6 +25,7 @@ import { scanSavedSearchNewMatches } from '@/lib/savedSearchMatcher';
 import { runSavedSearchAlertScan } from '@/lib/savedSearchNotify';
 import { useMarketplaceBackgroundWorkers } from '@/hooks/useMarketplaceBackgroundWorkers';
 import { computeDiscoveryChips } from '@/lib/discoveryStats';
+import { fetchGlobalDiscoveryChips } from '@/lib/globalDiscovery';
 import ImmersiveFilterSheet from '@/components/browse/ImmersiveFilterSheet';
 
 function sortLabelKey(id: string) {
@@ -50,9 +51,11 @@ function CatalogUrlSyncBridge(props: {
   maxPriceLimit: number;
   setSearchQuery: (q: string) => void;
   setSelectedCategory: (id: string) => void;
+  setSelectedSubcategory: (id: string) => void;
   setSelectedBrand: (id: string) => void;
   setSelectedSize: (id: string) => void;
   setSelectedCondition: (id: string) => void;
+  setSelectedColor: (id: string) => void;
   setSelectedMinPrice: (n: number) => void;
   setSelectedMaxPrice: (n: number) => void;
   setSelectedSort: (id: string) => void;
@@ -71,6 +74,10 @@ function CatalogBrowsePanelInner({
   const isFeed = variant === 'feed';
   const isSearch = variant === 'search';
   const [feedPrefs, setFeedPrefs] = useState(DEFAULT_FEED_PREFS);
+  const [globalDiscovery, setGlobalDiscovery] = useState<{
+    topBrands: { name: string; count: number }[];
+    topSizes: { name: string; count: number }[];
+  } | null>(null);
   const { catalogChromeHidden } = useImmersiveBrowse();
   const { t } = useTranslation();
 
@@ -91,6 +98,10 @@ function CatalogBrowsePanelInner({
     setSearchQuery,
     selectedCategory,
     setSelectedCategory,
+    selectedSubcategory,
+    setSelectedSubcategory,
+    selectedColor,
+    setSelectedColor,
     selectedMinPrice,
     setSelectedMinPrice,
     selectedMaxPrice,
@@ -149,17 +160,24 @@ function CatalogBrowsePanelInner({
     return base;
   }, [products, isFeed, user, feedPrefs]);
 
-  const discoveryChips = useMemo(
-    () => computeDiscoveryChips(catalogProducts),
-    [catalogProducts],
-  );
+  useEffect(() => {
+    if (!isSearch) return;
+    void fetchGlobalDiscoveryChips(supabase).then(setGlobalDiscovery);
+  }, [isSearch]);
+
+  const discoveryChips = useMemo(() => {
+    if (isSearch && globalDiscovery) return globalDiscovery;
+    return computeDiscoveryChips(catalogProducts);
+  }, [isSearch, globalDiscovery, catalogProducts]);
 
   const catalogFilters: CatalogFilterState = useMemo(
     () => ({
       category: selectedCategory,
+      subcategory: selectedSubcategory,
       brand: selectedBrand,
       size: selectedSize,
       condition: selectedCondition,
+      color: selectedColor,
       minPrice: selectedMinPrice,
       maxPrice: selectedMaxPrice,
       sort: selectedSort,
@@ -167,9 +185,11 @@ function CatalogBrowsePanelInner({
     }),
     [
       selectedCategory,
+      selectedSubcategory,
       selectedBrand,
       selectedSize,
       selectedCondition,
+      selectedColor,
       selectedMinPrice,
       selectedMaxPrice,
       selectedSort,
@@ -186,12 +206,16 @@ function CatalogBrowsePanelInner({
     categories,
     selectedCategory,
     onCategoryChange: setSelectedCategory,
+    selectedSubcategory,
+    onSubcategoryChange: setSelectedSubcategory,
     selectedBrand,
     onBrandChange: setSelectedBrand,
     selectedSize,
     onSizeChange: setSelectedSize,
     selectedCondition,
     onConditionChange: setSelectedCondition,
+    selectedColor,
+    onColorChange: setSelectedColor,
     selectedMinPrice,
     selectedMaxPrice,
     maxPriceLimit,
@@ -224,9 +248,11 @@ function CatalogBrowsePanelInner({
   const applySavedSearch = (saved: typeof catalogFilters) => {
     setSearchQuery(saved.search || '');
     setSelectedCategory(saved.category || 'all');
+    setSelectedSubcategory(saved.subcategory || 'all');
     setSelectedBrand(saved.brand || 'all');
     setSelectedSize(saved.size || 'all');
     setSelectedCondition(saved.condition || 'all');
+    setSelectedColor(saved.color || 'all');
     setSelectedMinPrice(saved.minPrice || 0);
     if (saved.maxPrice && saved.maxPrice > 0) setSelectedMaxPrice(saved.maxPrice);
     else setSelectedMaxPrice(maxPriceLimit);
@@ -248,8 +274,7 @@ function CatalogBrowsePanelInner({
   const resultsLine = (
     <p
       className={cn(
-        'mb-2 text-sm tabular-nums text-gray-500 transition-opacity duration-300',
-        catalogChromeHidden && 'max-md:opacity-0 max-md:h-0 max-md:mb-0 overflow-hidden',
+        'mb-2 text-sm tabular-nums text-gray-500',
       )}
     >
       {loading
@@ -298,36 +323,41 @@ function CatalogBrowsePanelInner({
         maxPriceLimit={maxPriceLimit}
         setSearchQuery={setSearchQuery}
         setSelectedCategory={setSelectedCategory}
+        setSelectedSubcategory={setSelectedSubcategory}
         setSelectedBrand={setSelectedBrand}
         setSelectedSize={setSelectedSize}
         setSelectedCondition={setSelectedCondition}
+        setSelectedColor={setSelectedColor}
         setSelectedMinPrice={setSelectedMinPrice}
         setSelectedMaxPrice={setSelectedMaxPrice}
         setSelectedSort={setSelectedSort}
       />
 
-      <div className={chromeCollapse}>
-        {showPersonalization && user && isFeed ? (
-          <FeedPersonalizationBanner
-            mode="feed"
-            products={catalogProducts}
-            favoriteIds={favorites}
-            preferredCategory={
-              selectedCategory !== 'all' ? t(`browse.categories.${selectedCategory}`) : undefined
-            }
-          />
-        ) : null}
+      {showPersonalization && user && isSearch && selectedCategory !== 'all' ? (
+        <FeedPersonalizationBanner
+          mode="search"
+          products={catalogProducts}
+          favoriteIds={favorites}
+          preferredCategory={t(`browse.departments.${selectedCategory}`, {
+            defaultValue: t(`browse.categories.${selectedCategory}`, { defaultValue: selectedCategory }),
+          })}
+        />
+      ) : null}
 
-        {showPersonalization && user && isSearch && selectedCategory !== 'all' ? (
-          <FeedPersonalizationBanner
-            mode="search"
-            products={catalogProducts}
-            favoriteIds={favorites}
-            preferredCategory={t(`browse.categories.${selectedCategory}`)}
-          />
-        ) : null}
-
-        {isFeed ? (
+      {isFeed ? (
+        <div className={chromeCollapse}>
+          {showPersonalization && user ? (
+            <FeedPersonalizationBanner
+              mode="feed"
+              products={catalogProducts}
+              favoriteIds={favorites}
+              preferredCategory={
+                selectedCategory !== 'all'
+                  ? t(`browse.departments.${selectedCategory}`, { defaultValue: selectedCategory })
+                  : undefined
+              }
+            />
+          ) : null}
           <div className="mb-2 -mx-2 space-y-2 px-2 md:-mx-0 md:px-0">
             <BrowseDiscoveryRails
               {...discoveryProps}
@@ -340,41 +370,40 @@ function CatalogBrowsePanelInner({
               onCategoryChange={setSelectedCategory}
             />
           </div>
-        ) : (
-          <div
-            className={cn(
-              'sticky z-40 -mx-2 mb-1.5 border-b border-gray-200/90 bg-white/95 px-2 pt-2 pb-0 backdrop-blur-md supports-[backdrop-filter]:bg-white/80 md:-mx-0 md:px-0 shadow-sm lg:static lg:border-0 lg:bg-transparent lg:shadow-none lg:backdrop-blur-none',
-              stickyTopClass,
-              catalogChromeHidden && 'static border-transparent shadow-none',
-            )}
-          >
-            <div className="space-y-2.5 pb-2 lg:hidden">
-              <BrowseDiscoveryRails {...discoveryProps} compact />
-              <CatalogSearchBar
-                value={searchQuery}
-                onChange={setSearchQuery}
-                catalogFilters={catalogFilters}
-                maxPriceLimit={maxPriceLimit}
-                browsePath={browsePath}
-              />
-              <CategoryQuickChips
-                categories={categories}
-                selectedCategory={selectedCategory}
-                onCategoryChange={setSelectedCategory}
-              />
-              <SavedSearchesStrip
-                filters={catalogFilters}
-                hasActiveFilters={hasActiveFilters}
-                onApply={applySavedSearch}
-              />
-            </div>
-            <div className="lg:hidden">
-              <Filters {...filtersProps} />
-              <ActiveFilterBar {...activeFilterBarProps} className="pb-2" />
-            </div>
+        </div>
+      ) : (
+        <div
+          className={cn(
+            'sticky z-40 -mx-2 mb-1.5 border-b border-gray-200/90 bg-white/95 px-2 pt-2 pb-0 backdrop-blur-md supports-[backdrop-filter]:bg-white/80 md:-mx-0 md:px-0 shadow-sm lg:static lg:border-0 lg:bg-transparent lg:shadow-none lg:backdrop-blur-none',
+            stickyTopClass,
+          )}
+        >
+          <div className="space-y-2.5 pb-2 lg:hidden">
+            <BrowseDiscoveryRails {...discoveryProps} compact />
+            <CatalogSearchBar
+              value={searchQuery}
+              onChange={setSearchQuery}
+              catalogFilters={catalogFilters}
+              maxPriceLimit={maxPriceLimit}
+              browsePath={browsePath}
+            />
+            <CategoryQuickChips
+              categories={categories}
+              selectedCategory={selectedCategory}
+              onCategoryChange={setSelectedCategory}
+            />
+            <SavedSearchesStrip
+              filters={catalogFilters}
+              hasActiveFilters={hasActiveFilters}
+              onApply={applySavedSearch}
+            />
           </div>
-        )}
-      </div>
+          <div className="lg:hidden">
+            <Filters {...filtersProps} />
+            <ActiveFilterBar {...activeFilterBarProps} className="pb-2" />
+          </div>
+        </div>
+      )}
 
       {isSearch ? (
         <div className="lg:grid lg:grid-cols-[272px_minmax(0,1fr)] lg:items-start lg:gap-6">

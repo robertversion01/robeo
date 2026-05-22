@@ -53,9 +53,11 @@ export default function SavedSearchesStrip({ filters, onApply, hasActiveFilters 
     try {
       const payload = {
         category: filters.category,
+        subcategory: filters.subcategory,
         brand: filters.brand,
         size: filters.size,
         condition: filters.condition,
+        color: filters.color,
         minPrice: filters.minPrice,
         maxPrice: filters.maxPrice,
         sort: filters.sort,

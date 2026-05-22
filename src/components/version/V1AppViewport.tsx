@@ -39,8 +39,7 @@ function V1AppViewportInner({ children }: { children: React.ReactNode }) {
     };
   }, []);
 
-  const showMobileBottomPad =
-    shouldPadForMobileBottomNav(pathname, loggedIn) && !shellChromeHidden;
+  const showMobileBottomPad = shouldPadForMobileBottomNav(pathname, loggedIn);
 
   return (
     <NotificationProvider>

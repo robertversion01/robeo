@@ -4,6 +4,8 @@ import { X } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 import { cn } from '@/lib/utils';
 import type { CatalogFilterState } from '@/lib/catalogFilters';
+import { getSubcategoryById } from '@/lib/vintedCategoryTree';
+import { VINTED_COLORS } from '@/lib/vintedCategoryTree';
 
 type CategoryOption = { id: string; label: string };
 type SortOption = { id: string; label: string };
@@ -51,7 +53,19 @@ export default function ActiveFilterBar({
     const cat = categories.find((c) => c.id === filters.category);
     chips.push({
       key: 'category',
-      label: cat?.label ?? t(`browse.categories.${filters.category}`, { defaultValue: filters.category }),
+      label:
+        cat?.label ??
+        t(`browse.departments.${filters.category}`, {
+          defaultValue: t(`browse.categories.${filters.category}`, { defaultValue: filters.category }),
+        }),
+    });
+  }
+
+  if (filters.subcategory !== 'all') {
+    const sub = getSubcategoryById(filters.subcategory);
+    chips.push({
+      key: 'subcategory',
+      label: sub ? t(sub.labelKey) : filters.subcategory,
     });
   }
 
@@ -64,14 +78,23 @@ export default function ActiveFilterBar({
   }
 
   if (filters.condition !== 'all') {
-    const conditionLabels: Record<string, string> = {
-      new: t('browse.discovery.conditionNew'),
-      like_new: t('browse.discovery.conditionLikeNew'),
-      good: t('browse.discovery.conditionGood'),
-    };
+    const conditionDef = [
+      { id: 'new', labelKey: 'browse.discovery.conditionNew' },
+      { id: 'excellent', labelKey: 'browse.conditions.excellent' },
+      { id: 'very_good', labelKey: 'browse.conditions.veryGood' },
+      { id: 'good', labelKey: 'browse.discovery.conditionGood' },
+    ].find((c) => c.id === filters.condition);
     chips.push({
       key: 'condition',
-      label: conditionLabels[filters.condition] ?? filters.condition,
+      label: conditionDef ? t(conditionDef.labelKey) : filters.condition,
+    });
+  }
+
+  if (filters.color !== 'all') {
+    const colorDef = VINTED_COLORS.find((c) => c.id === filters.color);
+    chips.push({
+      key: 'color',
+      label: colorDef ? t(colorDef.labelKey) : filters.color,
     });
   }
 

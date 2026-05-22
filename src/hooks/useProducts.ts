@@ -18,11 +18,11 @@ import { conditionMatchesFilter } from '@/lib/vintedCatalog';
 import { canFilterProductsBySize } from '@/lib/productSchema';
 import {
   type CatalogFilterState,
-  productMatchesCategory,
+  productMatchesCatalogFilters,
   serializeCatalogFilters,
   conditionDbValues,
-  categoryDbValues,
 } from '@/lib/catalogFilters';
+import { VINTED_DEPARTMENTS } from '@/lib/vintedCategoryTree';
 import { fetchAllVacationSellerIds } from '@/lib/vacationMode';
 
 /** Szerver-oldali lapozás — Supabase range chunk méret. */
@@ -42,11 +42,7 @@ const SORT_OPTIONS = [
 
 const CATEGORIES = [
   { id: 'all', label: 'Összes' },
-  { id: 'clothing', label: 'Ruházat' },
-  { id: 'shoes', label: 'Cipő' },
-  { id: 'accessories', label: 'Kiegészítők' },
-  { id: 'electronics', label: 'Elektronika' },
-  { id: 'other', label: 'Egyéb' },
+  ...VINTED_DEPARTMENTS.map((d) => ({ id: d.id, label: d.id })),
 ];
 
 export function useProducts() {
@@ -58,6 +54,8 @@ export function useProducts() {
   const [page, setPage] = useState(0);
   const [filterRevision, setFilterRevision] = useState(0);
   const [selectedCategory, setSelectedCategory] = useState('all');
+  const [selectedSubcategory, setSelectedSubcategory] = useState('all');
+  const [selectedColor, setSelectedColor] = useState('all');
   const [selectedMinPrice, setSelectedMinPrice] = useState(0);
   const [selectedMaxPrice, setSelectedMaxPrice] = useState<number>(0);
   const [maxPriceLimit, setMaxPriceLimit] = useState(0);
@@ -72,9 +70,11 @@ export function useProducts() {
   const catalogFilters: CatalogFilterState = useMemo(
     () => ({
       category: selectedCategory,
+      subcategory: selectedSubcategory,
       brand: selectedBrand,
       size: selectedSize,
       condition: selectedCondition,
+      color: selectedColor,
       minPrice: selectedMinPrice,
       maxPrice: selectedMaxPrice,
       sort: selectedSort,
@@ -82,9 +82,11 @@ export function useProducts() {
     }),
     [
       selectedCategory,
+      selectedSubcategory,
       selectedBrand,
       selectedSize,
       selectedCondition,
+      selectedColor,
       selectedMinPrice,
       selectedMaxPrice,
       selectedSort,
@@ -107,7 +109,19 @@ export function useProducts() {
     [bumpFilterRevision],
   );
 
-  const setSelectedCategoryWrapped = wrapFilterSetter(setSelectedCategory);
+  const setSelectedCategoryWrapped = useCallback(
+    (value: SetStateAction<string>) => {
+      setSelectedCategory((prev) => {
+        const next = typeof value === 'function' ? value(prev) : value;
+        if (next !== prev) setSelectedSubcategory('all');
+        return next;
+      });
+      bumpFilterRevision();
+    },
+    [bumpFilterRevision],
+  );
+  const setSelectedSubcategoryWrapped = wrapFilterSetter(setSelectedSubcategory);
+  const setSelectedColorWrapped = wrapFilterSetter(setSelectedColor);
   const setSelectedBrandWrapped = wrapFilterSetter(setSelectedBrand);
   const setSelectedSizeWrapped = wrapFilterSetter(setSelectedSize);
   const setSelectedConditionWrapped = wrapFilterSetter(setSelectedCondition);
@@ -152,15 +166,6 @@ export function useProducts() {
           query = query.ilike('brand', catalogFilters.brand);
         }
 
-        if (catalogFilters.category !== 'all') {
-          const catValues = categoryDbValues(catalogFilters.category);
-          if (catValues.length === 1) {
-            query = query.eq('category', catValues[0]);
-          } else if (catValues.length > 1) {
-            query = query.in('category', catValues);
-          }
-        }
-
         const searchTerm = catalogFilters.search.trim();
         if (searchTerm) {
           const escaped = searchTerm.replace(/[%_\\]/g, '\\$&');
@@ -186,6 +191,10 @@ export function useProducts() {
           }
         }
 
+        if (catalogFilters.color !== 'all') {
+          query = query.ilike('color', `%${catalogFilters.color}%`);
+        }
+
         if (catalogFilters.minPrice > 0) {
           query = query.gte('price', catalogFilters.minPrice);
         }
@@ -207,11 +216,7 @@ export function useProducts() {
 
         let fetched = ((data || []) as Product[]).filter((p) => isListedProduct(p.status));
 
-        if (catalogFilters.category !== 'all') {
-          fetched = fetched.filter((p) =>
-            productMatchesCategory(p.category, catalogFilters.category),
-          );
-        }
+        fetched = fetched.filter((p) => productMatchesCatalogFilters(p, catalogFilters));
 
         if (catalogFilters.condition !== 'all') {
           fetched = fetched.filter((p) =>
@@ -365,17 +370,21 @@ export function useProducts() {
   const activeFilterCount = useMemo(() => {
     let n = 0;
     if (selectedCategory !== 'all') n++;
+    if (selectedSubcategory !== 'all') n++;
     if (selectedBrand !== 'all') n++;
     if (selectedSize !== 'all') n++;
     if (selectedCondition !== 'all') n++;
+    if (selectedColor !== 'all') n++;
     if (selectedMinPrice > 0) n++;
     if (selectedMaxPrice > 0 && selectedMaxPrice < maxPriceLimit) n++;
     return n;
   }, [
     selectedCategory,
+    selectedSubcategory,
     selectedBrand,
     selectedSize,
     selectedCondition,
+    selectedColor,
     selectedMinPrice,
     selectedMaxPrice,
     maxPriceLimit,
@@ -384,9 +393,11 @@ export function useProducts() {
   const clearAllFilters = useCallback(() => {
     setSearchQuery('');
     setSelectedCategory('all');
+    setSelectedSubcategory('all');
     setSelectedBrand('all');
     setSelectedSize('all');
     setSelectedCondition('all');
+    setSelectedColor('all');
     setSelectedMinPrice(0);
     setSelectedMaxPrice(maxPriceLimit);
     setSelectedSort('newest');
@@ -401,6 +412,10 @@ export function useProducts() {
           break;
         case 'category':
           setSelectedCategory('all');
+          setSelectedSubcategory('all');
+          break;
+        case 'subcategory':
+          setSelectedSubcategory('all');
           break;
         case 'brand':
           setSelectedBrand('all');
@@ -410,6 +425,9 @@ export function useProducts() {
           break;
         case 'condition':
           setSelectedCondition('all');
+          break;
+        case 'color':
+          setSelectedColor('all');
           break;
         case 'minPrice':
           setSelectedMinPrice(0);
@@ -441,6 +459,10 @@ export function useProducts() {
     setSearchQuery,
     selectedCategory,
     setSelectedCategory: setSelectedCategoryWrapped,
+    selectedSubcategory,
+    setSelectedSubcategory: setSelectedSubcategoryWrapped,
+    selectedColor,
+    setSelectedColor: setSelectedColorWrapped,
     selectedMinPrice,
     setSelectedMinPrice: setSelectedMinPriceWrapped,
     selectedMaxPrice,

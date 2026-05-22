@@ -58,9 +58,11 @@ function discoveryHref(
 ): string {
   const filters: CatalogFilterState = {
     category: 'all',
+    subcategory: 'all',
     brand: 'all',
     size: 'all',
     condition: 'all',
+    color: 'all',
     minPrice: 0,
     maxPrice: 0,
     sort: 'newest',

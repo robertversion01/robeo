@@ -1,10 +1,13 @@
 import type { CatalogFilterState } from '@/lib/catalogFilters';
+import { normalizeDepartmentId } from '@/lib/catalogFilters';
 
 const DEFAULTS: CatalogFilterState = {
   category: 'all',
+  subcategory: 'all',
   brand: 'all',
   size: 'all',
   condition: 'all',
+  color: 'all',
   minPrice: 0,
   maxPrice: 0,
   sort: 'newest',
@@ -18,7 +21,10 @@ export function parseCatalogFromUrl(params: URLSearchParams): Partial<CatalogFil
   if (q) next.search = q;
 
   const cat = params.get('cat');
-  if (cat) next.category = cat;
+  if (cat) next.category = normalizeDepartmentId(cat);
+
+  const sub = params.get('sub');
+  if (sub) next.subcategory = sub;
 
   const brand = params.get('brand');
   if (brand) next.brand = brand;
@@ -28,6 +34,9 @@ export function parseCatalogFromUrl(params: URLSearchParams): Partial<CatalogFil
 
   const cond = params.get('cond') ?? params.get('condition');
   if (cond) next.condition = cond;
+
+  const color = params.get('color');
+  if (color) next.color = color;
 
   const min = params.get('min');
   if (min != null && min !== '') {
@@ -57,9 +66,11 @@ export function buildCatalogUrlParams(
   if (search) params.set('q', search);
 
   if (filters.category !== DEFAULTS.category) params.set('cat', filters.category);
+  if (filters.subcategory !== DEFAULTS.subcategory) params.set('sub', filters.subcategory);
   if (filters.brand !== DEFAULTS.brand) params.set('brand', filters.brand);
   if (filters.size !== DEFAULTS.size) params.set('size', filters.size);
   if (filters.condition !== DEFAULTS.condition) params.set('cond', filters.condition);
+  if (filters.color !== DEFAULTS.color) params.set('color', filters.color);
   if (filters.sort !== DEFAULTS.sort) params.set('sort', filters.sort);
 
   if (filters.minPrice > 0) params.set('min', String(Math.round(filters.minPrice)));
@@ -83,3 +94,5 @@ export function catalogUrlFromFilters(
   const qs = params.toString();
   return qs ? `${pathname}?${qs}` : pathname;
 }
+
+export { DEFAULTS as CATALOG_FILTER_DEFAULTS };

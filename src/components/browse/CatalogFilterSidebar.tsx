@@ -6,10 +6,12 @@ import { useTranslation } from 'react-i18next';
 import {
   VINTED_BRANDS,
   VINTED_CONDITIONS,
-  sizesForCategory,
-  CLOTHING_SIZES,
-  SHOE_SIZES,
 } from '@/lib/vintedCatalog';
+import {
+  getSubcategoriesForDepartment,
+  sizesForDepartment,
+  VINTED_COLORS,
+} from '@/lib/vintedCategoryTree';
 import { cn } from '@/lib/utils';
 import type { FiltersProps } from '@/components/product/Filters';
 
@@ -81,12 +83,16 @@ export default function CatalogFilterSidebar({
   categories,
   selectedCategory,
   onCategoryChange,
+  selectedSubcategory,
+  onSubcategoryChange,
   selectedBrand,
   onBrandChange,
   selectedSize,
   onSizeChange,
   selectedCondition,
   onConditionChange,
+  selectedColor,
+  onColorChange,
   selectedMinPrice,
   selectedMaxPrice,
   maxPriceLimit,
@@ -108,7 +114,9 @@ export default function CatalogFilterSidebar({
       { id: 'all', label: t('browse.filters.allCategories') },
       ...categories.filter((c) => c.id !== 'all').map((c) => ({
         id: c.id,
-        label: t(`browse.categories.${c.id}`, { defaultValue: c.label }),
+        label: t(`browse.departments.${c.id}`, {
+          defaultValue: t(`browse.categories.${c.id}`, { defaultValue: c.label }),
+        }),
       })),
     ],
     [categories, t],
@@ -120,13 +128,14 @@ export default function CatalogFilterSidebar({
     return list.slice(0, q ? 24 : 14);
   }, [brandQuery]);
 
+  const subcategoryOptions = useMemo(() => {
+    const subs = getSubcategoriesForDepartment(selectedCategory);
+    return [{ id: 'all', label: t('browse.filters.allSubcategories') }, ...subs.map((s) => ({ id: s.id, label: t(s.labelKey) }))];
+  }, [selectedCategory, t]);
+
   const sizeOptions = useMemo(() => {
-    const sizes =
-      selectedCategory === 'all'
-        ? Array.from(new Set([...CLOTHING_SIZES, ...SHOE_SIZES]))
-        : [...sizesForCategory(selectedCategory)];
-    return sizes;
-  }, [selectedCategory]);
+    return [...sizesForDepartment(selectedCategory, selectedSubcategory)];
+  }, [selectedCategory, selectedSubcategory]);
 
   const conditionOptions = useMemo(
     () => [{ id: 'all', label: t('browse.filters.allConditions') }, ...VINTED_CONDITIONS],
@@ -194,6 +203,21 @@ export default function CatalogFilterSidebar({
             ))}
           </div>
         </SidebarSection>
+
+        {selectedCategory !== 'all' ? (
+          <SidebarSection title={t('browse.filters.subcategory')}>
+            <div className="max-h-48 space-y-0.5 overflow-y-auto">
+              {subcategoryOptions.map((opt) => (
+                <SidebarRadio
+                  key={opt.id}
+                  active={selectedSubcategory === opt.id}
+                  label={opt.label}
+                  onClick={() => onSubcategoryChange(opt.id)}
+                />
+              ))}
+            </div>
+          </SidebarSection>
+        ) : null}
 
         <SidebarSection title={t('browse.filters.brand')}>
           <div className="relative mb-2">
@@ -264,6 +288,38 @@ export default function CatalogFilterSidebar({
                 label={opt.label}
                 onClick={() => onConditionChange(opt.id)}
               />
+            ))}
+          </div>
+        </SidebarSection>
+
+        <SidebarSection title={t('browse.filters.color')}>
+          <div className="flex flex-wrap gap-1.5">
+            <button
+              type="button"
+              onClick={() => onColorChange('all')}
+              className={cn(
+                'rounded-lg border px-2.5 py-1.5 text-xs font-medium transition-colors',
+                selectedColor === 'all'
+                  ? 'border-[#007782] bg-[#007782] text-white'
+                  : 'border-gray-200 bg-gray-50 text-gray-700 hover:border-[#007782]/40',
+              )}
+            >
+              {t('browse.filters.allColors')}
+            </button>
+            {VINTED_COLORS.map((c) => (
+              <button
+                key={c.id}
+                type="button"
+                onClick={() => onColorChange(c.id)}
+                className={cn(
+                  'rounded-lg border px-2.5 py-1.5 text-xs font-medium transition-colors',
+                  selectedColor === c.id
+                    ? 'border-[#007782] bg-[#007782] text-white'
+                    : 'border-gray-200 bg-gray-50 text-gray-700 hover:border-[#007782]/40',
+                )}
+              >
+                {t(c.labelKey)}
+              </button>
             ))}
           </div>
         </SidebarSection>

@@ -9,7 +9,7 @@ export default function BrowsePageClient() {
 
   return (
     <div className="min-h-screen max-w-[100vw] overflow-x-hidden bg-white text-gray-900">
-      <main className="pt-2 pb-[calc(3.75rem+env(safe-area-inset-bottom,0px))] px-2 md:pt-14 md:pb-12 md:px-6">
+      <main className="pt-2 pb-4 px-2 md:pt-14 md:pb-12 md:px-6">
         <div className="mx-auto max-w-7xl">
           <PageHeader
             title={t('browse.pageTitle')}

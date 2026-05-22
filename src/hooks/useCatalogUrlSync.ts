@@ -13,9 +13,11 @@ type CatalogUrlSyncArgs = {
   maxPriceLimit: number;
   setSearchQuery: (q: string) => void;
   setSelectedCategory: (id: string) => void;
+  setSelectedSubcategory: (id: string) => void;
   setSelectedBrand: (id: string) => void;
   setSelectedSize: (id: string) => void;
   setSelectedCondition: (id: string) => void;
+  setSelectedColor: (id: string) => void;
   setSelectedMinPrice: (n: number) => void;
   setSelectedMaxPrice: (n: number) => void;
   setSelectedSort: (id: string) => void;
@@ -27,9 +29,11 @@ export function useCatalogUrlSync({
   maxPriceLimit,
   setSearchQuery,
   setSelectedCategory,
+  setSelectedSubcategory,
   setSelectedBrand,
   setSelectedSize,
   setSelectedCondition,
+  setSelectedColor,
   setSelectedMinPrice,
   setSelectedMaxPrice,
   setSelectedSort,
@@ -56,9 +60,11 @@ export function useCatalogUrlSync({
     skipWriteRef.current = true;
     if (parsed.search != null) setSearchQuery(parsed.search);
     if (parsed.category) setSelectedCategory(parsed.category);
+    if (parsed.subcategory) setSelectedSubcategory(parsed.subcategory);
     if (parsed.brand) setSelectedBrand(parsed.brand);
     if (parsed.size) setSelectedSize(parsed.size);
     if (parsed.condition) setSelectedCondition(parsed.condition);
+    if (parsed.color) setSelectedColor(parsed.color);
     if (parsed.minPrice != null) setSelectedMinPrice(parsed.minPrice);
     if (parsed.maxPrice != null && parsed.maxPrice > 0) setSelectedMaxPrice(parsed.maxPrice);
     if (parsed.sort) setSelectedSort(parsed.sort);
@@ -72,9 +78,11 @@ export function useCatalogUrlSync({
     searchParams,
     setSearchQuery,
     setSelectedCategory,
+    setSelectedSubcategory,
     setSelectedBrand,
     setSelectedSize,
     setSelectedCondition,
+    setSelectedColor,
     setSelectedMinPrice,
     setSelectedMaxPrice,
     setSelectedSort,
