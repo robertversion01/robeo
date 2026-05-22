@@ -73,6 +73,12 @@
       "clear": "Törlés",
       "clearAll": "Szűrők törlése ({{count}})"
     },
+    "sidebar": {
+      "title": "Szűrők",
+      "reset": "Törlés",
+      "searchBrand": "Márka keresése…",
+      "sort": "Rendezés"
+    },
     "activeFilters": {
       "remove": "Szűrő eltávolítása",
       "clearAll": "Összes törlése",
@@ -103,6 +109,8 @@
       "alertOff": "Értesítés kikapcsolva"
     },
     "discovery": {
+      "explore": "Felfedezés",
+      "trending": "Felkapott most",
       "brands": "Népszerű márkák",
       "sizes": "Méretek",
       "popular": "Népszerű rendezés",

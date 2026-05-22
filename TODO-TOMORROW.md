@@ -15,6 +15,8 @@ Részletes gap lista: **`docs/VINTED-GAP-ANALYSIS.md`**
 - [x] **P1-4 Verified seller admin** — `/api/admin/seller-verified` (role auth) + AdminHub toggle
 - [x] **P2 FilterChipDropdown** — aktív chip: `Márka: Nike` formátum
 - [x] **P0 Szerver lapozás** — `useProducts` `.range()` + load more + vacation szűrés vissza
+- [x] **Allegro desktop sidebar** — `/browse` lg+ bal szűrőpanel (`CatalogFilterSidebar`)
+- [x] **Hacoo discovery chip polish** — aktív chip, darabszám, Felfedezés kártya desktopon
 
 ---
 

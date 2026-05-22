@@ -12,6 +12,7 @@ import SavedSearchesStrip from '@/components/browse/SavedSearchesStrip';
 import FeedPersonalizationBanner from '@/components/browse/FeedPersonalizationBanner';
 import BrowseDiscoveryRails from '@/components/browse/BrowseDiscoveryRails';
 import ActiveFilterBar from '@/components/browse/ActiveFilterBar';
+import CatalogFilterSidebar from '@/components/browse/CatalogFilterSidebar';
 import { cn } from '@/lib/utils';
 import { filterProductsWithValidImages } from '@/lib/productImageValidation';
 import type { CatalogFilterState } from '@/lib/catalogFilters';
@@ -181,6 +182,42 @@ function CatalogBrowsePanelInner({
     [sortOptions, t],
   );
 
+  const filtersProps = {
+    categories,
+    selectedCategory,
+    onCategoryChange: setSelectedCategory,
+    selectedBrand,
+    onBrandChange: setSelectedBrand,
+    selectedSize,
+    onSizeChange: setSelectedSize,
+    selectedCondition,
+    onConditionChange: setSelectedCondition,
+    selectedMinPrice,
+    selectedMaxPrice,
+    maxPriceLimit,
+    onMinPriceChange: setSelectedMinPrice,
+    onMaxPriceChange: setSelectedMaxPrice,
+    sortOptions: localizedSortOptions,
+    selectedSort,
+    onSortChange: setSelectedSort,
+    activeFilterCount,
+    onClearAll: clearAllFilters,
+  };
+
+  const discoveryProps = {
+    browsePath,
+    brandChips: discoveryChips.topBrands,
+    sizeChips: discoveryChips.topSizes,
+    activeFilters: catalogFilters,
+    maxPriceLimit,
+    allowFallback: false,
+    onBrandPick: setSelectedBrand,
+    onSizePick: setSelectedSize,
+    onConditionPick: setSelectedCondition,
+    onSortPick: setSelectedSort,
+    onMaxPricePick: setSelectedMaxPrice,
+  };
+
   const hasActiveFilters =
     activeFilterCount > 0 || searchQuery.trim().length > 0 || selectedSort !== 'newest';
 
@@ -195,6 +232,63 @@ function CatalogBrowsePanelInner({
     else setSelectedMaxPrice(maxPriceLimit);
     setSelectedSort(saved.sort || 'newest');
   };
+
+  const activeFilterBarProps = {
+    filters: catalogFilters,
+    maxPriceLimit,
+    categories: categories.map((c) => ({
+      id: c.id,
+      label: t(`browse.categories.${c.id}`, { defaultValue: c.label }),
+    })),
+    sortOptions: localizedSortOptions,
+    onRemove: removeFilter,
+    onClearAll: clearAllFilters,
+  };
+
+  const resultsLine = (
+    <p
+      className={cn(
+        'mb-2 text-sm tabular-nums text-gray-500 transition-opacity duration-300',
+        catalogChromeHidden && 'max-md:opacity-0 max-md:h-0 max-md:mb-0 overflow-hidden',
+      )}
+    >
+      {loading
+        ? t('landing.catalog.loading')
+        : totalCount > catalogProducts.length
+          ? t('landing.catalog.resultsPaged', {
+              shown: catalogProducts.length,
+              total: totalCount,
+            })
+          : t('landing.catalog.results', { count: catalogProducts.length })}
+    </p>
+  );
+
+  const productGridBlock = (
+    <>
+      {resultsLine}
+      <ProductGrid
+        products={catalogProducts}
+        loading={loading}
+        favorites={favorites}
+        onToggleFavorite={toggleFavorite}
+        transitionKey={filterKey}
+        hasActiveFilters={hasActiveFilters}
+        onClearFilters={clearAllFilters}
+      />
+      {!loading && hasMore ? (
+        <div className="mt-6 flex justify-center pb-8">
+          <button
+            type="button"
+            onClick={() => void loadMore()}
+            disabled={loadingMore}
+            className="min-h-11 rounded-xl border border-gray-200 bg-white px-6 py-2.5 text-sm font-semibold text-gray-800 shadow-sm transition hover:bg-gray-50 disabled:opacity-60"
+          >
+            {loadingMore ? t('landing.catalog.loadingMore') : t('landing.catalog.loadMore')}
+          </button>
+        </div>
+      ) : null}
+    </>
+  );
 
   return (
     <div id="catalog" className={cn('scroll-mt-14', className)}>
@@ -234,19 +328,11 @@ function CatalogBrowsePanelInner({
         ) : null}
 
         {isFeed ? (
-          <div className="mb-2 -mx-2 px-2 md:-mx-0 md:px-0 space-y-2">
+          <div className="mb-2 -mx-2 space-y-2 px-2 md:-mx-0 md:px-0">
             <BrowseDiscoveryRails
-              browsePath={browsePath}
-              brandChips={discoveryChips.topBrands}
-              sizeChips={discoveryChips.topSizes}
+              {...discoveryProps}
               prefBrands={feedPrefs.brands}
-              allowFallback={false}
               compact
-              onBrandPick={(brand) => setSelectedBrand(brand)}
-              onSizePick={(size) => setSelectedSize(size)}
-              onConditionPick={(condition) => setSelectedCondition(condition)}
-              onSortPick={(sort) => setSelectedSort(sort)}
-              onMaxPricePick={(max) => setSelectedMaxPrice(max)}
             />
             <CategoryQuickChips
               categories={categories}
@@ -257,117 +343,76 @@ function CatalogBrowsePanelInner({
         ) : (
           <div
             className={cn(
-              'sticky z-40 -mx-2 mb-1.5 border-b border-gray-200/90 bg-white/95 px-2 pt-2 pb-0 backdrop-blur-md supports-[backdrop-filter]:bg-white/80 md:-mx-0 md:px-0 shadow-sm',
+              'sticky z-40 -mx-2 mb-1.5 border-b border-gray-200/90 bg-white/95 px-2 pt-2 pb-0 backdrop-blur-md supports-[backdrop-filter]:bg-white/80 md:-mx-0 md:px-0 shadow-sm lg:static lg:border-0 lg:bg-transparent lg:shadow-none lg:backdrop-blur-none',
               stickyTopClass,
               catalogChromeHidden && 'static border-transparent shadow-none',
             )}
           >
-          <div className="space-y-2.5 pb-2">
-            {isSearch ? (
-              <BrowseDiscoveryRails
+            <div className="space-y-2.5 pb-2 lg:hidden">
+              <BrowseDiscoveryRails {...discoveryProps} compact />
+              <CatalogSearchBar
+                value={searchQuery}
+                onChange={setSearchQuery}
+                catalogFilters={catalogFilters}
+                maxPriceLimit={maxPriceLimit}
                 browsePath={browsePath}
-                brandChips={discoveryChips.topBrands}
-                sizeChips={discoveryChips.topSizes}
-                allowFallback={false}
-                onBrandPick={(brand) => setSelectedBrand(brand)}
-                onSizePick={(size) => setSelectedSize(size)}
-                onConditionPick={(condition) => setSelectedCondition(condition)}
-                onSortPick={(sort) => setSelectedSort(sort)}
-                onMaxPricePick={(max) => setSelectedMaxPrice(max)}
               />
-            ) : null}
-            <CatalogSearchBar
-              value={searchQuery}
-              onChange={setSearchQuery}
-              catalogFilters={catalogFilters}
-              maxPriceLimit={maxPriceLimit}
-              browsePath={browsePath}
-            />
-            <CategoryQuickChips
-              categories={categories}
-              selectedCategory={selectedCategory}
-              onCategoryChange={setSelectedCategory}
-            />
-            <SavedSearchesStrip
-              filters={catalogFilters}
-              hasActiveFilters={hasActiveFilters}
-              onApply={applySavedSearch}
-            />
+              <CategoryQuickChips
+                categories={categories}
+                selectedCategory={selectedCategory}
+                onCategoryChange={setSelectedCategory}
+              />
+              <SavedSearchesStrip
+                filters={catalogFilters}
+                hasActiveFilters={hasActiveFilters}
+                onApply={applySavedSearch}
+              />
+            </div>
+            <div className="lg:hidden">
+              <Filters {...filtersProps} />
+              <ActiveFilterBar {...activeFilterBarProps} className="pb-2" />
+            </div>
           </div>
-          <Filters
-            categories={categories}
-            selectedCategory={selectedCategory}
-            onCategoryChange={setSelectedCategory}
-            selectedBrand={selectedBrand}
-            onBrandChange={setSelectedBrand}
-            selectedSize={selectedSize}
-            onSizeChange={setSelectedSize}
-            selectedCondition={selectedCondition}
-            onConditionChange={setSelectedCondition}
-            selectedMinPrice={selectedMinPrice}
-            selectedMaxPrice={selectedMaxPrice}
-            maxPriceLimit={maxPriceLimit}
-            onMinPriceChange={setSelectedMinPrice}
-            onMaxPriceChange={setSelectedMaxPrice}
-            sortOptions={localizedSortOptions}
-            selectedSort={selectedSort}
-            onSortChange={setSelectedSort}
-            activeFilterCount={activeFilterCount}
-            onClearAll={clearAllFilters}
-          />
-          <ActiveFilterBar
-            filters={catalogFilters}
-            maxPriceLimit={maxPriceLimit}
-            categories={categories.map((c) => ({
-              id: c.id,
-              label: t(`browse.categories.${c.id}`, { defaultValue: c.label }),
-            }))}
-            sortOptions={localizedSortOptions}
-            onRemove={removeFilter}
-            onClearAll={clearAllFilters}
-            className="pb-2"
-          />
-        </div>
         )}
       </div>
 
-      <p
-        className={cn(
-          'mb-2 text-sm tabular-nums text-gray-500 transition-opacity duration-300',
-          catalogChromeHidden && 'max-md:opacity-0 max-md:h-0 max-md:mb-0 overflow-hidden',
-        )}
-      >
-        {loading
-          ? t('landing.catalog.loading')
-          : totalCount > catalogProducts.length
-            ? t('landing.catalog.resultsPaged', {
-                shown: catalogProducts.length,
-                total: totalCount,
-              })
-            : t('landing.catalog.results', { count: catalogProducts.length })}
-      </p>
-      <ProductGrid
-        products={catalogProducts}
-        loading={loading}
-        favorites={favorites}
-        onToggleFavorite={toggleFavorite}
-        transitionKey={filterKey}
-        hasActiveFilters={hasActiveFilters}
-        onClearFilters={clearAllFilters}
-      />
+      {isSearch ? (
+        <div className="lg:grid lg:grid-cols-[272px_minmax(0,1fr)] lg:items-start lg:gap-6">
+          <aside className="hidden lg:block">
+            <CatalogFilterSidebar
+              {...filtersProps}
+              className="sticky top-[5.25rem] z-30"
+            />
+          </aside>
 
-      {!loading && hasMore ? (
-        <div className="mt-6 flex justify-center pb-8">
-          <button
-            type="button"
-            onClick={() => void loadMore()}
-            disabled={loadingMore}
-            className="min-h-11 rounded-xl border border-gray-200 bg-white px-6 py-2.5 text-sm font-semibold text-gray-800 shadow-sm transition hover:bg-gray-50 disabled:opacity-60"
-          >
-            {loadingMore ? t('landing.catalog.loadingMore') : t('landing.catalog.loadMore')}
-          </button>
+          <div className="min-w-0">
+            <div className="mb-4 hidden space-y-3 lg:block">
+              <CatalogSearchBar
+                value={searchQuery}
+                onChange={setSearchQuery}
+                catalogFilters={catalogFilters}
+                maxPriceLimit={maxPriceLimit}
+                browsePath={browsePath}
+              />
+              <CategoryQuickChips
+                categories={categories}
+                selectedCategory={selectedCategory}
+                onCategoryChange={setSelectedCategory}
+              />
+              <SavedSearchesStrip
+                filters={catalogFilters}
+                hasActiveFilters={hasActiveFilters}
+                onApply={applySavedSearch}
+              />
+              <BrowseDiscoveryRails {...discoveryProps} hacooCard />
+              <ActiveFilterBar {...activeFilterBarProps} />
+            </div>
+            {productGridBlock}
+          </div>
         </div>
-      ) : null}
+      ) : (
+        productGridBlock
+      )}
 
       <ImmersiveFilterSheet
         catalogFilters={catalogFilters}
@@ -377,27 +422,7 @@ function CatalogBrowsePanelInner({
             document.getElementById('catalog')?.scrollIntoView({ behavior: 'smooth', block: 'start' });
           }
         }}
-        filtersProps={{
-          categories,
-          selectedCategory,
-          onCategoryChange: setSelectedCategory,
-          selectedBrand,
-          onBrandChange: setSelectedBrand,
-          selectedSize,
-          onSizeChange: setSelectedSize,
-          selectedCondition,
-          onConditionChange: setSelectedCondition,
-          selectedMinPrice,
-          selectedMaxPrice,
-          maxPriceLimit,
-          onMinPriceChange: setSelectedMinPrice,
-          onMaxPriceChange: setSelectedMaxPrice,
-          sortOptions: localizedSortOptions,
-          selectedSort,
-          onSortChange: setSelectedSort,
-          activeFilterCount,
-          onClearAll: clearAllFilters,
-        }}
+        filtersProps={filtersProps}
       />
     </div>
   );

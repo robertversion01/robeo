@@ -73,6 +73,12 @@
       "clear": "Clear",
       "clearAll": "Clear filters ({{count}})"
     },
+    "sidebar": {
+      "title": "Filters",
+      "reset": "Clear",
+      "searchBrand": "Search brand…",
+      "sort": "Sort by"
+    },
     "activeFilters": {
       "remove": "Remove filter",
       "clearAll": "Clear all",
@@ -103,6 +109,8 @@
       "alertOff": "Alerts off"
     },
     "discovery": {
+      "explore": "Explore",
+      "trending": "Trending now",
       "brands": "Popular brands",
       "sizes": "Sizes",
       "popular": "Popular sort",

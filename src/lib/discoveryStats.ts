@@ -4,7 +4,9 @@ function norm(s: string | null | undefined) {
   return (s || '').trim();
 }
 
-/** Top márkák / méretek a betöltött katalógusból */
+export type DiscoveryChipStat = { name: string; count: number };
+
+/** Top márkák / méretek a betöltött katalógusból (darabszámmal). */
 export function computeDiscoveryChips(products: Product[], limit = 8) {
   const brandCount = new Map<string, number>();
   const sizeCount = new Map<string, number>();
@@ -16,15 +18,15 @@ export function computeDiscoveryChips(products: Product[], limit = 8) {
     if (s) sizeCount.set(s, (sizeCount.get(s) || 0) + 1);
   }
 
-  const topBrands = [...brandCount.entries()]
+  const topBrands: DiscoveryChipStat[] = [...brandCount.entries()]
     .sort((a, b) => b[1] - a[1])
     .slice(0, limit)
-    .map(([name]) => name);
+    .map(([name, count]) => ({ name, count }));
 
-  const topSizes = [...sizeCount.entries()]
+  const topSizes: DiscoveryChipStat[] = [...sizeCount.entries()]
     .sort((a, b) => b[1] - a[1])
     .slice(0, limit)
-    .map(([name]) => name);
+    .map(([name, count]) => ({ name, count }));
 
   return { topBrands, topSizes };
 }
