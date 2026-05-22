@@ -82,6 +82,10 @@ function CatalogBrowsePanelInner({
   const {
     products,
     loading,
+    loadingMore,
+    totalCount,
+    hasMore,
+    loadMore,
     searchQuery,
     setSearchQuery,
     selectedCategory,
@@ -333,7 +337,14 @@ function CatalogBrowsePanelInner({
           catalogChromeHidden && 'max-md:opacity-0 max-md:h-0 max-md:mb-0 overflow-hidden',
         )}
       >
-        {loading ? t('landing.catalog.loading') : t('landing.catalog.results', { count: catalogProducts.length })}
+        {loading
+          ? t('landing.catalog.loading')
+          : totalCount > catalogProducts.length
+            ? t('landing.catalog.resultsPaged', {
+                shown: catalogProducts.length,
+                total: totalCount,
+              })
+            : t('landing.catalog.results', { count: catalogProducts.length })}
       </p>
       <ProductGrid
         products={catalogProducts}
@@ -344,6 +355,19 @@ function CatalogBrowsePanelInner({
         hasActiveFilters={hasActiveFilters}
         onClearFilters={clearAllFilters}
       />
+
+      {!loading && hasMore ? (
+        <div className="mt-6 flex justify-center pb-8">
+          <button
+            type="button"
+            onClick={() => void loadMore()}
+            disabled={loadingMore}
+            className="min-h-11 rounded-xl border border-gray-200 bg-white px-6 py-2.5 text-sm font-semibold text-gray-800 shadow-sm transition hover:bg-gray-50 disabled:opacity-60"
+          >
+            {loadingMore ? t('landing.catalog.loadingMore') : t('landing.catalog.loadMore')}
+          </button>
+        </div>
+      ) : null}
 
       <ImmersiveFilterSheet
         catalogFilters={catalogFilters}

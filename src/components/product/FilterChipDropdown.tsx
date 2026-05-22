@@ -45,6 +45,8 @@ export default function FilterChipDropdown({
   const open = openPanelId === panelId;
   const selected = options.find((o) => o.id === value);
   const isActive = active ?? value !== 'all';
+  const chipLabel =
+    value !== 'all' && selected ? `${label}: ${selected.label}` : label;
 
   useEffect(() => {
     setMounted(true);
@@ -157,13 +159,14 @@ export default function FilterChipDropdown({
           onPointerDown={toggleOpen}
           onClick={(e) => e.preventDefault()}
           className={cn(
-            'inline-flex h-9 items-center gap-1 rounded-full border px-3 text-xs font-medium whitespace-nowrap transition-colors touch-manipulation',
+            'inline-flex h-9 max-w-[min(100%,11rem)] items-center gap-1 rounded-full border px-3 text-xs font-medium transition-colors touch-manipulation',
             open || isActive
               ? 'border-[#007782] bg-[#007782]/10 text-[#007782]'
               : 'border-gray-300 bg-white text-gray-700 hover:bg-gray-50',
           )}
+          title={chipLabel}
         >
-          {selected && value !== 'all' ? selected.label : label}
+          <span className="truncate">{chipLabel}</span>
           <ChevronDown size={14} className={cn('shrink-0 transition-transform', open && 'rotate-180')} />
         </button>
       </div>

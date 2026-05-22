@@ -23,6 +23,10 @@ import {
   conditionDbValues,
   categoryDbValues,
 } from '@/lib/catalogFilters';
+import { fetchAllVacationSellerIds } from '@/lib/vacationMode';
+
+/** Szerver-oldali lapozás — Supabase range chunk méret. */
+export const CATALOG_PAGE_SIZE = 48;
 
 /** Csak böngészhető, megvásárolható termékek a főlistán. */
 function isListedProduct(status: string | null | undefined): boolean {
@@ -49,6 +53,9 @@ export function useProducts() {
   const { searchQuery, setSearchQuery } = useBrowseSearch();
   const [products, setProducts] = useState<Product[]>([]);
   const [loading, setLoading] = useState(true);
+  const [loadingMore, setLoadingMore] = useState(false);
+  const [totalCount, setTotalCount] = useState(0);
+  const [page, setPage] = useState(0);
   const [filterRevision, setFilterRevision] = useState(0);
   const [selectedCategory, setSelectedCategory] = useState('all');
   const [selectedMinPrice, setSelectedMinPrice] = useState(0);
@@ -108,116 +115,145 @@ export function useProducts() {
   const setSelectedMaxPriceWrapped = wrapFilterSetter(setSelectedMaxPrice);
   const setSelectedSortWrapped = wrapFilterSetter(setSelectedSort);
 
-  const fetchProducts = useCallback(async () => {
-    const generation = ++fetchGenRef.current;
-    setLoading(true);
-
-    try {
-      const sortConfig = SORT_OPTIONS.find((s) => s.id === catalogFilters.sort) ?? SORT_OPTIONS[0];
-
-      let query = supabase
-        .from('products')
-        .select('*')
-        .or('status.eq.active,status.is.null');
-
-      if (catalogFilters.brand !== 'all') {
-        query = query.ilike('brand', catalogFilters.brand);
-      }
-
-      if (catalogFilters.category !== 'all') {
-        const catValues = categoryDbValues(catalogFilters.category);
-        if (catValues.length === 1) {
-          query = query.eq('category', catValues[0]);
-        } else if (catValues.length > 1) {
-          query = query.in('category', catValues);
+  useEffect(() => {
+    void supabase
+      .from('products')
+      .select('price')
+      .or('status.eq.active,status.is.null')
+      .order('price', { ascending: false })
+      .limit(1)
+      .maybeSingle()
+      .then(({ data }) => {
+        const p = Math.round(Number(data?.price) || 0);
+        if (p > 0) {
+          setMaxPriceLimit(p);
+          setSelectedMaxPrice((prev) => (prev <= 0 ? p : prev));
         }
-      }
-
-      const searchTerm = catalogFilters.search.trim();
-      if (searchTerm) {
-        const escaped = searchTerm.replace(/[%_\\]/g, '\\$&');
-        query = query.or(
-          `name.ilike.%${escaped}%,description.ilike.%${escaped}%,brand.ilike.%${escaped}%`,
-        );
-      }
-
-      let sizeFilterOnServer = false;
-      if (catalogFilters.size !== 'all') {
-        sizeFilterOnServer = await canFilterProductsBySize(supabase);
-        if (sizeFilterOnServer) {
-          query = query.ilike('size', catalogFilters.size);
-        }
-      }
-
-      if (catalogFilters.condition !== 'all') {
-        const condValues = conditionDbValues(catalogFilters.condition);
-        if (condValues.length === 1) {
-          query = query.eq('condition', condValues[0]);
-        } else if (condValues.length > 1) {
-          query = query.in('condition', condValues);
-        }
-      }
-
-      if (catalogFilters.minPrice > 0) {
-        query = query.gte('price', catalogFilters.minPrice);
-      }
-
-      if (catalogFilters.maxPrice > 0) {
-        query = query.lte('price', catalogFilters.maxPrice);
-      }
-
-      query = query.order(sortConfig.column, { ascending: sortConfig.order === 'asc' });
-
-      const { data, error } = await query;
-      if (error) throw error;
-      if (generation !== fetchGenRef.current) return;
-
-      let fetched = ((data || []) as Product[]).filter((p) => isListedProduct(p.status));
-
-      if (catalogFilters.category !== 'all') {
-        fetched = fetched.filter((p) =>
-          productMatchesCategory(p.category, catalogFilters.category),
-        );
-      }
-
-      if (catalogFilters.condition !== 'all') {
-        fetched = fetched.filter((p) =>
-          conditionMatchesFilter(p.condition, catalogFilters.condition),
-        );
-      }
-
-      if (catalogFilters.size !== 'all' && !sizeFilterOnServer) {
-        const sizeQ = catalogFilters.size.toLowerCase();
-        fetched = fetched.filter((p) => (p.size || '').toLowerCase().includes(sizeQ));
-      }
-
-      setProducts(fetched);
-
-      const maxPrice = fetched.reduce(
-        (max, product) => Math.max(max, Number(product.price) || 0),
-        0,
-      );
-      setMaxPriceLimit(maxPrice);
-      setSelectedMaxPrice((prev) => {
-        if (prev <= 0) return maxPrice;
-        if (maxPrice > 0 && prev > maxPrice) return maxPrice;
-        return prev;
       });
-    } catch (error) {
-      console.error('Error fetching products:', error);
-      if (generation === fetchGenRef.current) {
-        setProducts([]);
+  }, []);
+
+  const fetchProductsPage = useCallback(
+    async (pageIndex: number, append: boolean) => {
+      const generation = ++fetchGenRef.current;
+      if (append) setLoadingMore(true);
+      else setLoading(true);
+
+      try {
+        const sortConfig = SORT_OPTIONS.find((s) => s.id === catalogFilters.sort) ?? SORT_OPTIONS[0];
+        const from = pageIndex * CATALOG_PAGE_SIZE;
+        const to = from + CATALOG_PAGE_SIZE - 1;
+
+        let query = supabase
+          .from('products')
+          .select('*', { count: 'exact' })
+          .or('status.eq.active,status.is.null');
+
+        if (catalogFilters.brand !== 'all') {
+          query = query.ilike('brand', catalogFilters.brand);
+        }
+
+        if (catalogFilters.category !== 'all') {
+          const catValues = categoryDbValues(catalogFilters.category);
+          if (catValues.length === 1) {
+            query = query.eq('category', catValues[0]);
+          } else if (catValues.length > 1) {
+            query = query.in('category', catValues);
+          }
+        }
+
+        const searchTerm = catalogFilters.search.trim();
+        if (searchTerm) {
+          const escaped = searchTerm.replace(/[%_\\]/g, '\\$&');
+          query = query.or(
+            `name.ilike.%${escaped}%,description.ilike.%${escaped}%,brand.ilike.%${escaped}%`,
+          );
+        }
+
+        let sizeFilterOnServer = false;
+        if (catalogFilters.size !== 'all') {
+          sizeFilterOnServer = await canFilterProductsBySize(supabase);
+          if (sizeFilterOnServer) {
+            query = query.ilike('size', catalogFilters.size);
+          }
+        }
+
+        if (catalogFilters.condition !== 'all') {
+          const condValues = conditionDbValues(catalogFilters.condition);
+          if (condValues.length === 1) {
+            query = query.eq('condition', condValues[0]);
+          } else if (condValues.length > 1) {
+            query = query.in('condition', condValues);
+          }
+        }
+
+        if (catalogFilters.minPrice > 0) {
+          query = query.gte('price', catalogFilters.minPrice);
+        }
+
+        if (catalogFilters.maxPrice > 0) {
+          query = query.lte('price', catalogFilters.maxPrice);
+        }
+
+        const vacationIds = await fetchAllVacationSellerIds(supabase);
+        if (vacationIds.length > 0) {
+          query = query.not('user_id', 'in', `(${vacationIds.join(',')})`);
+        }
+
+        query = query.order(sortConfig.column, { ascending: sortConfig.order === 'asc' }).range(from, to);
+
+        const { data, error, count } = await query;
+        if (error) throw error;
+        if (generation !== fetchGenRef.current) return;
+
+        let fetched = ((data || []) as Product[]).filter((p) => isListedProduct(p.status));
+
+        if (catalogFilters.category !== 'all') {
+          fetched = fetched.filter((p) =>
+            productMatchesCategory(p.category, catalogFilters.category),
+          );
+        }
+
+        if (catalogFilters.condition !== 'all') {
+          fetched = fetched.filter((p) =>
+            conditionMatchesFilter(p.condition, catalogFilters.condition),
+          );
+        }
+
+        if (catalogFilters.size !== 'all' && !sizeFilterOnServer) {
+          const sizeQ = catalogFilters.size.toLowerCase();
+          fetched = fetched.filter((p) => (p.size || '').toLowerCase().includes(sizeQ));
+        }
+
+        setTotalCount(count ?? fetched.length);
+        setPage(pageIndex);
+        setProducts((prev) => (append ? [...prev, ...fetched] : fetched));
+      } catch (error) {
+        console.error('Error fetching products:', error);
+        if (generation === fetchGenRef.current && !append) {
+          setProducts([]);
+          setTotalCount(0);
+        }
+      } finally {
+        if (generation === fetchGenRef.current) {
+          setLoading(false);
+          setLoadingMore(false);
+        }
       }
-    } finally {
-      if (generation === fetchGenRef.current) {
-        setLoading(false);
-      }
-    }
-  }, [catalogFilters, filterKey]);
+    },
+    [catalogFilters],
+  );
 
   useEffect(() => {
-    void fetchProducts();
-  }, [fetchProducts, filterKey, filterRevision]);
+    void fetchProductsPage(0, false);
+  }, [filterKey, filterRevision, fetchProductsPage]);
+
+  const loadMore = useCallback(async () => {
+    if (loading || loadingMore) return;
+    if (products.length >= totalCount) return;
+    await fetchProductsPage(page + 1, true);
+  }, [fetchProductsPage, loading, loadingMore, page, products.length, totalCount]);
+
+  const hasMore = products.length < totalCount;
 
   useEffect(() => {
     void checkUserAndFavorites();
@@ -225,14 +261,14 @@ export function useProducts() {
 
   useEffect(() => {
     const onCatalogRefresh = () => {
-      void fetchProducts();
+      void fetchProductsPage(0, false);
     };
     window.addEventListener(CATALOG_UPDATED_EVENT, onCatalogRefresh);
     return () => window.removeEventListener(CATALOG_UPDATED_EVENT, onCatalogRefresh);
-  }, [fetchProducts]);
+  }, [fetchProductsPage]);
 
-  const fetchProductsRef = useRef(fetchProducts);
-  fetchProductsRef.current = fetchProducts;
+  const fetchProductsRef = useRef(fetchProductsPage);
+  fetchProductsRef.current = fetchProductsPage;
 
   useEffect(() => {
     const channelName = `catalog-products-${Math.random().toString(36).slice(2)}`;
@@ -242,14 +278,14 @@ export function useProducts() {
       'postgres_changes',
       { event: 'INSERT', schema: 'public', table: 'products' },
       () => {
-        void fetchProductsRef.current();
+        void fetchProductsRef.current(0, false);
       },
     );
     channel.on(
       'postgres_changes',
       { event: 'UPDATE', schema: 'public', table: 'products' },
       () => {
-        void fetchProductsRef.current();
+        void fetchProductsRef.current(0, false);
       },
     );
     channel.subscribe();
@@ -396,6 +432,10 @@ export function useProducts() {
     allProducts: products,
     products,
     loading,
+    loadingMore,
+    totalCount,
+    hasMore,
+    loadMore,
     filterKey: `${filterKey}:${filterRevision}`,
     searchQuery,
     setSearchQuery,

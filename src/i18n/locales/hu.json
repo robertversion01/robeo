@@ -12,6 +12,9 @@
     "catalog": {
       "loading": "Betöltés...",
       "results": "{{count}} találat",
+      "resultsPaged": "{{shown}} / {{total}} találat",
+      "loadMore": "Továbbiak betöltése",
+      "loadingMore": "Betöltés…",
       "title": "Böngéssz a kínálatban"
     }
   },

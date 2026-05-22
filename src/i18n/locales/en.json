@@ -12,6 +12,9 @@
     "catalog": {
       "loading": "Loading...",
       "results": "{{count}} results",
+      "resultsPaged": "{{shown}} of {{total}} results",
+      "loadMore": "Load more",
+      "loadingMore": "Loading…",
       "title": "Browse the catalog"
     }
   },

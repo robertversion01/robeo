@@ -1,8 +1,20 @@
 # ROBEO — Development TODO (V1 Next.js monolith)
 
-Utolsó frissítés: Vinted gap audit + vacation mode + ProductCard overlay
+Utolsó frissítés: backlog folytatás — verified seller admin, szerver lapozás, filter chip polish
 
 Részletes gap lista: **`docs/VINTED-GAP-ANALYSIS.md`**
+
+---
+
+## [DONE] Marketplace UI benchmark (P0–P2 home)
+
+- [x] Browse / PDP / trust / profile P0–P2 (commit `0b78816`)
+
+## [DONE] Backlog folytatás (office session)
+
+- [x] **P1-4 Verified seller admin** — `/api/admin/seller-verified` (role auth) + AdminHub toggle
+- [x] **P2 FilterChipDropdown** — aktív chip: `Márka: Nike` formátum
+- [x] **P0 Szerver lapozás** — `useProducts` `.range()` + load more + vacation szűrés vissza
 
 ---
 
@@ -40,7 +52,7 @@ Részletes gap lista: **`docs/VINTED-GAP-ANALYSIS.md`**
 - [ ] **ChatBuyerOffersPanel** — renderelés a messages oldalon
 - [ ] **Buyer counter-offer** — második kör vevőtől
 - [ ] **Profile bio** — `profiles.bio` + szerkesztés + publikus profil
-- [ ] **Verified seller flow** — admin/KYC, nem csak DB flag
+- [x] **Verified seller flow** — admin API + hub toggle (`seller_verified`)
 - [ ] **Favorite count on ProductCard** — aggregátum a grid-en
 - [ ] **Dispute éles** — refund state machine (demo panel → production)
 

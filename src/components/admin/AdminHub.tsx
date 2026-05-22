@@ -1,6 +1,7 @@
 'use client';
 
 import { useCallback, useEffect, useState } from 'react';
+import { BadgeCheck, Search } from 'lucide-react';
 import { toast } from 'sonner';
 import { supabase } from '@/lib/supabase';
 import type { Product } from '@/types';
@@ -8,6 +9,14 @@ import { markProductPromoteBoosted } from '@/lib/promoteAnalytics';
 import AdminReportedItems from '@/components/admin/AdminReportedItems';
 import AdminDac7Report from '@/components/admin/AdminDac7Report';
 import ProfileSection from '@/components/profile/ProfileSection';
+import { cn } from '@/lib/utils';
+
+type SellerProfileRow = {
+  id: string;
+  email: string | null;
+  full_name: string | null;
+  seller_verified: boolean;
+};
 
 type Props = {
   /** Reserved for future admin-scoped actions */
@@ -20,6 +29,69 @@ export default function AdminHub({ userId }: Props) {
   const [updatingFeaturedIds, setUpdatingFeaturedIds] = useState<Set<string>>(new Set());
   const [runningImageAudit, setRunningImageAudit] = useState(false);
   const [loading, setLoading] = useState(true);
+
+  const [sellerRows, setSellerRows] = useState<SellerProfileRow[]>([]);
+  const [sellerSearch, setSellerSearch] = useState('');
+  const [sellerLoading, setSellerLoading] = useState(false);
+  const [togglingSellerIds, setTogglingSellerIds] = useState<Set<string>>(new Set());
+
+  const adminFetch = useCallback(async (path: string, init?: RequestInit) => {
+    const {
+      data: { session },
+    } = await supabase.auth.getSession();
+    if (!session?.access_token) throw new Error('Nincs érvényes munkamenet.');
+    const response = await fetch(path, {
+      ...init,
+      headers: {
+        'Content-Type': 'application/json',
+        Authorization: `Bearer ${session.access_token}`,
+        ...(init?.headers || {}),
+      },
+    });
+    const data = await response.json();
+    if (!response.ok) throw new Error(data?.error || 'Admin kérés sikertelen.');
+    return data;
+  }, []);
+
+  const loadSellerProfiles = useCallback(
+    async (q?: string) => {
+      setSellerLoading(true);
+      try {
+        const params = q?.trim() ? `?q=${encodeURIComponent(q.trim())}` : '';
+        const data = await adminFetch(`/api/admin/seller-verified${params}`);
+        setSellerRows((data.profiles || []) as SellerProfileRow[]);
+      } catch (error) {
+        toast.error(error instanceof Error ? error.message : 'Eladók betöltése sikertelen.');
+        setSellerRows([]);
+      } finally {
+        setSellerLoading(false);
+      }
+    },
+    [adminFetch],
+  );
+
+  const toggleSellerVerified = async (profileId: string, next: boolean) => {
+    setTogglingSellerIds((prev) => new Set(prev).add(profileId));
+    try {
+      const data = await adminFetch('/api/admin/seller-verified', {
+        method: 'PATCH',
+        body: JSON.stringify({ profileId, sellerVerified: next }),
+      });
+      const updated = data.profile as SellerProfileRow;
+      setSellerRows((prev) =>
+        prev.map((row) => (row.id === profileId ? { ...row, ...updated } : row)),
+      );
+      toast.success(next ? 'Ellenőrzött eladó bekapcsolva.' : 'Ellenőrzött eladó kikapcsolva.');
+    } catch (error) {
+      toast.error(error instanceof Error ? error.message : 'Mentés sikertelen.');
+    } finally {
+      setTogglingSellerIds((prev) => {
+        const nextSet = new Set(prev);
+        nextSet.delete(profileId);
+        return nextSet;
+      });
+    }
+  };
 
   const loadAllProducts = useCallback(async () => {
     try {
@@ -45,7 +117,8 @@ export default function AdminHub({ userId }: Props) {
 
   useEffect(() => {
     void loadAllProducts();
-  }, [loadAllProducts]);
+    void loadSellerProfiles();
+  }, [loadAllProducts, loadSellerProfiles]);
 
   const updateFeaturedUntil = async (productId: string) => {
     setUpdatingFeaturedIds((prev) => new Set(prev).add(productId));
@@ -180,6 +253,77 @@ export default function AdminHub({ userId }: Props) {
               </div>
             ))}
           </div>
+        )}
+      </ProfileSection>
+
+      <ProfileSection
+        title="Ellenőrzött eladók"
+        description="seller_verified jelvény a PDP-n és a trust panelen. Csak admin (role) módosíthat."
+      >
+        <div className="mb-3 flex flex-col gap-2 sm:flex-row sm:items-center">
+          <div className="relative flex-1">
+            <Search size={16} className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" />
+            <input
+              type="search"
+              value={sellerSearch}
+              onChange={(e) => setSellerSearch(e.target.value)}
+              onKeyDown={(e) => {
+                if (e.key === 'Enter') void loadSellerProfiles(sellerSearch);
+              }}
+              placeholder="Keresés e-mail vagy név alapján…"
+              className="h-10 w-full rounded-lg border border-gray-200 pl-9 pr-3 text-sm"
+            />
+          </div>
+          <button
+            type="button"
+            disabled={sellerLoading}
+            onClick={() => void loadSellerProfiles(sellerSearch)}
+            className="h-10 shrink-0 rounded-lg bg-[#007782] px-4 text-sm font-semibold text-white hover:bg-[#00616b] disabled:opacity-60"
+          >
+            {sellerLoading ? 'Keresés…' : 'Keresés'}
+          </button>
+        </div>
+
+        {sellerLoading && sellerRows.length === 0 ? (
+          <p className="text-sm text-gray-500">Betöltés…</p>
+        ) : sellerRows.length === 0 ? (
+          <p className="text-sm text-gray-500">Nincs találat. Próbálj keresést vagy ellenőrizd a profiles táblát.</p>
+        ) : (
+          <ul className="max-h-72 space-y-2 overflow-y-auto rounded-xl border border-gray-100 bg-gray-50/50 p-2">
+            {sellerRows.map((row) => (
+              <li
+                key={row.id}
+                className="flex flex-col gap-2 rounded-lg border border-gray-200 bg-white p-2.5 sm:flex-row sm:items-center sm:justify-between"
+              >
+                <div className="min-w-0">
+                  <p className="truncate text-sm font-medium text-gray-900">
+                    {row.full_name || '—'}
+                    {row.seller_verified ? (
+                      <BadgeCheck size={14} className="ml-1 inline text-[#007782]" aria-hidden />
+                    ) : null}
+                  </p>
+                  <p className="truncate text-xs text-gray-500">{row.email || row.id}</p>
+                </div>
+                <label
+                  className={cn(
+                    'inline-flex shrink-0 cursor-pointer items-center gap-2 rounded-lg border px-3 py-2 text-xs font-semibold',
+                    row.seller_verified
+                      ? 'border-[#007782]/30 bg-[#007782]/10 text-[#007782]'
+                      : 'border-gray-200 bg-gray-50 text-gray-600',
+                  )}
+                >
+                  <input
+                    type="checkbox"
+                    checked={Boolean(row.seller_verified)}
+                    disabled={togglingSellerIds.has(row.id)}
+                    onChange={(e) => void toggleSellerVerified(row.id, e.target.checked)}
+                    className="h-4 w-4 accent-[#007782]"
+                  />
+                  {row.seller_verified ? 'Ellenőrzött' : 'Nincs jelvény'}
+                </label>
+              </li>
+            ))}
+          </ul>
         )}
       </ProfileSection>
 

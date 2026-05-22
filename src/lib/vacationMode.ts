@@ -39,6 +39,17 @@ export async function setProfileVacationMode(
   return { ok: true };
 }
 
+/** Összes szabadság módban lévő eladó (katalógus query kizáráshoz). */
+export async function fetchAllVacationSellerIds(db: SupabaseClient): Promise<string[]> {
+  const { data, error } = await db.from('profiles').select('id').eq('vacation_mode', true);
+  if (error) {
+    if (/vacation_mode/i.test(error.message)) return [];
+    console.warn('[vacationMode] fetchAll failed', error.message);
+    return [];
+  }
+  return (data || []).map((r) => r.id as string);
+}
+
 /** Aktív szabadság módban lévő eladók ID-i (feed szűréshez). */
 export async function fetchVacationSellerIdSet(
   db: SupabaseClient,
