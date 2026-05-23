@@ -238,6 +238,7 @@
     "viewSeller": "Eladó profilja",
     "available": "Elérhető",
     "sold": "Eladva",
+    "reserved": "Foglalt",
     "buy": "Vásárlás",
     "buyOfferPrice": "Vásárlás alkudott áron",
     "makeOffer": "Ajánlatot teszek",
@@ -539,13 +540,31 @@
     "switchLogin": "Jelentkezz be",
     "successLogin": "Sikeres bejelentkezés!",
     "successRegister": "Sikeres regisztráció!",
+    "successRegisterConfirmEmail": "Ellenőrizd az e-mail fiókodat, majd jelentkezz be a regisztráció befejezéséhez.",
     "legalRequired": "A regisztrációhoz el kell fogadnod az ÁSZF-et, az adatvédelmi tájékoztatót, és meg kell erősítened, hogy elmúltál 18 éves.",
     "acceptLegalPrefix": "A regisztrációval megerősítem, hogy elfogadom a",
     "acceptLegalTerms": "Általános Szerződési Feltételeket",
     "acceptLegalMiddle": ", elolvastam az",
     "acceptLegalPrivacy": "Adatvédelmi tájékoztatót",
     "acceptLegalAge": " és elmúltam 18 éves.",
-    "marketingOptIn": "Szeretnék e-mailben személyre szabott ajánlatokat és híreket kapni a ROBEO-ról (opcionális).",
+    "marketingOptIn": "Szeretnék e-mailben személyre szabott ajánlatokat kapni és az elsők között értesülni a ROBEO legfrissebb híreiről.",
+    "complete": {
+      "title": "Regisztráció befejezése",
+      "fullNameLabel": "Teljes név",
+      "fullNameHint": "A teljes neved nem lesz nyilvánosan látható.",
+      "fullNameRequired": "Add meg a teljes neved.",
+      "usernameLabel": "Felhasználónév",
+      "usernameInvalid": "A felhasználónév 3–20 karakter lehet, csak kisbetű, szám és aláhúzás.",
+      "usernameTaken": "Ez a felhasználónév már foglalt a ROBEO-n.",
+      "usernameSuggested": "Neked javasolt:",
+      "usernameChecking": "Ellenőrzés…",
+      "legalPrefix": "A regisztrációval megerősítem, hogy elfogadom a",
+      "legalMiddle": ", elolvastam az",
+      "legalSuffix": "és elmúltam 18 éves.",
+      "continue": "Folytatás",
+      "success": "Profil elkészült!",
+      "problemLink": "Probléma merült fel?"
+    },
     "errors": {
       "generic": "Hiba történt",
       "emailNotConfirmed": "Igazold vissza az e-mail címedet a bejelentkezés előtt!",
@@ -555,6 +574,23 @@
       "userExists": "Ez az e-mail cím már regisztrálva van!",
       "rateLimit": "Túl sok kérés. Próbáld újra később."
     }
+  },
+  "block": {
+    "blockAction": "Tiltás",
+    "unblockAction": "Tiltás feloldása",
+    "confirm": "Biztosan tiltod ezt a felhasználót? Nem tudtok üzenni egymásnak.",
+    "blocked": "Felhasználó tiltva.",
+    "unblocked": "Tiltás feloldva.",
+    "failed": "A művelet nem sikerült.",
+    "schemaMissing": "Futtasd a supabase/patch-user-blocks.sql patch-et.",
+    "cannotMessage": "Nem küldhetsz üzenetet — tiltás van érvényben.",
+    "threadClosed": "Ez a beszélgetés nem elérhető (tiltás)."
+  },
+  "legalReaccept": {
+    "title": "Frissített feltételek",
+    "body": "Frissítettük az Általános Szerződési Feltételeket és az Adatvédelmi tájékoztatót. A ROBEO további használatához fogadd el az új verziót.",
+    "continue": "Elfogadom és folytatom",
+    "success": "Köszönjük — folytathatod a böngészést."
   },
   "chatOffer": {
     "accept": "Elfogadom",
@@ -578,6 +614,7 @@
     "cancelCounter": "Mégse",
     "counterPlaceholder": "Új ár",
     "counterInvalid": "Adj meg érvényes árat.",
+    "counterMin": "Minimum ajánlat: {{min}} Ft (a vételár legalább 60%-a).",
     "counterSent": "Ellenajánlat elküldve",
     "productFallback": "termék",
     "sellerWaitingTitle": "Ajánlat elfogadva — várakozás a fizetésre",

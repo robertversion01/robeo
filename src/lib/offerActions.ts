@@ -1,6 +1,6 @@
 import type { SupabaseClient } from '@supabase/supabase-js';
 import { insertChatSystemMessage } from '@/lib/chatMessages';
-import { buildOfferStatusUpdate, formatSupabaseError, type OfferStatus } from '@/lib/offers';
+import { buildOfferStatusUpdate, formatSupabaseError, minimumOfferHuf, type OfferStatus } from '@/lib/offers';
 
 export type OfferActionResult =
   | { ok: true; status: OfferStatus; messageWarning?: string }
@@ -104,6 +104,25 @@ export async function buyerSendCounterOffer(
     counterPriceHuf: number;
   },
 ): Promise<OfferActionResult> {
+  const { data: product, error: productErr } = await supabase
+    .from('products')
+    .select('price')
+    .eq('id', input.productId)
+    .maybeSingle();
+
+  if (productErr) {
+    return { ok: false, error: formatSupabaseError(productErr) };
+  }
+
+  const listPrice = Number((product as { price?: number } | null)?.price ?? 0);
+  const minOffer = minimumOfferHuf(listPrice);
+  if (input.counterPriceHuf < minOffer) {
+    return {
+      ok: false,
+      error: `Minimum ajánlat: ${minOffer.toLocaleString('hu-HU')} Ft (a vételár legalább 60%-a).`,
+    };
+  }
+
   const { error: updateError } = await supabase
     .from('offers')
     .update(

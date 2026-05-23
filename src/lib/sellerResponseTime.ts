@@ -66,3 +66,19 @@ export async function fetchSellerResponseStats(
 
   return { medianHours, sampleCount: deltas.length, labelKey };
 }
+
+/** Inbox: több eladó válaszideje párhuzamosan (max ~12 partner). */
+export async function fetchSellerResponseLabelsBatch(
+  supabase: SupabaseClient,
+  sellerIds: string[],
+): Promise<Map<string, SellerResponseStats['labelKey']>> {
+  const unique = [...new Set(sellerIds.filter(Boolean))].slice(0, 12);
+  const map = new Map<string, SellerResponseStats['labelKey']>();
+  await Promise.all(
+    unique.map(async (id) => {
+      const stats = await fetchSellerResponseStats(supabase, id);
+      map.set(id, stats.labelKey);
+    }),
+  );
+  return map;
+}

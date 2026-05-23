@@ -238,6 +238,7 @@
     "viewSeller": "View seller profile",
     "available": "Available",
     "sold": "Sold",
+    "reserved": "Reserved",
     "buy": "Buy now",
     "buyOfferPrice": "Buy at offer price",
     "makeOffer": "Make an offer",
@@ -596,13 +597,31 @@
     "switchLogin": "Log in",
     "successLogin": "Logged in successfully!",
     "successRegister": "Account created!",
+    "successRegisterConfirmEmail": "Check your email, then sign in to finish registration.",
     "legalRequired": "You must accept the Terms, Privacy Policy, and confirm you are 18 or older.",
     "acceptLegalPrefix": "By signing up I confirm that I accept the",
     "acceptLegalTerms": "Terms of Service",
     "acceptLegalMiddle": ", have read the",
     "acceptLegalPrivacy": "Privacy Policy",
     "acceptLegalAge": ", and am at least 18 years old.",
-    "marketingOptIn": "I would like to receive personalised offers and news about ROBEO by email (optional).",
+    "marketingOptIn": "I would like to receive personalised offers by email and be among the first to hear ROBEO news.",
+    "complete": {
+      "title": "Finish registration",
+      "fullNameLabel": "Full name",
+      "fullNameHint": "Your full name will not be shown publicly.",
+      "fullNameRequired": "Enter your full name.",
+      "usernameLabel": "Username",
+      "usernameInvalid": "Username must be 3–20 characters: lowercase letters, numbers, underscore only.",
+      "usernameTaken": "This username is already taken on ROBEO.",
+      "usernameSuggested": "Suggested for you:",
+      "usernameChecking": "Checking…",
+      "legalPrefix": "By signing up I confirm that I accept the",
+      "legalMiddle": ", have read the",
+      "legalSuffix": "and am at least 18 years old.",
+      "continue": "Continue",
+      "success": "Profile complete!",
+      "problemLink": "Having a problem?"
+    },
     "errors": {
       "generic": "Something went wrong",
       "emailNotConfirmed": "Confirm your email before logging in.",
@@ -612,6 +631,23 @@
       "userExists": "This email is already registered.",
       "rateLimit": "Too many requests. Try again later."
     }
+  },
+  "block": {
+    "blockAction": "Block",
+    "unblockAction": "Unblock",
+    "confirm": "Block this user? You won't be able to message each other.",
+    "blocked": "User blocked.",
+    "unblocked": "User unblocked.",
+    "failed": "Action failed.",
+    "schemaMissing": "Run supabase/patch-user-blocks.sql first.",
+    "cannotMessage": "Can't send messages — a block is in place.",
+    "threadClosed": "This conversation is unavailable (blocked)."
+  },
+  "legalReaccept": {
+    "title": "Updated terms",
+    "body": "We've updated our Terms of Service and Privacy Policy. Accept the new version to keep using ROBEO.",
+    "continue": "Accept and continue",
+    "success": "Thanks — you can continue browsing."
   },
   "chatOffer": {
     "accept": "Accept",
@@ -635,6 +671,7 @@
     "cancelCounter": "Cancel",
     "counterPlaceholder": "New price",
     "counterInvalid": "Enter a valid price.",
+    "counterMin": "Minimum offer: {{min}} Ft (at least 60% of list price).",
     "counterSent": "Counter-offer sent",
     "productFallback": "item",
     "sellerWaitingTitle": "Offer accepted — awaiting payment",

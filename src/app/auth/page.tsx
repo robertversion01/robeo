@@ -5,8 +5,7 @@ import { supabase } from '@/lib/supabase';
 import { useRouter } from 'next/navigation';
 import { toast } from 'sonner';
 import { useTranslation } from 'react-i18next';
-import Link from 'next/link';
-import { LEGAL_VERSION } from '@/lib/legalConstants';
+import { isProfileRegistrationComplete } from '@/lib/profileRegistration';
 
 const AUTH_ERROR_KEYS: Record<string, string> = {
   'Email not confirmed': 'auth.errors.emailNotConfirmed',
@@ -17,6 +16,20 @@ const AUTH_ERROR_KEYS: Record<string, string> = {
   'Email rate limit exceeded': 'auth.errors.rateLimit',
 };
 
+async function redirectAfterAuth(userId: string, router: ReturnType<typeof useRouter>) {
+  const { data: profile } = await supabase
+    .from('profiles')
+    .select('full_name, name, legal_accepted_at')
+    .eq('id', userId)
+    .maybeSingle();
+
+  if (isProfileRegistrationComplete(profile)) {
+    router.push('/');
+  } else {
+    router.push('/auth/complete');
+  }
+}
+
 export default function AuthPage() {
   const { t } = useTranslation();
   const [isLogin, setIsLogin] = useState(true);
@@ -24,8 +37,6 @@ export default function AuthPage() {
   const [password, setPassword] = useState('');
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
-  const [acceptedLegal, setAcceptedLegal] = useState(false);
-  const [marketingOptIn, setMarketingOptIn] = useState(false);
   const router = useRouter();
 
   useEffect(() => {
@@ -49,50 +60,35 @@ export default function AuthPage() {
 
     try {
       if (isLogin) {
-        const { error: signInError } = await supabase.auth.signInWithPassword({
+        const { data, error: signInError } = await supabase.auth.signInWithPassword({
           email,
           password,
         });
         if (signInError) throw signInError;
         toast.success(t('auth.successLogin'));
-        router.push('/');
-      } else {
-        if (!acceptedLegal) {
-          setError(t('auth.legalRequired'));
-          setLoading(false);
-          return;
+        const userId = data.user?.id;
+        if (userId) {
+          await redirectAfterAuth(userId, router);
+        } else {
+          router.push('/');
         }
-
+      } else {
         const { data: signUpData, error: signUpError } = await supabase.auth.signUp({
           email,
           password,
-          options: {
-            data: {
-              robeo_marketing_opt_in: marketingOptIn,
-              robeo_legal_version: LEGAL_VERSION,
-            },
-          },
         });
         if (signUpError) throw signUpError;
 
         const newUserId = signUpData.user?.id;
-        if (newUserId) {
-          const now = new Date().toISOString();
-          const { error: legalErr } = await supabase
-            .from('profiles')
-            .update({
-              legal_accepted_at: now,
-              legal_version: LEGAL_VERSION,
-            })
-            .eq('id', newUserId);
+        const hasSession = Boolean(signUpData.session);
 
-          if (legalErr) {
-            console.warn('[auth] legal_accepted update failed', legalErr.message);
-          }
+        if (hasSession && newUserId) {
+          toast.success(t('auth.successRegister'));
+          await redirectAfterAuth(newUserId, router);
+        } else {
+          toast.success(t('auth.successRegisterConfirmEmail'));
+          router.push('/auth?view=sign_in');
         }
-
-        toast.success(t('auth.successRegister'));
-        router.push('/profile');
       }
     } catch (err: unknown) {
       let errorMessage = t('auth.errors.generic');
@@ -158,51 +154,9 @@ export default function AuthPage() {
               />
             </div>
 
-            {!isLogin ? (
-              <div className="space-y-2.5 rounded-xl border border-[#2a3f44] bg-[#102024] p-3 text-xs text-gray-300">
-                <label className="flex items-start gap-2 cursor-pointer">
-                  <input
-                    type="checkbox"
-                    checked={acceptedLegal}
-                    onChange={(e) => setAcceptedLegal(e.target.checked)}
-                    className="mt-0.5 h-4 w-4 accent-[#4baab5] shrink-0"
-                    required
-                  />
-                  <span>
-                    {t('auth.acceptLegalPrefix')}{' '}
-                    <Link
-                      href="/legal/terms"
-                      className="text-[#4baab5] font-semibold hover:underline"
-                      target="_blank"
-                    >
-                      {t('auth.acceptLegalTerms')}
-                    </Link>
-                    {t('auth.acceptLegalMiddle')}{' '}
-                    <Link
-                      href="/legal/privacy"
-                      className="text-[#4baab5] font-semibold hover:underline"
-                      target="_blank"
-                    >
-                      {t('auth.acceptLegalPrivacy')}
-                    </Link>
-                    {t('auth.acceptLegalAge')}
-                  </span>
-                </label>
-                <label className="flex items-start gap-2 cursor-pointer">
-                  <input
-                    type="checkbox"
-                    checked={marketingOptIn}
-                    onChange={(e) => setMarketingOptIn(e.target.checked)}
-                    className="mt-0.5 h-4 w-4 accent-[#4baab5] shrink-0"
-                  />
-                  <span>{t('auth.marketingOptIn')}</span>
-                </label>
-              </div>
-            ) : null}
-
             <button
               type="submit"
-              disabled={loading || (!isLogin && !acceptedLegal)}
+              disabled={loading}
               className="w-full h-12 rounded-xl bg-[#4baab5] text-black text-base font-semibold inline-flex items-center justify-center disabled:opacity-50 disabled:cursor-not-allowed mt-1"
             >
               {loading

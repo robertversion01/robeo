@@ -62,3 +62,5 @@ export function PrivacySectionBody({ section }: { section: PrivacySection }) {
     </>
   );
 }
+
+export default PrivacySectionBody;

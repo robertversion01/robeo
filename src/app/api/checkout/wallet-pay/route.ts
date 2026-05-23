@@ -58,6 +58,13 @@ export async function POST(req: NextRequest) {
       );
     }
 
+    if (body.termsAccepted !== true) {
+      return NextResponse.json(
+        { error: 'A fizetéshez el kell fogadnod az ÁSZF-et, adatvédelmi tájékoztatót és ROBEO Pay feltételeket.' },
+        { status: 400 },
+      );
+    }
+
     const pickupFields = pickupFieldsForCheckout(shippingMethod, foxpostTerminal, packetaPoint);
 
     const db = getSupabaseAdminClient();

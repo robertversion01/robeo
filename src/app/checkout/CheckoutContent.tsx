@@ -225,6 +225,7 @@ export default function CheckoutContent() {
         useWallet,
         foxpostTerminal: shippingMethod === 'foxpost' ? foxpostTerminal : null,
         packetaPoint: shippingMethod === 'packeta' ? packetaPoint : null,
+        termsAccepted: true,
       };
 
       if (useWallet) {

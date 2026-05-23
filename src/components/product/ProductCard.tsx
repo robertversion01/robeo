@@ -35,6 +35,7 @@ export default function ProductCard({ product, isFavorite, onToggleFavorite }: P
     typeof product.category === 'string' ? product.category.replace(/_/g, ' ') : '';
 
   const isSold = product.status === 'sold';
+  const isReserved = product.status === 'reserved';
   const favoriteCount = Math.max(0, Number(product.favorite_count) || 0);
 
   return (
@@ -50,6 +51,7 @@ export default function ProductCard({ product, isFavorite, onToggleFavorite }: P
           className={cn(
             'w-full h-full object-cover transition-transform duration-300 ease-out group-hover:scale-[1.07] group-active:scale-[1.04]',
             isSold && 'opacity-60 grayscale',
+            isReserved && !isSold && 'opacity-90',
           )}
           onError={() => setImageVisible(false)}
         />
@@ -57,6 +59,12 @@ export default function ProductCard({ product, isFavorite, onToggleFavorite }: P
           <div className="pointer-events-none absolute inset-0 flex items-center justify-center bg-black/35">
             <span className="rounded-md bg-black/70 px-2.5 py-1 text-[11px] font-bold uppercase tracking-wide text-white">
               {t('product.sold')}
+            </span>
+          </div>
+        ) : isReserved ? (
+          <div className="pointer-events-none absolute inset-0 flex items-center justify-center bg-black/25">
+            <span className="rounded-md bg-amber-600/90 px-2.5 py-1 text-[11px] font-bold uppercase tracking-wide text-white">
+              {t('product.reserved')}
             </span>
           </div>
         ) : null}

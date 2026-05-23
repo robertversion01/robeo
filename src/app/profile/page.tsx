@@ -39,6 +39,7 @@ import TrustSafetyBlock from '@/components/trust/TrustSafetyBlock';
 import { useTranslation } from 'react-i18next';
 import { useRouter } from 'next/navigation';
 import { useIsAdmin } from '@/hooks/useIsAdmin';
+import { isProfileRegistrationComplete } from '@/lib/profileRegistration';
 
 export default function ProfilePage() {
   const { t, i18n } = useTranslation();
@@ -125,6 +126,18 @@ export default function ProfilePage() {
       router.push('/auth');
       return;
     }
+
+    const { data: profile } = await supabase
+      .from('profiles')
+      .select('full_name, name, legal_accepted_at')
+      .eq('id', user.id)
+      .maybeSingle();
+
+    if (!isProfileRegistrationComplete(profile)) {
+      router.replace('/auth/complete');
+      return;
+    }
+
     setUser(user);
     setCreatedAt(user.created_at || '');
     loadUserProducts(user.id);

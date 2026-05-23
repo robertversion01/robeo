@@ -24,8 +24,8 @@ export async function fetchSellerDisplayProfile(
 
 export function getSellerDisplayName(profile: SellerDisplayProfile | null): string {
   if (!profile) return 'Eladó';
-  const fromName = profile.name?.trim() || profile.full_name?.trim();
-  if (fromName) return fromName;
+  const fromUsername = profile.name?.trim();
+  if (fromUsername) return fromUsername;
   const email = profile.email?.trim();
   if (email) return email.split('@')[0] || 'Eladó';
   return 'Eladó';

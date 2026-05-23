@@ -7,6 +7,7 @@ import MobileShellNav from '@/components/layout/MobileShellNav';
 import ImmersiveBrowseChrome from '@/components/browse/ImmersiveBrowseChrome';
 import { NotificationProvider } from '@/context/NotificationContext';
 import { ImmersiveBrowseProvider, useImmersiveBrowse } from '@/context/ImmersiveBrowseContext';
+import AccountSetupGuard from '@/components/legal/AccountSetupGuard';
 import { supabase } from '@/lib/supabase';
 import { cn } from '@/lib/utils';
 import { MOBILE_WRAPPER_BOTTOM_PAD } from '@/lib/layoutTokens';
@@ -81,7 +82,9 @@ export default function V1AppViewport({ children }: { children: React.ReactNode 
 
   return (
     <ImmersiveBrowseProvider loggedIn={loggedIn}>
-      <V1AppViewportInner>{children}</V1AppViewportInner>
+      <AccountSetupGuard>
+        <V1AppViewportInner>{children}</V1AppViewportInner>
+      </AccountSetupGuard>
     </ImmersiveBrowseProvider>
   );
 }

@@ -6,12 +6,14 @@ import { supabase } from '@/lib/supabase';
 import { fetchFollowCounts } from '@/lib/followCounts';
 import { fetchSellerDisplayProfile, getSellerDisplayName } from '@/lib/sellerProfile';
 import FollowSellerButton from '@/components/product/FollowSellerButton';
+import BlockUserButton from '@/components/trust/BlockUserButton';
 import SellerTrustPanel from '@/components/profile/SellerTrustPanel';
 import SellerTrustBadges from '@/components/profile/SellerTrustBadges';
 import TrustSafetyBlock from '@/components/trust/TrustSafetyBlock';
 import ProductGrid from '@/components/product/ProductGrid';
 import type { Product } from '@/types';
 import { isActiveListing } from '@/lib/listedProducts';
+import { enrichProductsWithFavoriteCounts } from '@/lib/favoriteCounts';
 import { MAIN_TOP_PADDING } from '@/lib/layoutTokens';
 import { useTranslation } from 'react-i18next';
 
@@ -60,7 +62,9 @@ export default function PublicSellerProfile({ sellerId }: Props) {
       setBio(profile?.bio?.trim() || '');
       setFollowers(counts.followers);
       setFollowing(counts.following);
-      setProducts(((productsRes.data || []) as Product[]).filter((p) => isActiveListing(p.status)));
+      const rows = ((productsRes.data || []) as Product[]).filter((p) => isActiveListing(p.status));
+      const enriched = await enrichProductsWithFavoriteCounts(supabase, rows);
+      setProducts(enriched);
 
       const ratings = (reviewsRes.data || []).map((r) => Number(r.rating)).filter((n) => n > 0);
       setReviewCount(ratings.length);
@@ -148,6 +152,9 @@ export default function PublicSellerProfile({ sellerId }: Props) {
             >
               {t('publicSeller.refresh')}
             </button>
+            {viewerId && viewerId !== sellerId ? (
+              <BlockUserButton otherUserId={sellerId} className="ml-auto" />
+            ) : null}
             {viewerId === sellerId ? (
               <Link href="/profile" className="text-sm font-semibold text-[#007782] hover:underline">
                 {t('publicSeller.ownProfileLink')}

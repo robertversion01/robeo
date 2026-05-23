@@ -6,7 +6,7 @@ import { supabase } from '@/lib/supabase';
 import { Loader2 } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 import { buyerRejectCounterOffer, buyerSendCounterOffer } from '@/lib/offerActions';
-import { buildOfferStatusUpdate } from '@/lib/offers';
+import { buildOfferStatusUpdate, minimumOfferHuf } from '@/lib/offers';
 import { isOfferAwaitingAction } from '@/lib/offerExpiry';
 import OfferExpiryCountdown from '@/components/offers/OfferExpiryCountdown';
 import { toast } from 'sonner';
@@ -31,6 +31,7 @@ export default function ChatBuyerOffersPanel({ buyerId, productId, sellerId }: P
   const { t } = useTranslation();
   const [offer, setOffer] = useState<OfferRow | null>(null);
   const [productName, setProductName] = useState('');
+  const [listPrice, setListPrice] = useState(0);
   const [loading, setLoading] = useState(false);
   const [busy, setBusy] = useState(false);
   const [counterPrice, setCounterPrice] = useState('');
@@ -52,10 +53,12 @@ export default function ChatBuyerOffersPanel({ buyerId, productId, sellerId }: P
         .order('created_at', { ascending: false })
         .limit(1)
         .maybeSingle(),
-      supabase.from('products').select('name').eq('id', productId).maybeSingle(),
+      supabase.from('products').select('name, price').eq('id', productId).maybeSingle(),
     ]);
     setOffer((offerRes.data as OfferRow) || null);
-    setProductName(String((productRes.data as { name?: string } | null)?.name || t('chatOffer.productFallback')));
+    const productRow = productRes.data as { name?: string; price?: number } | null;
+    setProductName(String(productRow?.name || t('chatOffer.productFallback')));
+    setListPrice(Math.max(0, Number(productRow?.price) || 0));
     setLoading(false);
   }, [buyerId, productId, t]);
 
@@ -129,8 +132,14 @@ export default function ChatBuyerOffersPanel({ buyerId, productId, sellerId }: P
   const sendCounter = async () => {
     if (!sellerId) return;
     const price = Math.round(Number(counterPrice.replace(/\s/g, '')));
-    if (!Number.isFinite(price) || price < 1) {
-      toast.error(t('chatOffer.counterInvalid'));
+    const minOffer = minimumOfferHuf(listPrice);
+    if (!Number.isFinite(price) || price < minOffer) {
+      toast.error(
+        t('chatOffer.counterMin', {
+          min: minOffer.toLocaleString('hu-HU'),
+          defaultValue: `Minimum ajánlat: ${minOffer.toLocaleString('hu-HU')} Ft`,
+        }),
+      );
       return;
     }
     setBusy(true);
@@ -201,7 +210,7 @@ export default function ChatBuyerOffersPanel({ buyerId, productId, sellerId }: P
         <div className="mt-3 flex flex-wrap items-center gap-2">
           <input
             type="number"
-            min={1}
+            min={minimumOfferHuf(listPrice)}
             value={counterPrice}
             onChange={(e) => setCounterPrice(e.target.value)}
             placeholder={t('chatOffer.counterPlaceholder')}
