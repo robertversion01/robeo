@@ -141,14 +141,23 @@ export default function MessagesPage() {
   };
 
   const checkUser = async () => {
-    const { data: { user } } = await supabase.auth.getUser();
-    if (!user) {
+    try {
+      const {
+        data: { user: authUser },
+        error,
+      } = await supabase.auth.getUser();
+      if (error) throw error;
+      if (!authUser) {
+        router.replace('/auth');
+        return;
+      }
+      setUser(authUser);
+    } catch (err) {
+      console.error('Messages auth check failed:', err);
+      router.replace('/auth');
+    } finally {
       setLoading(false);
-      router.push('/auth');
-      return;
     }
-    setUser(user);
-    setLoading(false);
   };
 
   const subscribeToMessages = () => {
@@ -196,6 +205,8 @@ export default function MessagesPage() {
   };
 
   const loadConversations = async () => {
+    if (!user?.id) return;
+
     const { data, error } = await supabase
       .from('messages')
       .select('*')
@@ -215,6 +226,11 @@ export default function MessagesPage() {
 
     // Get user emails from auth.users
     const userIds = Array.from(convMap.keys());
+    if (userIds.length === 0) {
+      setConversations([]);
+      return;
+    }
+
     const { data: userData } = await supabase
       .from('profiles')
       .select('id, email')
@@ -236,6 +252,8 @@ export default function MessagesPage() {
   };
 
   const loadConversation = async (otherUserId: string, email?: string) => {
+    if (!user?.id) return;
+
     setSelectedConversation(otherUserId);
     setSelectedEmail(email || '');
     const { data, error } = await supabase
@@ -302,14 +320,6 @@ export default function MessagesPage() {
       setUploadingImage(false);
     }
   };
-
-  if (loading) {
-    return (
-      <div className="min-h-screen bg-white text-gray-900 flex items-center justify-center">
-        <div className="animate-spin h-12 w-12 border-4 border-[#007782] border-t-transparent rounded-full"></div>
-      </div>
-    );
-  }
 
   const sendOffer = async () => {
     if (!selectedConversation || !user?.id) return;
@@ -401,12 +411,16 @@ export default function MessagesPage() {
     };
   }, [activeProductId]);
 
-  if (loading || !user) {
+  if (loading) {
     return (
-      <div className="min-h-screen bg-white flex items-center justify-center">
+      <div className="min-h-screen bg-white text-gray-900 flex items-center justify-center">
         <div className="h-10 w-10 animate-spin rounded-full border-4 border-[#007782] border-t-transparent" />
       </div>
     );
+  }
+
+  if (!user) {
+    return null;
   }
 
   return (

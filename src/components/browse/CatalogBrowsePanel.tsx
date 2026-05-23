@@ -1,6 +1,6 @@
 'use client';
 
-import { Suspense, useEffect, useMemo, useState } from 'react';
+import { Suspense, useCallback, useEffect, useMemo, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useProducts } from '@/hooks/useProducts';
 import { useCatalogUrlSync } from '@/hooks/useCatalogUrlSync';
@@ -160,6 +160,18 @@ function CatalogBrowsePanelInner({
     if (isFeed && user) return rankFeedProducts(base, feedPrefs);
     return base;
   }, [products, isFeed, user, feedPrefs]);
+
+  const handleCategoryChange = useCallback(
+    (id: string) => {
+      setSelectedCategory(id);
+      if (isFeed && typeof window !== 'undefined') {
+        window.requestAnimationFrame(() => {
+          document.getElementById('catalog')?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+        });
+      }
+    },
+    [isFeed, setSelectedCategory],
+  );
 
   useEffect(() => {
     if (!isSearch) return;
@@ -356,7 +368,7 @@ function CatalogBrowsePanelInner({
             browsePath={browsePath}
             categories={categories}
             selectedCategory={selectedCategory}
-            onCategoryChange={setSelectedCategory}
+            onCategoryChange={handleCategoryChange}
             className="mb-1 lg:hidden"
           />
           {showPersonalization && user ? (
@@ -382,7 +394,7 @@ function CatalogBrowsePanelInner({
             <CategoryQuickChips
               categories={categories}
               selectedCategory={selectedCategory}
-              onCategoryChange={setSelectedCategory}
+              onCategoryChange={handleCategoryChange}
             />
           </div>
         </div>
@@ -396,7 +408,7 @@ function CatalogBrowsePanelInner({
             browsePath={browsePath}
             categories={categories}
             selectedCategory={selectedCategory}
-            onCategoryChange={setSelectedCategory}
+            onCategoryChange={handleCategoryChange}
             className="mb-0 lg:hidden"
           >
             <SavedSearchesStrip

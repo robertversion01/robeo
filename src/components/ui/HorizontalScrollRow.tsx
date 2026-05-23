@@ -1,5 +1,6 @@
 'use client';
 
+import { forwardRef } from 'react';
 import { cn } from '@/lib/utils';
 
 type Props = {
@@ -20,17 +21,21 @@ const BLEED_CLASS: Record<2 | 3, string> = {
 };
 
 /** Horizontálisan lapozható sor — ne használj benne touch-manipulation gombot. */
-export default function HorizontalScrollRow({
-  children,
-  className,
-  innerClassName,
-  bleed = true,
-  bleedInset = 3,
-  'aria-label': ariaLabel,
-  role,
-}: Props) {
+const HorizontalScrollRow = forwardRef<HTMLDivElement, Props>(function HorizontalScrollRow(
+  {
+    children,
+    className,
+    innerClassName,
+    bleed = true,
+    bleedInset = 3,
+    'aria-label': ariaLabel,
+    role,
+  },
+  ref,
+) {
   return (
     <div
+      ref={ref}
       role={role}
       aria-label={ariaLabel}
       className={cn(
@@ -43,4 +48,6 @@ export default function HorizontalScrollRow({
       <div className={cn('flex min-w-max items-center gap-4 pr-4', innerClassName)}>{children}</div>
     </div>
   );
-}
+});
+
+export default HorizontalScrollRow;

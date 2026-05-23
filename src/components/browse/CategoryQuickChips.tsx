@@ -1,6 +1,7 @@
 'use client';
 
 import { useTranslation } from 'react-i18next';
+import { useCallback, useEffect, useRef } from 'react';
 import HorizontalScrollRow from '@/components/ui/HorizontalScrollRow';
 import { cn } from '@/lib/utils';
 
@@ -31,6 +32,83 @@ const CATEGORY_I18N: Record<string, string> = {
   accessories: 'browse.categories.accessories',
 };
 
+const TAP_MOVE_THRESHOLD_PX = 10;
+
+function CategoryTab({
+  active,
+  label,
+  isText,
+  onSelect,
+}: {
+  active: boolean;
+  label: string;
+  isText: boolean;
+  onSelect: () => void;
+}) {
+  const pointerRef = useRef<{ x: number; y: number; moved: boolean } | null>(null);
+
+  const handlePointerDown = (e: React.PointerEvent<HTMLDivElement>) => {
+    pointerRef.current = { x: e.clientX, y: e.clientY, moved: false };
+  };
+
+  const handlePointerMove = (e: React.PointerEvent<HTMLDivElement>) => {
+    if (!pointerRef.current) return;
+    const dx = Math.abs(e.clientX - pointerRef.current.x);
+    const dy = Math.abs(e.clientY - pointerRef.current.y);
+    if (dx > TAP_MOVE_THRESHOLD_PX || dy > TAP_MOVE_THRESHOLD_PX) {
+      pointerRef.current.moved = true;
+    }
+  };
+
+  const handlePointerUp = () => {
+    if (pointerRef.current && !pointerRef.current.moved) {
+      onSelect();
+    }
+    pointerRef.current = null;
+  };
+
+  const handlePointerCancel = () => {
+    pointerRef.current = null;
+  };
+
+  return (
+    <div
+      role="tab"
+      aria-selected={active}
+      tabIndex={0}
+      data-active={active ? 'true' : undefined}
+      onPointerDown={handlePointerDown}
+      onPointerMove={handlePointerMove}
+      onPointerUp={handlePointerUp}
+      onPointerCancel={handlePointerCancel}
+      onKeyDown={(e) => {
+        if (e.key === 'Enter' || e.key === ' ') {
+          e.preventDefault();
+          onSelect();
+        }
+      }}
+      className={cn(
+        'shrink-0 cursor-pointer select-none transition-colors',
+        isText
+          ? cn(
+              'whitespace-nowrap border-b-2 pb-1.5 text-sm',
+              active
+                ? 'border-[#007782] font-bold text-gray-900'
+                : 'border-transparent font-medium text-gray-500',
+            )
+          : cn(
+              'rounded-full border px-3.5 py-1.5 text-xs font-semibold touch-manipulation',
+              active
+                ? 'border-[#007782] bg-[#007782] text-white shadow-sm'
+                : 'border-gray-200 bg-white text-gray-700 hover:border-[#007782]/30 hover:bg-[#007782]/5',
+            ),
+      )}
+    >
+      {label}
+    </div>
+  );
+}
+
 export default function CategoryQuickChips({
   categories,
   selectedCategory,
@@ -40,49 +118,40 @@ export default function CategoryQuickChips({
 }: Props) {
   const { t } = useTranslation();
   const isText = variant === 'text';
+  const scrollRef = useRef<HTMLDivElement>(null);
+
+  const selectCategory = useCallback(
+    (id: string) => {
+      if (id === selectedCategory) return;
+      onCategoryChange(id);
+    },
+    [onCategoryChange, selectedCategory],
+  );
+
+  useEffect(() => {
+    if (!isText || !scrollRef.current) return;
+    const activeEl = scrollRef.current.querySelector('[data-active="true"]');
+    activeEl?.scrollIntoView({ behavior: 'smooth', inline: 'center', block: 'nearest' });
+  }, [selectedCategory, isText]);
 
   const tabs = categories.map((cat) => {
-    const active = selectedCategory === cat.id;
     const labelKey = CATEGORY_I18N[cat.id];
     const label = labelKey ? t(labelKey) : cat.label;
     return (
-      <div
+      <CategoryTab
         key={cat.id}
-        role="tab"
-        aria-selected={active}
-        tabIndex={0}
-        onClick={() => onCategoryChange(cat.id)}
-        onKeyDown={(e) => {
-          if (e.key === 'Enter' || e.key === ' ') {
-            e.preventDefault();
-            onCategoryChange(cat.id);
-          }
-        }}
-        className={cn(
-          'shrink-0 cursor-pointer select-none transition-colors',
-          isText
-            ? cn(
-                'whitespace-nowrap border-b-2 pb-1.5 text-sm',
-                active
-                  ? 'border-[#007782] font-bold text-gray-900'
-                  : 'border-transparent font-medium text-gray-500',
-              )
-            : cn(
-                'rounded-full border px-3.5 py-1.5 text-xs font-semibold touch-manipulation',
-                active
-                  ? 'border-[#007782] bg-[#007782] text-white shadow-sm'
-                  : 'border-gray-200 bg-white text-gray-700 hover:border-[#007782]/30 hover:bg-[#007782]/5',
-              ),
-        )}
-      >
-        {label}
-      </div>
+        active={selectedCategory === cat.id}
+        label={label}
+        isText={isText}
+        onSelect={() => selectCategory(cat.id)}
+      />
     );
   });
 
   if (isText) {
     return (
       <HorizontalScrollRow
+        ref={scrollRef}
         role="tablist"
         aria-label={t('browse.categories.label')}
         bleedInset={2}

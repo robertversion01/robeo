@@ -223,6 +223,11 @@ export function productMatchesDepartment(
 ): boolean {
   if (departmentId === 'all') return true;
   const normalized = normalizeProductCategory(productCategory);
+  if (!normalized) return false;
+
+  const legacyDept = LEGACY_CATEGORY_TO_DEPARTMENT[normalized];
+  if (legacyDept && legacyDept === departmentId) return true;
+
   const aliases = departmentDbAliases(departmentId);
   return aliases.some((a) => {
     const alias = normalizeProductCategory(a);
