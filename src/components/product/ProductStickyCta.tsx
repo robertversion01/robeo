@@ -46,7 +46,7 @@ export default function ProductStickyCta({
       className={cn(
         'fixed left-0 right-0 z-[90] border-t border-gray-200 bg-white/95 backdrop-blur-lg px-4 py-3 shadow-[0_-8px_32px_rgba(0,0,0,0.08)]',
         'pb-[calc(0.75rem+env(safe-area-inset-bottom,0px))]',
-        'max-md:bottom-[calc(3.75rem+env(safe-area-inset-bottom,0px))]',
+        'max-md:bottom-0',
         'md:static md:mt-4 md:border-t-0 md:bg-transparent md:backdrop-blur-none md:shadow-none md:p-0 md:space-y-3',
         className,
       )}

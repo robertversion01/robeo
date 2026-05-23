@@ -4,14 +4,21 @@ import { useCallback, useEffect, useId, useLayoutEffect, useRef, useState } from
 import { createPortal } from 'react-dom';
 import { ChevronDown } from 'lucide-react';
 import { cn } from '@/lib/utils';
+import { MOBILE_BOTTOM_NAV_RESERVE_PX } from '@/lib/layoutTokens';
 
 export type FilterOption = { id: string; label: string };
 
 type PanelCoords = {
-  top: number;
+  top?: number;
+  bottom?: number;
   left: number;
   minWidth: number;
+  maxHeight: number;
+  openUp: boolean;
 };
+
+const MIN_PANEL_HEIGHT = 120;
+const VIEWPORT_EDGE_GAP = 8;
 
 type Props = {
   label: string;
@@ -57,13 +64,32 @@ export default function FilterChipDropdown({
     if (!btn) return;
     const rect = btn.getBoundingClientRect();
     const panelWidth = Math.max(rect.width, 160);
-    const maxLeft = Math.max(8, window.innerWidth - panelWidth - 8);
+    const maxLeft = Math.max(VIEWPORT_EDGE_GAP, window.innerWidth - panelWidth - VIEWPORT_EDGE_GAP);
     const left = Math.min(rect.left, maxLeft);
-    setCoords({
-      top: rect.bottom + 6,
-      left,
-      minWidth: panelWidth,
-    });
+    const spaceBelow =
+      window.innerHeight - rect.bottom - MOBILE_BOTTOM_NAV_RESERVE_PX - VIEWPORT_EDGE_GAP;
+    const spaceAbove = rect.top - VIEWPORT_EDGE_GAP;
+    const openUp = spaceBelow < MIN_PANEL_HEIGHT && spaceAbove > spaceBelow;
+    const available = openUp ? spaceAbove : spaceBelow;
+    const maxHeight = Math.max(MIN_PANEL_HEIGHT, Math.min(240, available));
+
+    if (openUp) {
+      setCoords({
+        bottom: window.innerHeight - rect.top + 6,
+        left,
+        minWidth: panelWidth,
+        maxHeight,
+        openUp: true,
+      });
+    } else {
+      setCoords({
+        top: rect.bottom + 6,
+        left,
+        minWidth: panelWidth,
+        maxHeight,
+        openUp: false,
+      });
+    }
   }, []);
 
   useLayoutEffect(() => {
@@ -118,11 +144,13 @@ export default function FilterChipDropdown({
         ref={panelRef}
         id={`${instanceId}-panel`}
         role="listbox"
-        className="fixed z-[10050] max-h-60 overflow-y-auto rounded-xl border border-gray-200 bg-white py-1 shadow-xl"
+        className="fixed z-[10050] overflow-y-auto overscroll-contain rounded-xl border border-gray-200 bg-white py-1 shadow-xl pb-[max(0.5rem,env(safe-area-inset-bottom,0px))]"
         style={{
           top: coords.top,
+          bottom: coords.bottom,
           left: coords.left,
           minWidth: coords.minWidth,
+          maxHeight: coords.maxHeight,
         }}
       >
         {options.map((opt) => (

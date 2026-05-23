@@ -13,7 +13,7 @@ import ProductGrid from '@/components/product/ProductGrid';
 import { formatPrice } from '@/lib/utils';
 import { getOptimizedImageUrl } from '@/lib/imageUtils';
 import type { Product } from '@/types';
-import { MAIN_TOP_PADDING, MOBILE_PAGE_BOTTOM_CLASS } from '@/lib/layoutTokens';
+import { MAIN_TOP_PADDING } from '@/lib/layoutTokens';
 import { Bell } from 'lucide-react';
 import { revalidateCatalog } from '@/app/actions/revalidateCatalog';
 import { notifyCatalogUpdated } from '@/lib/catalogRefresh';
@@ -466,7 +466,7 @@ export default function ProfilePage() {
         </div>
       ) : null}
 
-      <main className={`${MAIN_TOP_PADDING} ${MOBILE_PAGE_BOTTOM_CLASS} px-3 md:px-6`}>
+      <main className={`${MAIN_TOP_PADDING} px-3 md:px-6`}>
         <div className="max-w-7xl mx-auto">
           <div className="flex items-center gap-3 mb-2">
               <div className="w-12 h-12 md:w-14 md:h-14 rounded-full bg-[#007782]/10 flex items-center justify-center text-[#007782] text-lg md:text-xl font-bold shrink-0">

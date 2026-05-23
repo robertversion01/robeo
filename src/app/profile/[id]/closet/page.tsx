@@ -19,7 +19,7 @@ import {
 import { fetchSellerBundleDiscountSettings } from '@/lib/bundleDiscount';
 import type { Product } from '@/types';
 import PageHeader from '@/components/layout/PageHeader';
-import { MAIN_TOP_PADDING, MOBILE_PAGE_BOTTOM_CLASS } from '@/lib/layoutTokens';
+import { MAIN_TOP_PADDING } from '@/lib/layoutTokens';
 
 export default function SellerClosetPage() {
   const params = useParams();
@@ -73,7 +73,7 @@ export default function SellerClosetPage() {
 
   return (
     <main
-      className={`min-h-screen bg-white ${MAIN_TOP_PADDING} px-4 ${MOBILE_PAGE_BOTTOM_CLASS}`}
+      className={`min-h-screen bg-white ${MAIN_TOP_PADDING} px-4`}
     >
       <div className="max-w-lg mx-auto">
         <PageHeader

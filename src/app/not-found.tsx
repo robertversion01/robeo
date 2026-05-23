@@ -1,11 +1,11 @@
 import Link from 'next/link';
-import { MAIN_TOP_PADDING, MOBILE_PAGE_BOTTOM_CLASS } from '@/lib/layoutTokens';
+import { MAIN_TOP_PADDING } from '@/lib/layoutTokens';
 
 /** Szerver komponens — nincs i18n hydration mismatch (React #418). */
 export default function NotFound() {
   return (
     <div
-      className={`min-h-screen bg-white text-gray-900 ${MAIN_TOP_PADDING} ${MOBILE_PAGE_BOTTOM_CLASS} flex items-center justify-center px-4`}
+      className={`min-h-screen bg-white text-gray-900 ${MAIN_TOP_PADDING} flex items-center justify-center px-4`}
     >
       <div className="text-center max-w-md">
         <div className="text-6xl font-bold text-[#007782] mb-3">404</div>

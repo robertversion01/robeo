@@ -25,7 +25,7 @@ import BundleOfferModal from '@/components/product/BundleOfferModal';
 import type { Product } from '@/types';
 import { canViewProductDetail, isListedProduct, isSoldListing } from '@/lib/listedProducts';
 import { recordPriceSnapshot } from '@/lib/priceHistory';
-import { MAIN_TOP_PADDING, MOBILE_PAGE_BOTTOM_CLASS } from '@/lib/layoutTokens';
+import { MAIN_TOP_PADDING, MOBILE_PRODUCT_STICKY_CTA_PAD } from '@/lib/layoutTokens';
 
 export default function ProductPage({ params }: { params: Promise<{ id: string }> }) {
   const { id } = use(params);
@@ -305,7 +305,7 @@ export default function ProductPage({ params }: { params: Promise<{ id: string }
         </div>
       )}
 
-      <main className={`${MAIN_TOP_PADDING} ${MOBILE_PAGE_BOTTOM_CLASS} px-0 md:px-6 max-md:pb-52`}>
+      <main className={`${MAIN_TOP_PADDING} px-0 md:px-6 ${MOBILE_PRODUCT_STICKY_CTA_PAD}`}>
         <Link href="/browse" className="inline-flex items-center gap-2 text-gray-500 hover:text-gray-900 mb-3 transition-colors px-3 md:px-0 md:mb-6">
           ← {t('product.backToBrowse')}
         </Link>

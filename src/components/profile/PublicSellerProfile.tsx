@@ -12,7 +12,7 @@ import TrustSafetyBlock from '@/components/trust/TrustSafetyBlock';
 import ProductGrid from '@/components/product/ProductGrid';
 import type { Product } from '@/types';
 import { isActiveListing } from '@/lib/listedProducts';
-import { MAIN_TOP_PADDING, MOBILE_PAGE_BOTTOM_CLASS } from '@/lib/layoutTokens';
+import { MAIN_TOP_PADDING } from '@/lib/layoutTokens';
 import { useTranslation } from 'react-i18next';
 
 type Props = {
@@ -101,7 +101,7 @@ export default function PublicSellerProfile({ sellerId }: Props) {
   };
 
   return (
-    <main className={`min-h-screen bg-white ${MAIN_TOP_PADDING} ${MOBILE_PAGE_BOTTOM_CLASS} px-4`}>
+    <main className={`min-h-screen bg-white ${MAIN_TOP_PADDING} px-4`}>
       <div className="max-w-4xl mx-auto">
         <div className="rounded-2xl border border-gray-200 bg-gradient-to-br from-[#007782]/5 to-white p-5 mb-6">
           <h1 className="text-2xl font-bold text-gray-900">{displayName || t('publicSeller.defaultName')}</h1>

@@ -253,7 +253,8 @@ export default function Navbar({ searchQuery, onSearchChange }: NavbarProps) {
     <nav
       className={cn(
         'fixed top-0 left-0 right-0 z-[9999] bg-white border-b border-gray-200 transition-transform duration-300 ease-out will-change-transform',
-        browsePath && loggedIn ? 'h-10 shadow-none border-gray-100' : 'h-11 shadow-sm',
+        'pt-[env(safe-area-inset-top,0px)]',
+        browsePath && loggedIn ? 'border-gray-100' : 'shadow-sm',
         hideNavbarOnMobileBrowse && 'max-md:hidden',
         shellChromeHidden && 'max-md:-translate-y-full max-md:pointer-events-none',
       )}
@@ -267,7 +268,12 @@ export default function Navbar({ searchQuery, onSearchChange }: NavbarProps) {
         />
       ) : null}
 
-      <div className="mx-auto flex h-full max-w-6xl items-center gap-1.5 px-2 sm:gap-2 sm:px-3">
+      <div
+        className={cn(
+          'mx-auto flex max-w-6xl items-center gap-1.5 px-3 sm:gap-2 sm:px-3',
+          browsePath && loggedIn ? 'h-10' : 'h-11',
+        )}
+      >
         {!(browsePath && loggedIn) ? (
           <Link
             href="/"

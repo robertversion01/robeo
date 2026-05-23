@@ -9,10 +9,8 @@ import { NotificationProvider } from '@/context/NotificationContext';
 import { ImmersiveBrowseProvider, useImmersiveBrowse } from '@/context/ImmersiveBrowseContext';
 import { supabase } from '@/lib/supabase';
 import { cn } from '@/lib/utils';
+import { MOBILE_WRAPPER_BOTTOM_PAD } from '@/lib/layoutTokens';
 import { shouldPadForMobileBottomNav } from '@/lib/navVisibility';
-
-const MOBILE_BOTTOM_NAV_PAD =
-  'pb-[calc(3.75rem+env(safe-area-inset-bottom,0px))] md:pb-0';
 
 function V1AppViewportInner({ children }: { children: React.ReactNode }) {
   const pathname = usePathname();
@@ -47,7 +45,7 @@ function V1AppViewportInner({ children }: { children: React.ReactNode }) {
       <div
         className={cn(
           'min-h-0 flex-1 transition-[padding] duration-300 ease-out',
-          showMobileBottomPad && MOBILE_BOTTOM_NAV_PAD,
+          showMobileBottomPad && MOBILE_WRAPPER_BOTTOM_PAD,
         )}
       >
         {children}

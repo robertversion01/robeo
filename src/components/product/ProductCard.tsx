@@ -38,7 +38,7 @@ export default function ProductCard({ product, isFavorite, onToggleFavorite }: P
   const favoriteCount = Math.max(0, Number(product.favorite_count) || 0);
 
   return (
-    <div className="group card-base overflow-hidden transition-all duration-200 relative border border-gray-200/90 hover:border-[#007782]/50 hover:shadow-md active:scale-[0.98] touch-manipulation">
+    <div className="group card-base overflow-hidden rounded-xl transition-all duration-200 relative border border-gray-100 hover:border-[#007782]/40 hover:shadow-md active:scale-[0.98] touch-manipulation">
       <Link
         href={`/products/${product.id}`}
         className="relative aspect-[3/4] sm:aspect-[4/5] overflow-hidden block bg-[#0f1a1d]/5"
@@ -103,17 +103,17 @@ export default function ProductCard({ product, isFavorite, onToggleFavorite }: P
         ) : null}
       </button>
 
-      <div className="px-1 pt-1 pb-1.5 text-left space-y-0.5">
+      <div className="px-2 pt-1.5 pb-2 text-left space-y-1">
         <div className="text-[15px] sm:text-base font-extrabold text-[#007782] tabular-nums leading-tight tracking-tight">
           {formatPrice(product.price)}
         </div>
-        <p className="text-[10px] sm:text-[11px] text-gray-600 leading-snug truncate">
+        <p className="text-[11px] sm:text-xs text-gray-600 leading-snug truncate">
           <span className="font-medium text-gray-800">{brandOrName}</span>
           <span className="text-gray-400 mx-0.5">·</span>
           <span className="text-gray-500">{sizePart}</span>
         </p>
         {categoryShort ? (
-          <p className="text-[9px] uppercase tracking-wide text-gray-400 truncate leading-none pt-0.5">
+          <p className="text-[10px] uppercase tracking-wide text-gray-400 truncate leading-none">
             {categoryShort}
           </p>
         ) : null}

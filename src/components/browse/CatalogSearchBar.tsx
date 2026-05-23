@@ -84,14 +84,14 @@ export default function SearchTypeahead({
           onChange(e.target.value);
           setOpen(true);
         }}
-        className="h-10 w-full rounded-full border border-gray-200 bg-gray-50 pl-9 pr-3 text-sm text-gray-900 placeholder:text-gray-400 focus:border-[#007782] focus:bg-white focus:outline-none focus:ring-1 focus:ring-[#007782]"
+        className="h-11 w-full rounded-full border border-gray-200 bg-gray-50 pl-9 pr-3 text-sm text-gray-900 placeholder:text-gray-400 focus:border-[#007782] focus:bg-white focus:outline-none focus:ring-1 focus:ring-[#007782]"
       />
       {open && value.trim().length >= 2 ? (
-        <div className="absolute left-0 right-0 top-[calc(100%+6px)] z-[10050] overflow-hidden rounded-xl border border-gray-200 bg-white shadow-lg">
+        <div className="absolute left-0 right-0 top-[calc(100%+8px)] z-[10050] overflow-hidden rounded-xl border border-gray-200 bg-white shadow-lg">
           {liveResults.length === 0 ? (
             <div className="px-3 py-2.5 text-xs text-gray-500">{t('browse.search.noResults')}</div>
           ) : (
-            <div className="max-h-72 overflow-y-auto">
+            <div className="max-h-60 overflow-y-auto overscroll-contain pb-[max(0.5rem,env(safe-area-inset-bottom,0px))]">
               {liveResults.map((item) => (
                 <Link
                   key={item.id}

@@ -6,7 +6,7 @@ import { useTranslation } from 'react-i18next';
 import { supabase } from '@/lib/supabase';
 import PageHeader from '@/components/layout/PageHeader';
 import OrderHistoryPanel from '@/components/orders/OrderHistoryPanel';
-import { MAIN_TOP_PADDING, MOBILE_PAGE_BOTTOM_CLASS } from '@/lib/layoutTokens';
+import { MAIN_TOP_PADDING } from '@/lib/layoutTokens';
 
 export default function OrdersPage() {
   const { t } = useTranslation();
@@ -41,7 +41,7 @@ export default function OrdersPage() {
 
   return (
     <div className="min-h-screen bg-white text-gray-900">
-      <main className={`${MAIN_TOP_PADDING} ${MOBILE_PAGE_BOTTOM_CLASS} px-4`}>
+      <main className={`${MAIN_TOP_PADDING} px-4`}>
         <div className="max-w-lg mx-auto">
           <PageHeader title={t('orders.title')} subtitle={t('orders.subtitle')} />
           <OrderHistoryPanel initialTab={initialTab} />

@@ -4,6 +4,7 @@ import { useCallback, useEffect, useId, useLayoutEffect, useRef, useState } from
 import { createPortal } from 'react-dom';
 import { ChevronDown } from 'lucide-react';
 import { cn } from '@/lib/utils';
+import { MOBILE_BOTTOM_NAV_RESERVE_PX } from '@/lib/layoutTokens';
 
 interface Option {
   value: string;
@@ -29,7 +30,7 @@ interface CustomSelectProps {
   maxDropdownHeight?: number;
 }
 
-const DEFAULT_BOTTOM_RESERVE = 16;
+const DEFAULT_BOTTOM_RESERVE = MOBILE_BOTTOM_NAV_RESERVE_PX;
 const DEFAULT_MAX_HEIGHT = 280;
 const MIN_DROPDOWN_HEIGHT = 120;
 const VIEWPORT_EDGE_GAP = 8;

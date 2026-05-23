@@ -358,7 +358,7 @@ function CatalogBrowsePanelInner({
               }
             />
           ) : null}
-          <div className="mb-2 -mx-2 space-y-2 px-2 md:-mx-0 md:px-0">
+          <div className="mb-3 space-y-3 px-0 md:-mx-0 md:px-0">
             <BrowseDiscoveryRails
               {...discoveryProps}
               prefBrands={feedPrefs.brands}
@@ -374,11 +374,11 @@ function CatalogBrowsePanelInner({
       ) : (
         <div
           className={cn(
-            'sticky z-40 -mx-2 mb-1.5 border-b border-gray-200/90 bg-white/95 px-2 pt-2 pb-0 backdrop-blur-md supports-[backdrop-filter]:bg-white/80 md:-mx-0 md:px-0 shadow-sm lg:static lg:border-0 lg:bg-transparent lg:shadow-none lg:backdrop-blur-none',
+            'sticky z-40 mb-2 border-b border-gray-200/90 bg-white/95 px-0 pt-3 pb-1 backdrop-blur-md supports-[backdrop-filter]:bg-white/80 md:px-0 shadow-sm lg:static lg:border-0 lg:bg-transparent lg:shadow-none lg:backdrop-blur-none',
             stickyTopClass,
           )}
         >
-          <div className="space-y-2.5 pb-2 lg:hidden">
+          <div className="space-y-3 pb-2 lg:hidden">
             <BrowseDiscoveryRails {...discoveryProps} compact />
             <CatalogSearchBar
               value={searchQuery}

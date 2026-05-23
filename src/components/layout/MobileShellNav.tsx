@@ -46,36 +46,36 @@ export default function MobileShellNav() {
         className="md:hidden fixed bottom-0 left-0 right-0 z-[9980] border-t border-gray-200/90 bg-white/95 backdrop-blur-lg pb-[env(safe-area-inset-bottom,0px)] shadow-[0_-4px_24px_rgba(0,0,0,0.06)]"
         aria-label={t('nav.home')}
       >
-        <div className="mx-auto flex h-[3.75rem] max-w-lg items-stretch justify-around px-1">
+        <div className="mx-auto flex h-16 max-w-lg items-stretch justify-around px-2">
           <Link
             href="/"
             className={cn(
-              'flex min-w-0 flex-1 flex-col items-center justify-center gap-0.5 py-1',
+              'flex min-w-0 flex-1 flex-col items-center justify-center gap-1 py-1.5',
               pathname === '/' ? 'text-[#007782]' : 'text-gray-500',
             )}
           >
             <Home size={22} />
-            <span className="text-[10px] font-semibold">{t('nav.home')}</span>
+            <span className="max-w-[4.5rem] truncate text-[10px] font-semibold">{t('nav.home')}</span>
           </Link>
           <Link
             href="/browse"
             className={cn(
-              'flex min-w-0 flex-1 flex-col items-center justify-center gap-0.5 py-1',
+              'flex min-w-0 flex-1 flex-col items-center justify-center gap-1 py-1.5',
               pathname.startsWith('/browse') ? 'text-[#007782]' : 'text-gray-500',
             )}
           >
             <Search size={22} />
-            <span className="text-[10px] font-semibold">{t('nav.search')}</span>
+            <span className="max-w-[4.5rem] truncate text-[10px] font-semibold">{t('nav.search')}</span>
           </Link>
           <Link
             href="/auth?view=sign_in"
             className={cn(
-              'flex min-w-0 flex-1 flex-col items-center justify-center gap-0.5 py-1',
+              'flex min-w-0 flex-1 flex-col items-center justify-center gap-1 py-1.5',
               pathname.startsWith('/auth') ? 'text-[#007782]' : 'text-gray-500',
             )}
           >
             <LogIn size={22} />
-            <span className="text-[10px] font-semibold">{t('nav.login')}</span>
+            <span className="max-w-[4.5rem] truncate text-[10px] font-semibold">{t('nav.login')}</span>
           </Link>
         </div>
       </nav>
@@ -125,11 +125,11 @@ export default function MobileShellNav() {
         'md:hidden fixed bottom-0 left-0 right-0 z-[9980] border-t pb-[env(safe-area-inset-bottom,0px)] transition-transform duration-300 ease-out will-change-transform',
         shellChromeHidden
           ? 'translate-y-full border-transparent bg-transparent shadow-none pointer-events-none'
-          : 'translate-y-0 border-gray-200/90 bg-white/90 backdrop-blur-lg shadow-[0_-4px_24px_rgba(0,0,0,0.06)]',
+          : 'translate-y-0 border-gray-200/90 bg-white/95 backdrop-blur-lg shadow-[0_-4px_24px_rgba(0,0,0,0.06)]',
       )}
       aria-label={t('nav.home')}
     >
-      <div className="mx-auto flex h-[3.75rem] max-w-lg items-stretch justify-around px-1">
+      <div className="mx-auto flex h-16 max-w-lg items-stretch justify-around px-1.5">
         {items.map((item) => {
           const active = item.match(pathname);
           const label = t(item.labelKey);
@@ -142,8 +142,8 @@ export default function MobileShellNav() {
                 aria-label={label}
                 className="flex min-w-0 flex-1 flex-col items-center justify-center"
               >
-                <span className="flex h-11 w-11 items-center justify-center rounded-full bg-[#007782] text-white shadow-md">
-                  <item.Icon size={24} strokeWidth={2.25} />
+                <span className="flex h-11 w-11 items-center justify-center rounded-2xl bg-gray-900 text-white shadow-md">
+                  <item.Icon size={22} strokeWidth={2.25} />
                 </span>
               </Link>
             );
@@ -154,8 +154,8 @@ export default function MobileShellNav() {
               key={item.href}
               href={item.href}
               className={cn(
-                'relative flex min-w-0 flex-1 flex-col items-center justify-center gap-0.5 py-1',
-                active ? 'text-[#007782]' : 'text-gray-500',
+                'relative flex min-w-0 flex-1 flex-col items-center justify-center gap-1 py-1.5',
+                active ? 'text-gray-900' : 'text-gray-500',
               )}
             >
               <item.Icon size={22} strokeWidth={active ? 2.25 : 1.85} />
@@ -165,7 +165,9 @@ export default function MobileShellNav() {
               {'feedBadge' in item && item.feedBadge ? (
                 <FeedNavBadge className="top-0 right-[calc(50%-22px)]" />
               ) : null}
-              <span className="text-[10px] font-semibold leading-none">{label}</span>
+              <span className="max-w-[3.75rem] truncate text-[10px] font-semibold leading-none">
+                {label}
+              </span>
             </Link>
           );
         })}

@@ -16,7 +16,7 @@ import { detectPriceDrops } from '@/lib/priceWatch';
 import { enrichProductsWithFavoriteCounts } from '@/lib/favoriteCounts';
 import { notifyPriceDropsIfEnabled } from '@/lib/priceWatchNotify';
 import type { Product } from '@/types';
-import { MAIN_TOP_PADDING, MOBILE_PAGE_BOTTOM_CLASS } from '@/lib/layoutTokens';
+import { MAIN_TOP_PADDING } from '@/lib/layoutTokens';
 
 type FavoriteRow = {
   product: Product | null;
@@ -101,7 +101,7 @@ export default function FavoritesPage() {
 
   return (
     <div className="min-h-screen bg-white text-gray-900">
-      <main className={`${MAIN_TOP_PADDING} pb-20 px-3 md:px-6 md:pb-12`}>
+      <main className={`${MAIN_TOP_PADDING} px-3 pb-2 md:px-6 md:pb-12`}>
         <div className="max-w-7xl mx-auto">
           <PageHeader title={t('favorites.title')} subtitle={t('favorites.subtitle')} />
           <TrustSafetyBlock variant="compact" className="mb-4" />

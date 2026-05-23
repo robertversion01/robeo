@@ -45,14 +45,14 @@ function HomePageContent() {
   return (
     <div className="landing-page-root min-h-screen max-w-[100vw] overflow-x-hidden bg-white text-gray-900">
       <CookieConsentBanner />
-      <main className={`w-full max-w-[100vw] overflow-x-hidden ${MAIN_TOP_PADDING} px-2 pb-4 md:px-6`}>
+      <main className={`w-full max-w-[100vw] overflow-x-hidden ${MAIN_TOP_PADDING} px-3 pb-2 md:px-6`}>
         <div className="mx-auto max-w-7xl">
           <div
             className={cn(
               'overflow-hidden transition-[max-height,opacity] duration-300 ease-out',
               catalogChromeHidden
                 ? 'max-h-0 opacity-0 pointer-events-none'
-                : 'max-h-[320px] opacity-100',
+                : 'max-h-[240px] opacity-100',
             )}
           >
             <VintedHero products={heroProducts} compact />

@@ -15,7 +15,7 @@ import {
 } from '@/lib/appNotificationsFeed';
 import { useNotifications } from '@/context/NotificationContext';
 import PageHeader from '@/components/layout/PageHeader';
-import { MAIN_TOP_PADDING, MOBILE_PAGE_BOTTOM_CLASS } from '@/lib/layoutTokens';
+import { MAIN_TOP_PADDING } from '@/lib/layoutTokens';
 import { cn } from '@/lib/utils';
 
 type FilterId =
@@ -171,7 +171,7 @@ export default function AppNotificationsFeed() {
 
   if (!userId && !loading) {
     return (
-      <main className={`min-h-screen bg-white ${MAIN_TOP_PADDING} px-4 ${MOBILE_PAGE_BOTTOM_CLASS}`}>
+      <main className={`min-h-screen bg-white ${MAIN_TOP_PADDING} px-4`}>
         <p className="text-center text-gray-600 mt-12">
           <Link href="/auth" className="text-[#007782] font-semibold hover:underline">
             {t('notifications.login')}
@@ -183,7 +183,7 @@ export default function AppNotificationsFeed() {
   }
 
   return (
-      <main className={`min-h-screen bg-white ${MAIN_TOP_PADDING} px-4 ${MOBILE_PAGE_BOTTOM_CLASS}`}>
+      <main className={`min-h-screen bg-white ${MAIN_TOP_PADDING} px-4`}>
       <div className="max-w-lg mx-auto">
         <PageHeader
           title={t('notifications.title')}
