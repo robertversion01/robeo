@@ -3,6 +3,13 @@ export const LEGAL_VERSION = 'v1.2';
 
 export const PRIVACY_LAST_UPDATED = '2026-02-25';
 
+export const PAY_TERMS_VERSION = 'v1.0';
+
+export const COOKIE_POLICY_LAST_UPDATED = '2026-02-25';
+
+/** Belső hivatkozás a díjak leírásához (checkout / profil) */
+export const PAY_FEES_URL = '/help#fees';
+
 export const DEMO_COMPANY = {
   name: 'ROBEO Marketplace Demo Kft.',
   address: '1051 Budapest, Demo utca 1.',

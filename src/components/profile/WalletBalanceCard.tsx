@@ -1,6 +1,7 @@
 'use client';
 
 import { useCallback, useEffect, useState } from 'react';
+import Link from 'next/link';
 import { Wallet, ArrowDownToLine, Loader2 } from 'lucide-react';
 import { supabase } from '@/lib/supabase';
 import { formatPrice } from '@/lib/utils';
@@ -254,6 +255,14 @@ export default function WalletBalanceCard({ userId }: Props) {
         {busy ? <Loader2 size={18} className="animate-spin" /> : <ArrowDownToLine size={18} />}
         Kifizetés bankszámlára
       </button>
+
+      <p className="mt-3 text-[11px] text-gray-500 leading-relaxed">
+        A pénztárca és kifizetés a{' '}
+        <Link href="/legal/pay" className="font-semibold text-[#007782] hover:underline" target="_blank">
+          ROBEO Pay ÁSZF
+        </Link>{' '}
+        szerint működik (demó).
+      </p>
 
       <WalletHistory userId={userId} />
     </section>

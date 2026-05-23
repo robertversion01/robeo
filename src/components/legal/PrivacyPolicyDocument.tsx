@@ -50,11 +50,15 @@ export default function PrivacyPolicyDocument() {
         <p>
           Kapcsolódó dokumentumok:{' '}
           <Link href="/legal/terms" className="font-semibold text-[#007782] hover:underline">
-            Általános Szerződési Feltételek
+            Piactér ÁSZF
           </Link>
           {' · '}
-          <Link href="/" className="text-gray-500 hover:underline">
-            Főoldal
+          <Link href="/legal/pay" className="font-semibold text-[#007782] hover:underline">
+            ROBEO Pay ÁSZF
+          </Link>
+          {' · '}
+          <Link href="/legal/cookies" className="font-semibold text-[#007782] hover:underline">
+            Cookie szabályzat
           </Link>
         </p>
       </footer>

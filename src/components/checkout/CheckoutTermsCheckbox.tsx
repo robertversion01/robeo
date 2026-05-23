@@ -50,6 +50,16 @@ export default function CheckoutTermsCheckbox({ checked, onChange, className }: 
         >
           {t('checkout.terms.privacyLink')}
         </Link>
+        , a{' '}
+        <Link
+          href="/legal/pay"
+          target="_blank"
+          rel="noopener noreferrer"
+          className="font-semibold text-[#007782] hover:underline"
+          onClick={(e) => e.stopPropagation()}
+        >
+          ROBEO Pay ÁSZF
+        </Link>
         .
       </span>
     </label>

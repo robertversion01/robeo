@@ -50,9 +50,13 @@ export default function CookieConsentBanner() {
         <p className="text-sm font-semibold text-gray-900 mb-1">Sütik és adatvédelem</p>
         <p className="text-xs text-gray-600 leading-relaxed mb-3">
           A ROBEO demó módban működik. A szükséges sütik a működéshez kellenek; az analitika és
-          marketing sütik opcionálisak. Részletek:{' '}
+          marketing sütik opcionálisak.           Részletek:{' '}
+          <Link href="/legal/cookies" className="text-[#007782] font-semibold hover:underline">
+            Cookie szabályzat
+          </Link>
+          {' · '}
           <Link href="/legal/privacy" className="text-[#007782] font-semibold hover:underline">
-            Adatvédelmi tájékoztató
+            Adatvédelem
           </Link>
           .
         </p>

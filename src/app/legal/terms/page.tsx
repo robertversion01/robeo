@@ -29,9 +29,14 @@ export default function TermsPage() {
         A felhasználók használt ruházatot és tárgyakat listázhatnak, vásárolhatnak és eladhatnak
         demó fizetési és szállítási folyamatokkal (Stripe teszt, Foxpost demó címke).
       </p>
-      <h2 className="mt-8 text-xl font-bold text-gray-900">2. Díjak</h2>
+      <h2 className="mt-8 text-xl font-bold text-gray-900">2. Fizetés és pénztárca</h2>
       <p className="mt-3 text-sm leading-relaxed text-gray-700">
-        Vevővédelmi díj és szállítási költség a pénztárban jelenik meg. A számlák demó bizonylatok.
+        Belső pénztárca, Stripe checkout és eladói kifizetés a{' '}
+        <Link href="/legal/pay" className="font-semibold text-[#007782] hover:underline">
+          ROBEO Pay ÁSZF
+        </Link>{' '}
+        szerint. Vevővédelmi díj és szállítási költség a pénztárban jelenik meg. A számlák demó
+        bizonylatok.
       </p>
       <h2 className="mt-8 text-xl font-bold text-gray-900">3. Felelősség</h2>
       <p className="mt-3 text-sm leading-relaxed text-gray-700">
@@ -44,12 +49,16 @@ export default function TermsPage() {
         megerősíted.
       </p>
       <footer className="mt-12 border-t border-gray-200 pt-6 text-sm">
-        <Link href="/legal/privacy" className="font-semibold text-[#007782] hover:underline">
-          Adatvédelmi tájékoztató →
+        <Link href="/legal/pay" className="font-semibold text-[#007782] hover:underline">
+          ROBEO Pay ÁSZF →
         </Link>
         <span className="mx-2 text-gray-300">|</span>
-        <Link href="/" className="text-gray-500 hover:underline">
-          ← Vissza a főoldalra
+        <Link href="/legal/privacy" className="font-semibold text-[#007782] hover:underline">
+          Adatvédelem →
+        </Link>
+        <span className="mx-2 text-gray-300">|</span>
+        <Link href="/legal/cookies" className="font-semibold text-[#007782] hover:underline">
+          Cookie szabályzat →
         </Link>
       </footer>
     </article>
