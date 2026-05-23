@@ -2,10 +2,15 @@
 
 import { useEffect, useState } from 'react';
 import Link from 'next/link';
+import { usePathname } from 'next/navigation';
+import { supabase } from '@/lib/supabase';
 import {
   COOKIE_CONSENT_STORAGE_KEY,
   type CookieConsentPrefs,
 } from '@/lib/legalConstants';
+import { MOBILE_BOTTOM_NAV_INNER } from '@/lib/layoutTokens';
+import { shouldShowMobileBottomNav } from '@/lib/navVisibility';
+import { cn } from '@/lib/utils';
 
 function loadConsent(): CookieConsentPrefs | null {
   if (typeof window === 'undefined') return null;
@@ -23,14 +28,32 @@ function saveConsent(prefs: CookieConsentPrefs) {
 }
 
 export default function CookieConsentBanner() {
+  const pathname = usePathname();
   const [visible, setVisible] = useState(false);
   const [showDetails, setShowDetails] = useState(false);
   const [analytics, setAnalytics] = useState(false);
   const [marketing, setMarketing] = useState(false);
+  const [loggedIn, setLoggedIn] = useState(false);
 
   useEffect(() => {
     const existing = loadConsent();
     if (!existing) setVisible(true);
+  }, []);
+
+  useEffect(() => {
+    let cancelled = false;
+    void supabase.auth.getUser().then(({ data: { user } }) => {
+      if (!cancelled) setLoggedIn(!!user);
+    });
+    const {
+      data: { subscription },
+    } = supabase.auth.onAuthStateChange((_event, session) => {
+      setLoggedIn(!!session?.user);
+    });
+    return () => {
+      cancelled = true;
+      subscription.unsubscribe();
+    };
   }, []);
 
   const accept = (prefs: Omit<CookieConsentPrefs, 'acceptedAt'>) => {
@@ -40,22 +63,32 @@ export default function CookieConsentBanner() {
 
   if (!visible) return null;
 
+  const aboveMobileTabBar = shouldShowMobileBottomNav(pathname, loggedIn);
+
   return (
     <div
       role="dialog"
       aria-label="Süti beállítások"
-      className="fixed bottom-0 left-0 right-0 z-[100] p-3 md:p-4 pointer-events-none"
+      className={cn(
+        'pointer-events-none fixed left-0 right-0 z-[9990] p-3 md:bottom-0 md:p-4',
+        !aboveMobileTabBar && 'bottom-0 pb-[env(safe-area-inset-bottom,0px)]',
+      )}
+      style={
+        aboveMobileTabBar
+          ? { bottom: `calc(${MOBILE_BOTTOM_NAV_INNER} + env(safe-area-inset-bottom, 0px))` }
+          : undefined
+      }
     >
-      <div className="pointer-events-auto mx-auto max-w-3xl rounded-2xl border border-gray-200 bg-white/95 backdrop-blur-md shadow-xl p-4 md:p-5">
-        <p className="text-sm font-semibold text-gray-900 mb-1">Sütik és adatvédelem</p>
-        <p className="text-xs text-gray-600 leading-relaxed mb-3">
+      <div className="pointer-events-auto mx-auto max-w-3xl rounded-2xl border border-gray-200 bg-white/95 p-4 shadow-xl backdrop-blur-md md:p-5">
+        <p className="mb-1 text-sm font-semibold text-gray-900">Sütik és adatvédelem</p>
+        <p className="mb-3 text-xs leading-relaxed text-gray-600">
           A ROBEO demó módban működik. A szükséges sütik a működéshez kellenek; az analitika és
-          marketing sütik opcionálisak.           Részletek:{' '}
-          <Link href="/legal/cookies" className="text-[#007782] font-semibold hover:underline">
+          marketing sütik opcionálisak. Részletek:{' '}
+          <Link href="/legal/cookies" className="font-semibold text-[#007782] hover:underline">
             Cookie szabályzat
           </Link>
           {' · '}
-          <Link href="/legal/privacy" className="text-[#007782] font-semibold hover:underline">
+          <Link href="/legal/privacy" className="font-semibold text-[#007782] hover:underline">
             Adatvédelem
           </Link>
           .
@@ -91,27 +124,21 @@ export default function CookieConsentBanner() {
         <div className="flex flex-wrap gap-2">
           <button
             type="button"
-            onClick={() =>
-              accept({ necessary: true, analytics: true, marketing: true })
-            }
+            onClick={() => accept({ necessary: true, analytics: true, marketing: true })}
             className="h-9 rounded-lg bg-[#007782] px-4 text-xs font-semibold text-white hover:bg-[#00616b]"
           >
             Összes elfogadása
           </button>
           <button
             type="button"
-            onClick={() =>
-              accept({ necessary: true, analytics: false, marketing: false })
-            }
+            onClick={() => accept({ necessary: true, analytics: false, marketing: false })}
             className="h-9 rounded-lg border border-gray-300 bg-white px-4 text-xs font-semibold text-gray-800 hover:bg-gray-50"
           >
             Csak szükséges
           </button>
           <button
             type="button"
-            onClick={() =>
-              accept({ necessary: true, analytics, marketing })
-            }
+            onClick={() => accept({ necessary: true, analytics, marketing })}
             className="h-9 rounded-lg border border-[#007782]/30 px-4 text-xs font-semibold text-[#007782] hover:bg-[#007782]/5"
           >
             Mentés
@@ -119,7 +146,7 @@ export default function CookieConsentBanner() {
           <button
             type="button"
             onClick={() => setShowDetails((v) => !v)}
-            className="h-9 px-2 text-xs text-gray-500 hover:text-gray-800 underline"
+            className="h-9 px-2 text-xs text-gray-500 underline hover:text-gray-800"
           >
             {showDetails ? 'Bezárás' : 'Testreszabás'}
           </button>

@@ -20,6 +20,8 @@ type Props = {
   sticky?: boolean;
   className?: string;
   children?: React.ReactNode;
+  /** Sötét Vinted-szerű mobil feed */
+  theme?: 'light' | 'dark';
 };
 
 /** Mobil feed fejléc: safe area → kompakt kereső → lapozható kategória sor */
@@ -35,13 +37,17 @@ export default function MobileFeedChrome({
   sticky = true,
   className,
   children,
+  theme = 'light',
 }: Props) {
+  const isDark = theme === 'dark';
+
   return (
     <div
       className={cn(
         sticky &&
           cn(
-            'sticky top-0 z-40 min-w-0 max-w-full overflow-x-visible border-b border-gray-100 bg-white',
+            'sticky top-0 z-40 min-w-0 max-w-full overflow-x-visible border-b',
+            isDark ? 'border-white/10 bg-[#121212]' : 'border-gray-100 bg-white',
             MOBILE_TAB_PAGE_TOP,
           ),
         'pb-2 md:static md:border-0 md:bg-transparent md:pb-0 md:pt-0',
@@ -50,6 +56,7 @@ export default function MobileFeedChrome({
     >
       <CatalogSearchBar
         compact
+        dark={isDark}
         value={searchQuery}
         onChange={onSearchChange}
         catalogFilters={catalogFilters}
@@ -57,9 +64,9 @@ export default function MobileFeedChrome({
         browsePath={browsePath}
         inputId="mobile-feed-search"
       />
-      <div className="mt-2">
+      <div className="mt-2.5">
         <CategoryQuickChips
-          variant="text"
+          variant={isDark ? 'vinted' : 'text'}
           categories={categories}
           selectedCategory={selectedCategory}
           onCategoryChange={onCategoryChange}

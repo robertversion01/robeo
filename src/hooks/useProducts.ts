@@ -22,7 +22,7 @@ import {
   serializeCatalogFilters,
   conditionDbValues,
 } from '@/lib/catalogFilters';
-import { VINTED_DEPARTMENTS } from '@/lib/vintedCategoryTree';
+import { FEED_CATEGORIES } from '@/lib/feedCategories';
 import { fetchAllVacationSellerIds } from '@/lib/vacationMode';
 import { enrichProductsWithFavoriteCounts, adjustProductFavoriteCount } from '@/lib/favoriteCounts';
 import {
@@ -41,10 +41,7 @@ const SORT_OPTIONS = [
   { id: 'price_desc', label: 'Legdrágább előre', column: 'price', order: 'desc' as const },
 ];
 
-const CATEGORIES = [
-  { id: 'all', label: 'Összes' },
-  ...VINTED_DEPARTMENTS.map((d) => ({ id: d.id, label: d.id })),
-];
+const CATEGORIES = FEED_CATEGORIES;
 
 export function useProducts() {
   const { searchQuery, setSearchQuery } = useBrowseSearch();

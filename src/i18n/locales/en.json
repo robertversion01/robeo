@@ -55,6 +55,7 @@
     "departments": {
       "women": "Women",
       "men": "Men",
+      "designer": "Designer",
       "kids": "Kids",
       "home": "Home",
       "electronics": "Electronics",
@@ -195,6 +196,7 @@
       "explore": "Explore",
       "trending": "Trending now",
       "brands": "Popular brands",
+      "shopByBrand": "Shop by brand",
       "sizes": "Sizes",
       "popular": "Popular sort",
       "condition": "By condition",
@@ -221,7 +223,9 @@
       "favoritesHint": "You have {{count}} favorites — similar items may appear below.",
       "categoryHint": "Browsing {{category}} right now.",
       "trendingBrands": "Popular now: {{brands}}",
-      "tunePrefs": "Tune preferences"
+      "tunePrefs": "Tune preferences",
+      "shippingBanner": "Shipping is calculated at checkout.",
+      "shippingBannerDismiss": "Dismiss banner"
     }
   },
   "product": {
@@ -257,6 +261,7 @@
     "favoriteRemove": "Remove from favorites",
     "favoriteCountAria": "{{count}} favorites",
     "featured": "Bump",
+    "totalWithProtection": "{{total}} incl. buyer protection",
     "bundleHint": "Bundle from this seller: {{percent}}% off when buying {{items}}+ items.",
     "browseCategory": "More in this category",
     "share": "Share",

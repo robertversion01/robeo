@@ -55,6 +55,7 @@
     "departments": {
       "women": "Női",
       "men": "Férfi",
+      "designer": "Dizájner",
       "kids": "Gyerek",
       "home": "Otthon",
       "electronics": "Elektronika",
@@ -195,6 +196,7 @@
       "explore": "Felfedezés",
       "trending": "Felkapott most",
       "brands": "Népszerű márkák",
+      "shopByBrand": "Vásárlás márka szerint",
       "sizes": "Méretek",
       "popular": "Népszerű rendezés",
       "condition": "Állapot szerint",
@@ -221,7 +223,9 @@
       "favoritesHint": "{{count}} kedvenc terméked van — hasonló ajánlatok a listában.",
       "categoryHint": "Most a(z) {{category}} kategóriát böngészed.",
       "trendingBrands": "Népszerű most: {{brands}}",
-      "tunePrefs": "Preferenciák finomhangolása"
+      "tunePrefs": "Preferenciák finomhangolása",
+      "shippingBanner": "A szállítási díjat a pénztárnál számítjuk fel.",
+      "shippingBannerDismiss": "Banner bezárása"
     }
   },
   "product": {
@@ -257,6 +261,7 @@
     "favoriteRemove": "Eltávolítás a kedvencekből",
     "favoriteCountAria": "{{count}} kedvenc",
     "featured": "Bump",
+    "totalWithProtection": "{{total}} összesen vevővédelemmel",
     "bundleHint": "Több termék egy eladótól: {{percent}}% kedvezmény {{items}}+ darabnál.",
     "browseCategory": "Több ebben a kategóriában",
     "share": "Megosztás",

@@ -49,6 +49,12 @@ type Props = {
   onSortPick?: (sort: string) => void;
   onMaxPricePick?: (max: number) => void;
   className?: string;
+  /** Csak a márka sor (mobil feed) */
+  brandsOnly?: boolean;
+  /** Sötét feed téma */
+  dark?: boolean;
+  /** Egyedi márka sor cím */
+  brandRowTitleKey?: string;
 };
 
 function discoveryHref(
@@ -75,10 +81,12 @@ function discoveryHref(
 function RailRow({
   title,
   accent,
+  dark = false,
   children,
 }: {
   title: string;
   accent?: boolean;
+  dark?: boolean;
   children: React.ReactNode;
 }) {
   return (
@@ -86,7 +94,7 @@ function RailRow({
       <p
         className={cn(
           'mb-1.5 flex items-center gap-1 text-[11px] font-bold uppercase tracking-wide',
-          accent ? 'text-[#007782]' : 'text-gray-500',
+          dark ? 'text-gray-400' : accent ? 'text-[#007782]' : 'text-gray-500',
         )}
       >
         {accent ? <Sparkles size={12} className="shrink-0" aria-hidden /> : null}
@@ -113,6 +121,9 @@ export default function BrowseDiscoveryRails({
   onSortPick,
   onMaxPricePick,
   className,
+  brandsOnly = false,
+  dark = false,
+  brandRowTitleKey,
 }: Props) {
   const { t } = useTranslation();
 
@@ -149,6 +160,7 @@ export default function BrowseDiscoveryRails({
       active,
       count: stat.count > 0 ? stat.count : undefined,
       variant,
+      dark,
     } as const;
     if (onBrandPick) {
       return (
@@ -275,6 +287,22 @@ export default function BrowseDiscoveryRails({
       })}
     </RailRow>
   ) : null;
+
+  if (brandsOnly) {
+    if (!hasBrandRow) return null;
+    return (
+      <div className={cn('mb-2', className)}>
+        <RailRow
+          title={t(brandRowTitleKey ?? 'browse.discovery.shopByBrand')}
+          dark={dark}
+        >
+          {brandStats.map((stat) =>
+            renderBrand(stat, prefBrands.includes(stat.name) ? 'pref' : 'default'),
+          )}
+        </RailRow>
+      </div>
+    );
+  }
 
   if (!hasDiscoveryData && !compact) {
     return <div className={cn('mb-3', className)}>{priceRow}</div>;

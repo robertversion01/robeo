@@ -1,4 +1,6 @@
 import { VINTED_CONDITIONS } from '@/lib/vintedCatalog';
+import { productMatchesDesignerBrand } from '@/lib/designerBrands';
+import { isFeedPseudoDepartment } from '@/lib/feedCategories';
 import {
   LEGACY_CATEGORY_TO_DEPARTMENT,
   productMatchesDepartment,
@@ -91,13 +93,18 @@ export function productMatchesCategory(
 export function productMatchesCatalogFilters(
   product: {
     category?: string | null;
+    brand?: string | null;
     condition?: string | null;
     color?: string | null;
     size?: string | null;
   },
   filters: Pick<CatalogFilterState, 'category' | 'subcategory' | 'color'>,
 ): boolean {
-  if (!productMatchesDepartment(product.category, filters.category)) return false;
+  if (isFeedPseudoDepartment(filters.category)) {
+    if (!productMatchesDesignerBrand(product.brand)) return false;
+  } else if (!productMatchesDepartment(product.category, filters.category)) {
+    return false;
+  }
   if (!productMatchesSubcategory(product.category, filters.subcategory)) return false;
   if (!productMatchesColor(product.color, filters.color)) return false;
   return true;

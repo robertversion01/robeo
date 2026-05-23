@@ -29,7 +29,7 @@ export function shouldShowMobileBottomNav(
 ): boolean {
   if (!pathname || isBottomNavSuppressedPath(pathname)) return false;
   if (!loggedIn) {
-    return false;
+    return pathname === '/' || pathname.startsWith('/browse');
   }
   return true;
 }

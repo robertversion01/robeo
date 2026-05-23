@@ -12,8 +12,8 @@ type Props = {
   selectedCategory: string;
   onCategoryChange: (id: string) => void;
   className?: string;
-  /** pill = chip gombok; text = lapozható szöveg tab sor (mobil feed) */
-  variant?: 'pill' | 'text';
+  /** pill = chip gombok; text = aláhúzott tab; vinted = sötét feed pill chipek */
+  variant?: 'pill' | 'text' | 'vinted';
 };
 
 const CATEGORY_I18N: Record<string, string> = {
@@ -26,6 +26,7 @@ const CATEGORY_I18N: Record<string, string> = {
   entertainment: 'browse.departments.entertainment',
   sports: 'browse.departments.sports',
   pets: 'browse.departments.pets',
+  designer: 'browse.departments.designer',
   other: 'browse.departments.other',
   clothing: 'browse.categories.clothing',
   shoes: 'browse.categories.shoes',
@@ -37,12 +38,12 @@ const TAP_MOVE_THRESHOLD_PX = 10;
 function CategoryTab({
   active,
   label,
-  isText,
+  variant,
   onSelect,
 }: {
   active: boolean;
   label: string;
-  isText: boolean;
+  variant: 'pill' | 'text' | 'vinted';
   onSelect: () => void;
 }) {
   const pointerRef = useRef<{ x: number; y: number; moved: boolean } | null>(null);
@@ -89,19 +90,27 @@ function CategoryTab({
       }}
       className={cn(
         'shrink-0 cursor-pointer select-none transition-colors',
-        isText
-          ? cn(
-              'whitespace-nowrap border-b-2 pb-1.5 text-sm',
-              active
-                ? 'border-[#007782] font-bold text-gray-900'
-                : 'border-transparent font-medium text-gray-500',
-            )
-          : cn(
-              'rounded-full border px-3.5 py-1.5 text-xs font-semibold touch-manipulation',
-              active
-                ? 'border-[#007782] bg-[#007782] text-white shadow-sm'
-                : 'border-gray-200 bg-white text-gray-700 hover:border-[#007782]/30 hover:bg-[#007782]/5',
-            ),
+        variant === 'text' &&
+          cn(
+            'whitespace-nowrap border-b-2 pb-1.5 text-sm',
+            active
+              ? 'border-[#007782] font-bold text-gray-900'
+              : 'border-transparent font-medium text-gray-500',
+          ),
+        variant === 'vinted' &&
+          cn(
+            'whitespace-nowrap rounded-full border px-3.5 py-1.5 text-[13px] font-semibold touch-manipulation',
+            active
+              ? 'border-white bg-white text-[#121212]'
+              : 'border-white/25 bg-transparent text-gray-200 hover:border-white/40',
+          ),
+        variant === 'pill' &&
+          cn(
+            'rounded-full border px-3.5 py-1.5 text-xs font-semibold touch-manipulation',
+            active
+              ? 'border-[#007782] bg-[#007782] text-white shadow-sm'
+              : 'border-gray-200 bg-white text-gray-700 hover:border-[#007782]/30 hover:bg-[#007782]/5',
+          ),
       )}
     >
       {label}
@@ -117,7 +126,7 @@ export default function CategoryQuickChips({
   variant = 'pill',
 }: Props) {
   const { t } = useTranslation();
-  const isText = variant === 'text';
+  const isScrollable = variant === 'text' || variant === 'vinted';
   const scrollRef = useRef<HTMLDivElement>(null);
 
   const selectCategory = useCallback(
@@ -129,10 +138,10 @@ export default function CategoryQuickChips({
   );
 
   useEffect(() => {
-    if (!isText || !scrollRef.current) return;
+    if (!isScrollable || !scrollRef.current) return;
     const activeEl = scrollRef.current.querySelector('[data-active="true"]');
     activeEl?.scrollIntoView({ behavior: 'smooth', inline: 'center', block: 'nearest' });
-  }, [selectedCategory, isText]);
+  }, [selectedCategory, isScrollable]);
 
   const tabs = categories.map((cat) => {
     const labelKey = CATEGORY_I18N[cat.id];
@@ -142,20 +151,20 @@ export default function CategoryQuickChips({
         key={cat.id}
         active={selectedCategory === cat.id}
         label={label}
-        isText={isText}
+        variant={variant}
         onSelect={() => selectCategory(cat.id)}
       />
     );
   });
 
-  if (isText) {
+  if (isScrollable) {
     return (
       <HorizontalScrollRow
         ref={scrollRef}
         role="tablist"
         aria-label={t('browse.categories.label')}
         bleedInset={2}
-        className={cn('pb-0.5', className)}
+        className={cn(variant === 'vinted' ? 'gap-2' : 'pb-0.5', className)}
       >
         {tabs}
       </HorizontalScrollRow>

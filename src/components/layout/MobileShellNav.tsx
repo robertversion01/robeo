@@ -113,10 +113,15 @@ export default function MobileShellNav() {
     );
   }
 
+  const isHomeFeed = pathname === '/';
+
   return (
     <nav
       className={cn(
-        'md:hidden fixed bottom-0 left-0 right-0 z-[9980] border-t border-gray-200 bg-white pb-[env(safe-area-inset-bottom,0px)] transition-transform duration-300 ease-out will-change-transform',
+        'md:hidden fixed bottom-0 left-0 right-0 z-[9980] border-t pb-[env(safe-area-inset-bottom,0px)] transition-transform duration-300 ease-out will-change-transform',
+        isHomeFeed
+          ? 'border-white/10 bg-[#121212]'
+          : 'border-gray-200 bg-white',
         shellChromeHidden && 'translate-y-full pointer-events-none',
       )}
       aria-label={t('nav.home')}
@@ -149,7 +154,13 @@ export default function MobileShellNav() {
               aria-current={active ? 'page' : undefined}
               className={cn(
                 'relative flex items-center justify-center py-2.5',
-                active ? 'text-[#007782]' : 'text-gray-400',
+                active
+                  ? isHomeFeed
+                    ? 'text-white'
+                    : 'text-[#007782]'
+                  : isHomeFeed
+                    ? 'text-gray-500'
+                    : 'text-gray-400',
               )}
             >
               <item.Icon size={22} strokeWidth={active ? 2.5 : 1.75} />
