@@ -143,6 +143,7 @@ export default function MessagesPage() {
   const checkUser = async () => {
     const { data: { user } } = await supabase.auth.getUser();
     if (!user) {
+      setLoading(false);
       router.push('/auth');
       return;
     }

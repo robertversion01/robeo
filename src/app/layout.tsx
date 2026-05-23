@@ -49,9 +49,9 @@ export default function RootLayout({
   return (
     <html
       lang="hu"
-      className={`${interSans.variable} ${geistMono.variable} h-full antialiased`}
+      className={`${interSans.variable} ${geistMono.variable} h-full antialiased overflow-x-clip max-w-[100vw]`}
     >
-      <body className="min-h-full flex flex-col overflow-x-hidden">
+      <body className="min-h-full flex flex-col overflow-x-clip max-w-[100vw]">
         <AppChrome>{children}</AppChrome>
         <Toaster 
           position="bottom-center"

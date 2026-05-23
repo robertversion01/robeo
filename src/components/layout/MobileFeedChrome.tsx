@@ -41,7 +41,7 @@ export default function MobileFeedChrome({
       className={cn(
         sticky &&
           cn(
-            'sticky top-0 z-40 border-b border-gray-100 bg-white',
+            'sticky top-0 z-40 min-w-0 max-w-full overflow-x-visible border-b border-gray-100 bg-white',
             MOBILE_TAB_PAGE_TOP,
           ),
         'pb-2 md:static md:border-0 md:bg-transparent md:pb-0 md:pt-0',

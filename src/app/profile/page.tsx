@@ -373,7 +373,7 @@ export default function ProfilePage() {
     new Date(product.featured_until).getTime() > Date.now();
 
   return (
-    <div className="min-h-screen bg-white text-gray-900">
+    <div className="min-h-screen bg-[#0f1a1d] md:bg-white text-gray-900">
       {deleteTarget ? (
         <div
           className="fixed inset-0 z-[300] flex items-center justify-center p-4 bg-black/50 backdrop-blur-[2px]"
@@ -469,8 +469,8 @@ export default function ProfilePage() {
 
       <ProfileMobileOrdersHeader />
 
-      <main className={`px-3 md:px-6 ${DESKTOP_TOP_PADDING}`}>
-        <div className="max-w-7xl mx-auto -mt-5 rounded-t-[1.25rem] bg-white pt-4 md:mt-0 md:rounded-none md:bg-transparent md:pt-0">
+      <main className={`px-0 md:px-6 ${DESKTOP_TOP_PADDING}`}>
+        <div className="relative z-10 mx-auto max-w-7xl -mt-5 rounded-t-[1.25rem] bg-white px-3 pt-4 shadow-[0_-4px_20px_rgba(0,0,0,0.08)] md:mt-0 md:rounded-none md:bg-transparent md:px-0 md:pt-0 md:shadow-none">
           <div className="flex items-center gap-3 mb-3 md:mb-2">
               <div className="w-12 h-12 md:w-14 md:h-14 rounded-full bg-[#007782]/10 flex items-center justify-center text-[#007782] text-lg md:text-xl font-bold shrink-0">
               {user?.email?.charAt(0).toUpperCase() || '?'}

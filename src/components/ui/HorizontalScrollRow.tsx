@@ -34,8 +34,8 @@ export default function HorizontalScrollRow({
       role={role}
       aria-label={ariaLabel}
       className={cn(
-        'overflow-x-auto overscroll-x-contain no-scrollbar',
-        '[-webkit-overflow-scrolling:touch] [touch-action:pan-x] [scrollbar-width:none]',
+        'w-full min-w-0 max-w-full overflow-x-auto overscroll-x-contain no-scrollbar',
+        '[-webkit-overflow-scrolling:touch] [touch-action:pan-x_pan-y] [scrollbar-width:none]',
         bleed && BLEED_CLASS[bleedInset],
         className,
       )}
