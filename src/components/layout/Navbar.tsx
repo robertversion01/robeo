@@ -36,6 +36,7 @@ export default function Navbar({ searchQuery, onSearchChange }: NavbarProps) {
   const pathname = usePathname();
   const router = useRouter();
   const profileMenuRef = useRef<HTMLDivElement | null>(null);
+  const { shellChromeHidden } = useImmersiveBrowse();
   const resolvedSearchQuery = searchQuery ?? browse.searchQuery;
   const isGuest = !loading && !user;
   const hideOnGuestHome = pathname === '/' && !user;
@@ -89,7 +90,6 @@ export default function Navbar({ searchQuery, onSearchChange }: NavbarProps) {
   if (hideOnGuestHome || hideOnAuth) return null;
 
   const loggedIn = Boolean(user);
-  const { shellChromeHidden } = useImmersiveBrowse();
   const hideNavbarOnMobileTabs = shouldHideNavbarOnMobileTabPages(pathname, loggedIn);
   const mobileMinimalHeader =
     loggedIn &&
