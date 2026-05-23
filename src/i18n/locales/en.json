@@ -596,6 +596,13 @@
     "switchLogin": "Log in",
     "successLogin": "Logged in successfully!",
     "successRegister": "Account created!",
+    "legalRequired": "You must accept the Terms, Privacy Policy, and confirm you are 18 or older.",
+    "acceptLegalPrefix": "By signing up I confirm that I accept the",
+    "acceptLegalTerms": "Terms of Service",
+    "acceptLegalMiddle": ", have read the",
+    "acceptLegalPrivacy": "Privacy Policy",
+    "acceptLegalAge": ", and am at least 18 years old.",
+    "marketingOptIn": "I would like to receive personalised offers and news about ROBEO by email (optional).",
     "errors": {
       "generic": "Something went wrong",
       "emailNotConfirmed": "Confirm your email before logging in.",

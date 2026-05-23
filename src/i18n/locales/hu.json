@@ -539,6 +539,13 @@
     "switchLogin": "Jelentkezz be",
     "successLogin": "Sikeres bejelentkezés!",
     "successRegister": "Sikeres regisztráció!",
+    "legalRequired": "A regisztrációhoz el kell fogadnod az ÁSZF-et, az adatvédelmi tájékoztatót, és meg kell erősítened, hogy elmúltál 18 éves.",
+    "acceptLegalPrefix": "A regisztrációval megerősítem, hogy elfogadom a",
+    "acceptLegalTerms": "Általános Szerződési Feltételeket",
+    "acceptLegalMiddle": ", elolvastam az",
+    "acceptLegalPrivacy": "Adatvédelmi tájékoztatót",
+    "acceptLegalAge": " és elmúltam 18 éves.",
+    "marketingOptIn": "Szeretnék e-mailben személyre szabott ajánlatokat és híreket kapni a ROBEO-ról (opcionális).",
     "errors": {
       "generic": "Hiba történt",
       "emailNotConfirmed": "Igazold vissza az e-mail címedet a bejelentkezés előtt!",

@@ -24,8 +24,8 @@ export default function AuthPage() {
   const [password, setPassword] = useState('');
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
-  const [acceptedTerms, setAcceptedTerms] = useState(false);
-  const [acceptedPrivacy, setAcceptedPrivacy] = useState(false);
+  const [acceptedLegal, setAcceptedLegal] = useState(false);
+  const [marketingOptIn, setMarketingOptIn] = useState(false);
   const router = useRouter();
 
   useEffect(() => {
@@ -57,7 +57,7 @@ export default function AuthPage() {
         toast.success(t('auth.successLogin'));
         router.push('/');
       } else {
-        if (!acceptedTerms || !acceptedPrivacy) {
+        if (!acceptedLegal) {
           setError(t('auth.legalRequired'));
           setLoading(false);
           return;
@@ -66,6 +66,12 @@ export default function AuthPage() {
         const { data: signUpData, error: signUpError } = await supabase.auth.signUp({
           email,
           password,
+          options: {
+            data: {
+              robeo_marketing_opt_in: marketingOptIn,
+              robeo_legal_version: LEGAL_VERSION,
+            },
+          },
         });
         if (signUpError) throw signUpError;
 
@@ -157,39 +163,46 @@ export default function AuthPage() {
                 <label className="flex items-start gap-2 cursor-pointer">
                   <input
                     type="checkbox"
-                    checked={acceptedTerms}
-                    onChange={(e) => setAcceptedTerms(e.target.checked)}
+                    checked={acceptedLegal}
+                    onChange={(e) => setAcceptedLegal(e.target.checked)}
                     className="mt-0.5 h-4 w-4 accent-[#4baab5] shrink-0"
                     required
                   />
                   <span>
-                    {t('auth.acceptTerms')}{' '}
-                    <Link href="/legal/terms" className="text-[#4baab5] font-semibold hover:underline" target="_blank">
-                      ÁSZF
+                    {t('auth.acceptLegalPrefix')}{' '}
+                    <Link
+                      href="/legal/terms"
+                      className="text-[#4baab5] font-semibold hover:underline"
+                      target="_blank"
+                    >
+                      {t('auth.acceptLegalTerms')}
                     </Link>
+                    {t('auth.acceptLegalMiddle')}{' '}
+                    <Link
+                      href="/legal/privacy"
+                      className="text-[#4baab5] font-semibold hover:underline"
+                      target="_blank"
+                    >
+                      {t('auth.acceptLegalPrivacy')}
+                    </Link>
+                    {t('auth.acceptLegalAge')}
                   </span>
                 </label>
                 <label className="flex items-start gap-2 cursor-pointer">
                   <input
                     type="checkbox"
-                    checked={acceptedPrivacy}
-                    onChange={(e) => setAcceptedPrivacy(e.target.checked)}
+                    checked={marketingOptIn}
+                    onChange={(e) => setMarketingOptIn(e.target.checked)}
                     className="mt-0.5 h-4 w-4 accent-[#4baab5] shrink-0"
-                    required
                   />
-                  <span>
-                    {t('auth.acceptPrivacy')}{' '}
-                    <Link href="/legal/privacy" className="text-[#4baab5] font-semibold hover:underline" target="_blank">
-                      Adatvédelmi tájékoztató (GDPR)
-                    </Link>
-                  </span>
+                  <span>{t('auth.marketingOptIn')}</span>
                 </label>
               </div>
             ) : null}
 
             <button
               type="submit"
-              disabled={loading || (!isLogin && (!acceptedTerms || !acceptedPrivacy))}
+              disabled={loading || (!isLogin && !acceptedLegal)}
               className="w-full h-12 rounded-xl bg-[#4baab5] text-black text-base font-semibold inline-flex items-center justify-center disabled:opacity-50 disabled:cursor-not-allowed mt-1"
             >
               {loading
