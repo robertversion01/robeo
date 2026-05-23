@@ -3,6 +3,7 @@ import {
   PRIVACY_META,
   PRIVACY_SECTIONS,
 } from '@/content/legal/privacyPolicyHu';
+import PrivacyPolicySectionBody from '@/components/legal/PrivacyPolicySectionBody';
 import { LEGAL_VERSION } from '@/lib/legalConstants';
 
 export default function PrivacyPolicyDocument() {
@@ -36,34 +37,26 @@ export default function PrivacyPolicyDocument() {
         </ol>
       </nav>
 
-      <div className="mt-10 space-y-10">
+      <div className="mt-10 space-y-12">
         {PRIVACY_SECTIONS.map((section) => (
           <section key={section.id} id={section.id} className="scroll-mt-24">
             <h2 className="text-xl font-bold text-gray-900">{section.title}</h2>
-            {section.paragraphs?.map((p) => (
-              <p key={p.slice(0, 40)} className="mt-3 text-sm leading-relaxed text-gray-700">
-                {p}
-              </p>
-            ))}
-            {section.bullets?.length ? (
-              <ul className="mt-3 list-disc space-y-2 pl-5 text-sm leading-relaxed text-gray-700">
-                {section.bullets.map((item) => (
-                  <li key={item.slice(0, 48)}>{item}</li>
-                ))}
-              </ul>
-            ) : null}
+            <PrivacyPolicySectionBody section={section} />
           </section>
         ))}
       </div>
 
-      <footer className="mt-12 border-t border-gray-200 pt-6 text-sm">
-        <Link href="/legal/terms" className="font-semibold text-[#007782] hover:underline">
-          Általános Szerződési Feltételek →
-        </Link>
-        <span className="mx-2 text-gray-300">|</span>
-        <Link href="/" className="text-gray-500 hover:underline">
-          ← Vissza a főoldalra
-        </Link>
+      <footer className="mt-12 space-y-3 border-t border-gray-200 pt-6 text-sm text-gray-600">
+        <p>
+          Kapcsolódó dokumentumok:{' '}
+          <Link href="/legal/terms" className="font-semibold text-[#007782] hover:underline">
+            Általános Szerződési Feltételek
+          </Link>
+          {' · '}
+          <Link href="/" className="text-gray-500 hover:underline">
+            Főoldal
+          </Link>
+        </p>
       </footer>
     </article>
   );

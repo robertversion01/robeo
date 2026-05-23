@@ -1,5 +1,5 @@
 /** Demo / test mode legal & invoicing metadata — not production tax documents. */
-export const LEGAL_VERSION = 'v1.1';
+export const LEGAL_VERSION = 'v1.2';
 
 export const PRIVACY_LAST_UPDATED = '2026-02-25';
 
