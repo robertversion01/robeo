@@ -28,6 +28,7 @@ import { computeDiscoveryChips } from '@/lib/discoveryStats';
 import { fetchGlobalDiscoveryChips } from '@/lib/globalDiscovery';
 import ImmersiveFilterSheet from '@/components/browse/ImmersiveFilterSheet';
 import MobileFeedChrome from '@/components/layout/MobileFeedChrome';
+import FeedCategorySwipeSurface from '@/components/browse/FeedCategorySwipeSurface';
 
 function sortLabelKey(id: string) {
   if (id === 'price_asc') return 'browse.sort.priceAsc';
@@ -162,15 +163,20 @@ function CatalogBrowsePanelInner({
   }, [products, isFeed, user, feedPrefs]);
 
   const handleCategoryChange = useCallback(
-    (id: string) => {
+    (id: string, opts?: { scroll?: boolean }) => {
       setSelectedCategory(id);
-      if (isFeed && typeof window !== 'undefined') {
+      if (isFeed && opts?.scroll !== false && typeof window !== 'undefined') {
         window.requestAnimationFrame(() => {
           document.getElementById('catalog')?.scrollIntoView({ behavior: 'smooth', block: 'start' });
         });
       }
     },
     [isFeed, setSelectedCategory],
+  );
+
+  const handleFeedSwipeCategoryChange = useCallback(
+    (id: string) => handleCategoryChange(id, { scroll: false }),
+    [handleCategoryChange],
   );
 
   useEffect(() => {
@@ -359,45 +365,53 @@ function CatalogBrowsePanelInner({
       ) : null}
 
       {isFeed ? (
-        <div className={chromeCollapse}>
-          <MobileFeedChrome
-            searchQuery={searchQuery}
-            onSearchChange={setSearchQuery}
-            catalogFilters={catalogFilters}
-            maxPriceLimit={maxPriceLimit}
-            browsePath={browsePath}
-            categories={categories}
-            selectedCategory={selectedCategory}
-            onCategoryChange={handleCategoryChange}
-            className="mb-1 lg:hidden"
-          />
-          {showPersonalization && user ? (
-            <div className="mb-3 hidden md:block">
-              <FeedPersonalizationBanner
-                mode="feed"
-                products={catalogProducts}
-                favoriteIds={favorites}
-                preferredCategory={
-                  selectedCategory !== 'all'
-                    ? t(`browse.departments.${selectedCategory}`, { defaultValue: selectedCategory })
-                    : undefined
-                }
-              />
-            </div>
-          ) : null}
-          <div className="mb-4 hidden space-y-3 lg:block">
-            <BrowseDiscoveryRails
-              {...discoveryProps}
-              prefBrands={feedPrefs.brands}
-              compact
-            />
-            <CategoryQuickChips
+        <FeedCategorySwipeSurface
+          enabled={isFeed}
+          categories={categories}
+          selectedCategory={selectedCategory}
+          onCategoryChange={handleFeedSwipeCategoryChange}
+        >
+          <div className={chromeCollapse}>
+            <MobileFeedChrome
+              searchQuery={searchQuery}
+              onSearchChange={setSearchQuery}
+              catalogFilters={catalogFilters}
+              maxPriceLimit={maxPriceLimit}
+              browsePath={browsePath}
               categories={categories}
               selectedCategory={selectedCategory}
               onCategoryChange={handleCategoryChange}
+              className="mb-1 lg:hidden"
             />
+            {showPersonalization && user ? (
+              <div className="mb-3 hidden md:block">
+                <FeedPersonalizationBanner
+                  mode="feed"
+                  products={catalogProducts}
+                  favoriteIds={favorites}
+                  preferredCategory={
+                    selectedCategory !== 'all'
+                      ? t(`browse.departments.${selectedCategory}`, { defaultValue: selectedCategory })
+                      : undefined
+                  }
+                />
+              </div>
+            ) : null}
+            <div className="mb-4 hidden space-y-3 lg:block">
+              <BrowseDiscoveryRails
+                {...discoveryProps}
+                prefBrands={feedPrefs.brands}
+                compact
+              />
+              <CategoryQuickChips
+                categories={categories}
+                selectedCategory={selectedCategory}
+                onCategoryChange={handleCategoryChange}
+              />
+            </div>
           </div>
-        </div>
+          {productGridBlock}
+        </FeedCategorySwipeSurface>
       ) : (
         <>
           <MobileFeedChrome
@@ -479,9 +493,7 @@ function CatalogBrowsePanelInner({
             {productGridBlock}
           </div>
         </div>
-      ) : (
-        productGridBlock
-      )}
+      ) : null}
 
       <ImmersiveFilterSheet
         catalogFilters={catalogFilters}
