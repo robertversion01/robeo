@@ -8,40 +8,93 @@ export const VINTED_CATEGORIES = [
   { id: 'other', label: 'Egyéb' },
 ] as const;
 
-export const VINTED_BRANDS = [
-  'Nike',
+export const OTHER_BRAND = 'Egyéb';
+
+/** Nyers márkalista — a publikus export mindig ABC sorrendű (Egyéb a végén). */
+const VINTED_BRANDS_RAW = [
   'Adidas',
-  'Zara',
-  'H&M',
+  'Apple',
+  'Asics',
   'Bershka',
-  'Pull&Bear',
-  'Mango',
-  'Reserved',
-  'Cropp',
-  'House',
-  'Sinsay',
-  'New Yorker',
-  'Puma',
-  'Reebok',
-  'Under Armour',
-  'Levi\'s',
-  'Tommy Hilfiger',
+  'Birkenstock',
+  'Brooks',
+  'C&A',
   'Calvin Klein',
-  'Guess',
-  'Lacoste',
-  'Vans',
-  'Converse',
-  'New Balance',
-  'The North Face',
+  'Champion',
   'Columbia',
+  'Converse',
+  'COS',
+  'Crocs',
+  'Cropp',
+  'Diesel',
+  'Dr. Martens',
+  'Ellesse',
+  'Esprit',
+  'Fila',
+  'Guess',
+  'H&M',
+  'Hoka',
+  'House',
+  'Hugo Boss',
+  'Jack Wolfskin',
+  'Kappa',
+  'KiK',
+  'Lacoste',
+  'Levi\'s',
+  'Lonsdale',
+  'Mango',
+  'Massimo Dutti',
+  'Michael Kors',
+  'Mizuno',
+  'Mohito',
+  'Napapijri',
+  'New Balance',
+  'New Yorker',
+  'Nike',
+  'On',
+  'ONLY',
+  'Orsay',
   'Patagonia',
   'Primark',
+  'Pull&Bear',
+  'Puma',
+  'Ralph Lauren',
+  'Reebok',
+  'Regatta',
+  'Reserved',
+  'Salomon',
+  'Samsung',
+  'Saucony',
+  'Selected',
+  'Sinsay',
+  'Skechers',
+  'Sony',
   'Stradivarius',
-  'Massimo Dutti',
-  'COS',
+  'The North Face',
+  'Timberland',
+  'Tommy Hilfiger',
+  'UGG',
+  'Under Armour',
   'Uniqlo',
-  'Egyéb',
+  'Vans',
+  'Vero Moda',
+  'Xiaomi',
+  'Zara',
+  OTHER_BRAND,
 ] as const;
+
+/** ABC sorrend (hu locale); „Egyéb” mindig utolsó. */
+export function sortCatalogBrands(brands: readonly string[]): string[] {
+  const rest = brands.filter((b) => b !== OTHER_BRAND);
+  rest.sort((a, b) => a.localeCompare(b, 'hu', { sensitivity: 'base' }));
+  return brands.includes(OTHER_BRAND) ? [...rest, OTHER_BRAND] : rest;
+}
+
+export const VINTED_BRANDS: readonly string[] = sortCatalogBrands(VINTED_BRANDS_RAW);
+
+export function vintedBrandSelectOptions(): { value: string; label: string }[] {
+  return VINTED_BRANDS.map((b) => ({ value: b, label: b }));
+}
 
 export const CLOTHING_SIZES = ['XXS', 'XS', 'S', 'M', 'L', 'XL', 'XXL', '3XL', 'Egy méret'] as const;
 

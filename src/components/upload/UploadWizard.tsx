@@ -7,8 +7,8 @@ import { X, Plus, ArrowUp, ArrowDown, ChevronLeft, ChevronRight, Check } from 'l
 import { useTranslation } from 'react-i18next';
 import { useRouter } from 'next/navigation';
 import CustomSelect from '@/components/ui/CustomSelect';
-import { VINTED_BRANDS, VINTED_CATEGORIES, sizesForCategory } from '@/lib/vintedCatalog';
-import { MAIN_TOP_PADDING, STICKY_ACTION_BAR_CLASS } from '@/lib/layoutTokens';
+import { VINTED_CATEGORIES, sizesForCategory, vintedBrandSelectOptions } from '@/lib/vintedCatalog';
+import { MAIN_TOP_PADDING, STICKY_ACTION_BAR_CLASS, STICKY_ACTION_BAR_RESERVE_PX } from '@/lib/layoutTokens';
 import { revalidateCatalog } from '@/app/actions/revalidateCatalog';
 import { notifyCatalogUpdated } from '@/lib/catalogRefresh';
 import { clearUploadDraft, loadUploadDraft, purgeCorruptUploadDrafts, saveUploadDraft } from '@/lib/uploadDraft';
@@ -353,6 +353,13 @@ export default function UploadWizard() {
     { value: 'poor', label: t('upload.conditions.poor') },
   ];
 
+  const brandOptions = useMemo(() => vintedBrandSelectOptions(), []);
+
+  const selectDropdownProps = {
+    bottomReservePx: STICKY_ACTION_BAR_RESERVE_PX,
+    maxDropdownHeight: 280,
+  } as const;
+
   return (
     <div className="min-h-screen bg-white text-gray-900">
       <main className={`${MAIN_TOP_PADDING} pb-36 max-w-lg mx-auto px-4`}>
@@ -454,6 +461,7 @@ export default function UploadWizard() {
                 value={formData.category}
                 onChange={(val) => setFormData((p) => ({ ...p, category: val, size: '' }))}
                 placeholder={t('upload.categoryPlaceholder')}
+                {...selectDropdownProps}
               />
               <label className="block text-sm font-medium">{t('upload.size')}</label>
               <CustomSelect
@@ -461,6 +469,7 @@ export default function UploadWizard() {
                 value={formData.size}
                 onChange={(val) => setFormData((p) => ({ ...p, size: val }))}
                 placeholder={t('upload.sizePlaceholder')}
+                {...selectDropdownProps}
               />
             </div>
           )}
@@ -469,10 +478,11 @@ export default function UploadWizard() {
             <div>
               <label className="block text-sm font-medium mb-2">{t('upload.brand')}</label>
               <CustomSelect
-                options={VINTED_BRANDS.map((b) => ({ value: b, label: b }))}
+                options={brandOptions}
                 value={formData.brand}
                 onChange={(val) => setFormData((p) => ({ ...p, brand: val }))}
                 placeholder={t('upload.brandPlaceholder')}
+                {...selectDropdownProps}
               />
             </div>
           )}
@@ -485,6 +495,7 @@ export default function UploadWizard() {
                 value={formData.condition}
                 onChange={(val) => setFormData((p) => ({ ...p, condition: val }))}
                 placeholder={t('upload.conditionPlaceholder')}
+                {...selectDropdownProps}
               />
             </div>
           )}
