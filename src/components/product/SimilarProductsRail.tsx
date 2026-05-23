@@ -1,6 +1,7 @@
 'use client';
 
 import { useEffect, useState } from 'react';
+import { useHorizontalMouseScroll } from '@/hooks/useHorizontalMouseScroll';
 import Link from 'next/link';
 import { useTranslation } from 'react-i18next';
 import { supabase } from '@/lib/supabase';
@@ -30,6 +31,7 @@ function resolveCategoryFilterId(raw: string | null | undefined): string {
 export default function SimilarProductsRail({ productId, category, brand, size }: Props) {
   const { t } = useTranslation();
   const [items, setItems] = useState<Product[]>([]);
+  const scrollRef = useHorizontalMouseScroll<HTMLDivElement>();
 
   useEffect(() => {
     let cancelled = false;
@@ -90,7 +92,10 @@ export default function SimilarProductsRail({ productId, category, brand, size }
   return (
     <section className="mb-4">
       <h3 className="text-sm font-semibold text-gray-900 mb-2">{t('pdp.similar')}</h3>
-      <div className="flex gap-2 overflow-x-auto no-scrollbar pb-1">
+      <div
+        ref={scrollRef}
+        className="flex gap-2 overflow-x-auto overscroll-x-contain no-scrollbar pb-1 cursor-grab [&.is-drag-scrolling]:cursor-grabbing [&.is-drag-scrolling_a]:pointer-events-none"
+      >
         {items.map((p) => {
           const imageUrl = normalizePrimaryProductImageUrl(p);
           return (

@@ -82,9 +82,10 @@ export default function SavedSearchesStrip({ filters, onApply, hasActiveFilters 
     try {
       const next = await removeSavedSearchEntry(supabase, item.id);
       setItems(next);
-    } catch {
+    } catch (err) {
+      console.error('[SavedSearchesStrip] remove failed:', err);
       toast.error(t('browse.saved.removeFailed'));
-      await refresh();
+      setItems((prev) => prev.filter((i) => i.id !== item.id));
     }
   };
 

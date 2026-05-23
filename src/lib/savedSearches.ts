@@ -14,8 +14,36 @@ export type SavedSearch = {
 };
 
 const STORAGE_KEY = 'robeo_saved_searches_v1';
+const DELETED_FILTERS_KEY = 'robeo_saved_searches_deleted_filters_v1';
 const METADATA_KEY = 'robeo_saved_searches';
 const MAX_SAVED = 12;
+
+function filterKey(filters: SavedSearch['filters']): string {
+  return JSON.stringify(filters);
+}
+
+function readDeletedFilterKeys(): Set<string> {
+  if (typeof window === 'undefined') return new Set();
+  try {
+    const raw = window.localStorage.getItem(DELETED_FILTERS_KEY);
+    if (!raw) return new Set();
+    const parsed = JSON.parse(raw) as string[];
+    return new Set(Array.isArray(parsed) ? parsed : []);
+  } catch {
+    return new Set();
+  }
+}
+
+function writeDeletedFilterKeys(keys: Set<string>) {
+  if (typeof window === 'undefined') return;
+  window.localStorage.setItem(DELETED_FILTERS_KEY, JSON.stringify(Array.from(keys)));
+}
+
+function markFiltersDeleted(filters: SavedSearch['filters']) {
+  const keys = readDeletedFilterKeys();
+  keys.add(filterKey(filters));
+  writeDeletedFilterKeys(keys);
+}
 
 function readLocal(): SavedSearch[] {
   if (typeof window === 'undefined') return [];
@@ -39,9 +67,11 @@ function isSameFilters(a: SavedSearch['filters'], b: SavedSearch['filters']) {
 }
 
 function mergeLists(local: SavedSearch[], remote: SavedSearch[]): SavedSearch[] {
+  const deleted = readDeletedFilterKeys();
   const map = new Map<string, SavedSearch>();
   for (const item of [...remote, ...local]) {
-    const key = JSON.stringify(item.filters);
+    const key = filterKey(item.filters);
+    if (deleted.has(key)) continue;
     const existing = map.get(key);
     if (!existing || new Date(item.createdAt) > new Date(existing.createdAt)) {
       map.set(key, item);
@@ -78,9 +108,12 @@ export async function persistSavedSearchesToUser(
     data: { user },
   } = await supabase.auth.getUser();
   if (!user) return;
-  await supabase.auth.updateUser({
+  const { error } = await supabase.auth.updateUser({
     data: { [METADATA_KEY]: items.slice(0, MAX_SAVED) },
   });
+  if (error) {
+    console.warn('[savedSearches] remote persist failed:', error.message);
+  }
 }
 
 export async function loadSavedSearchesMerged(
@@ -145,19 +178,23 @@ export async function removeSavedSearchEntry(
     }
   }
 
+  if (target) {
+    markFiltersDeleted(target.filters);
+  }
+
   writeLocal(next);
 
   const {
     data: { user },
-    error: userError,
   } = await supabase.auth.getUser();
-  if (userError) throw userError;
 
   if (user) {
     const { error } = await supabase.auth.updateUser({
       data: { [METADATA_KEY]: next.slice(0, MAX_SAVED) },
     });
-    if (error) throw error;
+    if (error) {
+      console.warn('[savedSearches] remote remove sync failed:', error.message);
+    }
   }
 
   for (const purgeId of idsToPurge) {
