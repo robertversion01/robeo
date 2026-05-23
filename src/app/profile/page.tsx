@@ -28,6 +28,7 @@ import WalletBalanceCard from '@/components/profile/WalletBalanceCard';
 import BundleDiscountSettings from '@/components/profile/BundleDiscountSettings';
 import AdminHub from '@/components/admin/AdminHub';
 import ProfileTabNav, { type ProfileTabId } from '@/components/profile/ProfileTabNav';
+import MobileProfileOrdersLink from '@/components/profile/MobileProfileOrdersLink';
 import ProfileSection from '@/components/profile/ProfileSection';
 import ProfileSettingsHub from '@/components/profile/ProfileSettingsHub';
 import ProfileSignOutBar from '@/components/profile/ProfileSignOutBar';
@@ -485,6 +486,8 @@ export default function ProfilePage() {
               </div>
             </div>
           </div>
+
+          <MobileProfileOrdersLink />
 
           <ProfileTabNav
             active={activeTab}

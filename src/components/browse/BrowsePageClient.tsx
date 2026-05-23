@@ -3,13 +3,14 @@
 import { useTranslation } from 'react-i18next';
 import CatalogBrowsePanel from '@/components/browse/CatalogBrowsePanel';
 import PageHeader from '@/components/layout/PageHeader';
+import { DESKTOP_TOP_PADDING } from '@/lib/layoutTokens';
 
 export default function BrowsePageClient() {
   const { t } = useTranslation();
 
   return (
     <div className="min-h-screen max-w-[100vw] overflow-x-hidden bg-white text-gray-900">
-      <main className="pt-[calc(0.75rem+env(safe-area-inset-top,0px))] pb-2 px-3 md:pt-14 md:pb-12 md:px-6">
+      <main className={`px-3 pb-1 md:px-6 md:pb-12 ${DESKTOP_TOP_PADDING}`}>
         <div className="mx-auto max-w-7xl">
           <PageHeader
             title={t('browse.pageTitle')}
@@ -18,7 +19,7 @@ export default function BrowsePageClient() {
           />
           <CatalogBrowsePanel
             browsePath="/browse"
-            stickyTopClass="top-0 md:top-11"
+            stickyTopClass="top-0"
             showPersonalization
             variant="search"
           />

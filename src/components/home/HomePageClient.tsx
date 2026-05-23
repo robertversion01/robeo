@@ -5,10 +5,9 @@ import { useTranslation } from 'react-i18next';
 import { useProducts } from '@/hooks/useProducts';
 import VintedHero from '@/components/home/VintedHero';
 import CatalogBrowsePanel from '@/components/browse/CatalogBrowsePanel';
-import { MAIN_TOP_PADDING } from '@/lib/layoutTokens';
+import { DESKTOP_TOP_PADDING } from '@/lib/layoutTokens';
 import { filterProductsWithValidImages } from '@/lib/productImageValidation';
 import { useImmersiveBrowse } from '@/context/ImmersiveBrowseContext';
-import { cn } from '@/lib/utils';
 import CookieConsentBanner from '@/components/legal/CookieConsentBanner';
 
 function HomePageContent() {
@@ -27,8 +26,8 @@ function HomePageContent() {
         <CookieConsentBanner />
         <main className="w-full max-w-[100vw] overflow-x-hidden">
           <VintedHero products={heroProducts} fullScreen />
-          <div className="landing-catalog mx-auto max-w-7xl px-2 pt-3 pb-6 md:px-6 md:pt-4 md:pb-8">
-            <h2 className="mb-2 text-base font-semibold text-gray-900 md:text-lg">
+          <div className="landing-catalog mx-auto max-w-7xl px-3 pt-4 pb-6 md:px-6 md:pt-4 md:pb-8">
+            <h2 className="mb-3 text-base font-semibold text-gray-900 md:text-lg">
               {t('landing.catalog.title')}
             </h2>
             <CatalogBrowsePanel
@@ -45,21 +44,14 @@ function HomePageContent() {
   return (
     <div className="landing-page-root min-h-screen max-w-[100vw] overflow-x-hidden bg-white text-gray-900">
       <CookieConsentBanner />
-      <main className={`w-full max-w-[100vw] overflow-x-hidden ${MAIN_TOP_PADDING} px-3 pb-2 md:px-6`}>
+      <main className={`w-full max-w-[100vw] overflow-x-hidden px-3 pb-1 md:px-6 ${DESKTOP_TOP_PADDING}`}>
         <div className="mx-auto max-w-7xl">
-          <div
-            className={cn(
-              'overflow-hidden transition-[max-height,opacity] duration-300 ease-out',
-              catalogChromeHidden
-                ? 'max-h-0 opacity-0 pointer-events-none'
-                : 'max-h-[240px] opacity-100',
-            )}
-          >
+          <div className="hidden md:block">
             <VintedHero products={heroProducts} compact />
           </div>
           <CatalogBrowsePanel
             browsePath="/"
-            stickyTopClass="top-11"
+            stickyTopClass="top-0"
             showPersonalization
             variant="feed"
           />

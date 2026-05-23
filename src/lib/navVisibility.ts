@@ -71,12 +71,20 @@ export function shouldShowHeaderProfileMenu(
   return !shouldShowMobileBottomNav(pathname, loggedIn);
 }
 
-/** Keresés tab mobilon: nincs fejléc — több hely a termékeknek (desktopon marad) */
+/** Mobil: fő tab oldalakon nincs felső navbar — Hacoo-szerű in-page header */
+export function shouldHideNavbarOnMobileTabPages(
+  pathname: string | null,
+  loggedIn: boolean,
+): boolean {
+  return loggedIn && shouldShowMobileBottomNav(pathname, loggedIn);
+}
+
+/** Keresés tab mobilon: nincs globális fejléc */
 export function shouldHideNavbarOnMobileBrowse(
   pathname: string | null,
   loggedIn: boolean,
 ): boolean {
-  return loggedIn && isBrowseSearchPath(pathname);
+  return shouldHideNavbarOnMobileTabPages(pathname, loggedIn);
 }
 
 /** Immersive böngészés: főoldal feed (bejelentkezve) + keresés tab */

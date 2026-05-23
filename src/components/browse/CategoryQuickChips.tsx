@@ -59,8 +59,8 @@ export default function CategoryQuickChips({
             className={cn(
               'shrink-0 rounded-full border px-3.5 py-1.5 text-xs font-semibold transition-all touch-manipulation',
               active
-                ? 'border-gray-900 bg-gray-900 text-white shadow-sm'
-                : 'border-gray-200 bg-white text-gray-700 hover:border-gray-300 hover:bg-gray-50',
+                ? 'border-[#007782] bg-[#007782] text-white shadow-sm'
+                : 'border-gray-200 bg-white text-gray-700 hover:border-[#007782]/30 hover:bg-[#007782]/5',
             )}
           >
             {label}

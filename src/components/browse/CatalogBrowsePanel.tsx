@@ -27,6 +27,7 @@ import { useMarketplaceBackgroundWorkers } from '@/hooks/useMarketplaceBackgroun
 import { computeDiscoveryChips } from '@/lib/discoveryStats';
 import { fetchGlobalDiscoveryChips } from '@/lib/globalDiscovery';
 import ImmersiveFilterSheet from '@/components/browse/ImmersiveFilterSheet';
+import MobileFeedChrome from '@/components/layout/MobileFeedChrome';
 
 function sortLabelKey(id: string) {
   if (id === 'price_asc') return 'browse.sort.priceAsc';
@@ -301,7 +302,7 @@ function CatalogBrowsePanelInner({
         onClearFilters={clearAllFilters}
       />
       {!loading && hasMore ? (
-        <div className="mt-6 flex justify-center pb-8">
+        <div className="mt-6 flex justify-center pb-4 md:pb-8">
           <button
             type="button"
             onClick={() => void loadMore()}
@@ -358,7 +359,18 @@ function CatalogBrowsePanelInner({
               }
             />
           ) : null}
-          <div className="mb-3 space-y-3 px-0 md:-mx-0 md:px-0">
+          <MobileFeedChrome
+            searchQuery={searchQuery}
+            onSearchChange={setSearchQuery}
+            catalogFilters={catalogFilters}
+            maxPriceLimit={maxPriceLimit}
+            browsePath={browsePath}
+            categories={categories}
+            selectedCategory={selectedCategory}
+            onCategoryChange={setSelectedCategory}
+            className="mb-4 lg:hidden"
+          />
+          <div className="mb-4 hidden space-y-3 lg:block">
             <BrowseDiscoveryRails
               {...discoveryProps}
               prefBrands={feedPrefs.brands}
@@ -372,13 +384,30 @@ function CatalogBrowsePanelInner({
           </div>
         </div>
       ) : (
-        <div
-          className={cn(
-            'sticky z-40 mb-2 border-b border-gray-200/90 bg-white/95 px-0 pt-3 pb-1 backdrop-blur-md supports-[backdrop-filter]:bg-white/80 md:px-0 shadow-sm lg:static lg:border-0 lg:bg-transparent lg:shadow-none lg:backdrop-blur-none',
-            stickyTopClass,
-          )}
-        >
-          <div className="space-y-3 pb-2 lg:hidden">
+        <>
+          <MobileFeedChrome
+            title={t('browse.pageTitle')}
+            searchQuery={searchQuery}
+            onSearchChange={setSearchQuery}
+            catalogFilters={catalogFilters}
+            maxPriceLimit={maxPriceLimit}
+            browsePath={browsePath}
+            categories={categories}
+            selectedCategory={selectedCategory}
+            onCategoryChange={setSelectedCategory}
+            className="mb-0 lg:hidden"
+          >
+            <SavedSearchesStrip
+              filters={catalogFilters}
+              hasActiveFilters={hasActiveFilters}
+              onApply={applySavedSearch}
+            />
+          </MobileFeedChrome>
+          <div className="mb-3 lg:hidden">
+            <Filters {...filtersProps} />
+            <ActiveFilterBar {...activeFilterBarProps} className="pt-2 pb-1" />
+          </div>
+          <div className="hidden space-y-3 pb-2 lg:block">
             <BrowseDiscoveryRails {...discoveryProps} compact />
             <CatalogSearchBar
               value={searchQuery}
@@ -398,11 +427,7 @@ function CatalogBrowsePanelInner({
               onApply={applySavedSearch}
             />
           </div>
-          <div className="lg:hidden">
-            <Filters {...filtersProps} />
-            <ActiveFilterBar {...activeFilterBarProps} className="pb-2" />
-          </div>
-        </div>
+        </>
       )}
 
       {isSearch ? (

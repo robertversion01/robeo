@@ -16,7 +16,7 @@ import { cn } from '@/lib/utils';
 import { useImmersiveBrowse } from '@/context/ImmersiveBrowseContext';
 import {
   isBrowseSearchPath,
-  shouldHideNavbarOnMobileBrowse,
+  shouldHideNavbarOnMobileTabPages,
   shouldShowHeaderProfileMenu,
   shouldShowMobileHeaderQuickActions,
   shouldShowMobileBottomNav,
@@ -90,7 +90,7 @@ export default function Navbar({ searchQuery, onSearchChange }: NavbarProps) {
 
   const loggedIn = Boolean(user);
   const { shellChromeHidden } = useImmersiveBrowse();
-  const hideNavbarOnMobileBrowse = shouldHideNavbarOnMobileBrowse(pathname, loggedIn);
+  const hideNavbarOnMobileTabs = shouldHideNavbarOnMobileTabPages(pathname, loggedIn);
   const mobileMinimalHeader =
     loggedIn &&
     shouldShowMobileBottomNav(pathname, loggedIn) &&
@@ -255,7 +255,7 @@ export default function Navbar({ searchQuery, onSearchChange }: NavbarProps) {
         'fixed top-0 left-0 right-0 z-[9999] bg-white border-b border-gray-200 transition-transform duration-300 ease-out will-change-transform',
         'pt-[env(safe-area-inset-top,0px)]',
         browsePath && loggedIn ? 'border-gray-100' : 'shadow-sm',
-        hideNavbarOnMobileBrowse && 'max-md:hidden',
+        hideNavbarOnMobileTabs && 'max-md:hidden',
         shellChromeHidden && 'max-md:-translate-y-full max-md:pointer-events-none',
       )}
     >
