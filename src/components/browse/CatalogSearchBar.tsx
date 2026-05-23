@@ -8,6 +8,7 @@ import { supabase } from '@/lib/supabase';
 import { catalogUrlFromFilters } from '@/lib/catalogUrlParams';
 import type { CatalogFilterState } from '@/lib/catalogFilters';
 import { fetchListedProductTypeahead, type ProductTypeaheadRow } from '@/lib/listedProducts';
+import { cn } from '@/lib/utils';
 
 type Props = {
   value: string;
@@ -19,6 +20,8 @@ type Props = {
   onSeeAll?: () => void;
   autoFocus?: boolean;
   browsePath?: string;
+  /** Kompakt mobil feed fejléc — kisebb, szolidabb mező + Keresés gomb */
+  compact?: boolean;
 };
 
 export default function SearchTypeahead({
@@ -31,6 +34,7 @@ export default function SearchTypeahead({
   onSeeAll,
   autoFocus = false,
   browsePath = '/browse',
+  compact = false,
 }: Props) {
   const { t } = useTranslation();
   const [liveResults, setLiveResults] = useState<ProductTypeaheadRow[]>([]);
@@ -67,9 +71,16 @@ export default function SearchTypeahead({
       ? `${catalogUrlFromFilters({ ...catalogFilters, search: value }, maxPriceLimit, browsePath)}#catalog`
       : `${browsePath}?q=${encodeURIComponent(value.trim())}#catalog`;
 
-  return (
-    <div ref={containerRef} className={`relative ${className}`}>
-      <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" size={16} />
+  const inputClass = compact
+    ? 'h-9 w-full min-w-0 rounded-full border border-gray-200 bg-white pl-8 pr-2.5 text-xs text-gray-900 shadow-sm placeholder:text-gray-400 focus:border-[#007782] focus:outline-none focus:ring-1 focus:ring-[#007782]'
+    : 'h-11 w-full rounded-full border border-gray-200 bg-gray-50 pl-9 pr-3 text-sm text-gray-900 placeholder:text-gray-400 focus:border-[#007782] focus:bg-white focus:outline-none focus:ring-1 focus:ring-[#007782]';
+
+  const searchField = (
+    <div className={cn('relative min-w-0', compact ? 'flex-1' : 'w-full')}>
+      <Search
+        className="absolute left-2.5 top-1/2 -translate-y-1/2 text-gray-400"
+        size={compact ? 14 : 16}
+      />
       <input
         id={inputId}
         name="search"
@@ -84,23 +95,23 @@ export default function SearchTypeahead({
           onChange(e.target.value);
           setOpen(true);
         }}
-        className="h-11 w-full rounded-full border border-gray-200 bg-gray-50 pl-9 pr-3 text-sm text-gray-900 placeholder:text-gray-400 focus:border-[#007782] focus:bg-white focus:outline-none focus:ring-1 focus:ring-[#007782]"
+        className={inputClass}
       />
       {open && value.trim().length >= 2 ? (
-        <div className="absolute left-0 right-0 top-[calc(100%+8px)] z-[10050] overflow-hidden rounded-xl border border-gray-200 bg-white shadow-lg">
+        <div className="absolute left-0 right-0 top-[calc(100%+6px)] z-[10050] overflow-hidden rounded-xl border border-gray-200 bg-white shadow-lg">
           {liveResults.length === 0 ? (
-            <div className="px-3 py-2.5 text-xs text-gray-500">{t('browse.search.noResults')}</div>
+            <div className="px-3 py-2 text-xs text-gray-500">{t('browse.search.noResults')}</div>
           ) : (
-            <div className="max-h-60 overflow-y-auto overscroll-contain pb-[max(0.5rem,env(safe-area-inset-bottom,0px))]">
+            <div className="max-h-56 overflow-y-auto overscroll-contain pb-[max(0.5rem,env(safe-area-inset-bottom,0px))]">
               {liveResults.map((item) => (
                 <Link
                   key={item.id}
                   href={`/products/${item.id}`}
                   onClick={() => setOpen(false)}
-                  className="block border-b border-gray-100 px-3 py-2.5 last:border-b-0 hover:bg-gray-50"
+                  className="block border-b border-gray-100 px-3 py-2 last:border-b-0 hover:bg-gray-50"
                 >
-                  <p className="truncate text-sm font-medium text-gray-900">{item.name}</p>
-                  <p className="truncate text-xs text-gray-500">
+                  <p className="truncate text-xs font-medium text-gray-900">{item.name}</p>
+                  <p className="truncate text-[11px] text-gray-500">
                     {[item.brand, item.category].filter(Boolean).join(' · ') || item.category}
                   </p>
                 </Link>
@@ -113,12 +124,33 @@ export default function SearchTypeahead({
               setOpen(false);
               onSeeAll?.();
             }}
-            className="block border-t border-gray-100 bg-gray-50 px-3 py-2.5 text-center text-xs font-semibold text-[#007782] hover:bg-[#007782]/5"
+            className="block border-t border-gray-100 bg-gray-50 px-3 py-2 text-center text-xs font-semibold text-[#007782] hover:bg-[#007782]/5"
           >
             {t('browse.search.seeAll', { query: value.trim() })}
           </Link>
         </div>
       ) : null}
+    </div>
+  );
+
+  if (compact) {
+    return (
+      <div ref={containerRef} className={cn('flex items-center gap-2', className)}>
+        {searchField}
+        <Link
+          href={seeAllHref}
+          onClick={() => onSeeAll?.()}
+          className="inline-flex h-9 shrink-0 items-center rounded-full bg-[#007782] px-3.5 text-xs font-semibold text-white shadow-sm touch-manipulation active:bg-[#006670]"
+        >
+          {t('nav.search')}
+        </Link>
+      </div>
+    );
+  }
+
+  return (
+    <div ref={containerRef} className={cn('relative', className)}>
+      {searchField}
     </div>
   );
 }

@@ -10,6 +10,8 @@ type Props = {
   selectedCategory: string;
   onCategoryChange: (id: string) => void;
   className?: string;
+  /** pill = chip gombok; text = lapozható szöveg tab sor (mobil feed) */
+  variant?: 'pill' | 'text';
 };
 
 const CATEGORY_I18N: Record<string, string> = {
@@ -33,13 +35,17 @@ export default function CategoryQuickChips({
   selectedCategory,
   onCategoryChange,
   className,
+  variant = 'pill',
 }: Props) {
   const { t } = useTranslation();
+  const isText = variant === 'text';
 
   return (
     <div
       className={cn(
-        'flex gap-2.5 overflow-x-auto pb-2 no-scrollbar -mx-0.5 px-0.5',
+        isText
+          ? 'flex snap-x snap-mandatory gap-4 overflow-x-auto overscroll-x-contain touch-pan-x pb-0.5 no-scrollbar [-webkit-overflow-scrolling:touch]'
+          : 'flex gap-2.5 overflow-x-auto pb-2 no-scrollbar -mx-0.5 px-0.5',
         className,
       )}
       role="tablist"
@@ -57,10 +63,20 @@ export default function CategoryQuickChips({
             aria-selected={active}
             onClick={() => onCategoryChange(cat.id)}
             className={cn(
-              'shrink-0 rounded-full border px-3.5 py-1.5 text-xs font-semibold transition-all touch-manipulation',
-              active
-                ? 'border-[#007782] bg-[#007782] text-white shadow-sm'
-                : 'border-gray-200 bg-white text-gray-700 hover:border-[#007782]/30 hover:bg-[#007782]/5',
+              'shrink-0 touch-manipulation transition-colors snap-start',
+              isText
+                ? cn(
+                    'whitespace-nowrap border-b-2 pb-1.5 text-sm',
+                    active
+                      ? 'border-[#007782] font-bold text-gray-900'
+                      : 'border-transparent font-medium text-gray-500',
+                  )
+                : cn(
+                    'rounded-full border px-3.5 py-1.5 text-xs font-semibold',
+                    active
+                      ? 'border-[#007782] bg-[#007782] text-white shadow-sm'
+                      : 'border-gray-200 bg-white text-gray-700 hover:border-[#007782]/30 hover:bg-[#007782]/5',
+                  ),
             )}
           >
             {label}

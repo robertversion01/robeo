@@ -10,7 +10,7 @@ export default function BrowsePageClient() {
 
   return (
     <div className="min-h-screen max-w-[100vw] overflow-x-hidden bg-white text-gray-900">
-      <main className={`px-3 pb-1 md:px-6 md:pb-12 ${DESKTOP_TOP_PADDING}`}>
+      <main className={`px-2 pb-0 md:px-6 md:pb-12 ${DESKTOP_TOP_PADDING}`}>
         <div className="mx-auto max-w-7xl">
           <PageHeader
             title={t('browse.pageTitle')}

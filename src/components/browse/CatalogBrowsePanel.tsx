@@ -276,6 +276,7 @@ function CatalogBrowsePanelInner({
     <p
       className={cn(
         'mb-2 text-sm tabular-nums text-gray-500',
+        isFeed && 'hidden md:block',
       )}
     >
       {loading
@@ -347,18 +348,6 @@ function CatalogBrowsePanelInner({
 
       {isFeed ? (
         <div className={chromeCollapse}>
-          {showPersonalization && user ? (
-            <FeedPersonalizationBanner
-              mode="feed"
-              products={catalogProducts}
-              favoriteIds={favorites}
-              preferredCategory={
-                selectedCategory !== 'all'
-                  ? t(`browse.departments.${selectedCategory}`, { defaultValue: selectedCategory })
-                  : undefined
-              }
-            />
-          ) : null}
           <MobileFeedChrome
             searchQuery={searchQuery}
             onSearchChange={setSearchQuery}
@@ -368,8 +357,22 @@ function CatalogBrowsePanelInner({
             categories={categories}
             selectedCategory={selectedCategory}
             onCategoryChange={setSelectedCategory}
-            className="mb-4 lg:hidden"
+            className="mb-1 lg:hidden"
           />
+          {showPersonalization && user ? (
+            <div className="mb-3 hidden md:block">
+              <FeedPersonalizationBanner
+                mode="feed"
+                products={catalogProducts}
+                favoriteIds={favorites}
+                preferredCategory={
+                  selectedCategory !== 'all'
+                    ? t(`browse.departments.${selectedCategory}`, { defaultValue: selectedCategory })
+                    : undefined
+                }
+              />
+            </div>
+          ) : null}
           <div className="mb-4 hidden space-y-3 lg:block">
             <BrowseDiscoveryRails
               {...discoveryProps}
@@ -386,7 +389,6 @@ function CatalogBrowsePanelInner({
       ) : (
         <>
           <MobileFeedChrome
-            title={t('browse.pageTitle')}
             searchQuery={searchQuery}
             onSearchChange={setSearchQuery}
             catalogFilters={catalogFilters}
