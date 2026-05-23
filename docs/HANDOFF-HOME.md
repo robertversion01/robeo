@@ -1,9 +1,9 @@
 # Handoff — céges gép → otthoni gép
 
-**Dátum:** 2026-05-22  
+**Dátum:** 2026-05-19  
 **Remote:** `https://github.com/robertversion01/robeo.git`  
 **Branch:** `main` (szinkronban `origin/main`-nel)  
-**Utolsó commit:** `dcd4f8a` — mobil Vinted feed (sötét téma, dizájner chip, vevővédelem sor)
+**Utolsó commit:** `4d65116` — wallet checkout, follower notify E2E, chat sale/dispute UX
 
 ---
 
@@ -41,9 +41,9 @@ Másolás: USB, Bitwarden, vagy irodai `.env.local` másolat.
 ### Utolsó commitok
 
 ```
-dcd4f8a Add Vinted-style dark mobile home feed with designer category and buyer protection pricing.
-efb0ca8 Add Vinted-parity registration, trust, and marketplace UX improvements.
-c0055de Expand marketplace ÁSZF to Vinted-style structure with ROBEO-specific demo terms.
+4d65116 feat: wallet checkout, follower notify E2E, chat sale/dispute UX
+553742e feat: Packeta picker, buyer counter-offer, disputes, and catalog polish
+fb7180f feat: offer expiry + chat offers panel + profile bio
 ```
 
 ---

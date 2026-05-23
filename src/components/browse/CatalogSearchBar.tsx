@@ -22,8 +22,6 @@ type Props = {
   browsePath?: string;
   /** Kompakt mobil feed fejléc — kisebb, szolidabb mező + Keresés gomb */
   compact?: boolean;
-  /** Sötét feed téma */
-  dark?: boolean;
 };
 
 export default function SearchTypeahead({
@@ -37,7 +35,6 @@ export default function SearchTypeahead({
   autoFocus = false,
   browsePath = '/browse',
   compact = false,
-  dark = false,
 }: Props) {
   const { t } = useTranslation();
   const [liveResults, setLiveResults] = useState<ProductTypeaheadRow[]>([]);
@@ -75,18 +72,13 @@ export default function SearchTypeahead({
       : `${browsePath}?q=${encodeURIComponent(value.trim())}#catalog`;
 
   const inputClass = compact
-    ? dark
-      ? 'h-9 w-full min-w-0 rounded-full border border-white/15 bg-[#1c1c1e] pl-8 pr-2.5 text-xs text-white shadow-sm placeholder:text-gray-500 focus:border-[#007782] focus:outline-none focus:ring-1 focus:ring-[#007782]'
-      : 'h-9 w-full min-w-0 rounded-full border border-gray-200 bg-white pl-8 pr-2.5 text-xs text-gray-900 shadow-sm placeholder:text-gray-400 focus:border-[#007782] focus:outline-none focus:ring-1 focus:ring-[#007782]'
+    ? 'h-9 w-full min-w-0 rounded-full border border-gray-200 bg-white pl-8 pr-2.5 text-xs text-gray-900 shadow-sm placeholder:text-gray-400 focus:border-[#007782] focus:outline-none focus:ring-1 focus:ring-[#007782]'
     : 'h-11 w-full rounded-full border border-gray-200 bg-gray-50 pl-9 pr-3 text-sm text-gray-900 placeholder:text-gray-400 focus:border-[#007782] focus:bg-white focus:outline-none focus:ring-1 focus:ring-[#007782]';
 
   const searchField = (
     <div className={cn('relative min-w-0', compact ? 'flex-1' : 'w-full')}>
       <Search
-        className={cn(
-          'absolute left-2.5 top-1/2 -translate-y-1/2',
-          dark && compact ? 'text-gray-500' : 'text-gray-400',
-        )}
+        className="absolute left-2.5 top-1/2 -translate-y-1/2 text-gray-400"
         size={compact ? 14 : 16}
       />
       <input

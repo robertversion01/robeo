@@ -29,7 +29,6 @@ import { fetchGlobalDiscoveryChips } from '@/lib/globalDiscovery';
 import ImmersiveFilterSheet from '@/components/browse/ImmersiveFilterSheet';
 import MobileFeedChrome from '@/components/layout/MobileFeedChrome';
 import FeedCategorySwipeSurface from '@/components/browse/FeedCategorySwipeSurface';
-import FeedShippingBanner from '@/components/browse/FeedShippingBanner';
 
 function sortLabelKey(id: string) {
   if (id === 'price_asc') return 'browse.sort.priceAsc';
@@ -320,8 +319,6 @@ function CatalogBrowsePanelInner({
         transitionKey={filterKey}
         hasActiveFilters={hasActiveFilters}
         onClearFilters={clearAllFilters}
-        cardVariant={isFeed ? 'vintedFeed' : 'default'}
-        className={isFeed ? 'max-md:gap-1' : undefined}
       />
       {!loading && hasMore ? (
         <div className="mt-6 flex justify-center pb-4 md:pb-8">
@@ -329,7 +326,7 @@ function CatalogBrowsePanelInner({
             type="button"
             onClick={() => void loadMore()}
             disabled={loadingMore}
-            className="min-h-11 rounded-xl border border-gray-200 bg-white px-6 py-2.5 text-sm font-semibold text-gray-800 shadow-sm transition hover:bg-gray-50 disabled:opacity-60 max-md:border-white/15 max-md:bg-[#1c1c1e] max-md:text-gray-100 max-md:hover:bg-[#2c2c2e]"
+            className="min-h-11 rounded-xl border border-gray-200 bg-white px-6 py-2.5 text-sm font-semibold text-gray-800 shadow-sm transition hover:bg-gray-50 disabled:opacity-60"
           >
             {loadingMore ? t('landing.catalog.loadingMore') : t('landing.catalog.loadMore')}
           </button>
@@ -384,18 +381,8 @@ function CatalogBrowsePanelInner({
               categories={categories}
               selectedCategory={selectedCategory}
               onCategoryChange={handleCategoryChange}
-              theme="dark"
               className="mb-1 lg:hidden"
-            >
-              <BrowseDiscoveryRails
-                {...discoveryProps}
-                prefBrands={feedPrefs.brands}
-                brandsOnly
-                dark
-                allowFallback
-                className="mb-0.5"
-              />
-            </MobileFeedChrome>
+            />
             {showPersonalization && user ? (
               <div className="mb-3 hidden md:block">
                 <FeedPersonalizationBanner
@@ -424,8 +411,6 @@ function CatalogBrowsePanelInner({
             </div>
           </div>
           {productGridBlock}
-          <div className="max-md:h-14 md:hidden" aria-hidden />
-          <FeedShippingBanner />
         </FeedCategorySwipeSurface>
       ) : (
         <>

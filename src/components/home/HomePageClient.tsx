@@ -9,7 +9,6 @@ import { DESKTOP_TOP_PADDING } from '@/lib/layoutTokens';
 import { filterProductsWithValidImages } from '@/lib/productImageValidation';
 import { useImmersiveBrowse } from '@/context/ImmersiveBrowseContext';
 import CookieConsentBanner from '@/components/legal/CookieConsentBanner';
-import { cn } from '@/lib/utils';
 
 function HomePageContent() {
   const { t } = useTranslation();
@@ -43,20 +42,9 @@ function HomePageContent() {
   }
 
   return (
-    <div
-      className={cn(
-        'landing-page-root min-h-screen max-w-[100vw] overflow-x-clip',
-        'max-md:bg-[#121212] max-md:text-white md:bg-white md:text-gray-900',
-      )}
-    >
+    <div className="landing-page-root min-h-screen max-w-[100vw] overflow-x-clip bg-white text-gray-900">
       <CookieConsentBanner />
-      <main
-        className={cn(
-          'w-full max-w-[100vw] px-2 pb-0 md:px-6',
-          DESKTOP_TOP_PADDING,
-          catalogChromeHidden && 'max-md:px-0',
-        )}
-      >
+      <main className={`w-full max-w-[100vw] px-2 pb-0 md:px-6 ${DESKTOP_TOP_PADDING}`}>
         <div className="mx-auto max-w-7xl">
           <div className="hidden md:block">
             <VintedHero products={heroProducts} compact />
