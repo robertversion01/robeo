@@ -29,16 +29,11 @@ function saveConsent(prefs: CookieConsentPrefs) {
 
 export default function CookieConsentBanner() {
   const pathname = usePathname();
-  const [visible, setVisible] = useState(false);
+  const [visible, setVisible] = useState(() => !loadConsent());
   const [showDetails, setShowDetails] = useState(false);
   const [analytics, setAnalytics] = useState(false);
   const [marketing, setMarketing] = useState(false);
   const [loggedIn, setLoggedIn] = useState(false);
-
-  useEffect(() => {
-    const existing = loadConsent();
-    if (!existing) setVisible(true);
-  }, []);
 
   useEffect(() => {
     let cancelled = false;

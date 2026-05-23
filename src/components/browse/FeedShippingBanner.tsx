@@ -1,23 +1,24 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import { useState } from 'react';
 import { X } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 import { MOBILE_BOTTOM_NAV_INNER } from '@/lib/layoutTokens';
 
 const STORAGE_KEY = 'robeo_feed_shipping_banner_dismissed';
 
+function readBannerVisible(): boolean {
+  if (typeof window === 'undefined') return false;
+  try {
+    return localStorage.getItem(STORAGE_KEY) !== '1';
+  } catch {
+    return true;
+  }
+}
+
 export default function FeedShippingBanner() {
   const { t } = useTranslation();
-  const [visible, setVisible] = useState(false);
-
-  useEffect(() => {
-    try {
-      setVisible(localStorage.getItem(STORAGE_KEY) !== '1');
-    } catch {
-      setVisible(true);
-    }
-  }, []);
+  const [visible, setVisible] = useState(readBannerVisible);
 
   if (!visible) return null;
 

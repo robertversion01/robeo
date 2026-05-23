@@ -55,12 +55,13 @@ export default function ProductCard({
   const primaryImage = normalizePrimaryProductImageUrl(product);
   const [imageVisible, setImageVisible] = useState(true);
   const [heartBump, setHeartBump] = useState(false);
+  const [nowMs] = useState(() => Date.now());
 
   if (!primaryImage || !imageVisible) return null;
 
   const isFeatured =
     typeof product.featured_until === 'string' &&
-    new Date(product.featured_until).getTime() > Date.now();
+    new Date(product.featured_until).getTime() > nowMs;
 
   const brandOrName = product.brand || product.name;
   const sizePart = product.size || '—';
