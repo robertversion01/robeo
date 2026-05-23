@@ -7,7 +7,8 @@ import { X, Plus, ArrowUp, ArrowDown, ChevronLeft, ChevronRight, Check } from 'l
 import { useTranslation } from 'react-i18next';
 import { useRouter } from 'next/navigation';
 import CustomSelect from '@/components/ui/CustomSelect';
-import { VINTED_CATEGORIES, sizesForCategory, vintedBrandSelectOptions } from '@/lib/vintedCatalog';
+import BrandCombobox from '@/components/upload/BrandCombobox';
+import { VINTED_CATEGORIES, sizesForCategory } from '@/lib/vintedCatalog';
 import { MAIN_TOP_PADDING, STICKY_ACTION_BAR_CLASS, STICKY_ACTION_BAR_RESERVE_PX } from '@/lib/layoutTokens';
 import { revalidateCatalog } from '@/app/actions/revalidateCatalog';
 import { notifyCatalogUpdated } from '@/lib/catalogRefresh';
@@ -181,9 +182,12 @@ export default function UploadWizard() {
         if (!formData.category) return t('uploadWizard.errors.categoryRequired');
         if (!formData.size) return t('uploadWizard.errors.sizeRequired');
         return null;
-      case 'brand':
-        if (!formData.brand) return t('uploadWizard.errors.brandRequired');
+      case 'brand': {
+        const brand = formData.brand.trim();
+        if (!brand) return t('uploadWizard.errors.brandRequired');
+        if (brand.length < 2) return t('uploadWizard.errors.brandTooShort');
         return null;
+      }
       case 'condition':
         if (!formData.condition) return t('uploadWizard.errors.conditionRequired');
         return null;
@@ -302,7 +306,7 @@ export default function UploadWizard() {
         price: parseInt(formData.price, 10),
         category: formData.category,
         condition: formData.condition,
-        brand: formData.brand,
+        brand: formData.brand.trim(),
         size: formData.size || null,
         image_url: imageUrls[0] || null,
         images: imageUrls,
@@ -352,8 +356,6 @@ export default function UploadWizard() {
     { value: 'fair', label: t('upload.conditions.fair') },
     { value: 'poor', label: t('upload.conditions.poor') },
   ];
-
-  const brandOptions = useMemo(() => vintedBrandSelectOptions(), []);
 
   const selectDropdownProps = {
     bottomReservePx: STICKY_ACTION_BAR_RESERVE_PX,
@@ -477,12 +479,12 @@ export default function UploadWizard() {
           {stepId === 'brand' && (
             <div>
               <label className="block text-sm font-medium mb-2">{t('upload.brand')}</label>
-              <CustomSelect
-                options={brandOptions}
+              <BrandCombobox
                 value={formData.brand}
                 onChange={(val) => setFormData((p) => ({ ...p, brand: val }))}
-                placeholder={t('upload.brandPlaceholder')}
-                {...selectDropdownProps}
+                placeholder={t('upload.brandSearchPlaceholder')}
+                bottomReservePx={STICKY_ACTION_BAR_RESERVE_PX}
+                maxDropdownHeight={260}
               />
             </div>
           )}

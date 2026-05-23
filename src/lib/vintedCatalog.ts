@@ -96,6 +96,40 @@ export function vintedBrandSelectOptions(): { value: string; label: string }[] {
   return VINTED_BRANDS.map((b) => ({ value: b, label: b }));
 }
 
+/** Keresés normalizálás — ékezet- és kis/nagybetű független szűrés. */
+export function normalizeBrandQuery(query: string): string {
+  return query
+    .toLowerCase()
+    .normalize('NFD')
+    .replace(/[\u0300-\u036f]/g, '')
+    .trim();
+}
+
+/** Typeahead szűrés a feltöltés márkaválasztójához — prefix találatok elöl. */
+export function filterVintedBrands(query: string, limit = 16): string[] {
+  const q = normalizeBrandQuery(query);
+  if (!q) return VINTED_BRANDS.slice(0, limit);
+
+  const matches: { brand: string; rank: number }[] = [];
+  for (const brand of VINTED_BRANDS) {
+    const normalized = normalizeBrandQuery(brand);
+    if (!normalized.includes(q)) continue;
+    matches.push({ brand, rank: normalized.startsWith(q) ? 0 : 1 });
+  }
+
+  matches.sort((a, b) => {
+    if (a.rank !== b.rank) return a.rank - b.rank;
+    return a.brand.localeCompare(b.brand, 'hu', { sensitivity: 'base' });
+  });
+
+  return matches.slice(0, limit).map((m) => m.brand);
+}
+
+export function brandMatchesCatalog(value: string): boolean {
+  const n = normalizeBrandQuery(value);
+  return VINTED_BRANDS.some((b) => normalizeBrandQuery(b) === n);
+}
+
 export const CLOTHING_SIZES = ['XXS', 'XS', 'S', 'M', 'L', 'XL', 'XXL', '3XL', 'Egy méret'] as const;
 
 export const SHOE_SIZES = [
