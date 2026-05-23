@@ -3,7 +3,7 @@
 **Dátum:** 2026-05-22  
 **Remote:** `https://github.com/robertversion01/robeo.git`  
 **Branch:** `main` (szinkronban `origin/main`-nel)  
-**Utolsó commit:** mobil Vinted feed (sötét téma, dizájner chip, vevővédelem sor)
+**Utolsó commit:** `dcd4f8a` — mobil Vinted feed (sötét téma, dizájner chip, vevővédelem sor)
 
 ---
 
@@ -41,7 +41,7 @@ Másolás: USB, Bitwarden, vagy irodai `.env.local` másolat.
 ### Utolsó commitok
 
 ```
-(mobil feed) feat: Vinted-style dark mobile home feed with designer chips and buyer protection pricing
+dcd4f8a Add Vinted-style dark mobile home feed with designer category and buyer protection pricing.
 efb0ca8 Add Vinted-parity registration, trust, and marketplace UX improvements.
 c0055de Expand marketplace ÁSZF to Vinted-style structure with ROBEO-specific demo terms.
 ```
