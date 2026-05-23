@@ -6,8 +6,10 @@ import { useTranslation } from 'react-i18next';
 import { supabase } from '@/lib/supabase';
 import { formatPrice } from '@/lib/utils';
 import { getOptimizedImageUrl } from '@/lib/imageUtils';
-import { categoryDbValues, productMatchesCategory, normalizeCategory, CATEGORY_ALIASES } from '@/lib/catalogFilters';
+import { normalizePrimaryProductImageUrl } from '@/lib/productImageValidation';
+import ProductImage from '@/components/product/ProductImage';
 import type { Product } from '@/types';
+import { categoryDbValues, productMatchesCategory, normalizeCategory, CATEGORY_ALIASES } from '@/lib/catalogFilters';
 
 type Props = {
   productId: string;
@@ -38,7 +40,7 @@ export default function SimilarProductsRail({ productId, category, brand, size }
 
       let query = supabase
         .from('products')
-        .select('id, name, price, image_url, category, brand, size')
+        .select('id, name, price, image_url, images, category, brand, size')
         .or('status.eq.active,status.is.null')
         .neq('id', productId)
         .order('created_at', { ascending: false })
@@ -89,17 +91,20 @@ export default function SimilarProductsRail({ productId, category, brand, size }
     <section className="mb-4">
       <h3 className="text-sm font-semibold text-gray-900 mb-2">{t('pdp.similar')}</h3>
       <div className="flex gap-2 overflow-x-auto no-scrollbar pb-1">
-        {items.map((p) => (
+        {items.map((p) => {
+          const imageUrl = normalizePrimaryProductImageUrl(p);
+          return (
           <Link
             key={p.id}
             href={`/products/${p.id}`}
             className="shrink-0 w-[108px] rounded-lg border border-gray-200 bg-white overflow-hidden"
           >
             <div className="aspect-[4/5] bg-gray-100">
-              {p.image_url ? (
-                <img
-                  src={getOptimizedImageUrl(p.image_url, 120, 150)}
-                  alt=""
+              {imageUrl ? (
+                <ProductImage
+                  src={getOptimizedImageUrl(imageUrl, 120, 80)}
+                  alt={p.name}
+                  loading="lazy"
                   className="h-full w-full object-cover"
                 />
               ) : null}
@@ -109,7 +114,8 @@ export default function SimilarProductsRail({ productId, category, brand, size }
               <p className="text-[10px] font-bold text-[#007782]">{formatPrice(p.price)}</p>
             </div>
           </Link>
-        ))}
+          );
+        })}
       </div>
     </section>
   );

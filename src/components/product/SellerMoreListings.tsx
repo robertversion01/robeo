@@ -6,6 +6,8 @@ import { useTranslation } from 'react-i18next';
 import { supabase } from '@/lib/supabase';
 import { formatPrice } from '@/lib/utils';
 import { getOptimizedImageUrl } from '@/lib/imageUtils';
+import { normalizePrimaryProductImageUrl } from '@/lib/productImageValidation';
+import ProductImage from '@/components/product/ProductImage';
 import type { Product } from '@/types';
 
 type Props = {
@@ -21,7 +23,7 @@ export default function SellerMoreListings({ sellerId, excludeProductId }: Props
     let cancelled = false;
     void supabase
       .from('products')
-      .select('id, name, price, image_url')
+      .select('id, name, price, image_url, images')
       .eq('user_id', sellerId)
       .or('status.eq.active,status.is.null')
       .neq('id', excludeProductId)
@@ -49,17 +51,20 @@ export default function SellerMoreListings({ sellerId, excludeProductId }: Props
         </Link>
       </div>
       <div className="flex gap-2 overflow-x-auto no-scrollbar pb-1">
-        {items.map((p) => (
+        {items.map((p) => {
+          const imageUrl = normalizePrimaryProductImageUrl(p);
+          return (
           <Link
             key={p.id}
             href={`/products/${p.id}`}
             className="shrink-0 w-[108px] rounded-lg border border-gray-200 bg-white overflow-hidden"
           >
             <div className="aspect-[4/5] bg-gray-100">
-              {p.image_url ? (
-                <img
-                  src={getOptimizedImageUrl(p.image_url, 120, 150)}
-                  alt=""
+              {imageUrl ? (
+                <ProductImage
+                  src={getOptimizedImageUrl(imageUrl, 120, 80)}
+                  alt={p.name}
+                  loading="lazy"
                   className="h-full w-full object-cover"
                 />
               ) : null}
@@ -69,7 +74,8 @@ export default function SellerMoreListings({ sellerId, excludeProductId }: Props
               <p className="text-[10px] font-bold text-[#007782]">{formatPrice(p.price)}</p>
             </div>
           </Link>
-        ))}
+          );
+        })}
       </div>
     </section>
   );
