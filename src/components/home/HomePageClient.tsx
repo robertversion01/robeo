@@ -44,7 +44,7 @@ function HomePageContent() {
   return (
     <div className="landing-page-root min-h-screen max-w-[100vw] overflow-x-hidden bg-white text-gray-900">
       <CookieConsentBanner />
-      <main className={`w-full max-w-[100vw] overflow-x-hidden px-2 pb-0 md:px-6 ${DESKTOP_TOP_PADDING}`}>
+      <main className={`w-full max-w-[100vw] px-2 pb-0 md:px-6 ${DESKTOP_TOP_PADDING}`}>
         <div className="mx-auto max-w-7xl">
           <div className="hidden md:block">
             <VintedHero products={heroProducts} compact />

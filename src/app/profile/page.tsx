@@ -13,7 +13,7 @@ import ProductGrid from '@/components/product/ProductGrid';
 import { formatPrice } from '@/lib/utils';
 import { getOptimizedImageUrl } from '@/lib/imageUtils';
 import type { Product } from '@/types';
-import { MAIN_TOP_PADDING } from '@/lib/layoutTokens';
+import { DESKTOP_TOP_PADDING } from '@/lib/layoutTokens';
 import { Bell } from 'lucide-react';
 import { revalidateCatalog } from '@/app/actions/revalidateCatalog';
 import { notifyCatalogUpdated } from '@/lib/catalogRefresh';
@@ -28,7 +28,7 @@ import WalletBalanceCard from '@/components/profile/WalletBalanceCard';
 import BundleDiscountSettings from '@/components/profile/BundleDiscountSettings';
 import AdminHub from '@/components/admin/AdminHub';
 import ProfileTabNav, { type ProfileTabId } from '@/components/profile/ProfileTabNav';
-import MobileProfileOrdersLink from '@/components/profile/MobileProfileOrdersLink';
+import ProfileMobileOrdersHeader from '@/components/profile/ProfileMobileOrdersHeader';
 import ProfileSection from '@/components/profile/ProfileSection';
 import ProfileSettingsHub from '@/components/profile/ProfileSettingsHub';
 import ProfileSignOutBar from '@/components/profile/ProfileSignOutBar';
@@ -467,9 +467,11 @@ export default function ProfilePage() {
         </div>
       ) : null}
 
-      <main className={`${MAIN_TOP_PADDING} px-3 md:px-6`}>
-        <div className="max-w-7xl mx-auto">
-          <div className="flex items-center gap-3 mb-2">
+      <ProfileMobileOrdersHeader />
+
+      <main className={`px-3 md:px-6 ${DESKTOP_TOP_PADDING}`}>
+        <div className="max-w-7xl mx-auto -mt-5 rounded-t-[1.25rem] bg-white pt-4 md:mt-0 md:rounded-none md:bg-transparent md:pt-0">
+          <div className="flex items-center gap-3 mb-3 md:mb-2">
               <div className="w-12 h-12 md:w-14 md:h-14 rounded-full bg-[#007782]/10 flex items-center justify-center text-[#007782] text-lg md:text-xl font-bold shrink-0">
               {user?.email?.charAt(0).toUpperCase() || '?'}
             </div>
@@ -487,8 +489,6 @@ export default function ProfilePage() {
             </div>
           </div>
 
-          <MobileProfileOrdersLink />
-
           <ProfileTabNav
             active={activeTab}
             onChange={setProfileTab}
@@ -501,7 +501,7 @@ export default function ProfilePage() {
 
           {activeTab === 'shop' ? (
             <>
-          <OrdersQuickHub />
+          <OrdersQuickHub className="hidden md:grid" />
           <ProfileMarketplaceStats
             soldCount={stats.soldProducts}
             revenue={stats.totalRevenue}

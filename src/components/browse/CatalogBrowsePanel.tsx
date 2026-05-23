@@ -83,9 +83,9 @@ function CatalogBrowsePanelInner({
   const { t } = useTranslation();
 
   const chromeCollapse = cn(
-    'transition-[max-height,opacity,margin] duration-300 ease-out overflow-hidden',
+    'transition-[max-height,opacity,margin] duration-300 ease-out',
     catalogChromeHidden
-      ? 'max-h-0 opacity-0 !mb-0 pointer-events-none'
+      ? 'max-h-0 opacity-0 !mb-0 pointer-events-none overflow-hidden'
       : 'max-h-[2400px] opacity-100',
   );
   const {

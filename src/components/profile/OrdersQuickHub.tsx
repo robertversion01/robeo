@@ -3,13 +3,14 @@
 import Link from 'next/link';
 import { Package, ShoppingBag, Truck } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
+import { cn } from '@/lib/utils';
 
 /** Központi belépőpont: minden link `/orders`-ra mutat (tab query opcionális). */
-export default function OrdersQuickHub() {
+export default function OrdersQuickHub({ className }: { className?: string }) {
   const { t } = useTranslation();
 
   return (
-    <div className="mb-6 grid grid-cols-1 sm:grid-cols-2 gap-3">
+    <div className={cn('mb-6 grid grid-cols-1 sm:grid-cols-2 gap-3', className)}>
       <Link
         href="/orders"
         className="flex items-start gap-3 rounded-xl border border-[#007782]/25 bg-[#007782]/5 p-4 hover:border-[#007782]/40 transition-colors"

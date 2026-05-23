@@ -400,6 +400,14 @@ export default function MessagesPage() {
     };
   }, [activeProductId]);
 
+  if (loading || !user) {
+    return (
+      <div className="min-h-screen bg-white flex items-center justify-center">
+        <div className="h-10 w-10 animate-spin rounded-full border-4 border-[#007782] border-t-transparent" />
+      </div>
+    );
+  }
+
   return (
     <div className="min-h-screen bg-white text-gray-900">
 
@@ -463,7 +471,7 @@ export default function MessagesPage() {
         </div>
       )}
       <main
-        className={`${MAIN_TOP_PADDING} pb-0 md:pb-8 min-h-[100dvh] md:h-screen max-w-full overflow-x-hidden`}
+        className={`${MAIN_TOP_PADDING} pb-0 md:pb-8 min-h-[100dvh] md:h-screen max-w-full`}
       >
         <div className="max-w-6xl mx-auto h-full flex flex-col md:flex-row">
           
@@ -497,11 +505,18 @@ export default function MessagesPage() {
             ) : (
               <div className="flex-1 min-h-0 overflow-y-auto">
                 {conversations.map((conv) => (
-                  <button
+                  <div
                     key={conv.user_id}
-                    type="button"
+                    role="button"
+                    tabIndex={0}
                     onClick={() => loadConversation(conv.user_id, conv.email)}
-                    className={`w-full text-left p-4 border-b border-gray-100 hover:bg-gray-50 transition-colors touch-manipulation ${
+                    onKeyDown={(e) => {
+                      if (e.key === 'Enter' || e.key === ' ') {
+                        e.preventDefault();
+                        loadConversation(conv.user_id, conv.email);
+                      }
+                    }}
+                    className={`w-full text-left p-4 border-b border-gray-100 hover:bg-gray-50 transition-colors cursor-pointer ${
                       selectedConversation === conv.user_id ? 'bg-[#007782]/5' : ''
                     }`}
                   >
@@ -523,7 +538,7 @@ export default function MessagesPage() {
                         </Link>
                       ) : null}
                     </div>
-                  </button>
+                  </div>
                 ))}
               </div>
             )}
@@ -575,11 +590,17 @@ export default function MessagesPage() {
                       productId={activeProductId}
                     />
                   ) : null}
-                  <ChatBuyerOffersPanel
-                    buyerId={user.id}
-                    productId={activeProductId}
-                    sellerId={selectedConversation}
-                  />
+                  {user &&
+                  selectedConversation &&
+                  activeProductId &&
+                  activeProductSellerId &&
+                  user.id !== activeProductSellerId ? (
+                    <ChatBuyerOffersPanel
+                      buyerId={user.id}
+                      productId={activeProductId}
+                      sellerId={activeProductSellerId}
+                    />
+                  ) : null}
                   <div className="p-4 md:p-6 space-y-4">
                   {messages.map((msg) => {
                     const isSystem =
