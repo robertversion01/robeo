@@ -63,10 +63,12 @@ export function timelineStepIndex(step: OrderTimelineStepId): number {
 
 export function isTimelineStepDone(current: OrderTimelineStepId, step: OrderTimelineStepId): boolean {
   if (current === 'disputed') return step !== 'disputed' && timelineStepIndex(step) <= timelineStepIndex('paid');
+  if (current === 'completed') return step !== 'disputed';
   return timelineStepIndex(step) < timelineStepIndex(current);
 }
 
 export function isTimelineStepActive(current: OrderTimelineStepId, step: OrderTimelineStepId): boolean {
+  if (current === 'completed' && step === 'completed') return false;
   return current === step;
 }
 
