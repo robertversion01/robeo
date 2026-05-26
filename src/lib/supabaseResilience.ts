@@ -2,7 +2,7 @@ import type { PostgrestError, SupabaseClient } from '@supabase/supabase-js';
 
 /** Hiányzó tábla/oszlop, PostgREST 404 / schema cache hibák. */
 export function isSupabaseSchemaError(
-  error: Pick<PostgrestError, 'code' | 'message'> | null | undefined,
+  error: { code?: string | null; message?: string | null } | null | undefined,
 ): boolean {
   if (!error) return false;
   const msg = (error.message ?? '').toLowerCase();
@@ -24,7 +24,9 @@ export function isSupabaseSchemaError(
   return false;
 }
 
-export function isMissingColumnError(error: Pick<PostgrestError, 'code' | 'message'> | null): boolean {
+export function isMissingColumnError(
+  error: { code?: string | null; message?: string | null } | null,
+): boolean {
   if (!error) return false;
   if (isSupabaseSchemaError(error)) {
     const msg = (error.message ?? '').toLowerCase();
@@ -70,7 +72,7 @@ export async function fetchTransactionWithColumnFallback<T extends Record<string
 
     const { data, error } = await query.maybeSingle();
     if (!error && data) {
-      return { data: data as T, error: null };
+      return { data: data as unknown as T, error: null };
     }
     if (error && !isSupabaseSchemaError(error)) {
       return { data: null, error };

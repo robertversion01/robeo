@@ -58,7 +58,7 @@ async function loadTransaction(
     if (filters.sessionId) query = query.eq('checkout_session_id', filters.sessionId);
     if (filters.transactionId) query = query.eq('id', filters.transactionId);
     const { data, error } = await query.maybeSingle();
-    if (!error && data) return { data: data as TxRow, error: null };
+    if (!error && data) return { data: data as unknown as TxRow, error: null };
     if (error && !isSupabaseSchemaError(error)) {
       return { data: null, error: error.message };
     }

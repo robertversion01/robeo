@@ -13,11 +13,36 @@ export type ShippingTransaction = {
 
 const simulationTimersByTx = new Map<string, ReturnType<typeof setTimeout>[]>();
 
+/** Demo: hány ms-mel az átvételre vár után fusson le az auto-confirm (wallet release). */
+const AUTO_CONFIRM_DELAY_MS = 12_000;
+
 export function clearShippingSimulation(transactionId: string): void {
   const timers = simulationTimersByTx.get(transactionId);
   if (timers) {
     timers.forEach((t) => clearTimeout(t));
     simulationTimersByTx.delete(transactionId);
+  }
+}
+
+async function triggerAutoConfirm(transactionId: string): Promise<void> {
+  try {
+    const res = await fetch('/api/transactions/auto-confirm', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ transactionId }),
+      cache: 'no-store',
+      keepalive: true,
+    });
+    if (!res.ok) {
+      const body = await res.json().catch(() => ({}));
+      console.warn('[auto-confirm] failed', body);
+    } else if (typeof window !== 'undefined') {
+      window.dispatchEvent(
+        new CustomEvent('transaction:updated', { detail: { transactionId } }),
+      );
+    }
+  } catch (err) {
+    console.warn('[auto-confirm] error', err);
   }
 }
 
@@ -40,12 +65,18 @@ export function scheduleShippingSimulation(
         await notifyTransactionStatusBothParties(supabase, transaction, nextStatus);
 
         if (nextStatus === TX_STATUS.ATVETELRE_VAR) {
-          clearShippingSimulation(transaction.id);
           if (typeof window !== 'undefined') {
             window.dispatchEvent(
               new CustomEvent('transaction:updated', { detail: { transactionId: transaction.id } }),
             );
           }
+
+          const autoTimer = setTimeout(() => {
+            void triggerAutoConfirm(transaction.id);
+          }, AUTO_CONFIRM_DELAY_MS);
+
+          const existing = simulationTimersByTx.get(transaction.id) ?? [];
+          simulationTimersByTx.set(transaction.id, [...existing, autoTimer]);
         }
       } catch (err) {
         console.error('[shipping-simulation]', err);
