@@ -853,6 +853,10 @@
       "descriptionRequired": "Add a description."
     }
   },
+  "ordersHub": {
+    "purchasesHint": "Track your purchases — payment, shipping, pickup confirmation.",
+    "salesHint": "Manage your sales — print labels, mark shipped, track pickup."
+  },
   "orders": {
     "title": "Order history",
     "subtitle": "Your purchases and sales",

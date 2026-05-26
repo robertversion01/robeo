@@ -515,6 +515,7 @@ export default function ProfilePage() {
           {activeTab === 'shop' ? (
             <>
           <OrdersQuickHub className="hidden md:grid" />
+          <WalletBalanceCard userId={user?.id} />
           <ProfileMarketplaceStats
             soldCount={stats.soldProducts}
             revenue={stats.totalRevenue}
