@@ -6,6 +6,7 @@ import {
   fetchSellerBundleDiscountSettings,
 } from '@/lib/bundleDiscount';
 import { foxpostTerminalAddress, type FoxpostTerminal } from '@/lib/foxpostTerminal';
+import { isListedProduct } from '@/lib/listedProducts';
 
 export type CheckoutResolveInput = {
   productId?: string;
@@ -76,12 +77,16 @@ export async function resolveCheckout(
 
   const { data: productData, error: productError } = await supabase
     .from('products')
-    .select('id, user_id, name, description, image_url, price')
+    .select('id, user_id, name, description, image_url, price, status')
     .eq('id', resolvedProductId)
     .single();
 
   if (productError || !productData) {
     throw new Error(`Product not found (${resolvedProductId})`);
+  }
+
+  if (!isListedProduct(productData.status)) {
+    throw new Error('Ez a termék már nem elérhető vásárlásra.');
   }
 
   const sellerId = productData.user_id;

@@ -16,6 +16,7 @@ import { calculateCheckoutTotal } from '@/lib/buyerProtection';
 import type { FoxpostTerminal } from '@/lib/foxpostTerminal';
 import type { PacketaPoint } from '@/lib/packetaPoint';
 import { MAIN_TOP_PADDING } from '@/lib/layoutTokens';
+import { mapCheckoutApiError } from '@/lib/checkoutApiErrors';
 import {
   clearBundleCart,
   computeBundleTotals,
@@ -142,7 +143,7 @@ export default function CheckoutBundleContent() {
 
       const data = await response.json();
       if (!response.ok) {
-        throw new Error(data.error || t('checkout.errors.paymentFailed'));
+        throw new Error(mapCheckoutApiError(data.error, t));
       }
 
       clearBundleCart();

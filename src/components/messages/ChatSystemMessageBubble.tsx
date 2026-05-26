@@ -9,6 +9,7 @@ import {
   isOfferAcceptedBuyerMessage,
   offerMessageAudience,
   parseCheckoutOfferId,
+  parseCounterOfferPrice,
   stripCheckoutUrlFromMessage,
 } from '@/lib/offerChatMessages';
 import {
@@ -88,15 +89,25 @@ export default function ChatSystemMessageBubble({
       </p>
     );
   } else if (kind === 'offer_counter') {
-    body = (
-      <p>
-        {role === 'buyer'
-          ? msg.content
-          : role === 'seller'
-            ? t('chatOffer.sellerCounterSentBody')
-            : t('systemMessage.loadingHint')}
-      </p>
-    );
+    const counterPrice = parseCounterOfferPrice(msg.content);
+    const priceLabel =
+      counterPrice != null
+        ? counterPrice.toLocaleString(timeLocale)
+        : '';
+    const isSellerCounter = msg.content.includes('Az eladó ellenajánlatot');
+    const isBuyerCounter = msg.content.includes('A vevő ellenajánlatot');
+
+    if (role === 'buyer' && isSellerCounter) {
+      body = <p>{t('chatOffer.buyerCounterReceivedBody', { price: priceLabel })}</p>;
+    } else if (role === 'seller' && isSellerCounter) {
+      body = <p>{t('chatOffer.sellerCounterSentBody')}</p>;
+    } else if (role === 'seller' && isBuyerCounter) {
+      body = <p>{t('chatOffer.sellerCounterReceivedBody', { price: priceLabel })}</p>;
+    } else if (role === 'buyer' && isBuyerCounter) {
+      body = <p>{t('chatOffer.buyerCounterSentBody')}</p>;
+    } else {
+      body = <p>{msg.content}</p>;
+    }
   } else {
     const checkoutMatch = msg.content.match(/(\/checkout\?offer=[a-f0-9-]+)/i);
     if (checkoutMatch && audience === 'buyer') {

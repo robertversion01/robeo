@@ -15,7 +15,6 @@ import ProductShareReportBar from '@/components/product/ProductShareReportBar';
 import OfferModal from '@/components/product/OfferModal';
 import SellerBundleHint from '@/components/product/SellerBundleHint';
 import SellerClosetBundle from '@/components/product/SellerClosetBundle';
-import SellerMoreListings from '@/components/product/SellerMoreListings';
 import SimilarProductsRail from '@/components/product/SimilarProductsRail';
 import ProductStickyCta from '@/components/product/ProductStickyCta';
 import PriceHistoryBadge from '@/components/product/PriceHistoryBadge';
@@ -26,6 +25,7 @@ import type { Product } from '@/types';
 import { canViewProductDetail, isListedProduct, isSoldListing } from '@/lib/listedProducts';
 import { recordPriceSnapshot } from '@/lib/priceHistory';
 import { MAIN_TOP_PADDING, MOBILE_PRODUCT_STICKY_CTA_PAD } from '@/lib/layoutTokens';
+import { formatConditionLabel } from '@/lib/conditionI18n';
 
 export default function ProductPage({ params }: { params: Promise<{ id: string }> }) {
   const { id } = use(params);
@@ -419,17 +419,11 @@ export default function ProductPage({ params }: { params: Promise<{ id: string }
               <SellerBundleHint sellerId={product.user_id} />
               <TrustSafetyBlock variant="compact" className="mb-3" />
               {isPurchasable && viewerId && viewerId !== product.user_id ? (
-                <>
-                  <SellerMoreListings
-                    sellerId={product.user_id}
-                    excludeProductId={product.id}
-                  />
-                  <SellerClosetBundle
-                    sellerId={product.user_id}
-                    currentProductId={product.id}
-                    onBundleOffer={() => setShowBundleOfferModal(true)}
-                  />
-                </>
+                <SellerClosetBundle
+                  sellerId={product.user_id}
+                  currentProductId={product.id}
+                  onBundleOffer={() => setShowBundleOfferModal(true)}
+                />
               ) : null}
               
               <div className="flex flex-wrap gap-2 mb-3">
@@ -445,7 +439,8 @@ export default function ProductPage({ params }: { params: Promise<{ id: string }
                 )}
                 {product.condition && (
                   <div className="bg-gray-100 px-2 py-1 rounded-md text-xs">
-                    <span className="text-gray-500">{t('product.condition')}:</span> {product.condition}
+                    <span className="text-gray-500">{t('product.condition')}:</span>{' '}
+                    {formatConditionLabel(t, product.condition)}
                   </div>
                 )}
               </div>

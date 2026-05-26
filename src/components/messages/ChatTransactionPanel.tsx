@@ -19,6 +19,25 @@ import OrderTimelinePanel from '@/components/messages/OrderTimelinePanel';
 import { focusOrderPanel, ORDER_PANEL_FOCUS_EVENT, ORDER_PANEL_PRINT_EVENT } from '@/lib/orderPanelActions';
 import { printTransactionLabel } from '@/lib/printTransactionLabel';
 import Link from 'next/link';
+import { isSupabaseSchemaError, fetchTransactionWithColumnFallback, TX_CHAT_SELECT_SETS } from '@/lib/supabaseResilience';
+
+function isAbortError(err: unknown): boolean {
+  const message =
+    err instanceof Error
+      ? err.message
+      : err && typeof err === 'object' && 'message' in err
+        ? String((err as { message?: unknown }).message ?? '')
+        : '';
+  return /abort/i.test(message);
+}
+
+function supabaseErrorMessage(err: unknown): string {
+  if (err instanceof Error) return err.message;
+  if (err && typeof err === 'object' && 'message' in err) {
+    return String((err as { message?: unknown }).message ?? 'Unknown Supabase error');
+  }
+  return 'Unknown error';
+}
 
 type Props = {
   userId: string;
@@ -52,75 +71,102 @@ export default function ChatTransactionPanel({
   const [simulating, setSimulating] = useState(false);
   const [highlight, setHighlight] = useState(false);
   const printHandlerRef = useRef<(() => Promise<void>) | null>(null);
+  const hasLoadedOnceRef = useRef(false);
+  const reloadTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   const txStatusLabel = (status: string) => t(orderStatusI18nKey(status));
 
-  const loadTransaction = useCallback(async () => {
+  const loadTransaction = useCallback(async (options?: { silent?: boolean }) => {
     if (!productId) {
       setTransaction(null);
       setOfferStatus(null);
+      hasLoadedOnceRef.current = false;
       return;
     }
-    setLoading(true);
+    const silent = options?.silent === true && hasLoadedOnceRef.current;
+    if (!silent) setLoading(true);
     try {
-      const [txRes, offerRes] = await Promise.all([
-        supabase
-          .from('transactions')
-          .select(
-            'id, status, product_id, buyer_id, seller_id, tracking_number, payment_intent_id, dispute_status, foxpost_terminal_id, foxpost_terminal_name, foxpost_terminal_address',
-          )
-          .eq('product_id', productId)
-          .or(
-            `and(buyer_id.eq.${userId},seller_id.eq.${otherUserId}),and(buyer_id.eq.${otherUserId},seller_id.eq.${userId})`,
-          )
-          .order('created_at', { ascending: false })
-          .limit(1)
-          .maybeSingle(),
-        supabase
-          .from('offers')
-          .select('status')
-          .eq('product_id', productId)
-          .or(
-            `and(buyer_id.eq.${userId},seller_id.eq.${otherUserId}),and(buyer_id.eq.${otherUserId},seller_id.eq.${userId})`,
-          )
-          .order('created_at', { ascending: false })
-          .limit(1)
-          .maybeSingle(),
-      ]);
+      const { data: product, error: productError } = await supabase
+        .from('products')
+        .select('name, user_id')
+        .eq('id', productId)
+        .maybeSingle();
 
-      if (txRes.error) throw txRes.error;
+      if (productError) throw productError;
+
+      const sellerId = product?.user_id ?? null;
+      const participants = new Set([userId, otherUserId]);
+      if (!sellerId || !participants.has(sellerId)) {
+        setTransaction(null);
+        setOfferStatus(null);
+        return;
+      }
+
+      const buyerId = sellerId === userId ? otherUserId : userId;
+
+      const txResult = await fetchTransactionWithColumnFallback<TxRow>(
+        supabase,
+        { productId, sellerId, buyerId },
+        TX_CHAT_SELECT_SETS,
+      );
+
+      const offerRes = await supabase
+        .from('offers')
+        .select('status')
+        .eq('product_id', productId)
+        .eq('seller_id', sellerId)
+        .eq('buyer_id', buyerId)
+        .order('created_at', { ascending: false })
+        .limit(1)
+        .maybeSingle();
+
+      if (txResult.error) throw txResult.error;
+      if (offerRes.error && !isSupabaseSchemaError(offerRes.error)) {
+        console.warn('[ChatTransactionPanel] offer load failed', offerRes.error.message);
+      }
       setOfferStatus(offerRes.data?.status ?? null);
 
-      if (!txRes.data) {
+      if (!txResult.data) {
         setTransaction(null);
         return;
       }
 
-      const { data: product } = await supabase
-        .from('products')
-        .select('name')
-        .eq('id', txRes.data.product_id)
-        .maybeSingle();
-
       setTransaction({
-        ...txRes.data,
+        ...txResult.data,
         productName: product?.name,
         product: { name: product?.name },
       });
-      setLabelDownloaded(hasFoxpostLabelDownloaded(txRes.data.id));
+      setLabelDownloaded(hasFoxpostLabelDownloaded(txResult.data.id));
       setSimulating(
-        txRes.data.status === 'feladva' || txRes.data.status === 'uton' || txRes.data.status === 'atvetelre_var',
+        txResult.data.status === 'feladva' || txResult.data.status === 'uton' || txResult.data.status === 'atvetelre_var',
       );
     } catch (err) {
-      console.error('[ChatTransactionPanel]', err);
+      if (isAbortError(err)) return;
+      if (isSupabaseSchemaError(err as { code?: string; message?: string })) {
+        setTransaction(null);
+        return;
+      }
+      console.warn('[ChatTransactionPanel]', supabaseErrorMessage(err));
       setTransaction(null);
     } finally {
-      setLoading(false);
+      if (!silent) setLoading(false);
+      hasLoadedOnceRef.current = true;
     }
   }, [productId, userId, otherUserId]);
 
+  const scheduleReload = useCallback(() => {
+    if (reloadTimerRef.current) clearTimeout(reloadTimerRef.current);
+    reloadTimerRef.current = setTimeout(() => {
+      void loadTransaction({ silent: true });
+    }, 400);
+  }, [loadTransaction]);
+
   useEffect(() => {
+    hasLoadedOnceRef.current = false;
     void loadTransaction();
+    return () => {
+      if (reloadTimerRef.current) clearTimeout(reloadTimerRef.current);
+    };
   }, [loadTransaction]);
 
   useEffect(() => {
@@ -137,13 +183,13 @@ export default function ChatTransactionPanel({
           filter: `product_id=eq.${productId}`,
         },
         () => {
-          void loadTransaction();
+          scheduleReload();
         },
       )
       .subscribe();
 
-    const onSale = () => void loadTransaction();
-    const onTx = () => void loadTransaction();
+    const onSale = () => scheduleReload();
+    const onTx = () => scheduleReload();
     const onFocus = () => {
       setHighlight(true);
       focusOrderPanel();
@@ -179,13 +225,17 @@ export default function ChatTransactionPanel({
       window.removeEventListener(ORDER_PANEL_PRINT_EVENT, onPrint);
       void supabase.removeChannel(channel);
     };
-  }, [userId, productId, loadTransaction]);
+  }, [userId, productId, scheduleReload]);
 
   if (!productId) return null;
 
   const isSeller = transaction?.seller_id === userId;
   const isBuyer = transaction?.buyer_id === userId;
-  const canDownloadLabel = Boolean(transaction && isSeller && isPaidStatus(transaction.status));
+  const canDownloadLabel = Boolean(
+    transaction &&
+      isSeller &&
+      (isPaidStatus(transaction.status) || transaction.status === TX_STATUS.FELADVA),
+  );
   const canMarkShipped = Boolean(transaction && isSeller && canSellerMarkShipped(transaction.status));
   const canConfirmReceipt = Boolean(transaction && isBuyer && canBuyerConfirmReceipt(transaction.status));
   const statusLabel = transaction ? txStatusLabel(transaction.status) : t('orders.status.paymentPending');
@@ -236,6 +286,8 @@ export default function ChatTransactionPanel({
       const data = await printTransactionLabel(transaction.id, {
         userEmail,
         productNameFallback: transaction.productName || t('chatTransaction.defaultProduct'),
+        productId,
+        buyerId: transaction.buyer_id,
       });
 
       setTransaction((prev) =>
@@ -325,7 +377,7 @@ export default function ChatTransactionPanel({
         onStepClick={() => focusOrderPanel()}
       />
 
-      {loading ? (
+      {loading && !transaction ? (
         <p className="text-xs text-gray-500 animate-pulse">{t('common.loading')}</p>
       ) : null}
 
@@ -389,7 +441,7 @@ export default function ChatTransactionPanel({
 
       {transaction?.tracking_number ? (
         <p className="text-[11px] font-mono text-[#007782] bg-white/80 rounded px-2 py-1">
-          Foxpost: {transaction.tracking_number}
+          {t('chatTransaction.foxpostTracking', { tracking: transaction.tracking_number })}
         </p>
       ) : null}
 

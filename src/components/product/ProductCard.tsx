@@ -32,8 +32,11 @@ export default function ProductCard({ product, isFavorite, onToggleFavorite }: P
 
   const brandOrName = product.brand || product.name;
   const sizePart = product.size || '—';
-  const categoryShort =
-    typeof product.category === 'string' ? product.category.replace(/_/g, ' ') : '';
+  const categoryShort = product.category
+    ? t(`browse.categories.${product.category}`, {
+        defaultValue: product.category.replace(/_/g, ' '),
+      })
+    : '';
 
   const isSold = product.status === 'sold';
   const isReserved = product.status === 'reserved';

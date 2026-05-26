@@ -7,6 +7,7 @@ import {
   VINTED_BRANDS,
   VINTED_CONDITIONS,
 } from '@/lib/vintedCatalog';
+import { conditionI18nKey } from '@/lib/conditionI18n';
 import {
   getSubcategoriesForDepartment,
   sizesForDepartment,
@@ -146,7 +147,13 @@ export default function CatalogFilterSidebar({
   }, [selectedCategory, selectedSubcategory]);
 
   const conditionOptions = useMemo(
-    () => [{ id: 'all', label: t('browse.filters.allConditions') }, ...VINTED_CONDITIONS],
+    () => [
+      { id: 'all', label: t('browse.filters.allConditions') },
+      ...VINTED_CONDITIONS.map((c) => ({
+        id: c.id,
+        label: t(conditionI18nKey(c.id)),
+      })),
+    ],
     [t],
   );
 

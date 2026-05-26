@@ -45,7 +45,11 @@ export function resolveOrderTimelineStep(ctx: OrderTimelineContext): OrderTimeli
   if (isPaidStatus(tx)) return 'packing';
 
   const offer = ctx.offerStatus || '';
-  if (offer === 'accepted') return 'payment_pending';
+  if (offer === 'accepted') {
+    if (tx === 'payment_pending' || tx === 'payment_failed') return 'payment_pending';
+    if (!tx) return 'offer_accepted';
+    return 'payment_pending';
+  }
   if (offer === 'pending' || offer === 'countered') return 'offer_made';
 
   return 'offer_made';

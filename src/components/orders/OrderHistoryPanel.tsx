@@ -7,15 +7,10 @@ import { supabase } from '@/lib/supabase';
 import { formatPrice } from '@/lib/utils';
 import { getOptimizedImageUrl } from '@/lib/imageUtils';
 import { orderStatusI18nKey } from '@/lib/orderStatusI18n';
-import { TX_STATUS } from '@/lib/transactionFlow';
+import { TX_STATUS, isPaidStatus } from '@/lib/transactionFlow';
 import { cn } from '@/lib/utils';
-import { Package, ChevronRight } from 'lucide-react';
-import DisputePanel from '@/components/orders/DisputePanel';
-import BundleOrderLineItems from '@/components/orders/BundleOrderLineItems';
-import { isBundleTransaction } from '@/lib/bundleLineItems';
-import { canBuyerOpenDispute } from '@/lib/disputes';
+import { Package, ChevronRight, MessageCircle } from 'lucide-react';
 import OrderTimelinePanel from '@/components/messages/OrderTimelinePanel';
-import ClientFormattedDate from '@/components/ui/ClientFormattedDate';
 
 type OrderTab = 'purchases' | 'sales';
 
@@ -27,9 +22,6 @@ type TransactionRow = {
   amount: number;
   status: string;
   created_at: string;
-  bundle_product_ids?: string | null;
-  bundle_item_count?: number | null;
-  dispute_status?: string | null;
   product?: { id: string; name: string; image_url: string | null };
   counterparty_email?: string | null;
 };
@@ -133,6 +125,16 @@ export default function OrderHistoryPanel({ initialTab = 'purchases' }: Props) {
     return `/messages?with=${otherId}`;
   };
 
+  const getActionHint = (tx: TransactionRow): string | null => {
+    if (tab === 'purchases' && tx.status === TX_STATUS.ATVETELRE_VAR) {
+      return t('orders.confirmInMessages');
+    }
+    if (tab === 'sales' && isPaidStatus(tx.status)) {
+      return t('orders.shipInMessages');
+    }
+    return null;
+  };
+
   return (
     <div>
       <div className="flex rounded-xl border border-gray-200 p-1 mb-6 bg-gray-50">
@@ -178,83 +180,63 @@ export default function OrderHistoryPanel({ initialTab = 'purchases' }: Props) {
         </div>
       ) : (
         <ul className="space-y-3">
-          {rows.map((tx) => (
-            <li key={tx.id} className="rounded-xl border border-gray-200 bg-white overflow-hidden">
-              <Link
-                href={detailHref(tx)}
-                className="flex gap-3 p-3 hover:border-[#007782]/40 hover:bg-[#007782]/5 transition-colors touch-manipulation"
-              >
-                <div className="h-16 w-16 shrink-0 rounded-lg overflow-hidden bg-gray-100">
-                  {tx.product?.image_url ? (
-                    <img
-                      src={getOptimizedImageUrl(tx.product.image_url, 128, 85)}
-                      alt=""
-                      className="h-full w-full object-cover"
-                    />
-                  ) : (
-                    <div className="flex h-full w-full items-center justify-center text-gray-300">📷</div>
-                  )}
-                </div>
-                <div className="min-w-0 flex-1">
-                  <div className="flex justify-between gap-2 items-start">
-                    <h3 className="font-semibold text-sm text-gray-900 truncate">
-                      {isBundleTransaction(tx)
-                        ? t('orders.bundleTitle', { count: tx.bundle_item_count || 2 })
-                        : tx.product?.name || '—'}
-                    </h3>
-                    <span className="text-sm font-bold text-[#007782] tabular-nums shrink-0">
-                      {formatPrice(tx.amount)}
+          {rows.map((tx) => {
+            const actionHint = getActionHint(tx);
+            return (
+            <li key={tx.id}>
+              <div className="rounded-xl border border-gray-200 bg-white overflow-hidden">
+                <Link
+                  href={detailHref(tx)}
+                  className="flex gap-3 p-3 hover:bg-[#007782]/5 transition-colors touch-manipulation"
+                >
+                  <div className="h-16 w-16 shrink-0 rounded-lg overflow-hidden bg-gray-100">
+                    {tx.product?.image_url ? (
+                      <img
+                        src={getOptimizedImageUrl(tx.product.image_url, 128, 85)}
+                        alt=""
+                        className="h-full w-full object-cover"
+                      />
+                    ) : (
+                      <div className="flex h-full w-full items-center justify-center text-gray-300">📷</div>
+                    )}
+                  </div>
+                  <div className="min-w-0 flex-1">
+                    <div className="flex justify-between gap-2 items-start">
+                      <h3 className="font-semibold text-sm text-gray-900 truncate">{tx.product?.name || '—'}</h3>
+                      <span className="text-sm font-bold text-[#007782] tabular-nums shrink-0">
+                        {formatPrice(tx.amount)}
+                      </span>
+                    </div>
+                    <p className="text-xs text-gray-500 mt-0.5">
+                      {new Date(tx.created_at).toLocaleDateString(locale, {
+                        year: 'numeric',
+                        month: 'short',
+                        day: 'numeric',
+                      })}
+                      {tx.counterparty_email ? ` · ${tx.counterparty_email}` : ''}
+                    </p>
+                    <span className="inline-block mt-2 rounded-full bg-gray-100 px-2.5 py-0.5 text-[10px] font-semibold text-gray-700">
+                      {getStatusLabel(tx.status)}
                     </span>
                   </div>
-                  <p className="text-xs text-gray-500 mt-0.5">
-                    <ClientFormattedDate iso={tx.created_at} locale={locale} />
-                    {tx.counterparty_email ? ` · ${tx.counterparty_email}` : ''}
-                  </p>
-                  <span className="inline-block mt-2 rounded-full bg-gray-100 px-2.5 py-0.5 text-[10px] font-semibold text-gray-700">
-                    {getStatusLabel(tx.status)}
-                  </span>
+                  <ChevronRight size={18} className="shrink-0 text-gray-400 self-center" />
+                </Link>
+                <div className="border-t border-gray-100 px-3 py-2.5 bg-gray-50/80">
+                  <OrderTimelinePanel context={{ txStatus: tx.status }} compact />
+                  {actionHint ? (
+                    <Link
+                      href={detailHref(tx)}
+                      className="mt-2 inline-flex items-center gap-1.5 text-[11px] font-semibold text-[#007782] hover:underline"
+                    >
+                      <MessageCircle size={12} />
+                      {actionHint}
+                    </Link>
+                  ) : null}
                 </div>
-                <ChevronRight size={18} className="shrink-0 text-gray-400 self-center" />
-              </Link>
-              {isBundleTransaction(tx) ? (
-                <div className="px-3 pb-1">
-                  <BundleOrderLineItems
-                    transactionId={tx.id}
-                    productId={tx.product_id}
-                    bundleProductIds={tx.bundle_product_ids}
-                    bundleItemCount={tx.bundle_item_count}
-                  />
-                </div>
-              ) : null}
-              <div className="px-3 pb-3 border-t border-gray-100 bg-gray-50/50">
-                <OrderTimelinePanel
-                  compact
-                  context={{
-                    txStatus: tx.status,
-                    disputeStatus: tx.dispute_status,
-                  }}
-                />
               </div>
-              {tab === 'sales' && tx.dispute_status ? (
-                <div className="px-3 pb-3">
-                  <p className="text-xs text-amber-800 bg-amber-50 border border-amber-200 rounded-lg px-2 py-1.5">
-                    {t('disputes.sellerNotice')}
-                  </p>
-                </div>
-              ) : null}
-              {tab === 'purchases' &&
-              (canBuyerOpenDispute(tx.status, tx.dispute_status) || tx.dispute_status) ? (
-                <div className="px-3 pb-3">
-                  <DisputePanel
-                    transactionId={tx.id}
-                    productName={tx.product?.name}
-                    txStatus={tx.status}
-                    disputeStatus={tx.dispute_status}
-                  />
-                </div>
-              ) : null}
             </li>
-          ))}
+            );
+          })}
         </ul>
       )}
 

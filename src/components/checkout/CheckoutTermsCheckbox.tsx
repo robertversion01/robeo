@@ -50,7 +50,7 @@ export default function CheckoutTermsCheckbox({ checked, onChange, className }: 
         >
           {t('checkout.terms.privacyLink')}
         </Link>
-        , a{' '}
+        {t('checkout.terms.payJoin')}{' '}
         <Link
           href="/legal/pay"
           target="_blank"
@@ -58,7 +58,7 @@ export default function CheckoutTermsCheckbox({ checked, onChange, className }: 
           className="font-semibold text-[#007782] hover:underline"
           onClick={(e) => e.stopPropagation()}
         >
-          ROBEO Pay ÁSZF
+          {t('checkout.terms.payLink')}
         </Link>
         .
       </span>

@@ -33,6 +33,52 @@ export function isMissingColumnError(error: Pick<PostgrestError, 'code' | 'messa
   return false;
 }
 
+export const TX_LABEL_SELECT_SETS = [
+  'id, status, product_id, buyer_id, seller_id, foxpost_terminal_id, foxpost_terminal_name, foxpost_terminal_address, tracking_number',
+  'id, status, product_id, buyer_id, seller_id, tracking_number',
+  'id, status, product_id, buyer_id, seller_id',
+] as const;
+
+export const TX_CHAT_SELECT_SETS = [
+  'id, status, product_id, buyer_id, seller_id, tracking_number, payment_intent_id, dispute_status, foxpost_terminal_id, foxpost_terminal_name, foxpost_terminal_address',
+  'id, status, product_id, buyer_id, seller_id, tracking_number, payment_intent_id',
+  'id, status, product_id, buyer_id, seller_id',
+] as const;
+
+type TransactionLookupFilters = {
+  id?: string;
+  productId?: string;
+  sellerId?: string;
+  buyerId?: string;
+};
+
+/** transactions select több oszlop-kísérlettel (hiányzó foxpost / tracking oszlopok ellen). */
+export async function fetchTransactionWithColumnFallback<T extends Record<string, unknown>>(
+  supabase: SupabaseClient,
+  filters: TransactionLookupFilters,
+  columnSets: readonly string[] = TX_LABEL_SELECT_SETS,
+): Promise<{ data: T | null; error: PostgrestError | null }> {
+  for (const columns of columnSets) {
+    let query = supabase.from('transactions').select(columns);
+    if (filters.id) query = query.eq('id', filters.id);
+    if (filters.productId) query = query.eq('product_id', filters.productId);
+    if (filters.sellerId) query = query.eq('seller_id', filters.sellerId);
+    if (filters.buyerId) query = query.eq('buyer_id', filters.buyerId);
+    if (!filters.id) {
+      query = query.order('created_at', { ascending: false }).limit(1);
+    }
+
+    const { data, error } = await query.maybeSingle();
+    if (!error && data) {
+      return { data: data as T, error: null };
+    }
+    if (error && !isSupabaseSchemaError(error)) {
+      return { data: null, error };
+    }
+  }
+  return { data: null, error: null };
+}
+
 /** profiles select több oszlop-kísérlettel (full_name nélkül is működik). */
 export async function fetchProfileRow<T extends Record<string, unknown>>(
   supabase: SupabaseClient,

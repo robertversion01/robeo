@@ -10,6 +10,7 @@ import {
 import type { FoxpostTerminal } from '@/lib/foxpostTerminal';
 import type { PacketaPoint } from '@/lib/packetaPoint';
 import { pickupFieldsForCheckout } from '@/lib/pickupPoint';
+import { appBaseUrl } from '@/lib/stripeConnect';
 
 export const dynamic = 'force-dynamic';
 
@@ -99,7 +100,7 @@ export async function POST(req: NextRequest) {
 
     const walletToUse = Math.min(available, total);
     const remainder = total - walletToUse;
-    const baseUrl = process.env.NEXT_PUBLIC_BASE_URL || 'http://localhost:3000';
+    const baseUrl = appBaseUrl();
 
     if (remainder <= 0) {
       const { data: debited, error: debitErr } = await db.rpc('debit_wallet_available', {

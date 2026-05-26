@@ -12,9 +12,6 @@
     "catalog": {
       "loading": "Betöltés...",
       "results": "{{count}} találat",
-      "resultsPaged": "{{shown}} / {{total}} találat",
-      "loadMore": "Továbbiak betöltése",
-      "loadingMore": "Betöltés…",
       "title": "Böngéssz a kínálatban"
     }
   },
@@ -25,7 +22,6 @@
     "favorites": "Kedvencek",
     "upload": "Feltöltés",
     "messages": "Üzenetek",
-    "orders": "Rendelések",
     "notifications": "Értesítések",
     "profile": "Profil",
     "register": "Regisztráció",
@@ -60,54 +56,40 @@
       "electronics": "Elektronika",
       "entertainment": "Szórakozás",
       "sports": "Sport",
-      "pets": "Állattartás",
+      "pets": "Állatok",
       "other": "Egyéb"
     },
-    "subcategories": {
-      "women_dresses": "Ruhák",
-      "women_tops": "Felsők",
-      "women_jumpers": "Pulóverek",
-      "women_outerwear": "Kabátok",
-      "women_pants": "Nadrágok",
-      "women_skirts": "Szoknyák",
-      "women_activewear": "Sportruha",
-      "women_swimwear": "Fürdőruha",
-      "women_lingerie": "Fehérnemű",
-      "women_shoes": "Cipő",
-      "women_bags": "Táskák",
-      "women_accessories": "Kiegészítők",
-      "women_beauty": "Szépségápolás",
-      "men_tops": "Felsők",
-      "men_jumpers": "Pulóverek",
-      "men_outerwear": "Kabátok",
-      "men_pants": "Nadrágok",
-      "men_activewear": "Sportruha",
-      "men_shoes": "Cipő",
-      "men_accessories": "Kiegészítők",
-      "kids_clothing": "Gyerekruha",
-      "kids_shoes": "Gyerek cipő",
-      "kids_toys": "Játékok",
-      "kids_baby": "Baba",
-      "home_textiles": "Textil",
-      "home_decor": "Dekor",
-      "home_kitchen": "Konyha",
-      "home_furniture": "Bútor",
-      "electronics_phones": "Telefon",
-      "electronics_computers": "Számítógép",
-      "electronics_gaming": "Játék",
-      "electronics_audio": "Hang",
-      "electronics_photo": "Fényképező",
-      "entertainment_books": "Könyv",
-      "entertainment_games": "Társasjáték",
-      "entertainment_music": "Zene",
-      "entertainment_hobbies": "Hobbi",
-      "sports_clothing": "Sportruha",
-      "sports_equipment": "Felszerelés",
-      "sports_outdoor": "Túra",
-      "pets_dogs": "Kutya",
-      "pets_cats": "Macska",
-      "pets_other": "Egyéb állat",
-      "other_misc": "Egyéb"
+    "filters": {
+      "category": "Kategória",
+      "allCategories": "Összes kategória",
+      "subcategory": "Alkategória",
+      "allSubcategories": "Összes alkategória",
+      "brand": "Márka",
+      "allBrands": "Összes márka",
+      "size": "Méret",
+      "allSizes": "Összes méret",
+      "condition": "Állapot",
+      "allConditions": "Összes állapot",
+      "color": "Szín",
+      "allColors": "Összes szín",
+      "price": "Ár",
+      "priceRange": "Ártartomány",
+      "anyPrice": "Bármely ár",
+      "under5k": "5 000 Ft alatt",
+      "5k15k": "5 000 – 15 000 Ft",
+      "15k30k": "15 000 – 30 000 Ft",
+      "over30k": "30 000 Ft felett",
+      "min": "Min.",
+      "max": "Max.",
+      "sort": "Rendezés",
+      "clear": "Törlés",
+      "clearAll": "Szűrők törlése ({{count}})"
+    },
+    "sidebar": {
+      "title": "Szűrők",
+      "reset": "Alaphelyzet",
+      "searchBrand": "Márka keresése…",
+      "sort": "Rendezés"
     },
     "colors": {
       "black": "Fekete",
@@ -124,41 +106,51 @@
       "purple": "Lila",
       "multicolor": "Többszínű"
     },
-    "conditions": {
-      "excellent": "Kiváló",
-      "veryGood": "Nagyon jó"
-    },
-    "filters": {
-      "category": "Kategória",
-      "subcategory": "Alkategória",
-      "allSubcategories": "Összes alkategória",
-      "color": "Szín",
-      "allColors": "Összes szín",
-      "allCategories": "Összes kategória",
-      "brand": "Márka",
-      "allBrands": "Összes márka",
-      "size": "Méret",
-      "allSizes": "Összes méret",
-      "condition": "Állapot",
-      "allConditions": "Összes állapot",
-      "price": "Ár",
-      "priceRange": "Ártartomány",
-      "anyPrice": "Bármely ár",
-      "under5k": "5 000 Ft alatt",
-      "5k15k": "5 000 – 15 000 Ft",
-      "15k30k": "15 000 – 30 000 Ft",
-      "over30k": "30 000 Ft felett",
-      "min": "Min.",
-      "max": "Max.",
-      "sort": "Rendezés",
-      "clear": "Törlés",
-      "clearAll": "Szűrők törlése ({{count}})"
-    },
-    "sidebar": {
-      "title": "Szűrők",
-      "reset": "Törlés",
-      "searchBrand": "Márka keresése…",
-      "sort": "Rendezés"
+    "subcategories": {
+      "women_dresses": "Ruhák",
+      "women_tops": "Felsők",
+      "women_jumpers": "Pulóverek",
+      "women_outerwear": "Kabátok",
+      "women_pants": "Nadrágok",
+      "women_skirts": "Szoknyák",
+      "women_activewear": "Sportruha",
+      "women_swimwear": "Fürdőruha",
+      "women_lingerie": "Fehérnemű",
+      "women_shoes": "Cipők",
+      "women_bags": "Táskák",
+      "women_accessories": "Kiegészítők",
+      "women_beauty": "Szépségápolás",
+      "men_tops": "Felsők",
+      "men_jumpers": "Pulóverek",
+      "men_outerwear": "Kabátok",
+      "men_pants": "Nadrágok",
+      "men_activewear": "Sportruha",
+      "men_shoes": "Cipők",
+      "men_accessories": "Kiegészítők",
+      "kids_clothing": "Gyerekruha",
+      "kids_shoes": "Gyerek cipő",
+      "kids_toys": "Játékok",
+      "kids_baby": "Baba",
+      "home_textiles": "Textil",
+      "home_decor": "Dekor",
+      "home_kitchen": "Konyha",
+      "home_furniture": "Bútor",
+      "electronics_phones": "Telefon",
+      "electronics_computers": "Számítógép",
+      "electronics_gaming": "Játék",
+      "electronics_audio": "Hang",
+      "electronics_photo": "Fényképezés",
+      "entertainment_books": "Könyv",
+      "entertainment_games": "Társasjáték",
+      "entertainment_music": "Zene",
+      "entertainment_hobbies": "Hobbi",
+      "sports_clothing": "Sportruha",
+      "sports_equipment": "Felszerelés",
+      "sports_outdoor": "Túra",
+      "pets_dogs": "Kutya",
+      "pets_cats": "Macska",
+      "pets_other": "Egyéb",
+      "other_misc": "Egyéb"
     },
     "activeFilters": {
       "remove": "Szűrő eltávolítása",
@@ -174,6 +166,10 @@
       "clearFilters": "Szűrők törlése",
       "browseAll": "Összes termék"
     },
+    "pagination": {
+      "loadMore": "Több termék betöltése",
+      "loading": "Betöltés…"
+    },
     "sort": {
       "newest": "Legújabb előre",
       "priceAsc": "Legolcsóbb előre",
@@ -184,16 +180,14 @@
       "saveCurrent": "Keresés mentése",
       "syncing": "Mentés…",
       "remove": "Mentett keresés törlése",
-      "removeConfirm": "Biztosan törlöd a „{{label}}” mentett keresést?",
-      "removeFailed": "A mentett keresés törlése sikertelen. Próbáld újra.",
       "emptyHint": "Mentsd el a szűrőket, és egy kattintással visszatérhetsz hozzájuk.",
       "alertToggle": "Értesítés be/ki",
       "alertOn": "Értesítés bekapcsolva",
-      "alertOff": "Értesítés kikapcsolva"
+      "alertOff": "Értesítés kikapcsolva",
+      "removeConfirm": "Törlöd a „{{label}}” mentett keresést?",
+      "removeFailed": "Nem sikerült törölni."
     },
     "discovery": {
-      "explore": "Felfedezés",
-      "trending": "Felkapott most",
       "brands": "Népszerű márkák",
       "sizes": "Méretek",
       "popular": "Népszerű rendezés",
@@ -206,15 +200,16 @@
       "under3k": "3 000 Ft alatt",
       "under10k": "10 000 Ft alatt",
       "under20k": "20 000 Ft alatt",
+      "explore": "Fedezd fel",
       "tip": "Tipp: a Keresés tabon szűrj pontosabban — a főoldalon a feed személyre szabott."
     },
     "immersive": {
       "showFilters": "Szűrők",
       "filterSheetTitle": "Szűrők és rendezés",
       "applyFilters": "Alkalmaz",
-      "activeFilters": "{{count}} aktív szűrő",
-      "applyWithCount": "Alkalmaz ({{count}})",
-      "counting": "Számolás…"
+      "applyWithCount": "Alkalmaz ({{count}} találat)",
+      "counting": "Számolás…",
+      "activeFilters": "{{count}} aktív szűrő"
     },
     "feed": {
       "default": "Friss hirdetések a közösségtől — böngéssz, szűrj, ments kedvenceket.",
@@ -240,7 +235,6 @@
     "viewSeller": "Eladó profilja",
     "available": "Elérhető",
     "sold": "Eladva",
-    "reserved": "Foglalt",
     "buy": "Vásárlás",
     "buyOfferPrice": "Vásárlás alkudott áron",
     "makeOffer": "Ajánlatot teszek",
@@ -257,17 +251,13 @@
     "messageError": "Hiba történt az üzenet küldése során",
     "favoriteAdd": "Kedvencekhez adás",
     "favoriteRemove": "Eltávolítás a kedvencekből",
-    "favoriteCountAria": "{{count}} kedvenc",
-    "featured": "Bump",
+    "featured": "Kiemelt",
     "bundleHint": "Több termék egy eladótól: {{percent}}% kedvezmény {{items}}+ darabnál.",
     "browseCategory": "Több ebben a kategóriában",
     "share": "Megosztás",
     "report": "Jelentés",
     "shareCopied": "Link a vágólapra másolva",
-    "shareFailed": "Megosztás sikertelen",
-    "soldOwnerTitle": "Ez a hirdetés eladva",
-    "soldOwnerHint": "A termék már nem aktív — vásárlás és ajánlat nem lehetséges.",
-    "soldOwnerBack": "Vissza a profilomhoz"
+    "shareFailed": "Megosztás sikertelen"
   },
   "pdp": {
     "moreFromSeller": "Több ettől az eladótól",
@@ -302,8 +292,6 @@
     "promoteHero": "Kiemelés a főoldalon",
     "promoted": "Kiemelve",
     "promoting": "Átirányítás…",
-    "cannotPromoteSold": "Eladott hirdetést nem lehet kiemelni.",
-    "soldListingHint": "Lezárt hirdetés",
     "emptyListings": "Még nincs feltöltött terméked.",
     "uploadFirst": "Töltsd fel az első termékedet",
     "emptySold": "Még nincs eladott termék.",
@@ -387,7 +375,7 @@
       "stylesHint": "Pl. streetwear, vintage",
       "stylesPlaceholder": "Stílus",
       "conditions": "Állapot preferencia",
-      "conditionsHint": "Pl. new, good, satisfactory",
+      "conditionsHint": "Pl. új, jó, megfelelő",
       "conditionsPlaceholder": "Állapot"
     },
     "notifications": {
@@ -413,14 +401,6 @@
     "language": {
       "title": "Nyelv"
     },
-    "bio": {
-      "title": "Profil bemutatkozás",
-      "hint": "Rövid szöveg a publikus eladói profilodon — max. 280 karakter.",
-      "placeholder": "Pl. gyors válasz, csak tiszta állapotú darabok…",
-      "save": "Bio mentése",
-      "saved": "Bio mentve.",
-      "schemaMissing": "Futtasd a supabase/patch-profile-bio.sql patch-et."
-    },
     "privacy": {
       "title": "Adatvédelem",
       "body": "A profilod és hirdetéseid csak a piactér szabályai szerint láthatók. Részletes beállítások hamarosan."
@@ -442,18 +422,9 @@
   "trust": {
     "compactTitle": "Biztonságos vásárlás",
     "compactBody": "Fizetés védelemmel, biztonságos szállítás, vitás esetben segítünk — mint a nagy piactereken.",
-    "protection": {
-      "title": "Vevővédelem",
-      "body": "A díj biztosítja a vitás ügyintézést és a biztonságos tranzakciót."
-    },
-    "secure": {
-      "title": "Biztonságos fizetés",
-      "body": "A kártyás fizetés Stripe-on keresztül történik."
-    },
-    "shipping": {
-      "title": "Nyomon követhető szállítás",
-      "body": "Foxpost, Packeta vagy házhoz — státusz az üzenetekben."
-    }
+    "protection": { "title": "Vevővédelem", "body": "A díj biztosítja a vitás ügyintézést és a biztonságos tranzakciót." },
+    "secure": { "title": "Biztonságos fizetés", "body": "A kártyás fizetés Stripe-on keresztül történik." },
+    "shipping": { "title": "Nyomon követhető szállítás", "body": "Foxpost, Packeta vagy házhoz — státusz az üzenetekben." }
   },
   "bundle": {
     "closet": {
@@ -519,6 +490,8 @@
     "offerInvalidAmount": "Adj meg érvényes összeget.",
     "offerMinError": "Minimum ajánlat: {{min}} Ft",
     "offerDuplicate": "Már van aktív ajánlatod ehhez a termékhez.",
+    "offerOwnProduct": "Saját termékedre nem tehetsz ajánlatot.",
+    "offerProductUnavailable": "Ez a termék már nem elérhető ajánlattételre.",
     "offerSent": "Ajánlat elküldve.",
     "offerFailed": "Ajánlat küldése sikertelen: {{msg}}",
     "uploadImage": "Kép feltöltése",
@@ -551,31 +524,6 @@
     "switchLogin": "Jelentkezz be",
     "successLogin": "Sikeres bejelentkezés!",
     "successRegister": "Sikeres regisztráció!",
-    "successRegisterConfirmEmail": "Ellenőrizd az e-mail fiókodat, majd jelentkezz be a regisztráció befejezéséhez.",
-    "legalRequired": "A regisztrációhoz el kell fogadnod az ÁSZF-et, az adatvédelmi tájékoztatót, és meg kell erősítened, hogy elmúltál 18 éves.",
-    "acceptLegalPrefix": "A regisztrációval megerősítem, hogy elfogadom a",
-    "acceptLegalTerms": "Általános Szerződési Feltételeket",
-    "acceptLegalMiddle": ", elolvastam az",
-    "acceptLegalPrivacy": "Adatvédelmi tájékoztatót",
-    "acceptLegalAge": " és elmúltam 18 éves.",
-    "marketingOptIn": "Szeretnék e-mailben személyre szabott ajánlatokat kapni és az elsők között értesülni a ROBEO legfrissebb híreiről.",
-    "complete": {
-      "title": "Regisztráció befejezése",
-      "fullNameLabel": "Teljes név",
-      "fullNameHint": "A teljes neved nem lesz nyilvánosan látható.",
-      "fullNameRequired": "Add meg a teljes neved.",
-      "usernameLabel": "Felhasználónév",
-      "usernameInvalid": "A felhasználónév 3–20 karakter lehet, csak kisbetű, szám és aláhúzás.",
-      "usernameTaken": "Ez a felhasználónév már foglalt a ROBEO-n.",
-      "usernameSuggested": "Neked javasolt:",
-      "usernameChecking": "Ellenőrzés…",
-      "legalPrefix": "A regisztrációval megerősítem, hogy elfogadom a",
-      "legalMiddle": ", elolvastam az",
-      "legalSuffix": "és elmúltam 18 éves.",
-      "continue": "Folytatás",
-      "success": "Profil elkészült!",
-      "problemLink": "Probléma merült fel?"
-    },
     "errors": {
       "generic": "Hiba történt",
       "emailNotConfirmed": "Igazold vissza az e-mail címedet a bejelentkezés előtt!",
@@ -585,23 +533,6 @@
       "userExists": "Ez az e-mail cím már regisztrálva van!",
       "rateLimit": "Túl sok kérés. Próbáld újra később."
     }
-  },
-  "block": {
-    "blockAction": "Tiltás",
-    "unblockAction": "Tiltás feloldása",
-    "confirm": "Biztosan tiltod ezt a felhasználót? Nem tudtok üzenni egymásnak.",
-    "blocked": "Felhasználó tiltva.",
-    "unblocked": "Tiltás feloldva.",
-    "failed": "A művelet nem sikerült.",
-    "schemaMissing": "Futtasd a supabase/patch-user-blocks.sql patch-et.",
-    "cannotMessage": "Nem küldhetsz üzenetet — tiltás van érvényben.",
-    "threadClosed": "Ez a beszélgetés nem elérhető (tiltás)."
-  },
-  "legalReaccept": {
-    "title": "Frissített feltételek",
-    "body": "Frissítettük az Általános Szerződési Feltételeket és az Adatvédelmi tájékoztatót. A ROBEO további használatához fogadd el az új verziót.",
-    "continue": "Elfogadom és folytatom",
-    "success": "Köszönjük — folytathatod a böngészést."
   },
   "chatOffer": {
     "accept": "Elfogadom",
@@ -614,34 +545,40 @@
     "closed": "Lezárva",
     "panelTitle": "Ajánlat: {{price}} Ft",
     "acceptedCounterMsg": "Elfogadtam az ellenajánlatot.",
+    "pendingHint": "Az eladó válaszára vársz — 24 órán belül lejár.",
+    "sellerWaitingTitle": "Ajánlat elfogadva — várakozás a fizetésre",
+    "sellerWaitingBody": "A vevő most fizethet. Fizetés után csomagolhatod és feladhatod.",
+    "sellerAcceptedBody": "Elfogadtad az ajánlatot. A vevő megkapja a fizetési linket.",
+    "buyerAcceptedBody": "Az eladó elfogadta az ajánlatodat. Most kifizetheted a terméket.",
+    "buyerRejectedBody": "Az eladó elutasította az ajánlatodat.",
+    "sellerRejectedBody": "Elutasítottad a vevő ajánlatát.",
+    "sellerCounterSentBody": "Ellenajánlatot küldtél — a vevő válaszolhat.",
+    "buyerCounterReceivedBody": "Az eladó ellenajánlatot küldött: {{price}} Ft — elfogadhatod vagy elutasíthatod.",
+    "sellerCounterReceivedBody": "A vevő ellenajánlatot küldött: {{price}} Ft — elfogadhatod vagy elutasíthatod.",
+    "buyerCounterSentBody": "Ellenajánlatot küldtél — az eladó válaszol.",
     "status": {
       "pending": "Várakozik az eladóra",
       "countered": "Ellenajánlat — válasz szükséges",
       "accepted": "Elfogadva — fizethetsz"
-    },
-    "pendingHint": "Az eladó válaszára vársz — 24 órán belül lejár.",
-    "counter": "Ellenajánlat",
-    "sendCounter": "Küldés",
-    "cancelCounter": "Mégse",
-    "counterPlaceholder": "Új ár",
-    "counterInvalid": "Adj meg érvényes árat.",
-    "counterMin": "Minimum ajánlat: {{min}} Ft (a vételár legalább 60%-a).",
-    "counterSent": "Ellenajánlat elküldve",
-    "productFallback": "termék",
-    "sellerWaitingTitle": "Ajánlat elfogadva — várakozás a fizetésre",
-    "sellerWaitingBody": "A vevő most fizethet. Amint kifizette, értesítünk, és csomagolhatod a terméket.",
-    "sellerAcceptedBody": "Elfogadtad az ajánlatot. A vevő kapja a fizetési linket.",
-    "buyerAcceptedBody": "Az eladó elfogadta az ajánlatodat. Most kifizetheted a terméket.",
-    "buyerRejectedBody": "Az eladó elutasította az ajánlatodat.",
-    "sellerRejectedBody": "Elutasítottad a vevő ajánlatát.",
-    "sellerCounterSentBody": "Ellenajánlatot küldtél — a vevő válaszolhat."
+    }
   },
   "saleMessage": {
-    "sellerTitle": "Sikeres eladás — kifizetve!",
-    "sellerBody": "A vevő kifizette a terméket. Csomagold össze, töltsd le a Foxpost címkét, majd jelöld feladottnak.",
-    "buyerTitle": "Sikeres vásárlás — kifizetve!",
-    "buyerBody": "A fizetésed megérkezett. Az eladó hamarosan feladja a csomagot — itt követheted a státuszt.",
-    "awaitingPaymentSync": "A fizetés feldolgozása folyamatban — a csomagfeladás hamarosan elérhető."
+    "sellerTitle": "Sikeres eladás!",
+    "buyerTitle": "Sikeres vásárlás!",
+    "sellerBody": "A vevő kifizette a terméket. Nyomtasd ki a Foxpost címkét és jelöld feladottnak.",
+    "buyerBody": "A fizetés sikeres. Az eladó hamarosan feladja a csomagot — itt követheted az állapotot.",
+    "awaitingPaymentSync": "A fizetés még szinkronizálódik — frissítsd az oldalt, ha a gomb inaktív."
+  },
+  "block": {
+    "blockAction": "Blokkolás",
+    "unblockAction": "Blokkolás feloldása",
+    "confirm": "Blokkolod ezt a felhasználót? Ezután nem írhattok egymásnak.",
+    "blocked": "Felhasználó blokkolva.",
+    "unblocked": "Blokkolás feloldva.",
+    "failed": "Sikertelen művelet.",
+    "schemaMissing": "Futtasd a supabase/patch-user-blocks.sql fájlt.",
+    "cannotMessage": "Nem küldhetsz üzenetet — blokkolás van érvényben.",
+    "threadClosed": "Ez a beszélgetés nem érhető el (blokkolva)."
   },
   "orderTimeline": {
     "title": "Rendelés állapota",
@@ -661,9 +598,11 @@
       "disputed": "Vitatás"
     }
   },
-  "offerExpiry": {
-    "remaining": "Lejár {{time}} múlva",
-    "expired": "Lejárt"
+  "systemMessage": {
+    "forSeller": "Neked, eladóként",
+    "forBuyer": "Neked, vevőként",
+    "loading": "Rendszerüzenet",
+    "loadingHint": "Rendelés állapot betöltése…"
   },
   "upload": {
     "title": "Termék feltöltése",
@@ -690,24 +629,27 @@
     "brandSearchPlaceholder": "Keresés vagy egyedi márka…",
     "brandTypeaheadHint": "Gépelj a szűréshez. Ha nincs a listában, Enterrel vagy a kiemelt sorral mentheted egyediként.",
     "brandUseCustom": "„{{brand}}” használata (egyedi márka)",
-    "brandCustomHint": "Saját márkanév — megjelenik a hirdetésben",
-    "brandNoResults": "Nincs találat — írd be teljesen, majd Enter",
+    "brandNoResults": "Nincs találat",
+    "brandCustomHint": "Egyedi márka — Enter a mentéshez",
     "size": "Méret",
     "sizePlaceholder": "Válassz méretet",
     "condition": "Állapot",
     "conditionPlaceholder": "Válassz állapotot",
     "conditions": {
       "new": "Új",
+      "newWithTag": "Új címkével",
       "excellent": "Kiváló",
+      "veryGood": "Nagyon jó",
+      "likeNew": "Újszerű",
       "good": "Jó",
       "fair": "Közepes",
-      "poor": "Rossz"
+      "poor": "Rossz",
+      "satisfactory": "Megfelelő",
+      "unknown": "Ismeretlen állapot"
     },
     "images": "Képek",
     "imagesCount": "{{count}}/6",
     "tapToSelect": "Kattints a képek kiválasztásához",
-    "processingImages": "Képek feldolgozása…",
-    "processFailed": "A kép feldolgozása sikertelen. Próbálj kisebb képet, vagy töröld a piszkozatot.",
     "imagesHintFirst": "Az első kép lesz a fő kép (PNG, JPG, WEBP)",
     "imagesHintMore": "Válassz további képeket",
     "submit": "Termék feltöltése",
@@ -766,18 +708,6 @@
       "changeTerminal": "Másik automata",
       "terminalId": "Automata ID: {{id}}"
     },
-    "packeta": {
-      "title": "Packeta / Z-BOX átvételi pont",
-      "openPicker": "Átvételi pont kiválasztása",
-      "pickerTitle": "Válassz Packeta pontot",
-      "pickerAria": "Packeta pont választó",
-      "close": "Bezárás",
-      "changePoint": "Másik pont",
-      "pointId": "Pont ID: {{id}}",
-      "searchPlaceholder": "Keresés város vagy név alapján…",
-      "listHint": "Dev mód: gyakori pontok listája. Éles Packeta widgethez állítsd be a NEXT_PUBLIC_PACKETA_API_KEY env változót.",
-      "noResults": "Nincs találat"
-    },
     "bundle": {
       "title": "Csomag vásárlás",
       "summaryTitle": "Csomag összegzés",
@@ -790,11 +720,25 @@
     "directPurchase": "Közvetlen vásárlás",
     "termsHint": "A fizetés gombra kattintva elfogadod a vásárlási feltételeket.",
     "terms": {
-      "prefix": "Elfogadom az",
-      "termsLink": "ÁSZF-et",
+      "prefix": "Elfogadom a",
+      "termsLink": "Felhasználási feltételeket",
       "and": "és az",
       "privacyLink": "Adatvédelmi tájékoztatót",
-      "required": "A fizetéshez el kell fogadnod a feltételeket."
+      "payJoin": ", valamint a",
+      "payLink": "ROBEO Pay ÁSZF-et",
+      "required": "A fizetéshez pipáld be a feltételek elfogadását."
+    },
+    "packeta": {
+      "title": "Packeta átvételi pont",
+      "openPicker": "Átvételi pont kiválasztása",
+      "changePoint": "Másik pont",
+      "pointId": "Pont azonosító: {{id}}",
+      "pickerAria": "Packeta pont választó",
+      "pickerTitle": "Válassz Packeta pontot",
+      "close": "Bezárás",
+      "searchPlaceholder": "Keresés város vagy utca szerint…",
+      "listHint": "Packeta widget kulcs nélkül a beépített pontlistát használjuk (demo).",
+      "noResults": "Nincs találat — próbálj más keresőszót."
     },
     "shippingOptions": {
       "foxpost": "Foxpost automatába",
@@ -813,12 +757,10 @@
       "missingIds": "Hiányzó azonosítók a fizetéshez.",
       "paymentFailed": "Hiba történt a fizetés során",
       "foxpostRequired": "Foxpost szállításnál kötelező automata választás.",
-      "packetaRequired": "Packeta szállításnál kötelező átvételi pont választás."
-    },
-    "wallet": {
-      "useBalance": "Robeo egyenleg felhasználása",
-      "available": "Elérhető: {{amount}}",
-      "willApply": "Levonás: {{amount}}"
+      "packetaRequired": "Packeta szállításnál kötelező átvételi pont választás.",
+      "stripeMissing": "A Stripe nincs beállítva. Add hozzá a STRIPE_SECRET_KEY=sk_test_… értéket a .env.local fájlhoz, majd indítsd újra a dev szervert.",
+      "invalidRedirectUrl": "Hiányzik az app URL. Add hozzá: NEXT_PUBLIC_BASE_URL=http://localhost:3000 a .env.local fájlhoz, majd indítsd újra a dev szervert.",
+      "serviceUnavailable": "A fizetési szolgáltatás átmenetileg nem elérhető."
     }
   },
   "uploadWizard": {
@@ -846,22 +788,11 @@
       "categoryRequired": "Válassz kategóriát.",
       "sizeRequired": "Válassz méretet.",
       "brandRequired": "Válassz márkát.",
-      "brandTooShort": "A márkanév legalább 2 karakter legyen.",
       "conditionRequired": "Válassz állapotot.",
       "priceRequired": "Adj meg érvényes árat.",
       "nameRequired": "Add meg a termék nevét.",
       "descriptionRequired": "Írj leírást a termékhez."
     }
-  },
-  "systemMessage": {
-    "forSeller": "Neked, eladóként",
-    "forBuyer": "Neked, vevőként",
-    "loading": "Rendszerüzenet",
-    "loadingHint": "A rendelés állapota betölt…"
-  },
-  "ordersHub": {
-    "purchasesHint": "Fizetés, szállítás, átvétel — vásárlásaid státusza.",
-    "salesHint": "Csomagolás, címke, feladás — eladásaid kezelése."
   },
   "orders": {
     "title": "Rendeléstörténet",
@@ -874,6 +805,8 @@
     "browse": "Böngéssz a kínálatban",
     "salesHint": "Fizetés után jelöld feladottnak a csomagot az üzenetekben vagy itt.",
     "confirmHint": "Van csomag átvételre vár — erősítsd meg az üzenetekben, ha megkaptad.",
+    "confirmInMessages": "Erősítsd meg az átvételt az üzenetekben",
+    "shipInMessages": "Jelöld feladottnak az üzenetekben",
     "status": {
       "paymentPending": "Fizetésre vár",
       "paymentFailed": "Fizetés sikertelen",
@@ -885,38 +818,6 @@
       "refunded": "Visszatérítve",
       "disputeOpen": "Vitatás alatt",
       "unknown": "Ismeretlen"
-    }
-  },
-  "disputes": {
-    "openCta": "Probléma a rendeléssel?",
-    "formHint": "Írd le a problémát — admin felülvizsgálja 24–48 órán belül.",
-    "reasonLabel": "Indok",
-    "detailsPlaceholder": "Pl. nem érkezett meg / nem egyezik a leírással…",
-    "detailsTooShort": "Legalább 10 karakter szükséges.",
-    "submit": "Vitatás beküldése",
-    "submitted": "Vitatás rögzítve — hamarosan jelzünk.",
-    "failed": "Nem sikerült beküldeni.",
-    "loginRequired": "Jelentkezz be a vitához.",
-    "activeHint": "A csapat felülvizsgálja — chatben is kapsz értesítést.",
-    "sellerNotice": "A vevő vitát nyitott ehhez a rendeléshez — admin felülvizsgálat alatt.",
-    "status": {
-      "open": "Vitatás folyamatban",
-      "under_review": "Felülvizsgálat alatt",
-      "resolved_refund": "Visszatérítve",
-      "resolved_reject": "Elutasítva",
-      "cancelled": "Visszavonva"
-    },
-    "admin": {
-      "title": "Nyitott vitatások",
-      "refresh": "Frissítés",
-      "loading": "Betöltés…",
-      "empty": "Nincs nyitott vitatás.",
-      "review": "Felülvizsgálat",
-      "refund": "Visszatérítés",
-      "reject": "Elutasítás",
-      "refundDone": "Visszatérítés elindítva.",
-      "rejectDone": "Vitatás elutasítva.",
-      "reviewDone": "Felülvizsgálat alá véve."
     }
   },
   "help": {
@@ -960,18 +861,9 @@
       }
     },
     "faq": {
-      "q1": {
-        "q": "Hogyan fizetek biztonságosan?",
-        "a": "A checkout Stripe-on keresztül történik, vevővédelemmel."
-      },
-      "q2": {
-        "q": "Hogyan adok el?",
-        "a": "Feltöltés menü → lépésenkénti varázsló → közzététel."
-      },
-      "q3": {
-        "q": "Hol látom a rendeléseimet?",
-        "a": "Profil → Rólam, vagy közvetlenül a Rendeléstörténet oldalon."
-      }
+      "q1": { "q": "Hogyan fizetek biztonságosan?", "a": "A checkout Stripe-on keresztül történik, vevővédelemmel." },
+      "q2": { "q": "Hogyan adok el?", "a": "Feltöltés menü → lépésenkénti varázsló → közzététel." },
+      "q3": { "q": "Hol látom a rendeléseimet?", "a": "Profil → Rólam, vagy közvetlenül a Rendeléstörténet oldalon." }
     }
   },
   "offersList": {
@@ -1004,29 +896,30 @@
       "payment_pending": "Fizetés folyamatban",
       "payment_completed": "Kifizetve",
       "completed": "Lezárva",
-      "cancelled": "Lejárt"
+      "cancelled": "Visszavonva"
     }
   },
   "chatTransaction": {
     "orderStatus": "Rendelés állapota:",
     "orderLabel": "Rendelés:",
     "downloadLabel": "Szállítási címke letöltése",
+    "printLabel": "Foxpost címke nyomtatása",
+    "openShipping": "Szállítás megnyitása",
+    "viewOrderThread": "Rendelés az üzenetekben",
     "markShipped": "Csomag feladva",
+    "confirmReceipt": "Átvétel megerősítése",
+    "confirmSuccess": "Átvétel rögzítve — köszönjük!",
+    "disputeOpen": "Nyitott vitatás — a csapat felülvizsgálja.",
+    "panelUnavailable": "A rendelés panel még nem elérhető.",
+    "printPopupBlocked": "A nyomtatási ablak blokkolva — engedélyezd a felugró ablakokat.",
+    "foxpostTracking": "Foxpost: {{tracking}}",
     "labelDownloaded": "Foxpost címke letöltve. Most már jelölheted „Csomag feladva”-ként!",
     "downloadLabelFirst": "Először töltsd le a szállítási címkét!",
     "shippedSuccess": "Csomag feladva — a futár szimuláció elindult.",
     "updateFailed": "Nem sikerült frissíteni.",
     "stepHint": "1. lépés: töltsd le a Foxpost címkét. Utána aktiválódik a „Csomag feladva” gomb.",
     "simulating": "Futár szimuláció folyamatban… A vevő értesítést kap minden lépésről.",
-    "defaultProduct": "Termék",
-    "confirmReceipt": "Megkaptam — pénz felszabadítása",
-    "confirmSuccess": "Köszönjük! Az eladó megkapta a pénzt.",
-    "disputeOpen": "Vitatás folyamatban — admin felülvizsgálat alatt.",
-    "openShipping": "Csomagfeladás megnyitása",
-    "viewOrderThread": "Rendelés megtekintése",
-    "printLabel": "Címke nyomtatása",
-    "panelUnavailable": "A rendelés panel még betölt — próbáld újra másodperc múlva.",
-    "printPopupBlocked": "A címke letöltődött — ha nem jött nyomtató ablak, engedélyezd a felugró ablakokat."
+    "defaultProduct": "Termék"
   },
   "publicSeller": {
     "defaultName": "Eladó",

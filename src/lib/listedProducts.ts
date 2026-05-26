@@ -22,6 +22,11 @@ export function isSoldListing(status: string | null | undefined): boolean {
   return status === 'sold';
 }
 
+/** Megvásárolható-e (checkout / ajánlat). */
+export function isPurchasableProduct(status: string | null | undefined): boolean {
+  return isListedProduct(status);
+}
+
 /** Kiemelés / boost — kizárólag aktív hirdetés. */
 export function canPromoteProduct(status: string | null | undefined): boolean {
   return isActiveListing(status);

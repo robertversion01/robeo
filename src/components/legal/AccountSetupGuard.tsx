@@ -8,7 +8,7 @@ import {
   needsLegalReaccept,
 } from '@/lib/profileRegistration';
 
-const SKIP_PREFIXES = ['/auth', '/api'];
+const SKIP_PREFIXES = ['/auth', '/api', '/legal/reaccept'];
 const LEGAL_PUBLIC_PREFIXES = ['/legal/terms', '/legal/privacy', '/legal/cookies', '/legal/pay'];
 
 function shouldSkip(pathname: string | null): boolean {

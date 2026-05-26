@@ -1,11 +1,21 @@
 import type Stripe from 'stripe';
 
+/** Abszolút app URL Stripe redirectekhez, e-mailekhez (mindig http(s) séma). */
 export function appBaseUrl(): string {
-  const fromEnv = process.env.NEXT_PUBLIC_APP_URL?.trim();
-  if (fromEnv) return fromEnv.replace(/\/$/, '');
-  const vercel = process.env.VERCEL_URL?.trim();
-  if (vercel) return `https://${vercel.replace(/\/$/, '')}`;
-  return 'http://localhost:3000';
+  const raw =
+    process.env.NEXT_PUBLIC_BASE_URL?.trim() ||
+    process.env.NEXT_PUBLIC_APP_URL?.trim() ||
+    (process.env.VERCEL_URL?.trim() ? `https://${process.env.VERCEL_URL.trim()}` : '');
+
+  if (!raw) return 'http://localhost:3000';
+
+  const withScheme = /^https?:\/\//i.test(raw) ? raw : `http://${raw}`;
+  try {
+    const u = new URL(withScheme);
+    return `${u.protocol}//${u.host}`;
+  } catch {
+    return 'http://localhost:3000';
+  }
 }
 
 export function isConnectAccountReady(account: Stripe.Account): boolean {

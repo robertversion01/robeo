@@ -12,9 +12,6 @@
     "catalog": {
       "loading": "Loading...",
       "results": "{{count}} results",
-      "resultsPaged": "{{shown}} of {{total}} results",
-      "loadMore": "Load more",
-      "loadingMore": "Loading…",
       "title": "Browse the catalog"
     }
   },
@@ -25,7 +22,6 @@
     "favorites": "Favorites",
     "upload": "List item",
     "messages": "Inbox",
-    "orders": "Orders",
     "notifications": "Notifications",
     "profile": "Profile",
     "register": "Sign up",
@@ -63,6 +59,53 @@
       "pets": "Pets",
       "other": "Other"
     },
+    "filters": {
+      "category": "Category",
+      "allCategories": "All categories",
+      "subcategory": "Subcategory",
+      "allSubcategories": "All subcategories",
+      "brand": "Brand",
+      "allBrands": "All brands",
+      "size": "Size",
+      "allSizes": "All sizes",
+      "condition": "Condition",
+      "allConditions": "All conditions",
+      "color": "Color",
+      "allColors": "All colors",
+      "price": "Price",
+      "priceRange": "Price range",
+      "anyPrice": "Any price",
+      "under5k": "Under 5,000 Ft",
+      "5k15k": "5,000 – 15,000 Ft",
+      "15k30k": "15,000 – 30,000 Ft",
+      "over30k": "Over 30,000 Ft",
+      "min": "Min.",
+      "max": "Max.",
+      "sort": "Sort",
+      "clear": "Clear",
+      "clearAll": "Clear filters ({{count}})"
+    },
+    "sidebar": {
+      "title": "Filters",
+      "reset": "Reset",
+      "searchBrand": "Search brand…",
+      "sort": "Sort"
+    },
+    "colors": {
+      "black": "Black",
+      "white": "White",
+      "gray": "Gray",
+      "beige": "Beige",
+      "brown": "Brown",
+      "red": "Red",
+      "pink": "Pink",
+      "orange": "Orange",
+      "yellow": "Yellow",
+      "green": "Green",
+      "blue": "Blue",
+      "purple": "Purple",
+      "multicolor": "Multicolor"
+    },
     "subcategories": {
       "women_dresses": "Dresses",
       "women_tops": "Tops",
@@ -96,7 +139,7 @@
       "electronics_computers": "Computers",
       "electronics_gaming": "Gaming",
       "electronics_audio": "Audio",
-      "electronics_photo": "Cameras",
+      "electronics_photo": "Photography",
       "entertainment_books": "Books",
       "entertainment_games": "Board games",
       "entertainment_music": "Music",
@@ -107,58 +150,7 @@
       "pets_dogs": "Dogs",
       "pets_cats": "Cats",
       "pets_other": "Other pets",
-      "other_misc": "Misc"
-    },
-    "colors": {
-      "black": "Black",
-      "white": "White",
-      "gray": "Gray",
-      "beige": "Beige",
-      "brown": "Brown",
-      "red": "Red",
-      "pink": "Pink",
-      "orange": "Orange",
-      "yellow": "Yellow",
-      "green": "Green",
-      "blue": "Blue",
-      "purple": "Purple",
-      "multicolor": "Multicolor"
-    },
-    "conditions": {
-      "excellent": "Excellent",
-      "veryGood": "Very good"
-    },
-    "filters": {
-      "category": "Category",
-      "subcategory": "Subcategory",
-      "allSubcategories": "All subcategories",
-      "color": "Color",
-      "allColors": "All colors",
-      "allCategories": "All categories",
-      "brand": "Brand",
-      "allBrands": "All brands",
-      "size": "Size",
-      "allSizes": "All sizes",
-      "condition": "Condition",
-      "allConditions": "All conditions",
-      "price": "Price",
-      "priceRange": "Price range",
-      "anyPrice": "Any price",
-      "under5k": "Under 5,000 Ft",
-      "5k15k": "5,000 – 15,000 Ft",
-      "15k30k": "15,000 – 30,000 Ft",
-      "over30k": "Over 30,000 Ft",
-      "min": "Min.",
-      "max": "Max.",
-      "sort": "Sort",
-      "clear": "Clear",
-      "clearAll": "Clear filters ({{count}})"
-    },
-    "sidebar": {
-      "title": "Filters",
-      "reset": "Clear",
-      "searchBrand": "Search brand…",
-      "sort": "Sort by"
+      "other_misc": "Other"
     },
     "activeFilters": {
       "remove": "Remove filter",
@@ -174,6 +166,10 @@
       "clearFilters": "Clear filters",
       "browseAll": "Browse all"
     },
+    "pagination": {
+      "loadMore": "Load more",
+      "loading": "Loading…"
+    },
     "sort": {
       "newest": "Newest first",
       "priceAsc": "Price: low to high",
@@ -184,16 +180,14 @@
       "saveCurrent": "Save search",
       "syncing": "Saving…",
       "remove": "Remove saved search",
-      "removeConfirm": "Remove saved search “{{label}}”?",
-      "removeFailed": "Could not remove saved search. Please try again.",
       "emptyHint": "Save your filters and return to them with one tap.",
       "alertToggle": "Toggle alert",
       "alertOn": "Alerts on",
-      "alertOff": "Alerts off"
+      "alertOff": "Alerts off",
+      "removeConfirm": "Remove saved search “{{label}}”?",
+      "removeFailed": "Could not remove saved search."
     },
     "discovery": {
-      "explore": "Explore",
-      "trending": "Trending now",
       "brands": "Popular brands",
       "sizes": "Sizes",
       "popular": "Popular sort",
@@ -206,15 +200,16 @@
       "under3k": "Under 3,000 Ft",
       "under10k": "Under 10,000 Ft",
       "under20k": "Under 20,000 Ft",
+      "explore": "Explore",
       "tip": "Tip: use the Search tab for precise filters — Home feed is personalised."
     },
     "immersive": {
       "showFilters": "Filters",
       "filterSheetTitle": "Filters & sort",
       "applyFilters": "Apply",
-      "activeFilters": "{{count}} active filters",
-      "applyWithCount": "Apply ({{count}})",
-      "counting": "Counting…"
+      "applyWithCount": "Apply ({{count}} results)",
+      "counting": "Counting…",
+      "activeFilters": "{{count}} active filters"
     },
     "feed": {
       "default": "Fresh listings from the community — browse, filter, save favorites.",
@@ -240,7 +235,6 @@
     "viewSeller": "View seller profile",
     "available": "Available",
     "sold": "Sold",
-    "reserved": "Reserved",
     "buy": "Buy now",
     "buyOfferPrice": "Buy at offer price",
     "makeOffer": "Make an offer",
@@ -257,17 +251,13 @@
     "messageError": "Could not send message",
     "favoriteAdd": "Add to favorites",
     "favoriteRemove": "Remove from favorites",
-    "favoriteCountAria": "{{count}} favorites",
-    "featured": "Bump",
+    "featured": "Featured",
     "bundleHint": "Bundle from this seller: {{percent}}% off when buying {{items}}+ items.",
     "browseCategory": "More in this category",
     "share": "Share",
     "report": "Report",
     "shareCopied": "Link copied to clipboard",
-    "shareFailed": "Could not share",
-    "soldOwnerTitle": "This listing has been sold",
-    "soldOwnerHint": "This item is no longer active — buying and offers are not available.",
-    "soldOwnerBack": "Back to my profile"
+    "shareFailed": "Could not share"
   },
   "pdp": {
     "moreFromSeller": "More from this seller",
@@ -302,8 +292,6 @@
     "promoteHero": "Feature on homepage",
     "promoted": "Featured",
     "promoting": "Redirecting…",
-    "cannotPromoteSold": "Sold listings cannot be featured.",
-    "soldListingHint": "Closed listing",
     "emptyListings": "No listings yet.",
     "uploadFirst": "List your first item",
     "emptySold": "No sold items yet.",
@@ -406,14 +394,6 @@
     "language": {
       "title": "Language"
     },
-    "bio": {
-      "title": "Profile bio",
-      "hint": "Short intro on your public seller profile — max 280 characters.",
-      "placeholder": "e.g. fast replies, only clean condition items…",
-      "save": "Save bio",
-      "saved": "Bio saved.",
-      "schemaMissing": "Run supabase/patch-profile-bio.sql first."
-    },
     "privacy": {
       "title": "Privacy",
       "body": "Your profile and listings follow marketplace rules. More controls coming soon."
@@ -435,18 +415,9 @@
   "trust": {
     "compactTitle": "Safe shopping",
     "compactBody": "Buyer protection, tracked shipping, dispute help — like major marketplaces.",
-    "protection": {
-      "title": "Buyer protection",
-      "body": "Fee covers dispute handling and secure checkout."
-    },
-    "secure": {
-      "title": "Secure payment",
-      "body": "Card payments processed via Stripe."
-    },
-    "shipping": {
-      "title": "Tracked shipping",
-      "body": "Foxpost, Packeta or home delivery — status in messages."
-    }
+    "protection": { "title": "Buyer protection", "body": "Fee covers dispute handling and secure checkout." },
+    "secure": { "title": "Secure payment", "body": "Card payments processed via Stripe." },
+    "shipping": { "title": "Tracked shipping", "body": "Foxpost, Packeta or home delivery — status in messages." }
   },
   "bundle": {
     "closet": {
@@ -512,6 +483,8 @@
     "offerInvalidAmount": "Enter a valid amount.",
     "offerMinError": "Minimum offer: {{min}} Ft",
     "offerDuplicate": "You already have an active offer for this item.",
+    "offerOwnProduct": "You cannot make an offer on your own listing.",
+    "offerProductUnavailable": "This item is no longer available for offers.",
     "offerSent": "Offer sent.",
     "offerFailed": "Failed to send offer: {{msg}}",
     "uploadImage": "Upload image",
@@ -564,22 +537,23 @@
     "orderStatus": "Order status:",
     "orderLabel": "Order:",
     "downloadLabel": "Download shipping label",
+    "printLabel": "Print Foxpost label",
+    "openShipping": "Open shipping",
+    "viewOrderThread": "View order in messages",
     "markShipped": "Mark as shipped",
+    "confirmReceipt": "Confirm receipt",
+    "confirmSuccess": "Receipt confirmed — thank you!",
+    "disputeOpen": "Dispute open — our team is reviewing it.",
+    "panelUnavailable": "Order panel is not available yet.",
+    "printPopupBlocked": "Print popup blocked — allow pop-ups for this site.",
+    "foxpostTracking": "Foxpost: {{tracking}}",
     "labelDownloaded": "Foxpost label downloaded. You can now mark as shipped.",
     "downloadLabelFirst": "Download the shipping label first.",
     "shippedSuccess": "Marked as shipped — carrier simulation started.",
     "updateFailed": "Could not update.",
     "stepHint": "Step 1: download the Foxpost label. Then “Mark as shipped” unlocks.",
     "simulating": "Carrier simulation in progress… Buyer is notified at each step.",
-    "defaultProduct": "Product",
-    "confirmReceipt": "Received — release funds",
-    "confirmSuccess": "Thanks! Funds released to the seller.",
-    "disputeOpen": "Dispute in progress — under admin review.",
-    "openShipping": "Open shipping steps",
-    "viewOrderThread": "View order",
-    "printLabel": "Print shipping label",
-    "panelUnavailable": "Order panel is still loading — try again in a moment.",
-    "printPopupBlocked": "Label saved — allow pop-ups if the print window did not open."
+    "defaultProduct": "Product"
   },
   "publicSeller": {
     "defaultName": "Seller",
@@ -608,31 +582,6 @@
     "switchLogin": "Log in",
     "successLogin": "Logged in successfully!",
     "successRegister": "Account created!",
-    "successRegisterConfirmEmail": "Check your email, then sign in to finish registration.",
-    "legalRequired": "You must accept the Terms, Privacy Policy, and confirm you are 18 or older.",
-    "acceptLegalPrefix": "By signing up I confirm that I accept the",
-    "acceptLegalTerms": "Terms of Service",
-    "acceptLegalMiddle": ", have read the",
-    "acceptLegalPrivacy": "Privacy Policy",
-    "acceptLegalAge": ", and am at least 18 years old.",
-    "marketingOptIn": "I would like to receive personalised offers by email and be among the first to hear ROBEO news.",
-    "complete": {
-      "title": "Finish registration",
-      "fullNameLabel": "Full name",
-      "fullNameHint": "Your full name will not be shown publicly.",
-      "fullNameRequired": "Enter your full name.",
-      "usernameLabel": "Username",
-      "usernameInvalid": "Username must be 3–20 characters: lowercase letters, numbers, underscore only.",
-      "usernameTaken": "This username is already taken on ROBEO.",
-      "usernameSuggested": "Suggested for you:",
-      "usernameChecking": "Checking…",
-      "legalPrefix": "By signing up I confirm that I accept the",
-      "legalMiddle": ", have read the",
-      "legalSuffix": "and am at least 18 years old.",
-      "continue": "Continue",
-      "success": "Profile complete!",
-      "problemLink": "Having a problem?"
-    },
     "errors": {
       "generic": "Something went wrong",
       "emailNotConfirmed": "Confirm your email before logging in.",
@@ -642,23 +591,6 @@
       "userExists": "This email is already registered.",
       "rateLimit": "Too many requests. Try again later."
     }
-  },
-  "block": {
-    "blockAction": "Block",
-    "unblockAction": "Unblock",
-    "confirm": "Block this user? You won't be able to message each other.",
-    "blocked": "User blocked.",
-    "unblocked": "User unblocked.",
-    "failed": "Action failed.",
-    "schemaMissing": "Run supabase/patch-user-blocks.sql first.",
-    "cannotMessage": "Can't send messages — a block is in place.",
-    "threadClosed": "This conversation is unavailable (blocked)."
-  },
-  "legalReaccept": {
-    "title": "Updated terms",
-    "body": "We've updated our Terms of Service and Privacy Policy. Accept the new version to keep using ROBEO.",
-    "continue": "Accept and continue",
-    "success": "Thanks — you can continue browsing."
   },
   "chatOffer": {
     "accept": "Accept",
@@ -671,34 +603,40 @@
     "closed": "Closed",
     "panelTitle": "Offer: {{price}} Ft",
     "acceptedCounterMsg": "I accepted the counter-offer.",
-    "status": {
-      "pending": "Waiting for seller",
-      "countered": "Counter-offer — your move",
-      "accepted": "Accepted — pay now"
-    },
     "pendingHint": "Waiting for the seller — expires within 24 hours.",
-    "counter": "Counter-offer",
-    "sendCounter": "Send",
-    "cancelCounter": "Cancel",
-    "counterPlaceholder": "New price",
-    "counterInvalid": "Enter a valid price.",
-    "counterMin": "Minimum offer: {{min}} Ft (at least 60% of list price).",
-    "counterSent": "Counter-offer sent",
-    "productFallback": "item",
     "sellerWaitingTitle": "Offer accepted — awaiting payment",
     "sellerWaitingBody": "The buyer can pay now. Once paid, you'll get a notification to pack and ship.",
     "sellerAcceptedBody": "You accepted the offer. The buyer receives the payment link.",
     "buyerAcceptedBody": "The seller accepted your offer. You can pay now.",
     "buyerRejectedBody": "The seller declined your offer.",
     "sellerRejectedBody": "You declined the buyer's offer.",
-    "sellerCounterSentBody": "You sent a counter-offer — waiting for the buyer."
+    "sellerCounterSentBody": "You sent a counter-offer — waiting for the buyer.",
+    "buyerCounterReceivedBody": "The seller sent a counter-offer: {{price}} Ft — accept or decline below.",
+    "sellerCounterReceivedBody": "The buyer sent a counter-offer: {{price}} Ft — accept or decline below.",
+    "buyerCounterSentBody": "You sent a counter-offer — waiting for the seller.",
+    "status": {
+      "pending": "Waiting for seller",
+      "countered": "Counter-offer — your move",
+      "accepted": "Accepted — pay now"
+    }
   },
   "saleMessage": {
-    "sellerTitle": "Sale complete — paid!",
-    "sellerBody": "The buyer paid. Pack the item, download the Foxpost label, then mark as shipped.",
-    "buyerTitle": "Purchase complete — paid!",
-    "buyerBody": "Payment received. The seller will ship soon — track status here.",
-    "awaitingPaymentSync": "Payment is processing — shipping steps unlock shortly."
+    "sellerTitle": "Sale completed!",
+    "buyerTitle": "Purchase successful!",
+    "sellerBody": "The buyer paid. Print the Foxpost label and mark the parcel as shipped.",
+    "buyerBody": "Payment succeeded. The seller will ship soon — track status here.",
+    "awaitingPaymentSync": "Payment is still syncing — refresh if the button stays disabled."
+  },
+  "block": {
+    "blockAction": "Block",
+    "unblockAction": "Unblock",
+    "confirm": "Block this user? You won't be able to message each other.",
+    "blocked": "User blocked.",
+    "unblocked": "User unblocked.",
+    "failed": "Action failed.",
+    "schemaMissing": "Run supabase/patch-user-blocks.sql first.",
+    "cannotMessage": "Can't send messages — a block is in place.",
+    "threadClosed": "This conversation is unavailable (blocked)."
   },
   "orderTimeline": {
     "title": "Order progress",
@@ -718,9 +656,11 @@
       "disputed": "Disputed"
     }
   },
-  "offerExpiry": {
-    "remaining": "Expires in {{time}}",
-    "expired": "Expired"
+  "systemMessage": {
+    "forSeller": "For you as seller",
+    "forBuyer": "For you as buyer",
+    "loading": "System message",
+    "loadingHint": "Loading order status…"
   },
   "upload": {
     "title": "List an item",
@@ -747,24 +687,27 @@
     "brandSearchPlaceholder": "Search or enter custom brand…",
     "brandTypeaheadHint": "Type to filter. If it's not in the list, press Enter or pick the highlighted custom row.",
     "brandUseCustom": "Use „{{brand}}” (custom brand)",
-    "brandCustomHint": "Custom brand name — shown on your listing",
-    "brandNoResults": "No matches — finish typing and press Enter",
+    "brandNoResults": "No results",
+    "brandCustomHint": "Custom brand — press Enter to save",
     "size": "Size",
     "sizePlaceholder": "Choose size",
     "condition": "Condition",
     "conditionPlaceholder": "Choose condition",
     "conditions": {
       "new": "New",
+      "newWithTag": "New with tags",
       "excellent": "Excellent",
+      "veryGood": "Very good",
+      "likeNew": "Like new",
       "good": "Good",
       "fair": "Fair",
-      "poor": "Poor"
+      "poor": "Poor",
+      "satisfactory": "Satisfactory",
+      "unknown": "Unknown condition"
     },
     "images": "Photos",
     "imagesCount": "{{count}}/6",
     "tapToSelect": "Tap to add photos",
-    "processingImages": "Processing photos…",
-    "processFailed": "Could not process the photo. Try a smaller image or clear the draft.",
     "imagesHintFirst": "First photo becomes the cover (PNG, JPG, WEBP)",
     "imagesHintMore": "Add more photos",
     "submit": "Publish listing",
@@ -823,18 +766,6 @@
       "changeTerminal": "Choose another locker",
       "terminalId": "Locker ID: {{id}}"
     },
-    "packeta": {
-      "title": "Packeta / Z-BOX pickup point",
-      "openPicker": "Choose pickup point",
-      "pickerTitle": "Choose a Packeta point",
-      "pickerAria": "Packeta point picker",
-      "close": "Close",
-      "changePoint": "Choose another point",
-      "pointId": "Point ID: {{id}}",
-      "searchPlaceholder": "Search by city or name…",
-      "listHint": "Dev mode: common points list. Set NEXT_PUBLIC_PACKETA_API_KEY for the live Packeta widget.",
-      "noResults": "No results"
-    },
     "bundle": {
       "title": "Bundle checkout",
       "summaryTitle": "Bundle summary",
@@ -848,10 +779,24 @@
     "termsHint": "By paying you accept the purchase terms.",
     "terms": {
       "prefix": "I accept the",
-      "termsLink": "Terms of Service",
-      "and": "and",
+      "termsLink": "Terms of Use",
+      "and": "and the",
       "privacyLink": "Privacy Policy",
-      "required": "You must accept the terms before paying."
+      "payJoin": ", and the",
+      "payLink": "ROBEO Pay terms",
+      "required": "Accept the terms to continue to payment."
+    },
+    "packeta": {
+      "title": "Packeta pickup point",
+      "openPicker": "Choose pickup point",
+      "changePoint": "Choose another point",
+      "pointId": "Point ID: {{id}}",
+      "pickerAria": "Packeta point picker",
+      "pickerTitle": "Choose a Packeta point",
+      "close": "Close",
+      "searchPlaceholder": "Search by city or street…",
+      "listHint": "Without a Packeta widget key we use the built-in demo point list.",
+      "noResults": "No results — try a different search."
     },
     "shippingOptions": {
       "foxpost": "Foxpost locker",
@@ -870,12 +815,10 @@
       "missingIds": "Missing payment identifiers.",
       "paymentFailed": "Payment failed",
       "foxpostRequired": "Foxpost delivery requires selecting a locker.",
-      "packetaRequired": "Packeta delivery requires selecting a pickup point."
-    },
-    "wallet": {
-      "useBalance": "Use Robeo wallet balance",
-      "available": "Available: {{amount}}",
-      "willApply": "Will apply: {{amount}}"
+      "packetaRequired": "Packeta delivery requires selecting a pickup point.",
+      "stripeMissing": "Stripe is not configured. Add STRIPE_SECRET_KEY=sk_test_… to .env.local and restart the dev server.",
+      "invalidRedirectUrl": "App URL is missing. Add NEXT_PUBLIC_BASE_URL=http://localhost:3000 to .env.local and restart the dev server.",
+      "serviceUnavailable": "Payment service is temporarily unavailable."
     }
   },
   "uploadWizard": {
@@ -903,22 +846,11 @@
       "categoryRequired": "Choose a category.",
       "sizeRequired": "Choose a size.",
       "brandRequired": "Choose a brand.",
-      "brandTooShort": "Brand name must be at least 2 characters.",
       "conditionRequired": "Choose a condition.",
       "priceRequired": "Enter a valid price.",
       "nameRequired": "Enter the item title.",
       "descriptionRequired": "Add a description."
     }
-  },
-  "systemMessage": {
-    "forSeller": "For you as seller",
-    "forBuyer": "For you as buyer",
-    "loading": "System message",
-    "loadingHint": "Loading order status…"
-  },
-  "ordersHub": {
-    "purchasesHint": "Payment, shipping, receipt — your purchase status.",
-    "salesHint": "Pack, label, ship — manage your sales."
   },
   "orders": {
     "title": "Order history",
@@ -931,6 +863,8 @@
     "browse": "Browse catalog",
     "salesHint": "After payment, mark the parcel as shipped in messages or here.",
     "confirmHint": "Some orders await pickup confirmation — confirm in messages when received.",
+    "confirmInMessages": "Confirm receipt in messages",
+    "shipInMessages": "Mark as shipped in messages",
     "status": {
       "paymentPending": "Awaiting payment",
       "paymentFailed": "Payment failed",
@@ -942,38 +876,6 @@
       "refunded": "Refunded",
       "disputeOpen": "Dispute open",
       "unknown": "Unknown"
-    }
-  },
-  "disputes": {
-    "openCta": "Problem with this order?",
-    "formHint": "Describe the issue — our team will review within 24–48 hours.",
-    "reasonLabel": "Reason",
-    "detailsPlaceholder": "e.g. not received / not as described…",
-    "detailsTooShort": "At least 10 characters required.",
-    "submit": "Submit dispute",
-    "submitted": "Dispute submitted — we will get back to you soon.",
-    "failed": "Could not submit dispute.",
-    "loginRequired": "Please log in to open a dispute.",
-    "activeHint": "Under review — you will also get a chat notification.",
-    "sellerNotice": "The buyer opened a dispute for this order — under admin review.",
-    "status": {
-      "open": "Dispute open",
-      "under_review": "Under review",
-      "resolved_refund": "Refunded",
-      "resolved_reject": "Rejected",
-      "cancelled": "Cancelled"
-    },
-    "admin": {
-      "title": "Open disputes",
-      "refresh": "Refresh",
-      "loading": "Loading…",
-      "empty": "No open disputes.",
-      "review": "Mark reviewing",
-      "refund": "Refund buyer",
-      "reject": "Reject",
-      "refundDone": "Refund initiated.",
-      "rejectDone": "Dispute rejected.",
-      "reviewDone": "Marked under review."
     }
   },
   "help": {
@@ -1017,18 +919,9 @@
       }
     },
     "faq": {
-      "q1": {
-        "q": "How do I pay safely?",
-        "a": "Checkout uses Stripe with buyer protection."
-      },
-      "q2": {
-        "q": "How do I sell?",
-        "a": "Upload menu → step-by-step wizard → publish."
-      },
-      "q3": {
-        "q": "Where are my orders?",
-        "a": "Profile → About, or the Order history page."
-      }
+      "q1": { "q": "How do I pay safely?", "a": "Checkout uses Stripe with buyer protection." },
+      "q2": { "q": "How do I sell?", "a": "Upload menu → step-by-step wizard → publish." },
+      "q3": { "q": "Where are my orders?", "a": "Profile → About, or the Order history page." }
     }
   },
   "notFound": {

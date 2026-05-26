@@ -18,6 +18,7 @@ import { calculateCheckoutTotal } from '@/lib/buyerProtection';
 import type { FoxpostTerminal } from '@/lib/foxpostTerminal';
 import type { PacketaPoint } from '@/lib/packetaPoint';
 import { MAIN_TOP_PADDING } from '@/lib/layoutTokens';
+import { mapCheckoutApiError } from '@/lib/checkoutApiErrors';
 
 const CATEGORY_KEYS: Record<string, string> = {
   clothing: 'browse.categories.clothing',
@@ -244,7 +245,7 @@ export default function CheckoutContent() {
           return;
         }
         if (!walletRes.ok && walletData.error) {
-          throw new Error(walletData.error);
+          throw new Error(mapCheckoutApiError(walletData.error, t));
         }
       }
 
@@ -265,7 +266,7 @@ export default function CheckoutContent() {
 
       const data = await response.json();
       if (!response.ok) {
-        throw new Error(data.error || t('checkout.errors.paymentFailed'));
+        throw new Error(mapCheckoutApiError(data.error, t));
       }
 
       window.location.href = data.url;

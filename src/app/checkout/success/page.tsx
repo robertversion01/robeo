@@ -1,7 +1,7 @@
 'use client';
 
-import { useEffect, useState } from 'react';
-import { useSearchParams, useRouter } from 'next/navigation';
+import { useEffect, useRef, useState } from 'react';
+import { useSearchParams } from 'next/navigation';
 import { supabase } from '@/lib/supabase';
 import Link from 'next/link';
 import { CheckCircle, ArrowRight, Truck, Package, CreditCard } from 'lucide-react';
@@ -15,8 +15,6 @@ import { notifyCatalogUpdated } from '@/lib/catalogRefresh';
 import { emitSaleCompletedBroadcast } from '@/lib/globalEvents';
 import { formatPrice } from '@/lib/utils';
 import {
-  isBundleTransaction,
-  resolveBundleDisplayItems,
   type BundleLineProduct,
 } from '@/lib/bundleLineItems';
 import { getOptimizedImageUrl } from '@/lib/imageUtils';
@@ -32,7 +30,6 @@ export default function CheckoutSuccessPage() {
 function CheckoutSuccessContentComponent() {
   const { t } = useTranslation();
   const searchParams = useSearchParams();
-  const router = useRouter();
 
   const goToHome = () => {
     notifyCatalogUpdated();
@@ -44,7 +41,12 @@ function CheckoutSuccessContentComponent() {
   const [bundleItems, setBundleItems] = useState<BundleLineProduct[]>([]);
   const [error, setError] = useState<string | null>(null);
   const [purchaseToastShown, setPurchaseToastShown] = useState(false);
+  const purchaseToastShownRef = useRef(false);
   const [reviewCompleted, setReviewCompleted] = useState(false);
+
+  useEffect(() => {
+    purchaseToastShownRef.current = purchaseToastShown;
+  }, [purchaseToastShown]);
 
   useEffect(() => {
     const sessionId = searchParams.get('session_id');
@@ -60,43 +62,41 @@ function CheckoutSuccessContentComponent() {
       return;
     }
 
+    let cancelled = false;
+
     const fetchTransactionDetails = async () => {
       try {
-        let query = supabase.from('transactions').select('*');
-        if (sessionId) {
-          query = query.eq('checkout_session_id', sessionId);
-        } else if (transactionId) {
-          query = query.eq('id', transactionId);
-        }
-        const { data: transactionData, error: transactionError } = await query.single();
-
-        if (transactionError || !transactionData) {
-          throw new Error(t('checkoutSuccess.notFound'));
+        const {
+          data: { session },
+        } = await supabase.auth.getSession();
+        const token = session?.access_token;
+        if (!token) {
+          throw new Error('Jelentkezz be a folytatáshoz.');
         }
 
-        const { data: productData, error: productError } = await supabase
-          .from('products')
-          .select('*')
-          .eq('id', transactionData.product_id)
-          .single();
-
-        if (productError || !productData) {
-          throw new Error(t('checkoutSuccess.notFound'));
+        const res = await fetch('/api/checkout/sync-success', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            Authorization: `Bearer ${token}`,
+          },
+          body: JSON.stringify({
+            sessionId: sessionId ?? undefined,
+            transactionId: transactionId ?? undefined,
+          }),
+        });
+        const payload = await res.json();
+        if (!res.ok) {
+          throw new Error(payload.error || t('checkoutSuccess.notFound'));
         }
 
+        if (cancelled) return;
+
+        const transactionData = payload.transaction;
+        const productData = payload.product;
         setTransaction({ ...transactionData, product: productData });
         setProduct(productData);
-
-        if (isBundleTransaction(transactionData)) {
-          const items = await resolveBundleDisplayItems(supabase, {
-            id: transactionData.id as string,
-            product_id: transactionData.product_id as string,
-            bundle_product_ids: transactionData.bundle_product_ids as string | null,
-          });
-          setBundleItems(items);
-        } else {
-          setBundleItems([]);
-        }
+        setBundleItems(payload.bundleItems ?? []);
 
         try {
           await revalidateCatalog();
@@ -104,9 +104,8 @@ function CheckoutSuccessContentComponent() {
           console.warn('[checkout-success] revalidateCatalog failed', revalidateErr);
         }
         notifyCatalogUpdated();
-        router.refresh();
 
-        const salePayload = {
+        const salePayload = payload.saleBroadcast ?? {
           sellerId: transactionData.seller_id as string,
           buyerId: transactionData.buyer_id as string,
           productId: productData.id as string,
@@ -126,21 +125,26 @@ function CheckoutSuccessContentComponent() {
           );
         }
 
-        if (!purchaseToastShown) {
+        if (!purchaseToastShownRef.current) {
           toast.success(t('checkoutSuccess.toastSuccess'));
+          purchaseToastShownRef.current = true;
           setPurchaseToastShown(true);
         }
       } catch (err: unknown) {
+        if (cancelled) return;
         console.error('Error fetching transaction details:', err);
         const message = err instanceof Error ? err.message : t('auth.errors.generic');
         setError(message);
       } finally {
-        setLoading(false);
+        if (!cancelled) setLoading(false);
       }
     };
 
     void fetchTransactionDetails();
-  }, [searchParams, router, purchaseToastShown, t]);
+    return () => {
+      cancelled = true;
+    };
+  }, [searchParams]);
 
   if (loading) {
     return (

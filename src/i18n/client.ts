@@ -18,10 +18,11 @@ if (!i18n.isInitialized) {
     .init({
       resources,
       fallbackLng: 'hu',
+      lng: 'hu',
       supportedLngs: ['hu', 'en'],
       interpolation: { escapeValue: false },
       detection: {
-        order: ['localStorage', 'navigator'],
+        order: ['localStorage'],
         caches: ['localStorage'],
         lookupLocalStorage: 'robeo_lang',
       },

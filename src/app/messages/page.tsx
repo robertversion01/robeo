@@ -9,24 +9,16 @@ import OffersList from '@/components/product/OffersList';
 import ChatProductSummary from '@/components/messages/ChatProductSummary';
 import ChatTransactionPanel from '@/components/messages/ChatTransactionPanel';
 import ChatBuyerOffersPanel from '@/components/messages/ChatBuyerOffersPanel';
-import ChatSellerOfferStatusPanel from '@/components/messages/ChatSellerOfferStatusPanel';
 import ChatSystemMessageBubble from '@/components/messages/ChatSystemMessageBubble';
-import SaleSystemMessageCard, {
-  shouldUseSaleSystemCard,
-} from '@/components/messages/SaleSystemMessageCard';
-import ClientFormattedTime from '@/components/ui/ClientFormattedTime';
-import { buildOfferInsertRow } from '@/lib/offers';
 import {
   buildConversationsFromMessages,
   type MessageRow,
 } from '@/lib/conversationList';
 import { fetchMyBlockedUserIds, checkBlockBetween } from '@/lib/userBlocks';
-import { fetchSellerResponseLabelsBatch } from '@/lib/sellerResponseTime';
 import BlockUserButton from '@/components/trust/BlockUserButton';
-import ResponseTimeBadge from '@/components/profile/ResponseTimeBadge';
-import type { SellerResponseStats } from '@/lib/sellerResponseTime';
 import { toast } from 'sonner';
 import { isUuid } from '@/lib/validators';
+import { isListedProduct } from '@/lib/listedProducts';
 import { MAIN_TOP_PADDING } from '@/lib/layoutTokens';
 import { useTranslation } from 'react-i18next';
 
@@ -44,11 +36,9 @@ interface Message {
 interface Conversation {
   user_id: string;
   email: string;
-  display_name: string;
   last_message: string;
   last_message_time: string;
   product_id?: string | null;
-  response_label?: SellerResponseStats['labelKey'];
 }
 
 export default function MessagesPage() {
@@ -57,8 +47,6 @@ export default function MessagesPage() {
   const [conversations, setConversations] = useState<Conversation[]>([]);
   const [selectedConversation, setSelectedConversation] = useState<string | null>(null);
   const [selectedEmail, setSelectedEmail] = useState<string>('');
-  const [selectedDisplayName, setSelectedDisplayName] = useState('');
-  const [threadBlocked, setThreadBlocked] = useState(false);
   const [messages, setMessages] = useState<Message[]>([]);
   const [newMessage, setNewMessage] = useState('');
   const [showOfferModal, setShowOfferModal] = useState(false);
@@ -74,11 +62,60 @@ export default function MessagesPage() {
   const router = useRouter();
   const timeLocale = i18n.language?.startsWith('en') ? 'en-HU' : 'hu-HU';
   const [offersOpen, setOffersOpen] = useState(true);
-  const [activeProductSellerId, setActiveProductSellerId] = useState<string | null>(null);
+  const [threadBlocked, setThreadBlocked] = useState(false);
+  const [productSellerId, setProductSellerId] = useState<string | null>(null);
+  const [activeProductStatus, setActiveProductStatus] = useState<string | null>(null);
+  const threadBlockedRef = useRef(false);
+
+  const activeProductId =
+    [...messages].reverse().find((msg) => msg.product_id)?.product_id ?? null;
+
+  const canMakeOffer = Boolean(
+    activeProductId &&
+      productSellerId &&
+      user?.id &&
+      user.id !== productSellerId &&
+      isListedProduct(activeProductStatus) &&
+      !threadBlocked,
+  );
+
+  useEffect(() => {
+    threadBlockedRef.current = threadBlocked;
+  }, [threadBlocked]);
+
+  useEffect(() => {
+    if (!activeProductId) {
+      setProductSellerId(null);
+      setActiveProductStatus(null);
+      return;
+    }
+    let cancelled = false;
+    void supabase
+      .from('products')
+      .select('user_id, status')
+      .eq('id', activeProductId)
+      .maybeSingle()
+      .then(({ data }) => {
+        if (!cancelled) {
+          setProductSellerId(data?.user_id ?? null);
+          setActiveProductStatus(data?.status ?? null);
+        }
+      });
+    return () => {
+      cancelled = true;
+    };
+  }, [activeProductId]);
 
   useEffect(() => {
     checkUser();
   }, []);
+
+  useEffect(() => {
+    if (typeof window === 'undefined' || !user?.id || loading) return;
+    const withId = new URLSearchParams(window.location.search).get('with');
+    if (!withId || selectedConversation === withId) return;
+    void loadConversation(withId);
+  }, [user?.id, loading, selectedConversation]);
 
   useEffect(() => {
     if (!user) return;
@@ -143,23 +180,13 @@ export default function MessagesPage() {
   };
 
   const checkUser = async () => {
-    try {
-      const {
-        data: { user: authUser },
-        error,
-      } = await supabase.auth.getUser();
-      if (error) throw error;
-      if (!authUser) {
-        router.replace('/auth');
-        return;
-      }
-      setUser(authUser);
-    } catch (err) {
-      console.error('Messages auth check failed:', err);
-      router.replace('/auth');
-    } finally {
-      setLoading(false);
+    const { data: { user } } = await supabase.auth.getUser();
+    if (!user) {
+      router.push('/auth');
+      return;
     }
+    setUser(user);
+    setLoading(false);
   };
 
   const subscribeToMessages = () => {
@@ -179,10 +206,11 @@ export default function MessagesPage() {
           (newMsg.sender_id === user.id && newMsg.receiver_id === activeId) ||
           (newMsg.sender_id === activeId && newMsg.receiver_id === user.id);
         if (inThread) {
-          void checkBlockBetween(supabase, user.id, activeId).then((block) => {
-            if (block.eitherBlocked && newMsg.sender_id === activeId) return;
-            setMessages((prev) => [...prev, newMsg]);
-          });
+          if (newMsg.sender_id === activeId && threadBlockedRef.current) {
+            loadConversations();
+            return;
+          }
+          setMessages((prev) => [...prev, newMsg]);
         }
         loadConversations();
       })
@@ -210,8 +238,6 @@ export default function MessagesPage() {
   };
 
   const loadConversations = async () => {
-    if (!user?.id) return;
-
     const { data, error } = await supabase
       .from('messages')
       .select('*')
@@ -220,51 +246,36 @@ export default function MessagesPage() {
 
     if (error) return;
 
-    const blockedIds = await fetchMyBlockedUserIds(supabase, user.id);
-
-    const { data: blockRows } = await supabase
-      .from('user_blocks')
-      .select('blocker_id, blocked_id')
-      .eq('blocked_id', user.id);
-
-    const hiddenIds = new Set(blockedIds);
-    for (const row of blockRows || []) {
-      hiddenIds.add(String(row.blocker_id));
-    }
-
+    // Group by conversation
     const convMap = new Map<string, Message>();
     (data as Message[] | null)?.forEach((msg: Message) => {
       const otherUser = msg.sender_id === user.id ? msg.receiver_id : msg.sender_id;
-      if (hiddenIds.has(otherUser)) return;
       if (!convMap.has(otherUser)) {
         convMap.set(otherUser, msg);
       }
     });
 
+    // Get user emails from auth.users
     const userIds = Array.from(convMap.keys());
-    if (userIds.length === 0) {
-      setConversations([]);
-      return;
-    }
-
     const { data: userData } = await supabase
       .from('profiles')
-      .select('id, email, name')
+      .select('id, email')
       .in('id', userIds);
 
-    const profileMap = new Map<string, { email: string; name: string | null }>();
-    (userData as Array<{ id: string; email: string; name: string | null }> | null)?.forEach((u) =>
-      profileMap.set(u.id, { email: u.email, name: u.name }),
+    const emailMap = new Map<string, string>();
+    (userData as Array<{ id: string; email: string }> | null)?.forEach((u) =>
+      emailMap.set(u.id, u.email)
     );
 
-    const emailMap = new Map<string, string>();
-    userIds.forEach((id) => {
-      const p = profileMap.get(id);
-      const label = p?.name?.trim() || p?.email?.split('@')[0] || t('messages.defaultUser');
-      emailMap.set(id, label);
-    });
-
-    const responseLabels = await fetchSellerResponseLabelsBatch(supabase, userIds);
+    const blockedIds = await fetchMyBlockedUserIds(supabase, user.id);
+    const { data: blockedByRows } = await supabase
+      .from('user_blocks')
+      .select('blocker_id')
+      .eq('blocked_id', user.id);
+    const hiddenIds = new Set([
+      ...blockedIds,
+      ...((blockedByRows || []) as Array<{ blocker_id: string }>).map((r) => r.blocker_id),
+    ]);
 
     const convList = buildConversationsFromMessages(
       (data as MessageRow[]) || [],
@@ -272,30 +283,19 @@ export default function MessagesPage() {
       emailMap,
       t('messages.defaultUser'),
     )
-      .filter((c) => !hiddenIds.has(c.user_id))
-      .map((c) => {
-        const p = profileMap.get(c.user_id);
-        return {
-          ...c,
-          email: p?.email || c.email,
-          display_name: p?.name?.trim() || p?.email?.split('@')[0] || c.email,
-          response_label: responseLabels.get(c.user_id),
-        };
-      }) as Conversation[];
+      .filter((c) => !hiddenIds.has(c.user_id)) as Conversation[];
 
     setConversations(convList);
   };
 
-  const loadConversation = async (otherUserId: string, email?: string, displayName?: string) => {
-    if (!user?.id) return;
-
+  const loadConversation = async (otherUserId: string, email?: string) => {
     setSelectedConversation(otherUserId);
     setSelectedEmail(email || '');
-    setSelectedDisplayName(displayName || email || '');
-
-    const block = await checkBlockBetween(supabase, user.id, otherUserId);
-    setThreadBlocked(block.eitherBlocked);
-
+    const blockCheck = await checkBlockBetween(supabase, user.id, otherUserId);
+    setThreadBlocked(blockCheck.eitherBlocked);
+    if (blockCheck.eitherBlocked) {
+      toast.error(t('block.cannotMessage'));
+    }
     const { data, error } = await supabase
       .from('messages')
       .select('*')
@@ -306,33 +306,20 @@ export default function MessagesPage() {
     setMessages((data as Message[]) || []);
   };
 
-  useEffect(() => {
-    if (typeof window === 'undefined' || !user?.id || loading) return;
-    const withId = new URLSearchParams(window.location.search).get('with');
-    if (!withId || selectedConversation === withId) return;
-    void (async () => {
-      const block = await checkBlockBetween(supabase, user.id, withId);
-      if (block.eitherBlocked) {
-        toast.error(t('block.cannotMessage'));
-        return;
-      }
-      void loadConversation(withId);
-    })();
-  }, [user?.id, loading, selectedConversation, t]);
-
   const closeConversation = () => {
     setSelectedConversation(null);
     setMessages([]);
+    setThreadBlocked(false);
   };
 
   const sendMessage = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!newMessage.trim() || !selectedConversation || threadBlocked) return;
 
-    const block = await checkBlockBetween(supabase, user.id, selectedConversation);
-    if (block.eitherBlocked) {
-      toast.error(t('block.cannotMessage'));
+    const blockCheck = await checkBlockBetween(supabase, user.id, selectedConversation);
+    if (blockCheck.eitherBlocked) {
       setThreadBlocked(true);
+      toast.error(t('block.cannotMessage'));
       return;
     }
 
@@ -353,13 +340,6 @@ export default function MessagesPage() {
 
   const sendImageMessage = async (file: File) => {
     if (!selectedConversation || !user || threadBlocked) return;
-
-    const block = await checkBlockBetween(supabase, user.id, selectedConversation);
-    if (block.eitherBlocked) {
-      toast.error(t('block.cannotMessage'));
-      return;
-    }
-
     setUploadingImage(true);
     try {
       const fileExt = file.name.split('.').pop() || 'jpg';
@@ -389,19 +369,31 @@ export default function MessagesPage() {
     }
   };
 
+  if (loading) {
+    return (
+      <div className="min-h-screen bg-white text-gray-900 flex items-center justify-center">
+        <div className="animate-spin h-12 w-12 border-4 border-[#007782] border-t-transparent rounded-full"></div>
+      </div>
+    );
+  }
+
   const sendOffer = async () => {
     if (!selectedConversation || !user?.id || threadBlocked) return;
-
-    const block = await checkBlockBetween(supabase, user.id, selectedConversation);
-    if (block.eitherBlocked) {
-      toast.error(t('block.cannotMessage'));
-      setThreadBlocked(true);
-      return;
-    }
-
     const latestProductMessage = [...messages].reverse().find((msg) => msg.product_id);
     if (!latestProductMessage?.product_id) {
       toast.error(t('messages.offerNoProduct'));
+      return;
+    }
+    if (!productSellerId) {
+      toast.error(t('messages.offerNoProduct'));
+      return;
+    }
+    if (user.id === productSellerId) {
+      toast.error(t('messages.offerOwnProduct'));
+      return;
+    }
+    if (!isListedProduct(activeProductStatus)) {
+      toast.error(t('messages.offerProductUnavailable'));
       return;
     }
     if (
@@ -427,14 +419,13 @@ export default function MessagesPage() {
 
     setOfferSending(true);
     try {
-      const { error: offerErr } = await supabase.from('offers').insert(
-        buildOfferInsertRow({
-          productId: latestProductMessage.product_id,
-          buyerId: user.id,
-          sellerId: selectedConversation,
-          offeredPriceHuf: amount,
-        }),
-      );
+      const { error: offerErr } = await supabase.from('offers').insert({
+        product_id: latestProductMessage.product_id,
+        buyer_id: user.id,
+        seller_id: productSellerId,
+        offered_price: amount,
+        status: 'pending',
+      });
 
       if (offerErr) {
         if (offerErr.code === '23505') {
@@ -465,39 +456,6 @@ export default function MessagesPage() {
       setOfferSending(false);
     }
   };
-
-  const activeProductId = [...messages].reverse().find((msg) => msg.product_id)?.product_id ?? null;
-
-  useEffect(() => {
-    if (!activeProductId) {
-      setActiveProductSellerId(null);
-      return;
-    }
-    let cancelled = false;
-    (async () => {
-      const { data } = await supabase
-        .from('products')
-        .select('user_id')
-        .eq('id', activeProductId)
-        .maybeSingle();
-      if (!cancelled) setActiveProductSellerId(data?.user_id ?? null);
-    })();
-    return () => {
-      cancelled = true;
-    };
-  }, [activeProductId]);
-
-  if (loading) {
-    return (
-      <div className="min-h-screen bg-white text-gray-900 flex items-center justify-center">
-        <div className="h-10 w-10 animate-spin rounded-full border-4 border-[#007782] border-t-transparent" />
-      </div>
-    );
-  }
-
-  if (!user) {
-    return null;
-  }
 
   return (
     <div className="min-h-screen bg-white text-gray-900">
@@ -562,7 +520,7 @@ export default function MessagesPage() {
         </div>
       )}
       <main
-        className={`${MAIN_TOP_PADDING} pb-0 md:pb-8 min-h-[100dvh] md:h-screen max-w-full`}
+        className={`${MAIN_TOP_PADDING} pb-0 md:pb-8 min-h-[100dvh] md:h-screen max-w-full overflow-x-hidden`}
       >
         <div className="max-w-6xl mx-auto h-full flex flex-col md:flex-row">
           
@@ -596,18 +554,11 @@ export default function MessagesPage() {
             ) : (
               <div className="flex-1 min-h-0 overflow-y-auto">
                 {conversations.map((conv) => (
-                  <div
+                  <button
                     key={conv.user_id}
-                    role="button"
-                    tabIndex={0}
-                    onClick={() => loadConversation(conv.user_id, conv.email, conv.display_name)}
-                    onKeyDown={(e) => {
-                      if (e.key === 'Enter' || e.key === ' ') {
-                        e.preventDefault();
-                        loadConversation(conv.user_id, conv.email, conv.display_name);
-                      }
-                    }}
-                    className={`w-full text-left p-4 border-b border-gray-100 hover:bg-gray-50 transition-colors cursor-pointer ${
+                    type="button"
+                    onClick={() => loadConversation(conv.user_id, conv.email)}
+                    className={`w-full text-left p-4 border-b border-gray-100 hover:bg-gray-50 transition-colors touch-manipulation ${
                       selectedConversation === conv.user_id ? 'bg-[#007782]/5' : ''
                     }`}
                   >
@@ -616,12 +567,7 @@ export default function MessagesPage() {
                         {conv.email?.charAt(0).toUpperCase() || '?'}
                       </div>
                       <div className="flex-1 min-w-0">
-                        <div className="flex items-center gap-1.5 mb-0.5">
-                          <span className="font-medium truncate text-sm">{conv.display_name}</span>
-                          {conv.response_label ? (
-                            <ResponseTimeBadge labelKey={conv.response_label} />
-                          ) : null}
-                        </div>
+                        <div className="font-medium mb-0.5 truncate text-sm">{conv.email}</div>
                         <div className="text-xs text-gray-500 truncate">{conv.last_message}</div>
                       </div>
                       {conv.product_id ? (
@@ -634,7 +580,7 @@ export default function MessagesPage() {
                         </Link>
                       ) : null}
                     </div>
-                  </div>
+                  </button>
                 ))}
               </div>
             )}
@@ -651,16 +597,14 @@ export default function MessagesPage() {
                 {/* Chat Header (mobile back button) */}
                 <div className="hidden md:flex items-center gap-3 px-4 py-3 border-b border-gray-200 shrink-0">
                   <div className="w-9 h-9 rounded-full bg-[#007782]/10 flex items-center justify-center text-[#007782] font-bold text-sm">
-                    {(selectedDisplayName || selectedEmail)?.charAt(0).toUpperCase() || '?'}
+                    {selectedEmail?.charAt(0).toUpperCase() || '?'}
                   </div>
-                  <span className="font-semibold truncate flex-1">{selectedDisplayName || selectedEmail}</span>
+                  <span className="font-semibold truncate flex-1">{selectedEmail}</span>
                   {selectedConversation ? (
                     <BlockUserButton
                       otherUserId={selectedConversation}
                       onBlocked={() => {
-                        void checkBlockBetween(supabase, user!.id, selectedConversation).then(
-                          (block) => setThreadBlocked(block.eitherBlocked),
-                        );
+                        setThreadBlocked(true);
                         void loadConversations();
                       }}
                     />
@@ -676,72 +620,35 @@ export default function MessagesPage() {
                     <ChevronLeft size={22} />
                   </button>
                   <div className="w-8 h-8 rounded-full bg-[#007782]/10 flex items-center justify-center text-[#007782] font-bold text-sm">
-                    {(selectedDisplayName || selectedEmail)?.charAt(0).toUpperCase() || '?'}
+                    {selectedEmail?.charAt(0).toUpperCase() || '?'}
                   </div>
-                  <span className="font-medium truncate flex-1">{selectedDisplayName || selectedEmail}</span>
+                  <span className="font-medium truncate flex-1">{selectedEmail}</span>
                   {selectedConversation ? (
                     <BlockUserButton
                       otherUserId={selectedConversation}
                       onBlocked={() => {
-                        void checkBlockBetween(supabase, user!.id, selectedConversation).then(
-                          (block) => setThreadBlocked(block.eitherBlocked),
-                        );
+                        setThreadBlocked(true);
                         void loadConversations();
                       }}
                     />
                   ) : null}
                 </div>
-                <div className="flex-1 min-h-0 overflow-y-auto">
-                  <ChatProductSummary productId={activeProductId} />
-                  {user && selectedConversation ? (
-                    <ChatTransactionPanel
-                      userId={user.id}
-                      otherUserId={selectedConversation}
-                      productId={activeProductId}
-                      userEmail={user.email}
-                    />
-                  ) : null}
-                  {user && selectedConversation && activeProductId ? (
-                    <ChatSellerOfferStatusPanel
-                      viewerId={user.id}
-                      otherUserId={selectedConversation}
-                      productId={activeProductId}
-                    />
-                  ) : null}
-                  {user &&
-                  selectedConversation &&
-                  activeProductId &&
-                  activeProductSellerId &&
-                  user.id !== activeProductSellerId ? (
-                    <ChatBuyerOffersPanel
-                      buyerId={user.id}
-                      productId={activeProductId}
-                      sellerId={activeProductSellerId}
-                    />
-                  ) : null}
-                  <div className="p-4 md:p-6 space-y-4">
+                <ChatProductSummary productId={activeProductId} />
+                {user && selectedConversation ? (
+                  <ChatTransactionPanel
+                    userId={user.id}
+                    otherUserId={selectedConversation}
+                    productId={activeProductId}
+                    userEmail={user.email}
+                  />
+                ) : null}
+                <div className="flex-1 min-h-0 overflow-y-auto p-4 md:p-6 space-y-4">
                   {messages.map((msg) => {
                     const isSystem =
                       msg.message_type === 'system' ||
                       (msg as { is_system_message?: boolean }).is_system_message;
 
                     if (isSystem) {
-                      if (shouldUseSaleSystemCard(msg.content, msg.message_type, msg.product_id)) {
-                        return (
-                          <div key={msg.id} className="flex justify-center px-2">
-                            <SaleSystemMessageCard
-                              content={msg.content}
-                              productId={msg.product_id}
-                              createdAt={msg.created_at}
-                              viewerId={user.id}
-                              senderId={msg.sender_id}
-                              receiverId={msg.receiver_id}
-                              sellerId={activeProductSellerId}
-                              timeLocale={timeLocale}
-                            />
-                          </div>
-                        );
-                      }
                       return (
                         <ChatSystemMessageBubble
                           key={msg.id}
@@ -749,7 +656,7 @@ export default function MessagesPage() {
                           viewerId={user.id}
                           otherUserId={selectedConversation!}
                           timeLocale={timeLocale}
-                          sellerId={activeProductSellerId}
+                          sellerId={productSellerId}
                         />
                       );
                     }
@@ -772,14 +679,13 @@ export default function MessagesPage() {
                           msg.content
                         )}
                         <div className={`mt-1 text-[10px] ${msg.sender_id === user.id ? 'text-white/80' : 'text-gray-500'}`}>
-                          <ClientFormattedTime iso={msg.created_at} locale={timeLocale} />
+                          {new Date(msg.created_at).toLocaleTimeString(timeLocale, { hour: '2-digit', minute: '2-digit' })}
                         </div>
                       </div>
                     </div>
                     );
                   })}
                   <div ref={messagesEndRef} />
-                </div>
                 </div>
 
                 {/* Message Input */}
@@ -788,7 +694,7 @@ export default function MessagesPage() {
                     <p className="mb-2 text-center text-xs text-gray-500">{t('block.threadClosed')}</p>
                   ) : null}
                   <form onSubmit={sendMessage} className="flex flex-nowrap items-center gap-2 max-w-full box-border">
-                    {selectedConversation && activeProductId ? (
+                    {canMakeOffer ? (
                       <button
                         type="button"
                         onClick={() => setShowOfferModal(true)}
@@ -812,8 +718,8 @@ export default function MessagesPage() {
                     <button
                       type="button"
                       onClick={() => fileInputRef.current?.click()}
-                      disabled={uploadingImage}
-                      className="icon-btn shrink-0 bg-gray-100 border border-gray-300 hover:bg-gray-200 transition-all"
+                      disabled={threadBlocked || uploadingImage}
+                      className="icon-btn shrink-0 bg-gray-100 border border-gray-300 hover:bg-gray-200 transition-all disabled:cursor-not-allowed disabled:opacity-50"
                       aria-label={t('messages.uploadImage')}
                     >
                       {uploadingImage ? '…' : '📷'}
@@ -829,7 +735,7 @@ export default function MessagesPage() {
                     <button
                       type="submit"
                       disabled={threadBlocked}
-                      className="icon-btn shrink-0 bg-[#007782] text-white font-medium hover:bg-[#00616b] transition-all min-h-11 min-w-11"
+                      className="icon-btn shrink-0 bg-[#007782] text-white font-medium hover:bg-[#00616b] transition-all min-h-11 min-w-11 disabled:opacity-50"
                       aria-label={t('messages.sendAria')}
                     >
                       ➤

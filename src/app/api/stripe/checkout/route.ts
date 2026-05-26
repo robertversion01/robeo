@@ -10,6 +10,8 @@ import {
 } from '@/lib/foxpostTerminal';
 import type { PacketaPoint } from '@/lib/packetaPoint';
 import { pickupFieldsForCheckout } from '@/lib/pickupPoint';
+import { appBaseUrl } from '@/lib/stripeConnect';
+import { isListedProduct } from '@/lib/listedProducts';
 
 // Force dynamic rendering
 export const dynamic = 'force-dynamic';
@@ -190,7 +192,7 @@ export async function POST(req: NextRequest) {
     // Fetch product details without relational join to avoid FK inference issues
     const { data: productData, error: productError } = await supabase
       .from('products')
-      .select('id, user_id, name, description, image_url, price')
+      .select('id, user_id, name, description, image_url, price, status')
       .eq('id', resolvedProductId)
       .single();
 
@@ -220,7 +222,15 @@ export async function POST(req: NextRequest) {
       description?: string | null;
       image_url?: string | null;
       price: number;
+      status?: string | null;
     };
+
+    if (!isListedProduct(product.status)) {
+      return NextResponse.json(
+        { error: 'Ez a termék már nem elérhető vásárlásra.' },
+        { status: 400 },
+      );
+    }
 
     // Try to fetch seller from `users` first, then fallback to `profiles`.
     const sellerId = product.user_id;
@@ -310,8 +320,8 @@ export async function POST(req: NextRequest) {
         },
       ],
       mode: 'payment',
-      success_url: `${process.env.NEXT_PUBLIC_BASE_URL}/checkout/success?session_id={CHECKOUT_SESSION_ID}`,
-      cancel_url: `${process.env.NEXT_PUBLIC_BASE_URL}/products/${resolvedProductId}`,
+      success_url: `${appBaseUrl()}/checkout/success?session_id={CHECKOUT_SESSION_ID}`,
+      cancel_url: `${appBaseUrl()}/products/${resolvedProductId}`,
       metadata: {
         productId: resolvedProductId,
         offerId: offerId || '',
@@ -448,7 +458,7 @@ async function handleBundleCheckout(ctx: {
   const uniqueIds = [...new Set(bundleIds)].slice(0, 8);
   const { data: productsData, error: productsError } = await supabase
     .from('products')
-    .select('id, user_id, name, description, image_url, price')
+    .select('id, user_id, name, description, image_url, price, status')
     .in('id', uniqueIds);
 
   if (productsError || !productsData || productsData.length !== uniqueIds.length) {
@@ -462,7 +472,16 @@ async function handleBundleCheckout(ctx: {
     description?: string | null;
     image_url?: string | null;
     price: number;
+    status?: string | null;
   }>;
+
+  const unavailable = products.find((p) => !isListedProduct(p.status));
+  if (unavailable) {
+    return NextResponse.json(
+      { error: 'A csomag egy vagy több terméke már nem elérhető vásárlásra.' },
+      { status: 400 },
+    );
+  }
 
   const sellerIds = new Set(products.map((p) => p.user_id));
   if (sellerIds.size !== 1) {
@@ -530,8 +549,8 @@ async function handleBundleCheckout(ctx: {
       },
     ],
     mode: 'payment',
-    success_url: `${process.env.NEXT_PUBLIC_BASE_URL}/checkout/success?session_id={CHECKOUT_SESSION_ID}&bundle=1`,
-    cancel_url: `${process.env.NEXT_PUBLIC_BASE_URL}/checkout?bundle=1`,
+    success_url: `${appBaseUrl()}/checkout/success?session_id={CHECKOUT_SESSION_ID}&bundle=1`,
+    cancel_url: `${appBaseUrl()}/checkout?bundle=1`,
     metadata: {
       productId: primaryProductId,
       productIds: uniqueIds.join(','),

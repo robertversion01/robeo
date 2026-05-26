@@ -4,6 +4,7 @@ import { X } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 import { cn } from '@/lib/utils';
 import type { CatalogFilterState } from '@/lib/catalogFilters';
+import { formatConditionLabel } from '@/lib/conditionI18n';
 import { getSubcategoryById } from '@/lib/vintedCategoryTree';
 import { VINTED_COLORS } from '@/lib/vintedCategoryTree';
 
@@ -78,15 +79,9 @@ export default function ActiveFilterBar({
   }
 
   if (filters.condition !== 'all') {
-    const conditionDef = [
-      { id: 'new', labelKey: 'browse.discovery.conditionNew' },
-      { id: 'excellent', labelKey: 'browse.conditions.excellent' },
-      { id: 'very_good', labelKey: 'browse.conditions.veryGood' },
-      { id: 'good', labelKey: 'browse.discovery.conditionGood' },
-    ].find((c) => c.id === filters.condition);
     chips.push({
       key: 'condition',
-      label: conditionDef ? t(conditionDef.labelKey) : filters.condition,
+      label: formatConditionLabel(t, filters.condition),
     });
   }
 

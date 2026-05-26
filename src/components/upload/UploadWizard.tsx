@@ -9,15 +9,13 @@ import { useRouter } from 'next/navigation';
 import CustomSelect from '@/components/ui/CustomSelect';
 import BrandCombobox from '@/components/upload/BrandCombobox';
 import { VINTED_CATEGORIES, sizesForCategory } from '@/lib/vintedCatalog';
-import { MAIN_TOP_PADDING, STICKY_ACTION_BAR_CLASS, STICKY_ACTION_BAR_RESERVE_PX } from '@/lib/layoutTokens';
+import { MAIN_TOP_PADDING, STICKY_ACTION_BAR_CLASS } from '@/lib/layoutTokens';
 import { revalidateCatalog } from '@/app/actions/revalidateCatalog';
 import { notifyCatalogUpdated } from '@/lib/catalogRefresh';
-import { clearUploadDraft, loadUploadDraft, purgeCorruptUploadDrafts, saveUploadDraft } from '@/lib/uploadDraft';
+import { clearUploadDraft, loadUploadDraft, saveUploadDraft } from '@/lib/uploadDraft';
 import { cn } from '@/lib/utils';
 import { suggestListingCopy } from '@/lib/uploadListingAi';
 import { isOllamaReachable } from '@/lib/ollamaClient';
-import { compressImageFileForUpload } from '@/lib/imageUtils';
-import { isMobileUploadContext, uploadProductImageFile } from '@/lib/uploadProductImageClient';
 import { Sparkles } from 'lucide-react';
 
 const STEPS = ['photos', 'category', 'brand', 'condition', 'price', 'details'] as const;
@@ -56,20 +54,13 @@ export default function UploadWizard() {
   const [formData, setFormData] = useState<FormState>(emptyForm);
   const [images, setImages] = useState<UploadedImage[]>([]);
   const [loading, setLoading] = useState(false);
-  const [processingImages, setProcessingImages] = useState(false);
   const [draftRestored, setDraftRestored] = useState(false);
   const [aiLoading, setAiLoading] = useState(false);
   const [ollamaOk, setOllamaOk] = useState<boolean | null>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
-  const imagesRef = useRef(images);
-  imagesRef.current = images;
 
   const stepId = STEPS[stepIndex];
   const progress = ((stepIndex + 1) / STEPS.length) * 100;
-
-  useEffect(() => {
-    purgeCorruptUploadDrafts();
-  }, []);
 
   useEffect(() => {
     if (stepId !== 'details') return;
@@ -124,21 +115,7 @@ export default function UploadWizard() {
       ...formData,
       imageCount: images.length,
     });
-  }, [stepIndex, formData, images.length]);
-
-  const revokePreview = useCallback((preview: string) => {
-    if (preview.startsWith('blob:')) {
-      URL.revokeObjectURL(preview);
-    }
-  }, []);
-
-  useEffect(() => {
-    return () => {
-      imagesRef.current.forEach((img) => {
-        if (img.preview.startsWith('blob:')) URL.revokeObjectURL(img.preview);
-      });
-    };
-  }, []);
+  }, [stepIndex, formData, images]);
 
   useEffect(() => {
     const draft = loadUploadDraft();
@@ -162,7 +139,7 @@ export default function UploadWizard() {
   useEffect(() => {
     if (!draftRestored && stepIndex === 0 && images.length === 0) return;
     persistDraft();
-  }, [persistDraft, draftRestored, stepIndex, formData, images.length]);
+  }, [persistDraft, draftRestored, stepIndex, formData, images]);
 
   const stepLabels = useMemo(
     () =>
@@ -182,12 +159,9 @@ export default function UploadWizard() {
         if (!formData.category) return t('uploadWizard.errors.categoryRequired');
         if (!formData.size) return t('uploadWizard.errors.sizeRequired');
         return null;
-      case 'brand': {
-        const brand = formData.brand.trim();
-        if (!brand) return t('uploadWizard.errors.brandRequired');
-        if (brand.length < 2) return t('uploadWizard.errors.brandTooShort');
+      case 'brand':
+        if (!formData.brand) return t('uploadWizard.errors.brandRequired');
         return null;
-      }
       case 'condition':
         if (!formData.condition) return t('uploadWizard.errors.conditionRequired');
         return null;
@@ -216,7 +190,7 @@ export default function UploadWizard() {
 
   const goBack = () => setStepIndex((i) => Math.max(i - 1, 0));
 
-  const handleImagesChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
+  const handleImagesChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     if (!e.target.files) return;
     const maxImages = 6;
     const remaining = maxImages - images.length;
@@ -225,42 +199,24 @@ export default function UploadWizard() {
       return;
     }
     const newFiles = Array.from(e.target.files).slice(0, remaining);
-    if (fileInputRef.current) fileInputRef.current.value = '';
-    setProcessingImages(true);
-    try {
-      const mobileOpts = isMobileUploadContext()
-        ? { maxWidth: 1200, maxHeight: 1200, quality: 0.78, maxBytes: 1.5 * 1024 * 1024 }
-        : undefined;
-      for (const rawFile of newFiles) {
-        if (!rawFile.type.startsWith('image/') && !/\.(jpe?g|png|webp|gif|heic|heif)$/i.test(rawFile.name)) {
-          toast.error(t('upload.notImage', { name: rawFile.name }));
-          continue;
-        }
-        try {
-          const file = await compressImageFileForUpload(rawFile, mobileOpts);
-          const preview = URL.createObjectURL(file);
-          setImages((prev) => [
-            ...prev,
-            { file, preview, id: crypto.randomUUID() },
-          ]);
-        } catch {
-          toast.error(t('upload.notImage', { name: rawFile.name }));
-        }
+    newFiles.forEach((file) => {
+      if (!file.type.startsWith('image/')) {
+        toast.error(t('upload.notImage', { name: file.name }));
+        return;
       }
-    } catch {
-      toast.error(t('upload.processFailed'));
-    } finally {
-      setProcessingImages(false);
-    }
+      const reader = new FileReader();
+      reader.onload = (ev) => {
+        setImages((prev) => [
+          ...prev,
+          { file, preview: ev.target?.result as string, id: Math.random().toString(36).slice(2) },
+        ]);
+      };
+      reader.readAsDataURL(file);
+    });
+    if (fileInputRef.current) fileInputRef.current.value = '';
   };
 
-  const removeImage = (imageId: string) => {
-    setImages((prev) => {
-      const target = prev.find((img) => img.id === imageId);
-      if (target) revokePreview(target.preview);
-      return prev.filter((img) => img.id !== imageId);
-    });
-  };
+  const removeImage = (imageId: string) => setImages((prev) => prev.filter((img) => img.id !== imageId));
 
   const moveImage = (index: number, direction: 'up' | 'down') => {
     const newImages = [...images];
@@ -270,10 +226,17 @@ export default function UploadWizard() {
     setImages(newImages);
   };
 
-  const uploadImages = async (userId: string, accessToken: string): Promise<string[]> => {
+  const uploadImages = async (userId: string): Promise<string[]> => {
     const urls: string[] = [];
     for (const image of images) {
-      urls.push(await uploadProductImageFile(supabase, image.file, userId, accessToken));
+      const fileExt = image.file.name.split('.').pop();
+      const fileName = `${userId}/${Math.random().toString(36).slice(2)}.${fileExt}`;
+      const { error: uploadError } = await supabase.storage
+        .from('product-images')
+        .upload(fileName, image.file);
+      if (uploadError) throw uploadError;
+      const { data: { publicUrl } } = supabase.storage.from('product-images').getPublicUrl(fileName);
+      urls.push(publicUrl);
     }
     return urls;
   };
@@ -290,47 +253,26 @@ export default function UploadWizard() {
 
     setLoading(true);
     try {
-      const {
-        data: { user },
-      } = await supabase.auth.getUser();
-      const {
-        data: { session },
-      } = await supabase.auth.getSession();
-      if (!user || !session?.access_token) throw new Error(t('upload.loginRequired'));
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user) throw new Error(t('upload.loginRequired'));
 
-      const imageUrls = images.length > 0 ? await uploadImages(user.id, session.access_token) : [];
+      const imageUrls = images.length > 0 ? await uploadImages(user.id) : [];
 
-      const { data: inserted, error } = await supabase.from('products').insert({
+      const { error } = await supabase.from('products').insert({
         name: formData.name.trim(),
         description: formData.description.trim(),
         price: parseInt(formData.price, 10),
         category: formData.category,
         condition: formData.condition,
-        brand: formData.brand.trim(),
+        brand: formData.brand,
         size: formData.size || null,
         image_url: imageUrls[0] || null,
         images: imageUrls,
         user_id: user.id,
         status: 'active',
-      }).select('id, name').single();
+      });
 
       if (error) throw error;
-
-      try {
-        const { data: { session } } = await supabase.auth.getSession();
-        if (session?.access_token && inserted?.id) {
-          void fetch('/api/products/notify-followers', {
-            method: 'POST',
-            headers: {
-              'Content-Type': 'application/json',
-              Authorization: `Bearer ${session.access_token}`,
-            },
-            body: JSON.stringify({ productId: inserted.id }),
-          });
-        }
-      } catch {
-        /* non-fatal */
-      }
 
       try {
         await revalidateCatalog();
@@ -356,11 +298,6 @@ export default function UploadWizard() {
     { value: 'fair', label: t('upload.conditions.fair') },
     { value: 'poor', label: t('upload.conditions.poor') },
   ];
-
-  const selectDropdownProps = {
-    bottomReservePx: STICKY_ACTION_BAR_RESERVE_PX,
-    maxDropdownHeight: 280,
-  } as const;
 
   return (
     <div className="min-h-screen bg-white text-gray-900">
@@ -434,24 +371,14 @@ export default function UploadWizard() {
                 <button
                   type="button"
                   onClick={() => fileInputRef.current?.click()}
-                  disabled={processingImages}
-                  className="w-full border-2 border-dashed border-gray-300 rounded-xl p-8 text-center hover:border-[#007782] bg-gray-50 touch-manipulation disabled:opacity-60"
+                  className="w-full border-2 border-dashed border-gray-300 rounded-xl p-8 text-center hover:border-[#007782] bg-gray-50 touch-manipulation"
                 >
                   <Plus size={32} className="mx-auto text-gray-400 mb-2" />
-                  <p className="text-sm font-medium">
-                    {processingImages ? t('upload.processingImages') : t('upload.tapToSelect')}
-                  </p>
+                  <p className="text-sm font-medium">{t('upload.tapToSelect')}</p>
                   <p className="text-xs text-gray-500 mt-1">{t('upload.imagesCount', { count: images.length })}</p>
                 </button>
               )}
-              <input
-                ref={fileInputRef}
-                type="file"
-                accept="image/jpeg,image/png,image/webp,image/gif,image/heic,image/heif,.heic,.heif"
-                multiple
-                className="hidden"
-                onChange={(e) => void handleImagesChange(e)}
-              />
+              <input ref={fileInputRef} type="file" accept="image/*" multiple className="hidden" onChange={handleImagesChange} />
             </div>
           )}
 
@@ -463,7 +390,6 @@ export default function UploadWizard() {
                 value={formData.category}
                 onChange={(val) => setFormData((p) => ({ ...p, category: val, size: '' }))}
                 placeholder={t('upload.categoryPlaceholder')}
-                {...selectDropdownProps}
               />
               <label className="block text-sm font-medium">{t('upload.size')}</label>
               <CustomSelect
@@ -471,7 +397,6 @@ export default function UploadWizard() {
                 value={formData.size}
                 onChange={(val) => setFormData((p) => ({ ...p, size: val }))}
                 placeholder={t('upload.sizePlaceholder')}
-                {...selectDropdownProps}
               />
             </div>
           )}
@@ -483,9 +408,9 @@ export default function UploadWizard() {
                 value={formData.brand}
                 onChange={(val) => setFormData((p) => ({ ...p, brand: val }))}
                 placeholder={t('upload.brandSearchPlaceholder')}
-                bottomReservePx={STICKY_ACTION_BAR_RESERVE_PX}
-                maxDropdownHeight={260}
+                bottomReservePx={0}
               />
+              <p className="mt-2 text-[11px] text-gray-500">{t('upload.brandTypeaheadHint')}</p>
             </div>
           )}
 
@@ -497,7 +422,6 @@ export default function UploadWizard() {
                 value={formData.condition}
                 onChange={(val) => setFormData((p) => ({ ...p, condition: val }))}
                 placeholder={t('upload.conditionPlaceholder')}
-                {...selectDropdownProps}
               />
             </div>
           )}
@@ -561,7 +485,6 @@ export default function UploadWizard() {
         <button
           type="button"
           onClick={() => {
-            images.forEach((img) => revokePreview(img.preview));
             clearUploadDraft();
             setFormData(emptyForm);
             setImages([]);

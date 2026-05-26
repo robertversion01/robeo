@@ -10,7 +10,12 @@ export type PrintLabelResult = {
 /** Foxpost címke megnyitása + nyomtatás (popup vagy letöltés fallback). */
 export async function printTransactionLabel(
   transactionId: string,
-  options?: { userEmail?: string | null; productNameFallback?: string },
+  options?: {
+    userEmail?: string | null;
+    productNameFallback?: string;
+    productId?: string | null;
+    buyerId?: string | null;
+  },
 ): Promise<PrintLabelResult> {
   const {
     data: { session },
@@ -25,10 +30,20 @@ export async function printTransactionLabel(
       'Content-Type': 'application/json',
       Authorization: `Bearer ${session.access_token}`,
     },
-    body: JSON.stringify({ transactionId }),
+    body: JSON.stringify({
+      transactionId,
+      productId: options?.productId ?? undefined,
+      buyerId: options?.buyerId ?? undefined,
+    }),
   });
   const data = await res.json();
-  if (!res.ok) throw new Error(data.error || 'Címke generálás sikertelen');
+  if (!res.ok) {
+    const msg = String(data.error || '');
+    if (/transaction not found/i.test(msg)) {
+      throw new Error('A tranzakció nem található.');
+    }
+    throw new Error(msg || 'Címke generálás sikertelen');
+  }
 
   const label = data.label;
   const { openedPopup } = downloadFoxpostLabel({

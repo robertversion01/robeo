@@ -33,6 +33,13 @@ export function offerMessageAudience(content: string, viewerId: string, msg: {
   return 'other';
 }
 
+export function parseCounterOfferPrice(content: string): number | null {
+  const m = content.match(/ellenajánlatot tett:\s*([\d\s]+)\s*Ft/i);
+  if (!m) return null;
+  const n = parseInt(m[1].replace(/\s/g, ''), 10);
+  return Number.isFinite(n) ? n : null;
+}
+
 export function stripCheckoutUrlFromMessage(content: string): string {
   return content
     .replace(/\s*Fizess itt:\s*\S+/i, '')

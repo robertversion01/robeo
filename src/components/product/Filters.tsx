@@ -8,6 +8,7 @@ import {
   VINTED_BRANDS,
   VINTED_CONDITIONS,
 } from '@/lib/vintedCatalog';
+import { conditionI18nKey } from '@/lib/conditionI18n';
 import {
   getSubcategoriesForDepartment,
   sizesForDepartment,
@@ -57,7 +58,7 @@ function buildCategoryOptions(
 
 const BRAND_OPTIONS = VINTED_BRANDS.map((b) => ({ id: b, label: b }));
 
-const CONDITION_OPTIONS = VINTED_CONDITIONS.map((c) => ({ id: c.id, label: c.label }));
+const CONDITION_OPTIONS = VINTED_CONDITIONS.map((c) => ({ id: c.id, labelKey: conditionI18nKey(c.id) }));
 
 const PRICE_PRESET_KEYS = [
   { id: 'all', labelKey: 'browse.filters.anyPrice', min: 0, max: 0 },
@@ -133,7 +134,10 @@ export default function Filters({
   );
 
   const conditionOptions = useMemo(
-    () => [{ id: 'all', label: t('browse.filters.allConditions') }, ...CONDITION_OPTIONS],
+    () => [
+      { id: 'all', label: t('browse.filters.allConditions') },
+      ...CONDITION_OPTIONS.map((c) => ({ id: c.id, label: t(c.labelKey) })),
+    ],
     [t],
   );
 

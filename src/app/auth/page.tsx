@@ -5,7 +5,6 @@ import { supabase } from '@/lib/supabase';
 import { useRouter } from 'next/navigation';
 import { toast } from 'sonner';
 import { useTranslation } from 'react-i18next';
-import { isProfileRegistrationComplete } from '@/lib/profileRegistration';
 
 const AUTH_ERROR_KEYS: Record<string, string> = {
   'Email not confirmed': 'auth.errors.emailNotConfirmed',
@@ -15,20 +14,6 @@ const AUTH_ERROR_KEYS: Record<string, string> = {
   'User already registered': 'auth.errors.userExists',
   'Email rate limit exceeded': 'auth.errors.rateLimit',
 };
-
-async function redirectAfterAuth(userId: string, router: ReturnType<typeof useRouter>) {
-  const { data: profile } = await supabase
-    .from('profiles')
-    .select('full_name, name, legal_accepted_at')
-    .eq('id', userId)
-    .maybeSingle();
-
-  if (isProfileRegistrationComplete(profile)) {
-    router.push('/');
-  } else {
-    router.push('/auth/complete');
-  }
-}
 
 export default function AuthPage() {
   const { t } = useTranslation();
@@ -60,35 +45,21 @@ export default function AuthPage() {
 
     try {
       if (isLogin) {
-        const { data, error: signInError } = await supabase.auth.signInWithPassword({
+        const { error: signInError } = await supabase.auth.signInWithPassword({
           email,
           password,
         });
         if (signInError) throw signInError;
         toast.success(t('auth.successLogin'));
-        const userId = data.user?.id;
-        if (userId) {
-          await redirectAfterAuth(userId, router);
-        } else {
-          router.push('/');
-        }
+        router.push('/');
       } else {
-        const { data: signUpData, error: signUpError } = await supabase.auth.signUp({
+        const { error: signUpError } = await supabase.auth.signUp({
           email,
           password,
         });
         if (signUpError) throw signUpError;
-
-        const newUserId = signUpData.user?.id;
-        const hasSession = Boolean(signUpData.session);
-
-        if (hasSession && newUserId) {
-          toast.success(t('auth.successRegister'));
-          await redirectAfterAuth(newUserId, router);
-        } else {
-          toast.success(t('auth.successRegisterConfirmEmail'));
-          router.push('/auth?view=sign_in');
-        }
+        toast.success(t('auth.successRegister'));
+        router.push('/auth/complete');
       }
     } catch (err: unknown) {
       let errorMessage = t('auth.errors.generic');

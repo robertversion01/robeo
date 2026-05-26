@@ -31,6 +31,8 @@ export default function SaleSystemMessageCard({
   productId,
   createdAt,
   viewerId,
+  senderId,
+  receiverId,
   sellerId: sellerIdProp = null,
   timeLocale = 'hu-HU',
 }: Props) {
@@ -64,13 +66,27 @@ export default function SaleSystemMessageCard({
         });
       }
 
-      const { data: tx } = await supabase
-        .from('transactions')
-        .select('id, status')
-        .eq('product_id', productId)
-        .order('created_at', { ascending: false })
-        .limit(1)
-        .maybeSingle();
+      const sellerId = productRow?.user_id ?? sellerIdProp;
+      const buyerId =
+        sellerId && senderId === sellerId
+          ? receiverId
+          : sellerId && receiverId === sellerId
+            ? senderId
+            : null;
+
+      let tx: { id: string; status: string } | null = null;
+      if (sellerId && buyerId) {
+        const txResult = await supabase
+          .from('transactions')
+          .select('id, status')
+          .eq('product_id', productId)
+          .eq('seller_id', sellerId)
+          .eq('buyer_id', buyerId)
+          .order('created_at', { ascending: false })
+          .limit(1)
+          .maybeSingle();
+        tx = txResult.data;
+      }
 
       if (!cancelled) {
         setTxId(tx?.id ?? null);
@@ -80,9 +96,15 @@ export default function SaleSystemMessageCard({
     return () => {
       cancelled = true;
     };
-  }, [productId]);
+  }, [productId, senderId, receiverId, sellerIdProp]);
 
   const sellerId = product?.user_id ?? sellerIdProp;
+  const buyerId =
+    sellerId && senderId === sellerId
+      ? receiverId
+      : sellerId && receiverId === sellerId
+        ? senderId
+        : null;
   const role = useResolvedTransactionRole(viewerId, sellerId);
   const isSeller = role === 'seller';
 
@@ -107,6 +129,8 @@ export default function SaleSystemMessageCard({
     try {
       const data = await printTransactionLabel(txId, {
         productNameFallback: product?.name,
+        productId,
+        buyerId,
       });
       toast.success(t('chatTransaction.labelDownloaded'));
       if (!data.openedPopup) {

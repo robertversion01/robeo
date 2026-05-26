@@ -82,9 +82,17 @@ export default function SellerClosetBundle({ sellerId, currentProductId, onBundl
 
   return (
     <section className="mb-4 rounded-xl border border-gray-200 bg-gray-50/80 p-3">
-      <div className="flex items-center gap-2 mb-2">
-        <Package size={18} className="text-[#007782]" />
-        <h3 className="text-sm font-semibold text-gray-900">{t('bundle.closet.title')}</h3>
+      <div className="mb-2 flex items-center justify-between gap-2">
+        <div className="flex items-center gap-2 min-w-0">
+          <Package size={18} className="shrink-0 text-[#007782]" />
+          <h3 className="text-sm font-semibold text-gray-900">{t('bundle.closet.title')}</h3>
+        </div>
+        <Link
+          href={`/profile/${sellerId}/closet`}
+          className="shrink-0 text-xs font-semibold text-[#007782] hover:underline"
+        >
+          {t('pdp.viewCloset')} →
+        </Link>
       </div>
       <p className="text-xs text-gray-600 mb-3">{t('bundle.closet.hint')}</p>
 
@@ -106,6 +114,7 @@ export default function SellerClosetBundle({ sellerId, currentProductId, onBundl
                 ) : null}
               </Link>
               <div className="p-1.5">
+                <p className="text-[10px] truncate text-gray-800">{p.name}</p>
                 <p className="text-[10px] font-bold text-[#007782]">{formatPrice(p.price)}</p>
                 <button
                   type="button"
