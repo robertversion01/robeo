@@ -1,6 +1,6 @@
 'use client';
 
-import { useCallback, useEffect, useState } from 'react';
+import { useEffect, useState } from 'react';
 import { Ban } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 import { toast } from 'sonner';
@@ -18,18 +18,20 @@ export default function BlockUserButton({ otherUserId, className = '', onBlocked
   const [blockedByMe, setBlockedByMe] = useState(false);
   const [busy, setBusy] = useState(false);
 
-  const refresh = useCallback(async () => {
-    const {
-      data: { user },
-    } = await supabase.auth.getUser();
-    if (!user?.id || !otherUserId) return;
-    const check = await checkBlockBetween(supabase, user.id, otherUserId);
-    setBlockedByMe(check.blockedByMe);
-  }, [otherUserId]);
-
   useEffect(() => {
-    void refresh();
-  }, [refresh]);
+    let cancelled = false;
+    void (async () => {
+      const {
+        data: { user },
+      } = await supabase.auth.getUser();
+      if (!user?.id || !otherUserId || cancelled) return;
+      const check = await checkBlockBetween(supabase, user.id, otherUserId);
+      if (!cancelled) setBlockedByMe(check.blockedByMe);
+    })();
+    return () => {
+      cancelled = true;
+    };
+  }, [otherUserId]);
 
   const toggle = async () => {
     setBusy(true);
