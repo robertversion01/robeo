@@ -151,7 +151,10 @@ export function useProducts() {
     async (pageIndex: number, append: boolean) => {
       const generation = ++fetchGenRef.current;
       if (append) setLoadingMore(true);
-      else setLoading(true);
+      else {
+        setLoading(true);
+        setPage(0);
+      }
 
       try {
         const sortConfig = SORT_OPTIONS.find((s) => s.id === catalogFilters.sort) ?? SORT_OPTIONS[0];
@@ -232,7 +235,18 @@ export function useProducts() {
 
         setTotalCount(count ?? fetched.length);
         setPage(pageIndex);
-        setProducts((prev) => (append ? [...prev, ...fetched] : fetched));
+        setProducts((prev) => {
+          if (!append) return fetched;
+          const seen = new Set(prev.map((p) => p.id));
+          const merged = [...prev];
+          for (const p of fetched) {
+            if (!seen.has(p.id)) {
+              seen.add(p.id);
+              merged.push(p);
+            }
+          }
+          return merged;
+        });
       } catch (error) {
         console.error('Error fetching products:', error);
         if (generation === fetchGenRef.current && !append) {
@@ -393,6 +407,24 @@ export function useProducts() {
     maxPriceLimit,
   ]);
 
+  const applyCatalogFilters = useCallback(
+    (filters: CatalogFilterState) => {
+      setSearchQuery(filters.search || '');
+      setSelectedCategory(filters.category || 'all');
+      setSelectedSubcategory(filters.subcategory || 'all');
+      setSelectedBrand(filters.brand || 'all');
+      setSelectedSize(filters.size || 'all');
+      setSelectedCondition(filters.condition || 'all');
+      setSelectedColor(filters.color || 'all');
+      setSelectedMinPrice(filters.minPrice || 0);
+      if (filters.maxPrice && filters.maxPrice > 0) setSelectedMaxPrice(filters.maxPrice);
+      else setSelectedMaxPrice(maxPriceLimit);
+      setSelectedSort(filters.sort || 'newest');
+      bumpFilterRevision();
+    },
+    [maxPriceLimit, bumpFilterRevision, setSearchQuery],
+  );
+
   const clearAllFilters = useCallback(() => {
     setSearchQuery('');
     setSelectedCategory('all');
@@ -475,6 +507,7 @@ export function useProducts() {
     setSelectedCondition: setSelectedConditionWrapped,
     activeFilterCount,
     clearAllFilters,
+    applyCatalogFilters,
     removeFilter,
     selectedSort,
     setSelectedSort: setSelectedSortWrapped,

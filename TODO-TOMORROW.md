@@ -1,18 +1,23 @@
 # ROBEO — Development TODO (V1 Next.js monolith)
 
-Utolsó frissítés: disputes patch + wallet checkout + follower notify E2E
+Utolsó frissítés: Vinted-paritás lezárás (block, reaccept, offer expiry, feed szűrők)
 
 ---
 
 ## [DONE] V1 marketplace parity (kód)
 
-- [x] Packeta picker, buyer counter-offer, offer expiry cron
+- [x] Packeta picker, buyer counter-offer, offer expiry cron (saved-search workerben)
 - [x] Dispute éles — `patch-disputes.sql` ✓
+- [x] User block — `patch-user-blocks.sql` + `/api/users/block` + messages szűrés
+- [x] Regisztráció `/auth/complete` + `AccountSetupGuard` + `/legal/reaccept`
+- [x] Wallet checkout `termsAccepted` szerver ellenőrzés
 - [x] Wallet checkout UI (egyenleg / mixed Stripe)
 - [x] `seller_new_item` push/email — upload → `/api/products/notify-followers`
 - [x] SaleSystemMessageCard a chatben
 - [x] Chat buyer confirm receipt + dispute banner
 - [x] SellerTrustBadges, Bump, heart animation, URL sync
+- [x] Mobil vendég tab bar + cookie banner tab bar felett
+- [x] ImmersiveFilterSheet találatszám előnézet
 
 ---
 
@@ -33,6 +38,6 @@ npm run db:check-patches
 npm run build && npm run dev
 ```
 
-**SQL patch-ek (futtatva):** offer-expiry, profile-bio, disputes ✓
+**SQL patch-ek (futtatva / ellenőrizd):** offer-expiry, profile-bio, disputes, user-blocks (`npm run db:check-patches`)
 
 **Éles:** https://robeo.vercel.app

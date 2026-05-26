@@ -1,31 +1,110 @@
 'use client';
 
-import { useEffect } from 'react';
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { X } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 import { useImmersiveBrowse } from '@/context/ImmersiveBrowseContext';
 import Filters from '@/components/product/Filters';
 import type { CatalogFilterState } from '@/lib/catalogFilters';
+import { supabase } from '@/lib/supabase';
+import { fetchCatalogMatchCount } from '@/lib/catalogFilterCounts';
+
+export type ImmersiveFiltersMeta = {
+  categories: { id: string; label: string }[];
+  sortOptions: { id: string; label: string }[];
+  maxPriceLimit: number;
+};
 
 type Props = {
-  filtersProps: React.ComponentProps<typeof Filters>;
   catalogFilters: CatalogFilterState;
+  filtersMeta: ImmersiveFiltersMeta;
   activeFilterCount?: number;
+  onApplyFilters: (filters: CatalogFilterState) => void;
   onApply: () => void;
 };
 
+function countActiveCatalogFilters(filters: CatalogFilterState, maxPriceLimit: number) {
+  let n = 0;
+  if (filters.category !== 'all') n++;
+  if (filters.subcategory !== 'all') n++;
+  if (filters.brand !== 'all') n++;
+  if (filters.size !== 'all') n++;
+  if (filters.condition !== 'all') n++;
+  if (filters.color !== 'all') n++;
+  if (filters.minPrice > 0) n++;
+  if (filters.maxPrice > 0 && filters.maxPrice < maxPriceLimit) n++; 
+  return n;
+}
+
 export default function ImmersiveFilterSheet({
-  filtersProps,
   catalogFilters,
-  activeFilterCount = 0,
+  filtersMeta,
+  activeFilterCount: _activeFilterCount = 0,
+  onApplyFilters,
   onApply,
 }: Props) {
   const { t } = useTranslation();
   const { filterSheetOpen, closeFilterSheet } = useImmersiveBrowse();
+  const { categories, sortOptions, maxPriceLimit } = filtersMeta;
 
-  const searchActive = catalogFilters.search.trim().length > 0;
-  const sortActive = catalogFilters.sort !== 'newest';
-  const totalActive = activeFilterCount + (searchActive ? 1 : 0) + (sortActive ? 1 : 0);
+  const [draft, setDraft] = useState<CatalogFilterState>(catalogFilters);
+  const [matchCount, setMatchCount] = useState<number | null>(null);
+  const [counting, setCounting] = useState(false);
+  const countGenRef = useRef(0);
+  const wasOpenRef = useRef(false);
+
+  useEffect(() => {
+    if (filterSheetOpen && !wasOpenRef.current) {
+      setDraft(catalogFilters);
+      setMatchCount(null);
+      setCounting(false);
+    }
+    wasOpenRef.current = filterSheetOpen;
+  }, [filterSheetOpen, catalogFilters]);
+
+  useEffect(() => {
+    if (!filterSheetOpen) return;
+    const generation = ++countGenRef.current;
+    setCounting(true);
+    const timer = window.setTimeout(() => {
+      void fetchCatalogMatchCount(supabase, draft).then((count) => {
+        if (generation !== countGenRef.current) return;
+        setMatchCount(count);
+        setCounting(false);
+      });
+    }, 300);
+    return () => {
+      window.clearTimeout(timer);
+    };
+  }, [draft, filterSheetOpen]);
+
+  const draftActiveFilterCount = useMemo(
+    () => countActiveCatalogFilters(draft, maxPriceLimit),
+    [draft, maxPriceLimit],
+  );
+
+  const searchActive = draft.search.trim().length > 0;
+  const sortActive = draft.sort !== 'newest';
+  const totalActive = draftActiveFilterCount + (searchActive ? 1 : 0) + (sortActive ? 1 : 0);
+
+  const patchDraft = useCallback((patch: Partial<CatalogFilterState>) => {
+    setDraft((prev) => ({ ...prev, ...patch }));
+  }, []);
+
+  const clearDraftFilters = useCallback(() => {
+    setDraft((prev) => ({
+      ...prev,
+      category: 'all',
+      subcategory: 'all',
+      brand: 'all',
+      size: 'all',
+      condition: 'all',
+      color: 'all',
+      minPrice: 0,
+      maxPrice: maxPriceLimit,
+      sort: 'newest',
+    }));
+  }, [maxPriceLimit]);
 
   useEffect(() => {
     if (!filterSheetOpen) return;
@@ -35,6 +114,12 @@ export default function ImmersiveFilterSheet({
       document.body.style.overflow = prev;
     };
   }, [filterSheetOpen]);
+
+  const applyLabel = counting
+    ? t('browse.immersive.counting')
+    : matchCount !== null
+      ? t('browse.immersive.applyWithCount', { count: matchCount })
+      : t('browse.immersive.applyFilters');
 
   if (!filterSheetOpen) return null;
 
@@ -64,21 +149,50 @@ export default function ImmersiveFilterSheet({
           </button>
         </div>
         <div className="flex-1 overflow-y-auto px-4 py-3">
-          <Filters {...filtersProps} />
+                    <Filters
+            categories={categories}
+            selectedCategory={draft.category}
+            onCategoryChange={(id) =>
+              setDraft((prev) => ({
+                ...prev,
+                category: id,
+                subcategory: 'all',
+              }))
+            }
+            selectedSubcategory={draft.subcategory}
+            onSubcategoryChange={(id) => patchDraft({ subcategory: id })}
+            selectedBrand={draft.brand}
+            onBrandChange={(id) => patchDraft({ brand: id })}
+            selectedSize={draft.size}
+            onSizeChange={(id) => patchDraft({ size: id })}
+            selectedCondition={draft.condition}
+            onConditionChange={(id) => patchDraft({ condition: id })}
+            selectedColor={draft.color}
+            onColorChange={(id) => patchDraft({ color: id })}
+            selectedMinPrice={draft.minPrice}
+            selectedMaxPrice={draft.maxPrice}
+            maxPriceLimit={maxPriceLimit}
+            onMinPriceChange={(value) => patchDraft({ minPrice: value })}
+            onMaxPriceChange={(value) => patchDraft({ maxPrice: value })}
+            sortOptions={sortOptions}
+            selectedSort={draft.sort}
+            onSortChange={(id) => patchDraft({ sort: id })}
+            activeFilterCount={draftActiveFilterCount}
+            onClearAll={clearDraftFilters}
+          />
         </div>
         <div className="shrink-0 border-t border-gray-200 p-4">
           <button
             type="button"
+            disabled={counting}
             onClick={() => {
+              onApplyFilters(draft);
               onApply();
               closeFilterSheet();
             }}
             className="w-full btn-base btn-primary min-h-12"
           >
-            {totalActive > 0
-              ? `${t('browse.immersive.applyFilters')} (${totalActive})`
-              : t('browse.immersive.applyFilters')}
-          </button>
+            {applyLabel}          </button>
         </div>
       </div>
     </div>

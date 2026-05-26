@@ -14,9 +14,23 @@ export function isOfferPastExpiry(
   return false;
 }
 
-export function offerRemainingMs(expiresAt: string | null | undefined): number {
-  if (!expiresAt) return 0;
-  return Math.max(0, Date.parse(expiresAt) - Date.now());
+export function offerRemainingMs(
+  expiresAt: string | null | undefined,
+  createdAt?: string | null,
+): number {
+  const effective = effectiveOfferExpiresAt(expiresAt, createdAt);
+  if (!effective) return 0;
+  return Math.max(0, Date.parse(effective) - Date.now());
+}
+
+/** Legacy sorokhoz: ha nincs expires_at, created_at + TTL. */
+export function effectiveOfferExpiresAt(
+  expiresAt: string | null | undefined,
+  createdAt?: string | null,
+): string | null {
+  if (expiresAt) return expiresAt;
+  if (!createdAt) return null;
+  return new Date(Date.parse(createdAt) + OFFER_TTL_MS).toISOString();
 }
 
 export function isOfferAwaitingAction(
@@ -31,8 +45,9 @@ export function isOfferAwaitingAction(
 export function formatOfferRemaining(
   expiresAt: string | null | undefined,
   locale: string,
+  createdAt?: string | null,
 ): string {
-  const ms = offerRemainingMs(expiresAt);
+  const ms = offerRemainingMs(expiresAt, createdAt);
   if (ms <= 0) return '';
   const totalMinutes = Math.ceil(ms / 60_000);
   const hours = Math.floor(totalMinutes / 60);

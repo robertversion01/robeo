@@ -18,6 +18,7 @@ type OfferRow = {
   seller_id: string;
   product_id: string;
   expires_at?: string | null;
+  created_at?: string | null;
 };
 
 type Props = {
@@ -47,7 +48,7 @@ export default function ChatBuyerOffersPanel({ buyerId, productId, sellerId }: P
     const [offerRes, productRes] = await Promise.all([
       supabase
         .from('offers')
-        .select('id, offered_price, status, seller_id, product_id, expires_at')
+        .select('id, offered_price, status, seller_id, product_id, expires_at, created_at')
         .eq('buyer_id', buyerId)
         .eq('product_id', productId)
         .order('created_at', { ascending: false })
@@ -70,7 +71,7 @@ export default function ChatBuyerOffersPanel({ buyerId, productId, sellerId }: P
   }, [load]);
 
   if (!productId || loading) return null;
-  if (!offer || !isOfferAwaitingAction(offer.status, offer.expires_at)) {
+  if (!offer || !isOfferAwaitingAction(offer.status, offer.expires_at, offer.created_at)) {
     if (offer?.status === 'accepted') {
       return (
         <div className="mx-4 mb-2 rounded-xl border border-[#007782]/25 bg-[#007782]/5 px-3 py-2.5 text-sm">
@@ -170,7 +171,7 @@ export default function ChatBuyerOffersPanel({ buyerId, productId, sellerId }: P
         {t('chatOffer.panelTitle', { price: offer.offered_price.toLocaleString('hu-HU') })}
       </p>
       <p className="text-xs text-gray-600 mt-0.5">{t(`chatOffer.status.${offer.status}`)}</p>
-      <OfferExpiryCountdown expiresAt={offer.expires_at} className="mt-1" />
+      <OfferExpiryCountdown expiresAt={offer.expires_at} createdAt={offer.created_at} className="mt-1" />
       <div className="mt-2 flex flex-wrap gap-2">
         {offer.status === 'countered' ? (
           <>

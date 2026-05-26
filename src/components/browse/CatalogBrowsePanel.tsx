@@ -124,6 +124,7 @@ function CatalogBrowsePanelInner({
     setSelectedCondition,
     activeFilterCount,
     clearAllFilters,
+    applyCatalogFilters,
     removeFilter,
     filterKey,
   } = useProducts();
@@ -219,6 +220,18 @@ function CatalogBrowsePanelInner({
   const localizedSortOptions = useMemo(
     () => sortOptions.map((opt) => ({ id: opt.id, label: t(sortLabelKey(opt.id)) })),
     [sortOptions, t],
+  );
+
+  const filtersMeta = useMemo(
+    () => ({
+      categories: categories.map((c) => ({
+        id: c.id,
+        label: t('browse.categories.' + c.id, { defaultValue: c.label }),
+      })),
+      sortOptions: localizedSortOptions,
+      maxPriceLimit,
+    }),
+    [categories, localizedSortOptions, maxPriceLimit, t],
   );
 
   const filtersProps = {
@@ -497,13 +510,14 @@ function CatalogBrowsePanelInner({
 
       <ImmersiveFilterSheet
         catalogFilters={catalogFilters}
+        filtersMeta={filtersMeta}
         activeFilterCount={activeFilterCount}
+        onApplyFilters={applyCatalogFilters}
         onApply={() => {
           if (typeof document !== 'undefined') {
             document.getElementById('catalog')?.scrollIntoView({ behavior: 'smooth', block: 'start' });
           }
         }}
-        filtersProps={filtersProps}
       />
     </div>
   );

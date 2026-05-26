@@ -212,7 +212,9 @@
       "showFilters": "Filters",
       "filterSheetTitle": "Filters & sort",
       "applyFilters": "Apply",
-      "activeFilters": "{{count}} active filters"
+      "activeFilters": "{{count}} active filters",
+      "applyWithCount": "Apply ({{count}})",
+      "counting": "Counting…"
     },
     "feed": {
       "default": "Fresh listings from the community — browse, filter, save favorites.",
@@ -433,9 +435,18 @@
   "trust": {
     "compactTitle": "Safe shopping",
     "compactBody": "Buyer protection, tracked shipping, dispute help — like major marketplaces.",
-    "protection": { "title": "Buyer protection", "body": "Fee covers dispute handling and secure checkout." },
-    "secure": { "title": "Secure payment", "body": "Card payments processed via Stripe." },
-    "shipping": { "title": "Tracked shipping", "body": "Foxpost, Packeta or home delivery — status in messages." }
+    "protection": {
+      "title": "Buyer protection",
+      "body": "Fee covers dispute handling and secure checkout."
+    },
+    "secure": {
+      "title": "Secure payment",
+      "body": "Card payments processed via Stripe."
+    },
+    "shipping": {
+      "title": "Tracked shipping",
+      "body": "Foxpost, Packeta or home delivery — status in messages."
+    }
   },
   "bundle": {
     "closet": {
@@ -1006,9 +1017,18 @@
       }
     },
     "faq": {
-      "q1": { "q": "How do I pay safely?", "a": "Checkout uses Stripe with buyer protection." },
-      "q2": { "q": "How do I sell?", "a": "Upload menu → step-by-step wizard → publish." },
-      "q3": { "q": "Where are my orders?", "a": "Profile → About, or the Order history page." }
+      "q1": {
+        "q": "How do I pay safely?",
+        "a": "Checkout uses Stripe with buyer protection."
+      },
+      "q2": {
+        "q": "How do I sell?",
+        "a": "Upload menu → step-by-step wizard → publish."
+      },
+      "q3": {
+        "q": "Where are my orders?",
+        "a": "Profile → About, or the Order history page."
+      }
     }
   },
   "notFound": {

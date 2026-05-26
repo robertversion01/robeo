@@ -81,13 +81,6 @@ export default function MessagesPage() {
   }, []);
 
   useEffect(() => {
-    if (typeof window === 'undefined' || !user?.id || loading) return;
-    const withId = new URLSearchParams(window.location.search).get('with');
-    if (!withId || selectedConversation === withId) return;
-    void loadConversation(withId);
-  }, [user?.id, loading, selectedConversation]);
-
-  useEffect(() => {
     if (!user) return;
     localStorage.setItem(`messages_last_seen_at_${user.id}`, new Date().toISOString());
     window.dispatchEvent(new CustomEvent('messages:seen'));
@@ -186,7 +179,10 @@ export default function MessagesPage() {
           (newMsg.sender_id === user.id && newMsg.receiver_id === activeId) ||
           (newMsg.sender_id === activeId && newMsg.receiver_id === user.id);
         if (inThread) {
-          setMessages((prev) => [...prev, newMsg]);
+          void checkBlockBetween(supabase, user.id, activeId).then((block) => {
+            if (block.eitherBlocked && newMsg.sender_id === activeId) return;
+            setMessages((prev) => [...prev, newMsg]);
+          });
         }
         loadConversations();
       })
@@ -310,6 +306,20 @@ export default function MessagesPage() {
     setMessages((data as Message[]) || []);
   };
 
+  useEffect(() => {
+    if (typeof window === 'undefined' || !user?.id || loading) return;
+    const withId = new URLSearchParams(window.location.search).get('with');
+    if (!withId || selectedConversation === withId) return;
+    void (async () => {
+      const block = await checkBlockBetween(supabase, user.id, withId);
+      if (block.eitherBlocked) {
+        toast.error(t('block.cannotMessage'));
+        return;
+      }
+      void loadConversation(withId);
+    })();
+  }, [user?.id, loading, selectedConversation, t]);
+
   const closeConversation = () => {
     setSelectedConversation(null);
     setMessages([]);
@@ -380,7 +390,15 @@ export default function MessagesPage() {
   };
 
   const sendOffer = async () => {
-    if (!selectedConversation || !user?.id) return;
+    if (!selectedConversation || !user?.id || threadBlocked) return;
+
+    const block = await checkBlockBetween(supabase, user.id, selectedConversation);
+    if (block.eitherBlocked) {
+      toast.error(t('block.cannotMessage'));
+      setThreadBlocked(true);
+      return;
+    }
+
     const latestProductMessage = [...messages].reverse().find((msg) => msg.product_id);
     if (!latestProductMessage?.product_id) {
       toast.error(t('messages.offerNoProduct'));
@@ -640,7 +658,9 @@ export default function MessagesPage() {
                     <BlockUserButton
                       otherUserId={selectedConversation}
                       onBlocked={() => {
-                        setThreadBlocked(true);
+                        void checkBlockBetween(supabase, user!.id, selectedConversation).then(
+                          (block) => setThreadBlocked(block.eitherBlocked),
+                        );
                         void loadConversations();
                       }}
                     />
@@ -663,7 +683,9 @@ export default function MessagesPage() {
                     <BlockUserButton
                       otherUserId={selectedConversation}
                       onBlocked={() => {
-                        setThreadBlocked(true);
+                        void checkBlockBetween(supabase, user!.id, selectedConversation).then(
+                          (block) => setThreadBlocked(block.eitherBlocked),
+                        );
                         void loadConversations();
                       }}
                     />
@@ -770,7 +792,8 @@ export default function MessagesPage() {
                       <button
                         type="button"
                         onClick={() => setShowOfferModal(true)}
-                        className="shrink-0 rounded-full border border-[#007782]/30 px-2.5 py-1.5 text-[10px] font-bold text-[#007782] hover:bg-[#007782]/5 touch-manipulation"
+                        disabled={threadBlocked}
+                        className="shrink-0 rounded-full border border-[#007782]/30 px-2.5 py-1.5 text-[10px] font-bold text-[#007782] hover:bg-[#007782]/5 touch-manipulation disabled:cursor-not-allowed disabled:opacity-50"
                       >
                         {t('messages.makeOffer')}
                       </button>

@@ -11,6 +11,8 @@ import { OFFER_LABELS_BUYER, offerBadgeClass } from '@/lib/offerUi';
 import { buildOfferStatusUpdate } from '@/lib/offers';
 import { insertChatSystemMessage } from '@/lib/chatMessages';
 import { buyerRejectCounterOffer } from '@/lib/offerActions';
+import { isOfferAwaitingAction } from '@/lib/offerExpiry';
+import OfferExpiryCountdown from '@/components/offers/OfferExpiryCountdown';
 
 type ProductJoin = {
   id: string;
@@ -26,6 +28,7 @@ type BuyerOfferRow = {
   status: string;
   message: string | null;
   created_at: string;
+  expires_at?: string | null;
   seller_id: string;
   product: ProductJoin | ProductJoin[] | null;
 };
@@ -54,6 +57,7 @@ export default function BuyerOffersList() {
           status,
           message,
           created_at,
+          expires_at,
           seller_id,
           product:products(id, name, price, image_url, images)
         `
@@ -212,6 +216,7 @@ export default function BuyerOffersList() {
           offer.product && !Array.isArray(offer.product) ? offer.product : null;
         const thumb = thumbFromProduct(product);
         const label = OFFER_LABELS_BUYER[offer.status] ?? offer.status;
+        const actionable = isOfferAwaitingAction(offer.status, offer.expires_at, offer.created_at);
 
         return (
           <div
@@ -275,10 +280,17 @@ export default function BuyerOffersList() {
                   {offer.status === 'countered' && <RefreshCw size={13} />}
                   {label}
                 </span>
+                {actionable ? (
+                  <OfferExpiryCountdown
+                    expiresAt={offer.expires_at}
+                    createdAt={offer.created_at}
+                    className="mt-1 block"
+                  />
+                ) : null}
               </div>
 
               <div className="flex flex-col gap-2 sm:items-end sm:justify-center">
-                {offer.status === 'countered' && (
+                {offer.status === 'countered' && actionable && (
                   <>
                     <button
                       type="button"

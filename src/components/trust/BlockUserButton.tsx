@@ -51,6 +51,7 @@ export default function BlockUserButton({ otherUserId, className = '', onBlocked
         if (!res.ok) throw new Error(await res.text());
         setBlockedByMe(false);
         toast.success(t('block.unblocked'));
+        onBlocked?.();
       } else {
         if (!window.confirm(t('block.confirm'))) return;
         const res = await fetch('/api/users/block', {

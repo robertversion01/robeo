@@ -212,7 +212,9 @@
       "showFilters": "Szűrők",
       "filterSheetTitle": "Szűrők és rendezés",
       "applyFilters": "Alkalmaz",
-      "activeFilters": "{{count}} aktív szűrő"
+      "activeFilters": "{{count}} aktív szűrő",
+      "applyWithCount": "Alkalmaz ({{count}})",
+      "counting": "Számolás…"
     },
     "feed": {
       "default": "Friss hirdetések a közösségtől — böngéssz, szűrj, ments kedvenceket.",
@@ -440,9 +442,18 @@
   "trust": {
     "compactTitle": "Biztonságos vásárlás",
     "compactBody": "Fizetés védelemmel, biztonságos szállítás, vitás esetben segítünk — mint a nagy piactereken.",
-    "protection": { "title": "Vevővédelem", "body": "A díj biztosítja a vitás ügyintézést és a biztonságos tranzakciót." },
-    "secure": { "title": "Biztonságos fizetés", "body": "A kártyás fizetés Stripe-on keresztül történik." },
-    "shipping": { "title": "Nyomon követhető szállítás", "body": "Foxpost, Packeta vagy házhoz — státusz az üzenetekben." }
+    "protection": {
+      "title": "Vevővédelem",
+      "body": "A díj biztosítja a vitás ügyintézést és a biztonságos tranzakciót."
+    },
+    "secure": {
+      "title": "Biztonságos fizetés",
+      "body": "A kártyás fizetés Stripe-on keresztül történik."
+    },
+    "shipping": {
+      "title": "Nyomon követhető szállítás",
+      "body": "Foxpost, Packeta vagy házhoz — státusz az üzenetekben."
+    }
   },
   "bundle": {
     "closet": {
@@ -949,9 +960,18 @@
       }
     },
     "faq": {
-      "q1": { "q": "Hogyan fizetek biztonságosan?", "a": "A checkout Stripe-on keresztül történik, vevővédelemmel." },
-      "q2": { "q": "Hogyan adok el?", "a": "Feltöltés menü → lépésenkénti varázsló → közzététel." },
-      "q3": { "q": "Hol látom a rendeléseimet?", "a": "Profil → Rólam, vagy közvetlenül a Rendeléstörténet oldalon." }
+      "q1": {
+        "q": "Hogyan fizetek biztonságosan?",
+        "a": "A checkout Stripe-on keresztül történik, vevővédelemmel."
+      },
+      "q2": {
+        "q": "Hogyan adok el?",
+        "a": "Feltöltés menü → lépésenkénti varázsló → közzététel."
+      },
+      "q3": {
+        "q": "Hol látom a rendeléseimet?",
+        "a": "Profil → Rólam, vagy közvetlenül a Rendeléstörténet oldalon."
+      }
     }
   },
   "offersList": {

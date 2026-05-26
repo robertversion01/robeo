@@ -8,11 +8,13 @@ import {
   needsLegalReaccept,
 } from '@/lib/profileRegistration';
 
-const SKIP_PREFIXES = ['/auth', '/legal', '/api'];
+const SKIP_PREFIXES = ['/auth', '/api'];
+const LEGAL_PUBLIC_PREFIXES = ['/legal/terms', '/legal/privacy', '/legal/cookies', '/legal/pay'];
 
 function shouldSkip(pathname: string | null): boolean {
   if (!pathname) return true;
-  return SKIP_PREFIXES.some((p) => pathname === p || pathname.startsWith(`${p}/`));
+  if (SKIP_PREFIXES.some((p) => pathname === p || pathname.startsWith(`${p}/`))) return true;
+  return LEGAL_PUBLIC_PREFIXES.some((p) => pathname === p || pathname.startsWith(`${p}/`));
 }
 
 /** Bejelentkezett user: profil kitöltés + frissített ÁSZF elfogadás kényszerítése. */

@@ -272,7 +272,7 @@ export default function OffersList() {
       {offers.map((offer) => {
         const thumb = offerThumbUrl(offer.product);
         const label = statusLabel(offer.status);
-        const actionable = isOfferAwaitingAction(offer.status, offer.expires_at);
+        const actionable = isOfferAwaitingAction(offer.status, offer.expires_at, offer.created_at);
 
         return (
           <div
@@ -324,7 +324,11 @@ export default function OffersList() {
                   {offer.status === 'rejected' && <X size={13} />}
                   {label}
                 </span>
-                <OfferExpiryCountdown expiresAt={offer.expires_at} className="mt-1 block" />
+                <OfferExpiryCountdown
+                  expiresAt={offer.expires_at}
+                  createdAt={offer.created_at}
+                  className="mt-1 block"
+                />
               </div>
 
               <div className="flex flex-col gap-3 sm:items-end sm:min-w-[200px]">

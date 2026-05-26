@@ -13,7 +13,7 @@ import {
 
 type CountMap = Record<string, number>;
 
-type ExcludeDimension = 'category' | 'subcategory' | 'brand';
+type ExcludeDimension = 'category' | 'subcategory' | 'brand' | 'none';
 
 function buildAliasOr(column: string, aliases: string[]) {
   if (aliases.length === 0) return null;
@@ -34,7 +34,7 @@ async function applySharedFilters(
 
   query = applyListedProductFilter(query);
 
-  if (exclude !== 'brand' && filters.brand !== 'all') {
+  if ((exclude === 'none' || exclude !== 'brand') && filters.brand !== 'all') {
     query = query.ilike('brand', filters.brand);
   }
 
@@ -68,12 +68,12 @@ async function applySharedFilters(
     query = query.lte('price', filters.maxPrice);
   }
 
-  if (exclude !== 'category' && filters.category !== 'all') {
+  if ((exclude === 'none' || exclude !== 'category') && filters.category !== 'all') {
     const or = buildAliasOr('category', categoryDbValues(filters.category));
     if (or) query = query.or(or);
   }
 
-  if (exclude !== 'subcategory' && filters.subcategory !== 'all') {
+  if ((exclude === 'none' || exclude !== 'subcategory') && filters.subcategory !== 'all') {
     const or = buildAliasOr('category', subcategoryFilterDbValues(filters.subcategory));
     if (or) query = query.or(or);
   }
@@ -135,6 +135,14 @@ export async function fetchBrandFilterCounts(
     }),
   );
   return Object.fromEntries(entries);
+}
+
+/** Teljes találatszám az aktuális szűrőkre — ImmersiveFilterSheet előnézet. */
+export async function fetchCatalogMatchCount(
+  supabase: SupabaseClient,
+  filters: CatalogFilterState,
+): Promise<number> {
+  return countWithFilters(supabase, filters, 'none');
 }
 
 export async function fetchSubcategoryFilterCounts(

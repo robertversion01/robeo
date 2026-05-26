@@ -7,6 +7,10 @@ import { useTranslation } from 'react-i18next';
 import RegistrationLegalConsent from '@/components/auth/RegistrationLegalConsent';
 import { supabase } from '@/lib/supabase';
 import { LEGAL_VERSION } from '@/lib/legalConstants';
+import {
+  isProfileRegistrationComplete,
+  needsLegalReaccept,
+} from '@/lib/profileRegistration';
 
 export default function LegalReacceptPage() {
   const { t } = useTranslation();
@@ -25,6 +29,23 @@ export default function LegalReacceptPage() {
         router.replace('/auth');
         return;
       }
+
+      const { data: profile } = await supabase
+        .from('profiles')
+        .select('full_name, name, legal_accepted_at, legal_version')
+        .eq('id', user.id)
+        .maybeSingle();
+
+      if (!isProfileRegistrationComplete(profile)) {
+        router.replace('/auth/complete');
+        return;
+      }
+
+      if (!needsLegalReaccept(profile)) {
+        router.replace('/');
+        return;
+      }
+
       setUserId(user.id);
       setLoading(false);
     })();
