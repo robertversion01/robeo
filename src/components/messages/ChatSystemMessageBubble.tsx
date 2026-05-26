@@ -134,23 +134,24 @@ export default function ChatSystemMessageBubble({
           </div>
         ) : null}
         {body}
-        {role && (kind === 'shipping_status' || kind === 'sale_paid') && role === 'seller' ? (
-          <button
-            type="button"
-            onClick={() => focusOrderPanel()}
-            className="mt-2 inline-flex rounded-full border border-[#007782]/30 bg-white px-3 py-1.5 text-[11px] font-semibold text-[#007782]"
-          >
-            {t('chatTransaction.openShipping')}
-          </button>
-        ) : null}
-        {role && (kind === 'shipping_status' || kind === 'sale_paid') && role === 'buyer' ? (
-          <button
-            type="button"
-            onClick={() => focusOrderPanel()}
-            className="mt-2 inline-flex rounded-full border border-[#007782]/30 bg-white px-3 py-1.5 text-[11px] font-semibold text-[#007782]"
-          >
-            {t('chatTransaction.viewOrderThread')}
-          </button>
+        {role && (kind === 'shipping_status' || kind === 'sale_paid') ? (
+          <div className="mt-2 flex flex-wrap justify-center gap-2">
+            <button
+              type="button"
+              onClick={() => focusOrderPanel()}
+              className="inline-flex rounded-full border border-[#007782]/30 bg-white px-3 py-1.5 text-[11px] font-semibold text-[#007782]"
+            >
+              {role === 'seller'
+                ? t('chatTransaction.openShipping')
+                : t('chatTransaction.viewOrderThread')}
+            </button>
+            <Link
+              href={role === 'seller' ? '/orders?view=sales' : '/orders?view=purchases'}
+              className="inline-flex rounded-full border border-[#007782] bg-[#007782] px-3 py-1.5 text-[11px] font-semibold text-white hover:bg-[#006670]"
+            >
+              {t('orderTimeline.openOrders')}
+            </Link>
+          </div>
         ) : null}
         <ChatOfferActions
           content={msg.content}

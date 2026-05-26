@@ -10,13 +10,16 @@ export type OrderPanelActionResult = {
 export function focusOrderPanel(): boolean {
   if (typeof window === 'undefined') return false;
   const el = document.getElementById('chat-shipping-panel');
-  if (!el) return false;
+  if (!el) {
+    window.dispatchEvent(new CustomEvent(ORDER_PANEL_FOCUS_EVENT));
+    return false;
+  }
 
-  el.scrollIntoView({ behavior: 'smooth', block: 'start' });
-  el.classList.add('ring-2', 'ring-[#007782]/40', 'ring-offset-2');
+  el.scrollIntoView({ behavior: 'smooth', block: 'center' });
+  el.classList.add('ring-2', 'ring-[#007782]', 'ring-offset-2', 'shadow-lg');
   window.setTimeout(() => {
-    el.classList.remove('ring-2', 'ring-[#007782]/40', 'ring-offset-2');
-  }, 1800);
+    el.classList.remove('ring-2', 'ring-[#007782]', 'ring-offset-2', 'shadow-lg');
+  }, 2200);
   window.dispatchEvent(new CustomEvent(ORDER_PANEL_FOCUS_EVENT));
   return true;
 }

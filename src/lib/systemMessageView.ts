@@ -61,10 +61,18 @@ function detectShippingStatusKey(content: string): string | null {
   return null;
 }
 
+function extractProductName(content: string, fallback: string): string {
+  const match = content.match(/[„"]([^„""]+?)["""]/);
+  if (match && match[1] && match[1].trim() && match[1].trim() !== 'a termék') {
+    return match[1].trim();
+  }
+  return fallback;
+}
+
 export function shippingStatusBodyForRole(
   content: string,
   role: ChatMessageRole,
-  productName = 'a termék',
+  productName?: string,
 ): string | null {
   const key = detectShippingStatusKey(content);
   if (!key) return null;
@@ -73,7 +81,8 @@ export function shippingStatusBodyForRole(
       ? TX_STATUS_MESSAGES_SELLER[key] || TX_STATUS_MESSAGES[key]
       : TX_STATUS_MESSAGES[key] || TX_STATUS_MESSAGES_SELLER[key];
   if (!template) return null;
-  return template.replace(/\{product\}/g, productName);
+  const resolvedName = productName?.trim() || extractProductName(content, 'a termék');
+  return template.replace(/\{product\}/g, resolvedName);
 }
 
 export function isSaleSystemContent(content: string, messageType?: string | null): boolean {
