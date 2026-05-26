@@ -15,7 +15,18 @@ export function focusOrderPanel(): boolean {
     return false;
   }
 
-  el.scrollIntoView({ behavior: 'smooth', block: 'center' });
+  try {
+    el.scrollIntoView({ behavior: 'smooth', block: 'center' });
+  } catch {
+    el.scrollIntoView();
+  }
+
+  try {
+    window.scrollTo({ top: Math.max(0, el.getBoundingClientRect().top + window.scrollY - 80), behavior: 'smooth' });
+  } catch {
+    /* older browsers ignore options */
+  }
+
   el.classList.add('ring-2', 'ring-[#007782]', 'ring-offset-2', 'shadow-lg');
   window.setTimeout(() => {
     el.classList.remove('ring-2', 'ring-[#007782]', 'ring-offset-2', 'shadow-lg');

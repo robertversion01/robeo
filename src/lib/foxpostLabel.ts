@@ -25,6 +25,11 @@ export function hasFoxpostLabelDownloaded(transactionId: string): boolean {
   return localStorage.getItem(`${LABEL_DOWNLOADED_PREFIX}${transactionId}`) === '1';
 }
 
+function isMobileViewport(): boolean {
+  if (typeof window === 'undefined') return false;
+  return window.matchMedia('(max-width: 768px)').matches || /Mobi|Android|iPhone|iPad/i.test(navigator.userAgent);
+}
+
 export function downloadFoxpostLabel(input: FoxpostLabelInput): { openedPopup: boolean } {
   const trackingUrl = buildFoxpostTrackingUrl(input.trackingNumber);
   const html = buildLabelHtml(input, trackingUrl);
@@ -32,20 +37,26 @@ export function downloadFoxpostLabel(input: FoxpostLabelInput): { openedPopup: b
   const blob = new Blob([html], { type: 'text/html;charset=utf-8' });
   const blobUrl = URL.createObjectURL(blob);
 
-  const popup = window.open(blobUrl, '_blank', 'width=560,height=760');
+  const mobile = isMobileViewport();
+  const popup = mobile
+    ? window.open(blobUrl, '_blank')
+    : window.open(blobUrl, '_blank', 'width=560,height=760');
+
   if (popup) {
-    const triggerPrint = () => {
-      try {
-        popup.focus();
-        popup.print();
-      } catch {
-        /* user can print manually with Ctrl+P */
-      }
-    };
-    popup.addEventListener('load', () => {
-      window.setTimeout(triggerPrint, 350);
-    });
-    window.setTimeout(() => URL.revokeObjectURL(blobUrl), 60_000);
+    if (!mobile) {
+      const triggerPrint = () => {
+        try {
+          popup.focus();
+          popup.print();
+        } catch {
+          /* user can print manually with Ctrl+P */
+        }
+      };
+      popup.addEventListener('load', () => {
+        window.setTimeout(triggerPrint, 350);
+      });
+    }
+    window.setTimeout(() => URL.revokeObjectURL(blobUrl), 5 * 60_000);
     markFoxpostLabelDownloaded(input.transactionId);
     return { openedPopup: true };
   }
@@ -65,23 +76,28 @@ function buildLabelHtml(input: FoxpostLabelInput, trackingUrl: string): string {
 <html lang="hu">
 <head>
   <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
   <title>Foxpost címke — ${escapeHtml(input.trackingNumber)}</title>
   <style>
-    body { font-family: system-ui, sans-serif; padding: 24px; max-width: 480px; margin: 0 auto; }
+    body { font-family: system-ui, sans-serif; padding: 20px; max-width: 480px; margin: 0 auto; color: #111; }
     .logo { font-size: 28px; font-weight: 800; color: #e85d04; }
-    .barcode { font-family: monospace; font-size: 20px; letter-spacing: 2px; margin: 16px 0; padding: 14px; border: 2px solid #333; text-align: center; font-weight: 700; }
+    .barcode { font-family: monospace; font-size: 22px; letter-spacing: 2px; margin: 16px 0; padding: 14px; border: 2px solid #333; text-align: center; font-weight: 700; }
     h1 { font-size: 18px; margin: 8px 0; }
     .muted { color: #666; font-size: 12px; }
     .box { border: 1px solid #ccc; border-radius: 8px; padding: 12px; margin-top: 12px; }
     .track a { color: #007782; font-weight: 600; }
-    @media print { body { padding: 12px; } }
+    .print-btn { display: inline-block; margin: 18px 0 4px; padding: 12px 22px; background: #007782; color: #fff; border: 0; border-radius: 999px; font-weight: 700; font-size: 15px; cursor: pointer; }
+    @media print {
+      body { padding: 10px; }
+      .print-btn { display: none; }
+    }
   </style>
 </head>
 <body>
   <div class="logo">FOXPOST</div>
   <p class="muted">ROBEO szállítási címke — nyomtasd ki vagy mentsd PDF-be.</p>
   <div class="barcode">${escapeHtml(input.trackingNumber)}</div>
-  <p class="track muted">Követés: <a href="${escapeHtml(trackingUrl)}">${escapeHtml(trackingUrl)}</a></p>
+  <p class="track muted">Követés: <a href="${escapeHtml(trackingUrl)}" target="_blank" rel="noopener">${escapeHtml(trackingUrl)}</a></p>
   <h1>${escapeHtml(input.productName)}</h1>
   ${
     input.foxpostTerminalName || input.foxpostTerminalAddress
@@ -103,7 +119,21 @@ function buildLabelHtml(input: FoxpostLabelInput, trackingUrl: string): string {
     ${escapeHtml(input.sellerEmail || 'Eladó')}
   </div>
   <p class="muted">Tranzakció: ${escapeHtml(input.transactionId)}</p>
-  <p class="muted">Ha a nyomtató ablak nem jött fel, használd a böngésző Nyomtatás menüt (Ctrl+P).</p>
+  <button class="print-btn" onclick="window.print()">🖨️ Nyomtatás</button>
+  <p class="muted">Mobilon a Megosztás / Nyomtatás menüből is mentheted PDF-be.</p>
+  <script>
+    (function () {
+      var mobile = /Mobi|Android|iPhone|iPad/i.test(navigator.userAgent);
+      function go() {
+        try { window.focus(); } catch (e) {}
+        if (!mobile) {
+          setTimeout(function () { try { window.print(); } catch (e) {} }, 400);
+        }
+      }
+      if (document.readyState === 'complete') go();
+      else window.addEventListener('load', go);
+    })();
+  </script>
 </body>
 </html>`;
 }

@@ -139,7 +139,7 @@ export default function ChatSystemMessageBubble({
             <button
               type="button"
               onClick={() => focusOrderPanel()}
-              className="inline-flex rounded-full border border-[#007782]/30 bg-white px-3 py-1.5 text-[11px] font-semibold text-[#007782]"
+              className="inline-flex items-center justify-center min-h-10 rounded-full border border-[#007782]/30 bg-white px-4 py-2 text-xs font-semibold text-[#007782] touch-manipulation"
             >
               {role === 'seller'
                 ? t('chatTransaction.openShipping')
@@ -147,7 +147,7 @@ export default function ChatSystemMessageBubble({
             </button>
             <Link
               href={role === 'seller' ? '/orders?view=sales' : '/orders?view=purchases'}
-              className="inline-flex rounded-full border border-[#007782] bg-[#007782] px-3 py-1.5 text-[11px] font-semibold text-white hover:bg-[#006670]"
+              className="inline-flex items-center justify-center min-h-10 rounded-full border border-[#007782] bg-[#007782] px-4 py-2 text-xs font-semibold text-white hover:bg-[#006670] touch-manipulation"
             >
               {t('orderTimeline.openOrders')}
             </Link>

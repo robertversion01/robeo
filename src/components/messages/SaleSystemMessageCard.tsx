@@ -180,9 +180,9 @@ export default function SaleSystemMessageCard({
           type="button"
           disabled={!txPaid && !txId}
           onClick={handleSellerAction}
-          className="mt-3 inline-flex w-full items-center justify-center gap-1.5 rounded-full bg-[#007782] px-4 py-2 text-xs font-semibold text-white disabled:opacity-50"
+          className="mt-3 inline-flex w-full items-center justify-center gap-1.5 rounded-full bg-[#007782] px-4 min-h-11 py-2 text-sm font-semibold text-white disabled:opacity-50 touch-manipulation"
         >
-          <Printer size={14} />
+          <Printer size={16} />
           {txPaid ? t('chatTransaction.printLabel') : t('chatTransaction.openShipping')}
         </button>
       ) : null}
@@ -190,7 +190,7 @@ export default function SaleSystemMessageCard({
         <button
           type="button"
           onClick={handleBuyerAction}
-          className="mt-3 inline-flex w-full items-center justify-center rounded-full border border-[#007782]/40 bg-white px-4 py-2 text-xs font-semibold text-[#007782]"
+          className="mt-3 inline-flex w-full items-center justify-center rounded-full border border-[#007782]/40 bg-white px-4 min-h-11 py-2 text-sm font-semibold text-[#007782] touch-manipulation"
         >
           {t('chatTransaction.viewOrderThread')}
         </button>
