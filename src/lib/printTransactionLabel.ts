@@ -51,10 +51,11 @@ export async function printTransactionLabel(
     productName: label?.productName || options?.productNameFallback || 'Termék',
     trackingNumber: data.trackingNumber,
     sellerEmail: label?.sellerEmail || options?.userEmail || undefined,
+    buyerName: label?.buyerName || undefined,
+    buyerAddress: label?.buyerAddress || label?.foxpostTerminalAddress || undefined,
     foxpostTerminalId: label?.foxpostTerminalId,
     foxpostTerminalName: label?.foxpostTerminalName,
     foxpostTerminalAddress: label?.foxpostTerminalAddress,
-    buyerAddress: label?.foxpostTerminalAddress,
   });
 
   return {

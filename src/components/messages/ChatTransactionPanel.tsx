@@ -399,17 +399,19 @@ export default function ChatTransactionPanel({
               {acting ? <Loader2 size={14} className="animate-spin" /> : <Download size={14} />}
               {t('chatTransaction.printLabel')}
             </button>
-            <button
-              type="button"
-              disabled={acting || !labelDownloaded}
-              onClick={() => void handleMarkShipped()}
-              className="flex-1 inline-flex items-center justify-center gap-1.5 rounded-lg bg-[#007782] px-3 py-2 text-xs font-semibold text-white hover:bg-[#006670] disabled:opacity-50 disabled:cursor-not-allowed"
-            >
-              {acting ? <Loader2 size={14} className="animate-spin" /> : <Truck size={14} />}
-              {t('chatTransaction.markShipped')}
-            </button>
+            {canMarkShipped ? (
+              <button
+                type="button"
+                disabled={acting || !labelDownloaded}
+                onClick={() => void handleMarkShipped()}
+                className="flex-1 inline-flex items-center justify-center gap-1.5 rounded-lg bg-[#007782] px-3 py-2 text-xs font-semibold text-white hover:bg-[#006670] disabled:opacity-50 disabled:cursor-not-allowed"
+              >
+                {acting ? <Loader2 size={14} className="animate-spin" /> : <Truck size={14} />}
+                {t('chatTransaction.markShipped')}
+              </button>
+            ) : null}
           </div>
-          {!labelDownloaded ? (
+          {canMarkShipped && !labelDownloaded ? (
             <p className="text-[11px] text-amber-800 bg-amber-50 border border-amber-200 rounded-lg px-2 py-1.5">
               {t('chatTransaction.stepHint')}
             </p>

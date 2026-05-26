@@ -29,37 +29,33 @@ export function downloadFoxpostLabel(input: FoxpostLabelInput): { openedPopup: b
   const trackingUrl = buildFoxpostTrackingUrl(input.trackingNumber);
   const html = buildLabelHtml(input, trackingUrl);
 
-  const popup = window.open('', '_blank', 'noopener,noreferrer,width=520,height=720');
+  const blob = new Blob([html], { type: 'text/html;charset=utf-8' });
+  const blobUrl = URL.createObjectURL(blob);
+
+  const popup = window.open(blobUrl, '_blank', 'width=560,height=760');
   if (popup) {
-    popup.document.open();
-    popup.document.write(html);
-    popup.document.close();
-    popup.focus();
     const triggerPrint = () => {
       try {
+        popup.focus();
         popup.print();
       } catch {
-        /* Safari / popup policy — user can print manually */
+        /* user can print manually with Ctrl+P */
       }
     };
-    if (popup.document.readyState === 'complete') {
-      window.setTimeout(triggerPrint, 300);
-    } else {
-      popup.onload = () => window.setTimeout(triggerPrint, 300);
-    }
+    popup.addEventListener('load', () => {
+      window.setTimeout(triggerPrint, 350);
+    });
+    window.setTimeout(() => URL.revokeObjectURL(blobUrl), 60_000);
     markFoxpostLabelDownloaded(input.transactionId);
     return { openedPopup: true };
   }
 
-  // Popup blocked — letöltés fallback (toast a hívó oldalon)
-  const blob = new Blob([html], { type: 'text/html;charset=utf-8' });
-  const url = URL.createObjectURL(blob);
   const a = document.createElement('a');
-  a.href = url;
+  a.href = blobUrl;
   a.download = `foxpost-${input.trackingNumber}.html`;
   a.rel = 'noopener';
   a.click();
-  URL.revokeObjectURL(url);
+  window.setTimeout(() => URL.revokeObjectURL(blobUrl), 60_000);
   markFoxpostLabelDownloaded(input.transactionId);
   return { openedPopup: false };
 }
