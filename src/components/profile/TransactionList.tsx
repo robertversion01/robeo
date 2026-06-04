@@ -150,19 +150,33 @@ export default function TransactionList() {
     loadTransactions();
   }, [loadTransactions]);
 
+  // Friss loadTransactions-t egy ref-ben tartjuk, hogy a realtime effect ne
+  // re-subscribe-oljon minden render-en (loadTransactions referenciája
+  // változhat a callback dependency-i miatt).
+  const loadTransactionsRef = useRef(loadTransactions);
   useEffect(() => {
+    loadTransactionsRef.current = loadTransactions;
+  }, [loadTransactions]);
+
+  useEffect(() => {
+    let cancelled = false;
     let channel: ReturnType<typeof supabase.channel> | null = null;
 
     const setup = async () => {
       const {
         data: { user },
       } = await supabase.auth.getUser();
-      if (!user?.id) return;
+      if (cancelled || !user?.id) return;
 
       const filterCol = activeTab === 'buying' ? 'buyer_id' : 'seller_id';
 
-      channel = supabase
-        .channel(`transactions-${user.id}-${activeTab}`)
+      // Egyedi suffix: React 19 Strict Mode kétszer fut, és Supabase a
+      // channel name alapján cache-eli. Random suffix nélkül a második mount
+      // ugyanazt a (már subscribe-olt) channel-t kapná vissza, amire .on()
+      // hívni már tilos → "cannot add postgres_changes callbacks after subscribe()".
+      const uniqueSuffix = Math.random().toString(36).slice(2, 10);
+      const ch = supabase
+        .channel(`transactions-${user.id}-${activeTab}-${uniqueSuffix}`)
         .on(
           'postgres_changes',
           {
@@ -172,18 +186,29 @@ export default function TransactionList() {
             filter: `${filterCol}=eq.${user.id}`,
           },
           () => {
-            void loadTransactions();
+            void loadTransactionsRef.current();
           },
         )
         .subscribe();
+
+      // Ha a cleanup már lefutott mire a channel létrejött, azonnal töröljük.
+      if (cancelled) {
+        void supabase.removeChannel(ch);
+        return;
+      }
+      channel = ch;
     };
 
     void setup();
 
     return () => {
-      if (channel) supabase.removeChannel(channel);
+      cancelled = true;
+      if (channel) {
+        void supabase.removeChannel(channel);
+        channel = null;
+      }
     };
-  }, [activeTab, loadTransactions]);
+  }, [activeTab]);
 
   const handleMarkPackageShipped = async (transaction: Transaction) => {
     setActingId(transaction.id);
