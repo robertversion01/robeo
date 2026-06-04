@@ -34,6 +34,7 @@ import ProfileSettingsHub from '@/components/profile/ProfileSettingsHub';
 import ProfileSignOutBar from '@/components/profile/ProfileSignOutBar';
 import OrdersQuickHub from '@/components/profile/OrdersQuickHub';
 import SellerEngagementHub from '@/components/seller/SellerEngagementHub';
+import SellerInsightsPanel from '@/components/seller/SellerInsightsPanel';
 import ProfileMarketplaceStats from '@/components/profile/ProfileMarketplaceStats';
 import TrustSafetyBlock from '@/components/trust/TrustSafetyBlock';
 import { useTranslation } from 'react-i18next';
@@ -524,6 +525,7 @@ export default function ProfilePage() {
             favoritesOnListings={listingFavoriteCount}
           />
           <TrustSafetyBlock variant="compact" className="mb-6" />
+          {user?.id ? <SellerInsightsPanel sellerId={user.id} /> : null}
           <SellerEngagementHub products={products} />
           <ProfileSection
             title={t('profile.myListings')}

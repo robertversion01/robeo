@@ -454,6 +454,20 @@
     "checkoutNudge": "Még {{count}} tétel van a csomagodban — akár {{savings}} megtakarítás.",
     "checkoutNudgeLink": "További hirdetések"
   },
+  "sellerInsights": {
+    "title": "Eladói riportok",
+    "subtitle": "Bevétel, eladott darabszám, top termékek — utolsó 6 hónap.",
+    "empty": "Még nincs eladás.",
+    "emptyHint": "Amint az első tranzakció kifizetve állapotba kerül, itt látod az értékeit.",
+    "netRevenue": "Nettó bevétel",
+    "grossHint": "Bruttó: {{gross}}",
+    "lastMonth": "Utolsó 30 nap",
+    "totalSalesHint": "Összesen {{count}} eladás",
+    "avgSale": "Átlag eladási ár",
+    "topCountHint": "{{count}} top termék",
+    "monthlyTitle": "Havi bontás (utolsó 6 hónap)",
+    "topProductsTitle": "Top 5 termék bevétel szerint"
+  },
   "sellerEngagement": {
     "title": "Érdeklődés a hirdetéseid iránt",
     "subtitle": "Kedvencek és gyors reakció — Vinted-szerű eladói nézet.",

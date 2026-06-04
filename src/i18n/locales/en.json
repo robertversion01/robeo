@@ -447,6 +447,20 @@
     "checkoutNudge": "{{count}} more items in your bundle — save up to {{savings}}.",
     "checkoutNudgeLink": "More listings"
   },
+  "sellerInsights": {
+    "title": "Seller insights",
+    "subtitle": "Revenue, sold count, top products — last 6 months.",
+    "empty": "No sales yet.",
+    "emptyHint": "Once your first transaction is paid, you'll see metrics here.",
+    "netRevenue": "Net revenue",
+    "grossHint": "Gross: {{gross}}",
+    "lastMonth": "Last 30 days",
+    "totalSalesHint": "{{count}} sales total",
+    "avgSale": "Avg sale price",
+    "topCountHint": "{{count}} top items",
+    "monthlyTitle": "Monthly breakdown (last 6 months)",
+    "topProductsTitle": "Top 5 products by revenue"
+  },
   "sellerEngagement": {
     "title": "Interest in your listings",
     "subtitle": "Favorites and quick replies — seller view.",
