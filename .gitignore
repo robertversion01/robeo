@@ -51,6 +51,7 @@ backend/*.local.env
 # Cursor agent helper scripts (local only)
 _cursor_*.ps1
 _cursor_*.txt
+lint-results.json
 
 # typescript
 *.tsbuildinfo

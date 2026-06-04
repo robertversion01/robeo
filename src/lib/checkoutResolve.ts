@@ -75,7 +75,7 @@ export async function resolveCheckout(
 
   let resolvedProductId = input.productId;
   let negotiatedPrice: number | null = null;
-  let offerId = input.offerId;
+  const offerId = input.offerId;
 
   if (offerId) {
     const { data: offerData, error: offerError } = await supabase

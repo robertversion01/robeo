@@ -275,8 +275,15 @@ export function useProducts() {
 
   const hasMore = products.length < totalCount;
 
+  const fetchProductsRef = useRef(fetchProductsPage);
+
+  useEffect(() => {
+    fetchProductsRef.current = fetchProductsPage;
+  }, [fetchProductsPage]);
+
   useEffect(() => {
     void checkUserAndFavorites();
+    // eslint-disable-next-line react-hooks/exhaustive-deps -- once on mount
   }, []);
 
   useEffect(() => {
@@ -286,9 +293,6 @@ export function useProducts() {
     window.addEventListener(CATALOG_UPDATED_EVENT, onCatalogRefresh);
     return () => window.removeEventListener(CATALOG_UPDATED_EVENT, onCatalogRefresh);
   }, [fetchProductsPage]);
-
-  const fetchProductsRef = useRef(fetchProductsPage);
-  fetchProductsRef.current = fetchProductsPage;
 
   useEffect(() => {
     const channelName = `catalog-products-${Math.random().toString(36).slice(2)}`;
