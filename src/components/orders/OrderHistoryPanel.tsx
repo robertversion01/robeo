@@ -194,6 +194,8 @@ export default function OrderHistoryPanel({ initialTab = 'purchases' }: Props) {
                       <img
                         src={getOptimizedImageUrl(tx.product.image_url, 128, 85)}
                         alt=""
+                        loading="lazy"
+                        decoding="async"
                         className="h-full w-full object-cover"
                       />
                     ) : (

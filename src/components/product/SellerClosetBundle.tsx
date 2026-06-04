@@ -109,6 +109,8 @@ export default function SellerClosetBundle({ sellerId, currentProductId, onBundl
                   <img
                     src={getOptimizedImageUrl(p.image_url, 120, 80)}
                     alt=""
+                    loading="lazy"
+                    decoding="async"
                     className="h-full w-full object-cover"
                   />
                 ) : null}

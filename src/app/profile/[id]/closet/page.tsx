@@ -105,6 +105,8 @@ export default function SellerClosetPage() {
                     <img
                       src={getOptimizedImageUrl(p.image_url, 200, 250)}
                       alt=""
+                      loading="lazy"
+                      decoding="async"
                       className="h-full w-full object-cover"
                     />
                   ) : null}

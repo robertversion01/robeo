@@ -16,6 +16,8 @@ export default function ProductImage({
   className,
   alt = '',
   onError,
+  loading,
+  decoding,
   ...rest
 }: ProductImageProps) {
   const normalized = normalizeProductImageUrl(src);
@@ -28,6 +30,8 @@ export default function ProductImage({
       {...rest}
       src={normalized}
       alt={alt}
+      loading={loading ?? 'lazy'}
+      decoding={decoding ?? 'async'}
       className={cn(className)}
       onError={(event) => {
         setFailed(true);

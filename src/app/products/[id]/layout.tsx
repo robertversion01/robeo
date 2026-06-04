@@ -63,6 +63,45 @@ export async function generateMetadata({
   });
 }
 
-export default function ProductLayout({ children }: { children: React.ReactNode }) {
-  return children;
+export default async function ProductLayout({
+  children,
+  params,
+}: {
+  children: React.ReactNode;
+  params: Promise<{ id: string }>;
+}) {
+  const { id } = await params;
+  const product = await loadProduct(id);
+
+  if (!product) return children;
+
+  const image =
+    (Array.isArray(product.images) && product.images[0]) || product.image_url || undefined;
+
+  const jsonLd = {
+    '@context': 'https://schema.org',
+    '@type': 'Product',
+    name: product.name,
+    description: product.description || undefined,
+    image: image ? [image] : undefined,
+    brand: product.brand ? { '@type': 'Brand', name: product.brand } : undefined,
+    offers: {
+      '@type': 'Offer',
+      url: `${siteConfig.url}/products/${id}`,
+      priceCurrency: 'HUF',
+      price: Number(product.price || 0).toString(),
+      availability: 'https://schema.org/InStock',
+      itemCondition: 'https://schema.org/UsedCondition',
+    },
+  };
+
+  return (
+    <>
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}
+      />
+      {children}
+    </>
+  );
 }

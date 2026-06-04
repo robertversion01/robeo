@@ -424,6 +424,8 @@ export default function TransactionList() {
                     <img
                       src={getOptimizedImageUrl(transaction.product.image_url, 100, 80)}
                       alt={transaction.product?.name}
+                      loading="lazy"
+                      decoding="async"
                       className="w-full h-full object-cover"
                     />
                   ) : (
