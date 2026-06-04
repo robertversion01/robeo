@@ -21,6 +21,7 @@ import {
   shouldShowMobileHeaderQuickActions,
   shouldShowMobileBottomNav,
 } from '@/lib/navVisibility';
+import { ROBEO_BP_MODE } from '@/lib/features';
 
 interface NavbarProps {
   searchQuery?: string;
@@ -142,14 +143,18 @@ export default function Navbar({ searchQuery, onSearchChange }: NavbarProps) {
           <div className="px-2 py-2 border-b border-gray-100">
             <LanguageSwitcher variant="light" className="w-full justify-center" />
           </div>
-          <Link
-            href="/orders"
-            className="w-full min-h-9 flex items-center gap-2 px-3 py-2 rounded-lg text-sm text-gray-700 hover:bg-gray-100"
-            onClick={() => setShowProfileMenu(false)}
-          >
-            <Package size={15} />
-            {t('nav.orders')}
-          </Link>
+          {/* RobeoBP: nincs rendeles-nyomonkovetes oldal, a foglalasok a
+              chatben jelennek meg. V1-ben tovabbra is megjelenik. */}
+          {!ROBEO_BP_MODE ? (
+            <Link
+              href="/orders"
+              className="w-full min-h-9 flex items-center gap-2 px-3 py-2 rounded-lg text-sm text-gray-700 hover:bg-gray-100"
+              onClick={() => setShowProfileMenu(false)}
+            >
+              <Package size={15} />
+              {t('nav.orders')}
+            </Link>
+          ) : null}
           <Link
             href="/profile"
             className="w-full min-h-9 flex items-center gap-2 px-3 py-2 rounded-lg text-sm text-gray-700 hover:bg-gray-100"
@@ -230,9 +235,12 @@ export default function Navbar({ searchQuery, onSearchChange }: NavbarProps) {
       </Link>
       {notificationsLink}
       {messagesLink}
-      <Link href="/orders" className="icon-btn text-gray-700 shrink-0" aria-label={t('nav.orders')} title={t('nav.orders')}>
-        <Package size={18} />
-      </Link>
+      {/* RobeoBP: a top-nav ikon /orders shortcut is rejtve. */}
+      {!ROBEO_BP_MODE ? (
+        <Link href="/orders" className="icon-btn text-gray-700 shrink-0" aria-label={t('nav.orders')} title={t('nav.orders')}>
+          <Package size={18} />
+        </Link>
+      ) : null}
       <Link href="/favorites" className="icon-btn text-gray-700 shrink-0" aria-label={t('nav.favorites')}>
         <Heart size={18} />
       </Link>

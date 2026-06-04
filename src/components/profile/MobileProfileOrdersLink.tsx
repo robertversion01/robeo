@@ -3,10 +3,13 @@
 import Link from 'next/link';
 import { Package } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
+import { ROBEO_BP_MODE } from '@/lib/features';
 
-/** Rendelések gyors link — mobilon, mivel nincs a 5 tabos alsó sávban (Hacoo elrendezés). */
+/** Rendelések gyors link — mobilon, mivel nincs a 5 tabos alsó sávban (Hacoo elrendezés).
+ *  RobeoBP-ben rejtve (nincs rendeles-nyomonkovetes oldal). */
 export default function MobileProfileOrdersLink() {
   const { t } = useTranslation();
+  if (ROBEO_BP_MODE) return null;
 
   return (
     <Link

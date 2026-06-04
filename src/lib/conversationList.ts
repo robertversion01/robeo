@@ -1,5 +1,6 @@
 import { isSaleSystemMessage, SALE_NOTIFICATION_MARKER } from '@/lib/saleNotifications';
 import { LOCAL_PICKUP_MARKER } from '@/lib/systemMessageView';
+import { ROBEO_BP_MODE } from '@/lib/features';
 
 export type MessageRow = {
   id: string;
@@ -79,6 +80,29 @@ export function buildConversationsFromMessages(
     (a, b) =>
       new Date(b.last_message_time).getTime() - new Date(a.last_message_time).getTime(),
   );
+
+  // RobeoBP UX: a regi V1 sale-history konverzaciokat (utolso uzenetuk
+  // [ROBEO_SALE] markert tartalmaz) elrejtjuk a listabol — DB nem torlodik,
+  // csak a BP build vevoje nem latja a Stripe-flow-bol szarmazo regi tradeket.
+  // BP-relevant konverzaciok: amelyek vagy `[ROBEO_LOCAL_PICKUP]` markert
+  // tartalmaznak vagy egyaltalan nincs system marker (tisztan emberi chat).
+  if (ROBEO_BP_MODE) {
+    return list.filter((row) => {
+      const lastMsg = convMap.get(row.user_id);
+      if (!lastMsg) return true;
+      const content = lastMsg.content || '';
+      if (content.includes(LOCAL_PICKUP_MARKER)) return true;
+      // V1 sale / shipping history: rejtve
+      if (
+        content.includes(SALE_NOTIFICATION_MARKER) ||
+        content.includes('sikeresen kifizették') ||
+        isSaleSystemMessage(content, lastMsg.message_type)
+      ) {
+        return false;
+      }
+      return true;
+    });
+  }
 
   return list;
 }

@@ -4,10 +4,13 @@ import Link from 'next/link';
 import { Package, ShoppingBag, Truck } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 import { cn } from '@/lib/utils';
+import { ROBEO_BP_MODE } from '@/lib/features';
 
-/** Központi belépőpont: minden link `/orders`-ra mutat (tab query opcionális). */
+/** Központi belépőpont: minden link `/orders`-ra mutat (tab query opcionális).
+ *  RobeoBP-ben rejtve — nincs rendelés-nyomonkövetés, foglalások a chatben. */
 export default function OrdersQuickHub({ className }: { className?: string }) {
   const { t } = useTranslation();
+  if (ROBEO_BP_MODE) return null;
 
   return (
     <div className={cn('mb-6 grid grid-cols-1 sm:grid-cols-2 gap-3', className)}>

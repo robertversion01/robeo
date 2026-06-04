@@ -41,6 +41,7 @@ import { useTranslation } from 'react-i18next';
 import { useRouter } from 'next/navigation';
 import { useIsAdmin } from '@/hooks/useIsAdmin';
 import { isProfileRegistrationComplete } from '@/lib/profileRegistration';
+import { ROBEO_BP_MODE } from '@/lib/features';
 
 export default function ProfilePage() {
   const { t, i18n } = useTranslation();
@@ -693,17 +694,23 @@ export default function ProfilePage() {
                   </div>
                 </div>
               </div>
-              <div className="mb-8">
-                <div className="flex items-center justify-between mb-3">
-                  <h2 className="text-lg font-bold">{t('profile.transactions')}</h2>
-                  <Link href="/orders" className="text-xs font-semibold text-[#007782] hover:underline">
-                    {t('orders.viewAll')} →
-                  </Link>
+              {/* RobeoBP: a klasszikus "Tranzakciók" lista (TransactionList)
+                  shipping_status / wallet release / Foxpost-cimke alapu, BP-ben
+                  ezek nem futnak. A foglalasok a chatben jelennek meg, igy a
+                  teljes blokk rejtve. V1 valtozatlan. */}
+              {!ROBEO_BP_MODE ? (
+                <div className="mb-8">
+                  <div className="flex items-center justify-between mb-3">
+                    <h2 className="text-lg font-bold">{t('profile.transactions')}</h2>
+                    <Link href="/orders" className="text-xs font-semibold text-[#007782] hover:underline">
+                      {t('orders.viewAll')} →
+                    </Link>
+                  </div>
+                  <Suspense fallback={<div className="text-sm text-gray-500 py-4">{t('common.loading')}</div>}>
+                    <TransactionList />
+                  </Suspense>
                 </div>
-                <Suspense fallback={<div className="text-sm text-gray-500 py-4">{t('common.loading')}</div>}>
-                  <TransactionList />
-                </Suspense>
-              </div>
+              ) : null}
               <WalletBalanceCard userId={user?.id} />
               <Link
                 href="/notifications"
