@@ -1,4 +1,5 @@
 import { isSaleSystemMessage, SALE_NOTIFICATION_MARKER } from '@/lib/saleNotifications';
+import { LOCAL_PICKUP_MARKER } from '@/lib/systemMessageView';
 
 export type MessageRow = {
   id: string;
@@ -19,9 +20,16 @@ export type ConversationRow = {
   is_sale_thread: boolean;
 };
 
-/** Lista-előnézet: system / [ROBEO_SALE] üzenetek is olvasható címkével. */
+/** Lista-előnézet: system / [ROBEO_SALE] / [ROBEO_LOCAL_PICKUP] üzenetek
+ *  olvasható címkével. A marker bracket-eket SOHA nem mutatjuk a usernek. */
 export function formatConversationPreview(msg: MessageRow): string {
   const type = msg.message_type ?? 'text';
+  // RobeoBP: lokális átvétel foglalási marker — emoji-s összegzés (a marker
+  // bracket-jét nem mutatjuk, a user csak "Foglalás: helyi átvétel" feliratot
+  // lát a lista-előnézetben).
+  if (msg.content.includes(LOCAL_PICKUP_MARKER)) {
+    return '🤝 Foglalás — helyi átvétel egyeztetés';
+  }
   if (type === 'system' || isSaleSystemMessage(msg.content, type)) {
     if (
       msg.content.includes(SALE_NOTIFICATION_MARKER) ||
@@ -29,7 +37,11 @@ export function formatConversationPreview(msg: MessageRow): string {
     ) {
       return '🎉 Sikeres eladás — csomag összekészítése';
     }
-    const line = msg.content.replace(SALE_NOTIFICATION_MARKER, '').trim().split('\n')[0];
+    const line = msg.content
+      .replace(SALE_NOTIFICATION_MARKER, '')
+      .replace(LOCAL_PICKUP_MARKER, '')
+      .trim()
+      .split('\n')[0];
     return line.length > 100 ? `${line.slice(0, 97)}…` : line || 'Rendszerüzenet';
   }
   if (type === 'image') return '📷 Kép';

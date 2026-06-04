@@ -21,6 +21,7 @@ import { isUuid } from '@/lib/validators';
 import { isListedProduct } from '@/lib/listedProducts';
 import { MAIN_TOP_PADDING } from '@/lib/layoutTokens';
 import { useTranslation } from 'react-i18next';
+import { ROBEO_BP_MODE } from '@/lib/features';
 
 interface Message {
   id: string;
@@ -524,26 +525,30 @@ export default function MessagesPage() {
       >
         <div className="max-w-6xl mx-auto h-full flex flex-col md:flex-row">
           
-          {/* Offers Section */}
+          {/* Offers Section - RobeoBP-ben elrejtve, mert BP modban nincs
+              ajanlat-flow (csak "Lefoglalom ingyen" foglalas). V1 buildben
+              minden tovabbi feltetel nelkul renderlodik. */}
           <div className={`w-full md:w-80 border-b md:border-b-0 md:border-r border-gray-200 overflow-y-auto flex flex-col min-h-0 ${selectedConversation ? 'hidden md:flex' : ''}`}>
-            <div className="border-b border-gray-200 shrink-0">
-              <button
-                type="button"
-                onClick={() => setOffersOpen((o) => !o)}
-                className="md:hidden w-full flex items-center justify-between px-4 py-3 text-left font-bold text-gray-900 touch-manipulation"
-                aria-expanded={offersOpen}
-              >
-                {t('messages.offersCollapsible')}
-                <ChevronDown
-                  size={20}
-                  className={`transition-transform ${offersOpen ? 'rotate-180' : ''}`}
-                />
-              </button>
-              <div className={`${offersOpen ? 'block' : 'hidden'} md:block p-4 md:p-5`}>
-                <h2 className="hidden md:block text-xl font-bold mb-4">{t('messages.offersTitle')}</h2>
-                <OffersList />
+            {!ROBEO_BP_MODE ? (
+              <div className="border-b border-gray-200 shrink-0">
+                <button
+                  type="button"
+                  onClick={() => setOffersOpen((o) => !o)}
+                  className="md:hidden w-full flex items-center justify-between px-4 py-3 text-left font-bold text-gray-900 touch-manipulation"
+                  aria-expanded={offersOpen}
+                >
+                  {t('messages.offersCollapsible')}
+                  <ChevronDown
+                    size={20}
+                    className={`transition-transform ${offersOpen ? 'rotate-180' : ''}`}
+                  />
+                </button>
+                <div className={`${offersOpen ? 'block' : 'hidden'} md:block p-4 md:p-5`}>
+                  <h2 className="hidden md:block text-xl font-bold mb-4">{t('messages.offersTitle')}</h2>
+                  <OffersList />
+                </div>
               </div>
-            </div>
+            ) : null}
 
             <h2 className="text-lg font-bold px-4 py-3 border-b border-gray-200 shrink-0">{t('messages.conversationsTitle')}</h2>
             
@@ -634,7 +639,12 @@ export default function MessagesPage() {
                   ) : null}
                 </div>
                 <ChatProductSummary productId={activeProductId} />
-                {user && selectedConversation ? (
+                {/* RobeoBP: a teljes order-status stepper / Foxpost label /
+                    timeline panel ki van zarva BP modban - a chat tiszta
+                    p2p kommunikacios dobozzal indul, semmilyen e-commerce
+                    "kovetes" UI nem terheli a felulet tetejet. A V1 panel
+                    erintetlen marad, csak nem renderlodik BP buildben. */}
+                {!ROBEO_BP_MODE && user && selectedConversation ? (
                   <ChatTransactionPanel
                     userId={user.id}
                     otherUserId={selectedConversation}
@@ -694,7 +704,7 @@ export default function MessagesPage() {
                     <p className="mb-2 text-center text-xs text-gray-500">{t('block.threadClosed')}</p>
                   ) : null}
                   <form onSubmit={sendMessage} className="flex flex-nowrap items-center gap-2 max-w-full box-border">
-                    {canMakeOffer ? (
+                    {canMakeOffer && !ROBEO_BP_MODE ? (
                       <button
                         type="button"
                         onClick={() => setShowOfferModal(true)}

@@ -20,6 +20,7 @@ import SystemMessageRoleBadge from '@/components/messages/SystemMessageRoleBadge
 import { focusOrderPanel } from '@/lib/orderPanelActions';
 import { useResolvedTransactionRole } from '@/hooks/useResolvedTransactionRole';
 import LocalPickupSystemMessageCard from '@/components/messages/LocalPickupSystemMessageCard';
+import { ROBEO_BP_MODE } from '@/lib/features';
 
 type Props = {
   msg: {
@@ -66,6 +67,15 @@ export default function ChatSystemMessageBubble({
         />
       </div>
     );
+  }
+
+  // RobeoBP "tiszta lap" UX: BP modban a NEM-local_pickup tipusu rendszer-
+  // uzeneteket (shipping_status, sale_paid, offer_*, generic) egyszeruen NEM
+  // rendereljuk. Igy a regi V1 floszag visszamarad a DB-ben, de a BP build
+  // nezojenek 100%-ban tiszta a chat folyam (csak local_pickup karya + sima
+  // emberi uzenetek). A V1 build minden tovabbi feltetel nelkul renderel.
+  if (ROBEO_BP_MODE) {
+    return null;
   }
 
   let body: ReactNode = msg.content;

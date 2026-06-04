@@ -831,6 +831,10 @@
     "purchasesHint": "Vásárlásaid követése — fizetés, szállítás, átvétel megerősítése.",
     "salesHint": "Eladásaid kezelése — címkenyomtatás, feladás, átvétel követése."
   },
+  "offerExpiry": {
+    "expired": "Lejárt",
+    "remaining": "{{time}} maradt"
+  },
   "orders": {
     "title": "Rendeléstörténet",
     "subtitle": "Vásárlásaid és eladásaid",
