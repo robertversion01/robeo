@@ -23,11 +23,14 @@ Utolsó frissítés: Vinted-paritás lezárás (block, reaccept, offer expiry, f
 
 ## [MANUAL / KÜLSÖ] — nem kód
 
-- [ ] Resend domain verify (DNS)
-- [ ] Stripe Connect éles payout
+Részletes lépésenkénti útmutató: [`docs/INFRA-CHECKLIST.md`](docs/INFRA-CHECKLIST.md)
+
+- [ ] Resend domain verify (DNS) — SPF / DKIM / DMARC
+- [ ] Stripe Connect éles payout (Live mode + Connect webhook endpoint)
 - [ ] Foxpost live API (`FOXPOST_API_URL`)
 - [ ] Packeta live widget (`NEXT_PUBLIC_PACKETA_API_KEY`)
-- [ ] Valós futár tracking
+- [ ] Valós futár tracking (cron polling)
+- [ ] Saját domain + SSL
 
 ---
 

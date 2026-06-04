@@ -111,13 +111,13 @@ Teszteléshez **3 külön email** ajánlott (admin / eladó / vevő). Részletek
 
 ## [MANUAL / KÜLSŐ] — következő lépések (nem kód)
 
-- [ ] Resend domain verify (DNS) — email értesítések
+Részletes lépésenkénti útmutató: `docs/INFRA-CHECKLIST.md`
+
+- [ ] Resend domain verify (DNS)
 - [ ] Stripe Connect éles payout
 - [ ] Foxpost live API (`FOXPOST_API_URL`)
 - [ ] Packeta live widget kulcs
 - [ ] Valós futár tracking
-
-Opcionális kód nice-to-have: wallet bundle checkoutban, pickup oszlopok átnevezése, `INSTRUCTIONS.md` / `VINTED-GAP-ANALYSIS.md` frissítése.
 
 ---
 
