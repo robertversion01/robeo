@@ -12,6 +12,7 @@ import TrustSafetyBlock from '@/components/trust/TrustSafetyBlock';
 import FoxpostTerminalPicker from '@/components/checkout/FoxpostTerminalPicker';
 import PacketaPointPicker from '@/components/checkout/PacketaPointPicker';
 import CheckoutTermsCheckbox from '@/components/checkout/CheckoutTermsCheckbox';
+import CheckoutWalletOption from '@/components/checkout/CheckoutWalletOption';
 import { calculateCheckoutTotal } from '@/lib/buyerProtection';
 import type { FoxpostTerminal } from '@/lib/foxpostTerminal';
 import type { PacketaPoint } from '@/lib/packetaPoint';
@@ -39,6 +40,17 @@ export default function CheckoutBundleContent() {
   const [packetaPoint, setPacketaPoint] = useState<PacketaPoint | null>(null);
   const [processingPayment, setProcessingPayment] = useState(false);
   const [termsAccepted, setTermsAccepted] = useState(false);
+  const [useWallet, setUseWallet] = useState(false);
+  const [userId, setUserId] = useState<string | null>(null);
+
+  useEffect(() => {
+    void (async () => {
+      const {
+        data: { user },
+      } = await supabase.auth.getUser();
+      setUserId(user?.id ?? null);
+    })();
+  }, []);
 
   const locale = i18n.language?.startsWith('en') ? 'en-HU' : 'hu-HU';
   const currency = t('common.currencyHuf');
@@ -126,18 +138,56 @@ export default function CheckoutBundleContent() {
         return;
       }
 
+      const productIds = items.map((i) => i.productId);
+      const sharedShipping = {
+        foxpostTerminal: shippingMethod === 'foxpost' ? foxpostTerminal : null,
+        packetaPoint: shippingMethod === 'packeta' ? packetaPoint : null,
+      };
+
+      if (useWallet) {
+        const walletRes = await fetch('/api/checkout/wallet-pay', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            productIds,
+            buyerId: user.id,
+            shippingMethod,
+            shippingCost,
+            bundleDiscountPercent: discountPercent,
+            useWallet: true,
+            termsAccepted: true,
+            ...sharedShipping,
+          }),
+        });
+        const walletData = await walletRes.json();
+        if (!walletRes.ok) {
+          throw new Error(walletData.error || t('checkout.errors.paymentFailed'));
+        }
+
+        if (walletData.mode === 'wallet' && walletData.successUrl) {
+          clearBundleCart();
+          window.location.href = walletData.successUrl;
+          return;
+        }
+        if (walletData.mode === 'mixed' && walletData.url) {
+          clearBundleCart();
+          window.location.href = walletData.url;
+          return;
+        }
+        // Else: stripe_only — fall through to Stripe checkout
+      }
+
       const response = await fetch('/api/stripe/checkout', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
-          productIds: items.map((i) => i.productId),
+          productIds,
           buyerId: user.id,
           shippingMethod,
           shippingCost,
           bundleDiscountPercent: discountPercent,
-          foxpostTerminal: shippingMethod === 'foxpost' ? foxpostTerminal : null,
-          packetaPoint: shippingMethod === 'packeta' ? packetaPoint : null,
           termsAccepted: true,
+          ...sharedShipping,
         }),
       });
 
@@ -206,6 +256,14 @@ export default function CheckoutBundleContent() {
       ) : null}
       {!termsAccepted && shippingMethod && !processingPayment ? (
         <p className="text-xs text-amber-700 text-center">{t('checkout.terms.required')}</p>
+      ) : null}
+      {userId ? (
+        <CheckoutWalletOption
+          buyerId={userId}
+          useWallet={useWallet}
+          onUseWalletChange={setUseWallet}
+          total={total}
+        />
       ) : null}
       <CheckoutTermsCheckbox checked={termsAccepted} onChange={setTermsAccepted} />
       <button

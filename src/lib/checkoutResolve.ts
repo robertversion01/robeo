@@ -8,6 +8,31 @@ import {
 import { foxpostTerminalAddress, type FoxpostTerminal } from '@/lib/foxpostTerminal';
 import { isListedProduct } from '@/lib/listedProducts';
 
+export type CheckoutBundleProduct = {
+  id: string;
+  user_id: string;
+  name: string;
+  description?: string | null;
+  image_url?: string | null;
+  price: number;
+};
+
+export type CheckoutBundleResolved = {
+  transactionId: string;
+  primaryProductId: string;
+  products: CheckoutBundleProduct[];
+  productIds: string[];
+  sellerId: string;
+  sellerEmail: string;
+  sellerStripeAccountId: string | null;
+  subtotal: number;
+  bundleDiscountPercent: number;
+  productPrice: number;
+  buyerProtectionFee: number;
+  shippingCost: number;
+  totalAmount: number;
+};
+
 export type CheckoutResolveInput = {
   productId?: string;
   offerId?: string;
@@ -150,6 +175,131 @@ export async function resolveCheckout(
     negotiatedPrice,
     offerId,
   };
+}
+
+export async function resolveBundleCheckout(
+  supabase: SupabaseClient,
+  input: {
+    productIds: string[];
+    buyerId: string;
+    shippingCost?: number;
+    bundleDiscountPercent?: number;
+  },
+): Promise<CheckoutBundleResolved> {
+  const { randomUUID } = await import('crypto');
+  const transactionId = randomUUID();
+
+  const uniqueIds = [...new Set(input.productIds.map(String).filter(Boolean))].slice(0, 8);
+  if (uniqueIds.length < 2) {
+    throw new Error('Csomag vásárláshoz legalább 2 termék szükséges.');
+  }
+
+  const { data: productsData, error: productsError } = await supabase
+    .from('products')
+    .select('id, user_id, name, description, image_url, price')
+    .in('id', uniqueIds);
+
+  if (productsError || !productsData || productsData.length !== uniqueIds.length) {
+    throw new Error('Egy vagy több termék nem található.');
+  }
+
+  const products = productsData as CheckoutBundleProduct[];
+  const sellerIds = new Set(products.map((p) => p.user_id));
+  if (sellerIds.size !== 1) {
+    throw new Error('Csomag vásárlásnál minden terméknek ugyanattól az eladótól kell származnia.');
+  }
+
+  const sellerId = products[0].user_id;
+  if (sellerId === input.buyerId) {
+    throw new Error('A saját termékedet nem vásárolhatod meg.');
+  }
+
+  const [{ data: sellerProfile }, { data: sellerUser }] = await Promise.all([
+    supabase.from('profiles').select('email, stripe_account_id').eq('id', sellerId).maybeSingle(),
+    supabase.from('users').select('stripe_account_id, email').eq('id', sellerId).maybeSingle(),
+  ]);
+
+  const sellerStripeAccountId =
+    sellerUser?.stripe_account_id ||
+    sellerProfile?.stripe_account_id ||
+    process.env.FALLBACK_STRIPE_ACCOUNT_ID ||
+    null;
+  const sellerEmail = sellerUser?.email || sellerProfile?.email || 'seller@robeo.local';
+
+  const subtotal = products.reduce((s, p) => s + Math.round(Number(p.price) || 0), 0);
+  const bundleDiscountPercent = Math.min(
+    50,
+    Math.max(0, Math.round(input.bundleDiscountPercent || 0)),
+  );
+  const productPrice = applyBundleDiscountToPrice(subtotal, bundleDiscountPercent);
+
+  const normalizedShippingCost =
+    typeof input.shippingCost === 'number' && input.shippingCost > 0
+      ? Math.round(input.shippingCost)
+      : 0;
+
+  const { buyerProtectionFee, total: totalAmount } = calculateCheckoutTotal(
+    productPrice,
+    normalizedShippingCost,
+  );
+
+  return {
+    transactionId,
+    primaryProductId: products[0].id,
+    products,
+    productIds: uniqueIds,
+    sellerId,
+    sellerEmail,
+    sellerStripeAccountId,
+    subtotal,
+    bundleDiscountPercent,
+    productPrice,
+    buyerProtectionFee,
+    shippingCost: normalizedShippingCost,
+    totalAmount,
+  };
+}
+
+export function buildBundleTransactionInsertRow(
+  resolved: CheckoutBundleResolved,
+  extras: {
+    buyerId: string;
+    shippingMethod: string;
+    status: string;
+    checkoutSessionId?: string | null;
+    paymentIntentId?: string | null;
+    paymentProvider: string;
+    walletAmountPaid?: number;
+    foxpostTerminal?: FoxpostTerminal | null;
+  },
+) {
+  const row: Record<string, unknown> = {
+    id: resolved.transactionId,
+    product_id: resolved.primaryProductId,
+    buyer_id: extras.buyerId,
+    seller_id: resolved.sellerId,
+    amount: resolved.totalAmount,
+    fee: resolved.buyerProtectionFee,
+    shipping_method: extras.shippingMethod || null,
+    shipping_cost: resolved.shippingCost,
+    status: extras.status,
+    checkout_session_id: extras.checkoutSessionId ?? null,
+    payment_intent_id: extras.paymentIntentId ?? null,
+    payment_provider: extras.paymentProvider,
+    wallet_amount_paid: extras.walletAmountPaid ?? 0,
+    bundle_item_count: resolved.products.length,
+    bundle_product_ids: resolved.productIds.join(','),
+    bundle_discount_percent: resolved.bundleDiscountPercent,
+  };
+
+  if (extras.foxpostTerminal) {
+    row.foxpost_terminal_id =
+      extras.foxpostTerminal.operator_id || String(extras.foxpostTerminal.place_id || '');
+    row.foxpost_terminal_name = extras.foxpostTerminal.name || null;
+    row.foxpost_terminal_address = foxpostTerminalAddress(extras.foxpostTerminal) || null;
+  }
+
+  return row;
 }
 
 export function buildTransactionInsertRow(
