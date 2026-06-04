@@ -40,4 +40,7 @@ npm run build && npm run dev
 
 **SQL patch-ek (futtatva / ellenőrizd):** offer-expiry, profile-bio, disputes, user-blocks (`npm run db:check-patches`)
 
+**Új patch otthon (futtatandó):** `supabase/patch-pickup-points-rename.sql`
+— semleges `pickup_point_*` oszlopok (Foxpost + Packeta közös), backward compat
+
 **Éles:** https://robeo.vercel.app

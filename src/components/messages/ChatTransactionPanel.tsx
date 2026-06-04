@@ -51,6 +51,10 @@ type TxRow = ShippingTransaction & {
   tracking_number?: string | null;
   payment_intent_id?: string | null;
   dispute_status?: string | null;
+  pickup_point_id?: string | null;
+  pickup_point_name?: string | null;
+  pickup_point_address?: string | null;
+  pickup_provider?: string | null;
   foxpost_terminal_id?: string | null;
   foxpost_terminal_name?: string | null;
   foxpost_terminal_address?: string | null;

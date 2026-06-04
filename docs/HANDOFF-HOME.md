@@ -85,7 +85,7 @@ Lásd: `TODO-TOMORROW.md` — minden V1 kód item **[DONE]**.
 
 ### Ismert korlátok / figyelmeztetések
 
-- Packeta pontok a **`foxpost_terminal_*`** oszlopokban vannak (néveltér eltérés)
+- Pickup pontok: új semleges `pickup_point_*` + `pickup_provider` oszlopok (futtasd: `patch-pickup-points-rename.sql`); a régi `foxpost_terminal_*` deprecated, kód mindkettőbe ír
 - Wallet checkout **nincs** bundle checkoutban
 - Offer expiry a saved-search cronhoz van kötve (Hobby 1 slot)
 - Packeta dev: statikus HU lista; live widgethez `NEXT_PUBLIC_PACKETA_API_KEY`

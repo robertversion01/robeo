@@ -10,6 +10,7 @@ import {
   isMissingColumnError,
   TX_LABEL_SELECT_SETS,
 } from '@/lib/supabaseResilience';
+import { resolvePickupPoint } from '@/lib/pickupPoint';
 
 export const dynamic = 'force-dynamic';
 
@@ -20,6 +21,10 @@ type LabelTransactionRow = {
   buyer_id: string;
   seller_id: string;
   tracking_number?: string | null;
+  pickup_point_id?: string | null;
+  pickup_point_name?: string | null;
+  pickup_point_address?: string | null;
+  pickup_provider?: string | null;
   foxpost_terminal_id?: string | null;
   foxpost_terminal_name?: string | null;
   foxpost_terminal_address?: string | null;
@@ -126,6 +131,7 @@ export async function POST(req: NextRequest) {
       ['email, full_name, name', 'email, name', 'email'],
     );
 
+    const pickup = resolvePickupPoint(tx);
     let trackingNumber = tx.tracking_number ?? null;
     let shipmentMode: 'existing' | 'new' = 'existing';
 
@@ -135,9 +141,9 @@ export async function POST(req: NextRequest) {
         productName: product?.name || 'Termék',
         sellerId: tx.seller_id,
         buyerId: tx.buyer_id,
-        terminalId: tx.foxpost_terminal_id,
-        terminalName: tx.foxpost_terminal_name,
-        terminalAddress: tx.foxpost_terminal_address,
+        terminalId: pickup.id,
+        terminalName: pickup.name,
+        terminalAddress: pickup.address,
         sellerEmail: sellerProfile?.email,
         buyerName: buyerProfile?.full_name || buyerProfile?.name || buyerProfile?.email,
       });
@@ -194,10 +200,10 @@ export async function POST(req: NextRequest) {
         productName: product?.name || 'Termék',
         sellerEmail: sellerProfile?.email ?? null,
         buyerName: buyerDisplayName,
-        buyerAddress: tx.foxpost_terminal_address ?? null,
-        foxpostTerminalId: tx.foxpost_terminal_id ?? null,
-        foxpostTerminalName: tx.foxpost_terminal_name ?? null,
-        foxpostTerminalAddress: tx.foxpost_terminal_address ?? null,
+        buyerAddress: pickup.address,
+        foxpostTerminalId: pickup.id,
+        foxpostTerminalName: pickup.name,
+        foxpostTerminalAddress: pickup.address,
         trackingNumber,
       },
     });
@@ -206,4 +212,3 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ error: msg }, { status: 500 });
   }
 }
-

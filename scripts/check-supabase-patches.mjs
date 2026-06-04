@@ -88,6 +88,11 @@ const CHECKS = [
     label: 'transactions.dispute_status',
     path: 'transactions?select=dispute_status&limit=1',
   },
+  {
+    patch: 'patch-pickup-points-rename.sql',
+    label: 'transactions.pickup_point_id',
+    path: 'transactions?select=pickup_point_id,pickup_provider&limit=1',
+  },
 ];
 
 async function probe(baseUrl, key, { patch, label, path: restPath }) {

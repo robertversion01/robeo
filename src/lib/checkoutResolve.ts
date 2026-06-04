@@ -7,6 +7,7 @@ import {
 } from '@/lib/bundleDiscount';
 import { foxpostTerminalAddress, type FoxpostTerminal } from '@/lib/foxpostTerminal';
 import { isListedProduct } from '@/lib/listedProducts';
+import { pickupFieldsFromFoxpost } from '@/lib/pickupPoint';
 
 export type CheckoutBundleProduct = {
   id: string;
@@ -293,10 +294,7 @@ export function buildBundleTransactionInsertRow(
   };
 
   if (extras.foxpostTerminal) {
-    row.foxpost_terminal_id =
-      extras.foxpostTerminal.operator_id || String(extras.foxpostTerminal.place_id || '');
-    row.foxpost_terminal_name = extras.foxpostTerminal.name || null;
-    row.foxpost_terminal_address = foxpostTerminalAddress(extras.foxpostTerminal) || null;
+    Object.assign(row, pickupFieldsFromFoxpost(extras.foxpostTerminal));
   }
 
   return row;
@@ -334,10 +332,7 @@ export function buildTransactionInsertRow(
   };
 
   if (extras.foxpostTerminal) {
-    row.foxpost_terminal_id =
-      extras.foxpostTerminal.operator_id || String(extras.foxpostTerminal.place_id || '');
-    row.foxpost_terminal_name = extras.foxpostTerminal.name || null;
-    row.foxpost_terminal_address = foxpostTerminalAddress(extras.foxpostTerminal) || null;
+    Object.assign(row, pickupFieldsFromFoxpost(extras.foxpostTerminal));
   }
 
   return row;

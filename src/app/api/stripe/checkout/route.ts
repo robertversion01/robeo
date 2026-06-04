@@ -374,8 +374,8 @@ export async function POST(req: NextRequest) {
         .select('id')
         .single();
 
-      if (transactionError && pickupFields && /foxpost_terminal/i.test(transactionError.message)) {
-        const { foxpost_terminal_id, foxpost_terminal_name, foxpost_terminal_address, ...withoutPickup } = {
+      if (transactionError && pickupFields && /foxpost_terminal|pickup_point|pickup_provider/i.test(transactionError.message)) {
+        const baseRow = {
           id: transactionId,
           product_id: resolvedProductId,
           buyer_id: buyerId,
@@ -387,9 +387,8 @@ export async function POST(req: NextRequest) {
           status: 'payment_pending',
           checkout_session_id: session.id,
           payment_intent_id: (session.payment_intent as string) || null,
-          ...pickupFields,
         };
-        await supabase.from('transactions').insert(withoutPickup);
+        await supabase.from('transactions').insert(baseRow);
       } else if (transactionError) {
         console.error('[checkout] Transaction creation error (non-blocking):', transactionError);
       } else {
@@ -612,15 +611,19 @@ async function handleBundleCheckout(ctx: {
       bundle_product_ids: uniqueIds.join(','),
     };
     const { error: fullErr } = await supabase.from('transactions').insert(bundleRow);
-    if (fullErr && /bundle_product_ids|bundle_item_count|foxpost_terminal/i.test(fullErr.message)) {
+    if (fullErr && /bundle_product_ids|bundle_item_count|foxpost_terminal|pickup_point|pickup_provider/i.test(fullErr.message)) {
       const {
+        pickup_point_id: _ppi,
+        pickup_point_name: _ppn,
+        pickup_point_address: _ppa,
+        pickup_provider: _ppr,
         foxpost_terminal_id: _id,
         foxpost_terminal_name: _name,
         foxpost_terminal_address: _addr,
-        ...withoutFoxpost
-      } = bundleRow;
+        ...withoutPickup
+      } = bundleRow as Record<string, unknown>;
       const { error: bundleOnlyErr } = await supabase.from('transactions').insert({
-        ...withoutFoxpost,
+        ...withoutPickup,
         bundle_item_count: products.length,
         bundle_product_ids: uniqueIds.join(','),
       });

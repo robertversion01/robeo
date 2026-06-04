@@ -36,12 +36,14 @@ export function isMissingColumnError(
 }
 
 export const TX_LABEL_SELECT_SETS = [
+  'id, status, product_id, buyer_id, seller_id, tracking_number, pickup_point_id, pickup_point_name, pickup_point_address, pickup_provider, foxpost_terminal_id, foxpost_terminal_name, foxpost_terminal_address',
   'id, status, product_id, buyer_id, seller_id, foxpost_terminal_id, foxpost_terminal_name, foxpost_terminal_address, tracking_number',
   'id, status, product_id, buyer_id, seller_id, tracking_number',
   'id, status, product_id, buyer_id, seller_id',
 ] as const;
 
 export const TX_CHAT_SELECT_SETS = [
+  'id, status, product_id, buyer_id, seller_id, tracking_number, payment_intent_id, dispute_status, pickup_point_id, pickup_point_name, pickup_point_address, pickup_provider, foxpost_terminal_id, foxpost_terminal_name, foxpost_terminal_address',
   'id, status, product_id, buyer_id, seller_id, tracking_number, payment_intent_id, dispute_status, foxpost_terminal_id, foxpost_terminal_name, foxpost_terminal_address',
   'id, status, product_id, buyer_id, seller_id, tracking_number, payment_intent_id',
   'id, status, product_id, buyer_id, seller_id',
