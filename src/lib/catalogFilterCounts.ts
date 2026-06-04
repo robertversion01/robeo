@@ -3,6 +3,7 @@ import type { CatalogFilterState } from '@/lib/catalogFilters';
 import {
   categoryDbValues,
   conditionDbValues,
+  getBudapestDistrictFilter,
   subcategoryFilterDbValues,
 } from '@/lib/catalogFilters';
 import { fetchAllVacationSellerIds } from '@/lib/vacationMode';
@@ -58,6 +59,13 @@ async function applySharedFilters(
 
   if (filters.size !== 'all') {
     query = query.ilike('size', `%${filters.size}%`);
+  }
+
+  // RobeoBP: budapest_district szűrés. Csak akkor szűrünk, ha be van állítva
+  // a kerület — ha NULL/'all', minden termék (V1 + BP-feltöltött) látszik.
+  const district = getBudapestDistrictFilter(filters);
+  if (district) {
+    query = query.eq('budapest_district', district);
   }
 
   if (filters.minPrice > 0) {

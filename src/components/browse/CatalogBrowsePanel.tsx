@@ -61,6 +61,7 @@ function CatalogUrlSyncBridge(props: {
   setSelectedMinPrice: (n: number) => void;
   setSelectedMaxPrice: (n: number) => void;
   setSelectedSort: (id: string) => void;
+  setSelectedDistrict?: (id: string) => void;
 }) {
   useCatalogUrlSync(props);
   return null;
@@ -122,6 +123,8 @@ function CatalogBrowsePanelInner({
     setSelectedSize,
     selectedCondition,
     setSelectedCondition,
+    selectedDistrict,
+    setSelectedDistrict,
     activeFilterCount,
     clearAllFilters,
     applyCatalogFilters,
@@ -202,6 +205,7 @@ function CatalogBrowsePanelInner({
       maxPrice: selectedMaxPrice,
       sort: selectedSort,
       search: searchQuery,
+      budapest_district: selectedDistrict,
     }),
     [
       selectedCategory,
@@ -214,6 +218,7 @@ function CatalogBrowsePanelInner({
       selectedMaxPrice,
       selectedSort,
       searchQuery,
+      selectedDistrict,
     ],
   );
 
@@ -364,6 +369,7 @@ function CatalogBrowsePanelInner({
         setSelectedMinPrice={setSelectedMinPrice}
         setSelectedMaxPrice={setSelectedMaxPrice}
         setSelectedSort={setSelectedSort}
+        setSelectedDistrict={setSelectedDistrict}
       />
 
       {showPersonalization && user && isSearch && selectedCategory !== 'all' ? (

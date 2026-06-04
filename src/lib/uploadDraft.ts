@@ -10,6 +10,8 @@ export type UploadDraft = {
   size: string;
   /** Csak darabszám — képek nem kerülnek localStorage-ba (mobil quota / parse crash). */
   imageCount: number;
+  /** RobeoBP only — egyébként üres string. Opcionális marad a back-compat miatt. */
+  budapestDistrict?: string;
   savedAt: string;
 };
 
@@ -60,6 +62,8 @@ function normalizeDraft(parsed: Record<string, unknown>): UploadDraft | null {
     brand: typeof parsed.brand === 'string' ? parsed.brand : '',
     size: typeof parsed.size === 'string' ? parsed.size : '',
     imageCount,
+    budapestDistrict:
+      typeof parsed.budapestDistrict === 'string' ? parsed.budapestDistrict : '',
     savedAt: typeof parsed.savedAt === 'string' ? parsed.savedAt : new Date().toISOString(),
   };
 }

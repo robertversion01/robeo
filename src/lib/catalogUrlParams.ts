@@ -1,5 +1,9 @@
 import type { CatalogFilterState } from '@/lib/catalogFilters';
-import { normalizeDepartmentId } from '@/lib/catalogFilters';
+import {
+  getBudapestDistrictFilter,
+  normalizeDepartmentId,
+} from '@/lib/catalogFilters';
+import { isValidBudapestDistrict } from '@/lib/budapestDistricts';
 
 const DEFAULTS: CatalogFilterState = {
   category: 'all',
@@ -12,6 +16,7 @@ const DEFAULTS: CatalogFilterState = {
   maxPrice: 0,
   sort: 'newest',
   search: '',
+  budapest_district: 'all',
 };
 
 export function parseCatalogFromUrl(params: URLSearchParams): Partial<CatalogFilterState> {
@@ -53,6 +58,12 @@ export function parseCatalogFromUrl(params: URLSearchParams): Partial<CatalogFil
   const sort = params.get('sort');
   if (sort) next.sort = sort;
 
+  const district = params.get('district') ?? params.get('ker');
+  if (district) {
+    const normalized = String(district).trim().toUpperCase();
+    if (isValidBudapestDistrict(normalized)) next.budapest_district = normalized;
+  }
+
   return next;
 }
 
@@ -81,6 +92,9 @@ export function buildCatalogUrlParams(
   ) {
     params.set('max', String(Math.round(filters.maxPrice)));
   }
+
+  const district = getBudapestDistrictFilter(filters);
+  if (district) params.set('district', district);
 
   return params;
 }

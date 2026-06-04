@@ -19,7 +19,10 @@
     "test:wallet-release": "node scripts/run-wallet-release-e2e.mjs",
     "test:notifications": "node scripts/run-e2e-notification-pipeline.mjs",
     "reset:test-env": "node scripts/reset-test-environment.mjs",
-    "reset:marketplace": "node scripts/reset-test-environment.mjs"
+    "reset:marketplace": "node scripts/reset-test-environment.mjs",
+    "docs:pdf": "pwsh -ExecutionPolicy Bypass -File scripts/docs-to-pdf-all.ps1",
+    "docs:pdf:all": "pwsh -ExecutionPolicy Bypass -File scripts/docs-to-pdf-all.ps1 -IncludeRoot",
+    "docs:pdf:one": "pwsh -ExecutionPolicy Bypass -File scripts/md-to-pdf.ps1"
   },
   "dependencies": {
     "@stripe/stripe-js": "^9.4.0",

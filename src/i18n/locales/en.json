@@ -210,7 +210,10 @@
       "applyFilters": "Apply",
       "applyWithCount": "Apply ({{count}} results)",
       "counting": "Counting…",
-      "activeFilters": "{{count}} active filters"
+      "activeFilters": "{{count}} active filters",
+      "budapestDistrict": "Budapest district",
+      "budapestDistrictAll": "All districts",
+      "budapestDistrictHint": "Only items listed in the selected district are shown."
     },
     "feed": {
       "default": "Fresh listings from the community — browse, filter, save favorites.",
@@ -733,7 +736,10 @@
     "loginRequired": "Please log in first.",
     "brandSizeRequired": "Brand and size are required.",
     "success": "Listing published!",
-    "error": "Upload failed."
+    "error": "Upload failed.",
+    "budapestDistrict": "Budapest district",
+    "budapestDistrictPlaceholder": "Choose a district",
+    "budapestDistrictHint": "RobeoBP: buyers filter by this during browsing."
   },
   "checkoutSuccess": {
     "title": "Purchase successful!",
@@ -813,10 +819,21 @@
       "listHint": "Without a Packeta widget key we use the built-in demo point list.",
       "noResults": "No results — try a different search."
     },
+    "localPickup": {
+      "title": "Local pickup — cash / direct P2P",
+      "body": "RobeoBP beta: free local pickup in Budapest. After booking, coordinate the meet-up, location and payment in chat. No Stripe, no courier, no fee.",
+      "reserveButton": "Book it for free",
+      "feeLabel": "Community beta",
+      "feeValue": "Free",
+      "disclaimerTitle": "Disclaimer (Budapest Beta)",
+      "disclaimerBody": "RobeoBP is a free community test app. We don't handle payments and accept no liability for in-person meetings or items. Always arrange meetups in safe, public places."
+    },
     "shippingOptions": {
       "foxpost": "Foxpost locker",
       "packeta": "Packeta pickup point",
       "home": "Home delivery",
+      "localPickup": "Local pickup (Cash / Direct P2P)",
+      "localPickupDays": "Time agreed in chat",
       "foxpostDays": "2–3 business days",
       "packetaDays": "2–4 business days",
       "homeDays": "1–2 business days"
@@ -864,7 +881,8 @@
       "conditionRequired": "Choose a condition.",
       "priceRequired": "Enter a valid price.",
       "nameRequired": "Enter the item title.",
-      "descriptionRequired": "Add a description."
+      "descriptionRequired": "Add a description.",
+      "districtRequired": "Choose the Budapest district."
     }
   },
   "ordersHub": {

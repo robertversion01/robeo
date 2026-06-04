@@ -17,6 +17,8 @@ import { cn } from '@/lib/utils';
 import { suggestListingCopy } from '@/lib/uploadListingAi';
 import { isOllamaReachable } from '@/lib/ollamaClient';
 import { Sparkles } from 'lucide-react';
+import { ROBEO_BP_MODE } from '@/lib/features';
+import { BUDAPEST_DISTRICTS, isValidBudapestDistrict } from '@/lib/budapestDistricts';
 
 const STEPS = ['photos', 'category', 'brand', 'condition', 'price', 'details'] as const;
 type StepId = (typeof STEPS)[number];
@@ -35,6 +37,8 @@ type FormState = {
   condition: string;
   brand: string;
   size: string;
+  /** RobeoBP only — Budapest kerület (római szám). V1 módban üres marad. */
+  budapestDistrict: string;
 };
 
 const emptyForm: FormState = {
@@ -45,6 +49,7 @@ const emptyForm: FormState = {
   condition: '',
   brand: '',
   size: '',
+  budapestDistrict: '',
 };
 
 export default function UploadWizard() {
@@ -128,6 +133,7 @@ export default function UploadWizard() {
       condition: draft.condition || '',
       brand: draft.brand || '',
       size: draft.size || '',
+      budapestDistrict: (draft as { budapestDistrict?: string }).budapestDistrict || '',
     });
     if (draft.step >= 0 && draft.step < STEPS.length) {
       setStepIndex(draft.step);
@@ -173,6 +179,9 @@ export default function UploadWizard() {
       case 'details':
         if (!formData.name.trim()) return t('uploadWizard.errors.nameRequired');
         if (!formData.description.trim()) return t('uploadWizard.errors.descriptionRequired');
+        if (ROBEO_BP_MODE && !isValidBudapestDistrict(formData.budapestDistrict)) {
+          return t('uploadWizard.errors.districtRequired');
+        }
         return null;
       default:
         return null;
@@ -258,7 +267,7 @@ export default function UploadWizard() {
 
       const imageUrls = images.length > 0 ? await uploadImages(user.id) : [];
 
-      const { error } = await supabase.from('products').insert({
+      const insertPayload: Record<string, unknown> = {
         name: formData.name.trim(),
         description: formData.description.trim(),
         price: parseInt(formData.price, 10),
@@ -270,7 +279,11 @@ export default function UploadWizard() {
         images: imageUrls,
         user_id: user.id,
         status: 'active',
-      });
+      };
+      if (ROBEO_BP_MODE && isValidBudapestDistrict(formData.budapestDistrict)) {
+        insertPayload.budapest_district = formData.budapestDistrict;
+      }
+      const { error } = await supabase.from('products').insert(insertPayload);
 
       if (error) throw error;
 
@@ -478,6 +491,27 @@ export default function UploadWizard() {
                   className="textarea-base w-full resize-none"
                 />
               </div>
+              {ROBEO_BP_MODE ? (
+                <div>
+                  <label className="block text-sm font-medium mb-2">
+                    {t('upload.budapestDistrict')}{' '}
+                    <span className="text-red-500" aria-hidden>
+                      *
+                    </span>
+                  </label>
+                  <CustomSelect
+                    options={BUDAPEST_DISTRICTS.map((d) => ({ value: d.id, label: d.label }))}
+                    value={formData.budapestDistrict}
+                    onChange={(val) =>
+                      setFormData((p) => ({ ...p, budapestDistrict: val }))
+                    }
+                    placeholder={t('upload.budapestDistrictPlaceholder')}
+                  />
+                  <p className="mt-1 text-[11px] text-gray-500">
+                    {t('upload.budapestDistrictHint')}
+                  </p>
+                </div>
+              ) : null}
             </div>
           )}
         </div>

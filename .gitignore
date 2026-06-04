@@ -56,3 +56,7 @@ lint-results.json
 # typescript
 *.tsbuildinfo
 next-env.d.ts
+
+# generated docs (regenerable via `npm run docs:pdf`)
+docs/*.pdf
+/*.pdf

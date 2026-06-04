@@ -30,7 +30,23 @@ export type CatalogFilterState = {
   maxPrice: number;
   sort: string;
   search: string;
+  /**
+   * RobeoBP (Budapest Beta) only — kerület szűrő.
+   * Opcionális mező, hogy a meglévő `CatalogFilterState` literal objektek
+   * (Navbar, BrowseDiscoveryRails stb.) ne törjenek. 'all' vagy hiányzik →
+   * minden kerület. Római szám (I…XXIII) → adott kerület.
+   */
+  budapest_district?: string;
 };
+
+/** Egységes olvasás: undefined/'' / 'all' → null, egyébként a normalizált érték. */
+export function getBudapestDistrictFilter(
+  filters: Pick<CatalogFilterState, 'budapest_district'>,
+): string | null {
+  const v = filters.budapest_district;
+  if (!v || v === 'all') return null;
+  return String(v).trim().toUpperCase() || null;
+}
 
 export function normalizeCategory(value: string) {
   return value
@@ -59,6 +75,7 @@ export function serializeCatalogFilters(filters: CatalogFilterState): string {
     maxPrice: Math.round(filters.maxPrice || 0),
     sort: filters.sort,
     search: filters.search.trim().toLowerCase(),
+    budapest_district: getBudapestDistrictFilter(filters) ?? 'all',
   });
 }
 

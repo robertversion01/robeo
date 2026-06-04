@@ -8,6 +8,9 @@ import Filters from '@/components/product/Filters';
 import type { CatalogFilterState } from '@/lib/catalogFilters';
 import { supabase } from '@/lib/supabase';
 import { fetchCatalogMatchCount } from '@/lib/catalogFilterCounts';
+import { ROBEO_BP_MODE } from '@/lib/features';
+import { BUDAPEST_DISTRICTS } from '@/lib/budapestDistricts';
+import CustomSelect from '@/components/ui/CustomSelect';
 
 export type ImmersiveFiltersMeta = {
   categories: { id: string; label: string }[];
@@ -32,7 +35,14 @@ function countActiveCatalogFilters(filters: CatalogFilterState, maxPriceLimit: n
   if (filters.condition !== 'all') n++;
   if (filters.color !== 'all') n++;
   if (filters.minPrice > 0) n++;
-  if (filters.maxPrice > 0 && filters.maxPrice < maxPriceLimit) n++; 
+  if (filters.maxPrice > 0 && filters.maxPrice < maxPriceLimit) n++;
+  if (
+    ROBEO_BP_MODE &&
+    filters.budapest_district &&
+    filters.budapest_district !== 'all'
+  ) {
+    n++;
+  }
   return n;
 }
 
@@ -103,6 +113,7 @@ export default function ImmersiveFilterSheet({
       minPrice: 0,
       maxPrice: maxPriceLimit,
       sort: 'newest',
+      budapest_district: 'all',
     }));
   }, [maxPriceLimit]);
 
@@ -149,6 +160,25 @@ export default function ImmersiveFilterSheet({
           </button>
         </div>
         <div className="flex-1 overflow-y-auto px-4 py-3">
+          {ROBEO_BP_MODE ? (
+            <div className="mb-4 rounded-xl border border-[#007782]/25 bg-[#007782]/5 p-3">
+              <label className="block text-xs font-semibold uppercase tracking-wide text-[#007782] mb-2">
+                {t('browse.immersive.budapestDistrict')}
+              </label>
+              <CustomSelect
+                options={[
+                  { value: 'all', label: t('browse.immersive.budapestDistrictAll') },
+                  ...BUDAPEST_DISTRICTS.map((d) => ({ value: d.id, label: d.label })),
+                ]}
+                value={draft.budapest_district || 'all'}
+                onChange={(val) => patchDraft({ budapest_district: val })}
+                placeholder={t('browse.immersive.budapestDistrictAll')}
+              />
+              <p className="mt-2 text-[11px] text-gray-600">
+                {t('browse.immersive.budapestDistrictHint')}
+              </p>
+            </div>
+          ) : null}
                     <Filters
             categories={categories}
             selectedCategory={draft.category}

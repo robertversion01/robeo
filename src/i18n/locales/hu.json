@@ -210,7 +210,10 @@
       "applyFilters": "Alkalmaz",
       "applyWithCount": "Alkalmaz ({{count}} találat)",
       "counting": "Számolás…",
-      "activeFilters": "{{count}} aktív szűrő"
+      "activeFilters": "{{count}} aktív szűrő",
+      "budapestDistrict": "Budapest kerület",
+      "budapestDistrictAll": "Összes kerület",
+      "budapestDistrictHint": "Csak a kiválasztott kerületben hirdetett termékek látszanak."
     },
     "feed": {
       "default": "Friss hirdetések a közösségtől — böngéssz, szűrj, ments kedvenceket.",
@@ -675,7 +678,10 @@
     "loginRequired": "Először jelentkezz be!",
     "brandSizeRequired": "Márka és méret kötelező.",
     "success": "Sikeres feltöltés!",
-    "error": "Hiba történt a feltöltés során."
+    "error": "Hiba történt a feltöltés során.",
+    "budapestDistrict": "Budapest kerület",
+    "budapestDistrictPlaceholder": "Válaszd ki a kerületet",
+    "budapestDistrictHint": "RobeoBP: a vevő ez alapján szűr a böngészésnél."
   },
   "checkoutSuccess": {
     "title": "Sikeres vásárlás!",
@@ -755,10 +761,21 @@
       "listHint": "Packeta widget kulcs nélkül a beépített pontlistát használjuk (demo).",
       "noResults": "Nincs találat — próbálj más keresőszót."
     },
+    "localPickup": {
+      "title": "Személyes átvétel — készpénz / direct P2P",
+      "body": "RobeoBP béta: ingyenes, helyi átvétel Budapesten. A foglalás után a chatben egyeztessétek a találkozót, helyszínt és fizetést. Nincs Stripe, nincs futár, nincs jutalék.",
+      "reserveButton": "Lefoglalom ingyen",
+      "feeLabel": "Közösségi béta",
+      "feeValue": "Ingyenes",
+      "disclaimerTitle": "Felelősségkizárás (Budapest Béta)",
+      "disclaimerBody": "A RobeoBP egy ingyenes közösségi tesztalkalmazás. Nem kezelünk pénzt és nem vállalunk felelősséget a személyes találkozókért vagy a termékekért. A találkozókat javasolt nyilvános, biztonságos helyen lebonyolítani."
+    },
     "shippingOptions": {
       "foxpost": "Foxpost automatába",
       "packeta": "Packeta pontba",
       "home": "Házhozszállítás",
+      "localPickup": "Személyes átvétel (Készpénz / Direct P2P)",
+      "localPickupDays": "A chatben egyeztetett időpont",
       "foxpostDays": "2–3 munkanap",
       "packetaDays": "2–4 munkanap",
       "homeDays": "1–2 munkanap"
@@ -806,7 +823,8 @@
       "conditionRequired": "Válassz állapotot.",
       "priceRequired": "Adj meg érvényes árat.",
       "nameRequired": "Add meg a termék nevét.",
-      "descriptionRequired": "Írj leírást a termékhez."
+      "descriptionRequired": "Írj leírást a termékhez.",
+      "districtRequired": "Válaszd ki a Budapest kerületet."
     }
   },
   "ordersHub": {

@@ -64,6 +64,8 @@ export function useProducts() {
   const [selectedBrand, setSelectedBrand] = useState('all');
   const [selectedSize, setSelectedSize] = useState('all');
   const [selectedCondition, setSelectedCondition] = useState('all');
+  /** RobeoBP only — kerület szűrő ('all' vagy I…XXIII). V1 módban ignorált. */
+  const [selectedDistrict, setSelectedDistrict] = useState('all');
   const [favorites, setFavorites] = useState<Set<string>>(new Set());
   const [user, setUser] = useState<any>(null);
   const fetchGenRef = useRef(0);
@@ -80,6 +82,7 @@ export function useProducts() {
       maxPrice: selectedMaxPrice,
       sort: selectedSort,
       search: searchQuery,
+      budapest_district: selectedDistrict,
     }),
     [
       selectedCategory,
@@ -92,6 +95,7 @@ export function useProducts() {
       selectedMaxPrice,
       selectedSort,
       searchQuery,
+      selectedDistrict,
     ],
   );
 
@@ -424,6 +428,7 @@ export function useProducts() {
       if (filters.maxPrice && filters.maxPrice > 0) setSelectedMaxPrice(filters.maxPrice);
       else setSelectedMaxPrice(maxPriceLimit);
       setSelectedSort(filters.sort || 'newest');
+      setSelectedDistrict(filters.budapest_district || 'all');
       bumpFilterRevision();
     },
     [maxPriceLimit, bumpFilterRevision, setSearchQuery],
@@ -440,6 +445,7 @@ export function useProducts() {
     setSelectedMinPrice(0);
     setSelectedMaxPrice(maxPriceLimit);
     setSelectedSort('newest');
+    setSelectedDistrict('all');
     bumpFilterRevision();
   }, [maxPriceLimit, bumpFilterRevision, setSearchQuery]);
 
@@ -476,6 +482,9 @@ export function useProducts() {
           break;
         case 'sort':
           setSelectedSort('newest');
+          break;
+        case 'budapest_district':
+          setSelectedDistrict('all');
           break;
         default:
           break;
@@ -523,6 +532,8 @@ export function useProducts() {
     setSelectedBrand: setSelectedBrandWrapped,
     selectedSize,
     setSelectedSize: setSelectedSizeWrapped,
+    selectedDistrict,
+    setSelectedDistrict: wrapFilterSetter(setSelectedDistrict),
     user,
   };
 }

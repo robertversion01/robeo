@@ -6,6 +6,7 @@ import { motion, useReducedMotion } from 'framer-motion';
 import { useTranslation } from 'react-i18next';
 import { formatPrice } from '@/lib/utils';
 import GuestLandingHeader from '@/components/home/GuestLandingHeader';
+import BudapestBetaBanner from '@/components/home/BudapestBetaBanner';
 import {
   filterProductsWithValidImages,
   hasValidProductImage,
@@ -331,6 +332,7 @@ export default function VintedHero({
         data-hero-valid-sources={heroTiles.length}
       >
         <GuestLandingHeader />
+        <BudapestBetaBanner variant="overlay" />
 
         {renderableTileCount === 0 ? (
           <div className="flex h-full items-center justify-center px-4 py-10 text-center text-sm text-gray-300">
@@ -401,6 +403,7 @@ export default function VintedHero({
 
   return (
     <section className={`w-full overflow-hidden ${compact ? 'mb-2 mt-0' : 'mb-3 mt-0'}`}>
+      <BudapestBetaBanner variant="inline" />
       <div
         className={`rounded-xl border border-gray-200 bg-white ${
           compact ? 'p-1.5 shadow-sm' : 'p-2'

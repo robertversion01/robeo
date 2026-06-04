@@ -19,6 +19,7 @@ import {
 import SystemMessageRoleBadge from '@/components/messages/SystemMessageRoleBadge';
 import { focusOrderPanel } from '@/lib/orderPanelActions';
 import { useResolvedTransactionRole } from '@/hooks/useResolvedTransactionRole';
+import LocalPickupSystemMessageCard from '@/components/messages/LocalPickupSystemMessageCard';
 
 type Props = {
   msg: {
@@ -48,6 +49,24 @@ export default function ChatSystemMessageBubble({
   const role = useResolvedTransactionRole(viewerId, sellerId);
   const offerId = parseCheckoutOfferId(msg.content);
   const isAccepted = isOfferAcceptedBuyerMessage(msg.content);
+
+  // RobeoBP: a local-pickup üzenetek dedikált kártyát kapnak (V1 sale_paid
+  // bubble nem alkalmas mert print-label/wallet státusz logikára épül).
+  if (kind === 'local_pickup') {
+    return (
+      <div className="flex justify-center px-2">
+        <LocalPickupSystemMessageCard
+          productId={msg.product_id}
+          createdAt={msg.created_at}
+          viewerId={viewerId}
+          senderId={msg.sender_id}
+          receiverId={msg.receiver_id}
+          sellerId={sellerId}
+          timeLocale={timeLocale}
+        />
+      </div>
+    );
+  }
 
   let body: ReactNode = msg.content;
 

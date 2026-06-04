@@ -93,6 +93,11 @@ const CHECKS = [
     label: 'transactions.pickup_point_id',
     path: 'transactions?select=pickup_point_id,pickup_provider&limit=1',
   },
+  {
+    patch: 'patch-budapest-mvp.sql',
+    label: 'products.budapest_district',
+    path: 'products?select=budapest_district&limit=1',
+  },
 ];
 
 async function probe(baseUrl, key, { patch, label, path: restPath }) {

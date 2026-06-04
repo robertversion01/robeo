@@ -5,6 +5,7 @@ import { supabase } from '@/lib/supabase';
 import { useRouter } from 'next/navigation';
 import { toast } from 'sonner';
 import { useTranslation } from 'react-i18next';
+import BudapestBetaDisclaimer from '@/components/legal/BudapestBetaDisclaimer';
 
 const AUTH_ERROR_KEYS: Record<string, string> = {
   'Email not confirmed': 'auth.errors.emailNotConfirmed',
@@ -147,6 +148,7 @@ export default function AuthPage() {
               {isLogin ? t('auth.switchRegister') : t('auth.switchLogin')}
             </button>
           </div>
+          <BudapestBetaDisclaimer variant="dark" />
         </div>
       </div>
     </div>

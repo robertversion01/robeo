@@ -1,8 +1,12 @@
 import { SALE_NOTIFICATION_MARKER } from '@/lib/saleNotifications';
 import { TX_STATUS_MESSAGES, TX_STATUS_MESSAGES_SELLER } from '@/lib/transactionFlow';
 
+/** RobeoBP — lokális átvétel marker. */
+export const LOCAL_PICKUP_MARKER = '[ROBEO_LOCAL_PICKUP]';
+
 export type SystemMessageKind =
   | 'sale_paid'
+  | 'local_pickup'
   | 'offer_accepted'
   | 'offer_rejected'
   | 'offer_counter'
@@ -29,6 +33,9 @@ export function messageIntendedRole(
 }
 
 export function classifySystemMessage(content: string): SystemMessageKind {
+  if (content.includes(LOCAL_PICKUP_MARKER)) {
+    return 'local_pickup';
+  }
   if (
     content.includes(SALE_NOTIFICATION_MARKER) ||
     content.includes('sikeresen kifizették') ||

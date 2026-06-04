@@ -19,6 +19,8 @@ import type { FoxpostTerminal } from '@/lib/foxpostTerminal';
 import type { PacketaPoint } from '@/lib/packetaPoint';
 import { MAIN_TOP_PADDING } from '@/lib/layoutTokens';
 import { mapCheckoutApiError } from '@/lib/checkoutApiErrors';
+import { ROBEO_BP_MODE, LOCAL_PICKUP_SHIPPING_METHOD } from '@/lib/features';
+import BudapestBetaDisclaimer from '@/components/legal/BudapestBetaDisclaimer';
 
 const CATEGORY_KEYS: Record<string, string> = {
   clothing: 'browse.categories.clothing',
@@ -51,32 +53,53 @@ export default function CheckoutContent() {
   const locale = i18n.language?.startsWith('en') ? 'en-HU' : 'hu-HU';
   const currency = t('common.currencyHuf');
 
+  // RobeoBP: kizárólag személyes átvétel, készpénz / direct P2P. Stripe,
+  // wallet, Foxpost, Packeta opciók rejtve maradnak — a V1 kód érintetlen,
+  // csak a UI elágazás dönt.
   const shippingOptions: ShippingOption[] = useMemo(
-    () => [
-      {
-        value: 'foxpost',
-        label: t('checkout.shippingOptions.foxpost'),
-        cost: 1190,
-        days: t('checkout.shippingOptions.foxpostDays'),
-        icon: 'foxpost',
-      },
-      {
-        value: 'packeta',
-        label: t('checkout.shippingOptions.packeta'),
-        cost: 990,
-        days: t('checkout.shippingOptions.packetaDays'),
-        icon: 'packeta',
-      },
-      {
-        value: 'home',
-        label: t('checkout.shippingOptions.home'),
-        cost: 1790,
-        days: t('checkout.shippingOptions.homeDays'),
-        icon: 'home',
-      },
-    ],
+    () =>
+      ROBEO_BP_MODE
+        ? [
+            {
+              value: LOCAL_PICKUP_SHIPPING_METHOD,
+              label: t('checkout.shippingOptions.localPickup'),
+              cost: 0,
+              days: t('checkout.shippingOptions.localPickupDays'),
+              icon: 'home',
+            },
+          ]
+        : [
+            {
+              value: 'foxpost',
+              label: t('checkout.shippingOptions.foxpost'),
+              cost: 1190,
+              days: t('checkout.shippingOptions.foxpostDays'),
+              icon: 'foxpost',
+            },
+            {
+              value: 'packeta',
+              label: t('checkout.shippingOptions.packeta'),
+              cost: 990,
+              days: t('checkout.shippingOptions.packetaDays'),
+              icon: 'packeta',
+            },
+            {
+              value: 'home',
+              label: t('checkout.shippingOptions.home'),
+              cost: 1790,
+              days: t('checkout.shippingOptions.homeDays'),
+              icon: 'home',
+            },
+          ],
     [t],
   );
+
+  // BP módban auto-default a "Személyes átvétel" — a vevő ne kelljen választani.
+  useEffect(() => {
+    if (ROBEO_BP_MODE && !shippingMethod) {
+      setShippingMethod(LOCAL_PICKUP_SHIPPING_METHOD);
+    }
+  }, [shippingMethod]);
 
   useEffect(() => {
     if (!offerId && !productId) {
@@ -217,6 +240,37 @@ export default function CheckoutContent() {
           .eq('id', offerId);
       }
 
+      // RobeoBP bypass: ha a build BP módú, és a vevő a (kizárólagos) lokális
+      // átvételt választotta → új /api/checkout/local-pickup endpoint hívása,
+      // ami egy DB sort dob be local_pickup_pending státusszal és rendszer-
+      // üzenetet küld a chatbe. SOHA nem érintjük a Stripe / wallet kódot.
+      if (ROBEO_BP_MODE && shippingMethod === LOCAL_PICKUP_SHIPPING_METHOD) {
+        const { data: { session } } = await supabaseClient.auth.getSession();
+        const accessToken = session?.access_token || '';
+        const localRes = await fetch('/api/checkout/local-pickup', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            ...(accessToken ? { Authorization: `Bearer ${accessToken}` } : {}),
+          },
+          body: JSON.stringify({
+            productId: effectiveProductId,
+            offerId,
+            buyerId: user.id,
+            termsAccepted: true,
+          }),
+        });
+        const localData = await localRes.json();
+        if (!localRes.ok) {
+          throw new Error(localData.error || t('checkout.errors.paymentFailed'));
+        }
+        // BP módban a sikeres oldal helyett azonnal a chatbe visszük a vevőt,
+        // hogy elkezdjék egyeztetni a találkozót (a system-üzenet már ott van).
+        const target = localData.chatUrl || localData.successUrl;
+        window.location.href = target || '/messages';
+        return;
+      }
+
       const walletPayload = {
         productId: effectiveProductId,
         offerId,
@@ -292,6 +346,9 @@ export default function CheckoutContent() {
     );
   }
 
+  // RobeoBP UX: a vevő szemszögéből semmilyen "fee" / "védelem" nem
+  // szerepelhet — a Vevői védelem sort lecseréljük zöld "Közösségi béta —
+  // Ingyenes" indikátorra. Az ár / szállítás / total mindenképpen 0/ingyenes.
   const summaryBlock = (
     <>
       <h3 className="font-bold text-base mb-4">{t('checkout.summary')}</h3>
@@ -301,21 +358,49 @@ export default function CheckoutContent() {
           <span className="font-medium text-gray-900 tabular-nums">{formatMoney(amount)}</span>
         </div>
         <div className="flex justify-between gap-2">
-          <span className="text-gray-600">{t('checkout.protectionFee')}</span>
-          <span className="font-medium text-gray-900 tabular-nums text-right">
-            {formatMoney(buyerProtectionFee)}
-          </span>
+          {ROBEO_BP_MODE ? (
+            <>
+              <span className="text-emerald-700 font-medium">
+                {t('checkout.localPickup.feeLabel')}
+              </span>
+              <span className="text-emerald-700 font-bold tabular-nums text-right">
+                {t('checkout.localPickup.feeValue')}
+              </span>
+            </>
+          ) : (
+            <>
+              <span className="text-gray-600">{t('checkout.protectionFee')}</span>
+              <span className="font-medium text-gray-900 tabular-nums text-right">
+                {formatMoney(buyerProtectionFee)}
+              </span>
+            </>
+          )}
         </div>
         <div className="flex justify-between">
           <span className="text-gray-600">{t('checkout.shippingFee')}</span>
-          <span className="font-medium text-gray-900 tabular-nums">{formatMoney(shippingCost)}</span>
+          {ROBEO_BP_MODE ? (
+            <span className="font-bold text-emerald-700 tabular-nums">
+              {t('checkout.localPickup.feeValue')}
+            </span>
+          ) : (
+            <span className="font-medium text-gray-900 tabular-nums">
+              {formatMoney(shippingCost)}
+            </span>
+          )}
         </div>
         <div className="border-t border-gray-200" />
         <div className="flex justify-between font-bold">
           <span className="text-gray-900">{t('checkout.total')}</span>
-          <span className="text-[#007782] text-lg tabular-nums">{formatMoney(total)}</span>
+          {ROBEO_BP_MODE ? (
+            <span className="text-emerald-700 text-lg tabular-nums">
+              {t('checkout.localPickup.feeValue')}
+            </span>
+          ) : (
+            <span className="text-[#007782] text-lg tabular-nums">{formatMoney(total)}</span>
+          )}
         </div>
       </div>
+      <BudapestBetaDisclaimer variant="card" />
     </>
   );
 
@@ -341,6 +426,8 @@ export default function CheckoutContent() {
             <span className="animate-spin w-4 h-4 border-2 border-white border-t-transparent rounded-full" />
             {t('checkout.redirecting')}
           </span>
+        ) : ROBEO_BP_MODE ? (
+          t('checkout.localPickup.reserveButton')
         ) : (
           t('checkout.payButton', { total: total.toLocaleString(locale) })
         )}
@@ -410,14 +497,22 @@ export default function CheckoutContent() {
                 ) : null}
               </div>
 
-              <CheckoutBuyerProtectionBanner />
-              {buyerId ? (
+              {ROBEO_BP_MODE ? null : <CheckoutBuyerProtectionBanner />}
+              {buyerId && !ROBEO_BP_MODE ? (
                 <CheckoutWalletOption
                   buyerId={buyerId}
                   useWallet={useWallet}
                   onUseWalletChange={setUseWallet}
                   total={total}
                 />
+              ) : null}
+              {ROBEO_BP_MODE ? (
+                <div className="rounded-xl border border-emerald-500/30 bg-emerald-50/80 px-4 py-3 text-sm text-emerald-900">
+                  <p className="font-semibold">{t('checkout.localPickup.title')}</p>
+                  <p className="mt-1 text-xs leading-snug text-emerald-900/80">
+                    {t('checkout.localPickup.body')}
+                  </p>
+                </div>
               ) : null}
               <TrustSafetyBlock variant="full" />
               {product?.user_id ? (
@@ -445,7 +540,15 @@ export default function CheckoutContent() {
       <div className="lg:hidden fixed bottom-0 left-0 right-0 z-[9990] border-t border-gray-200 bg-white/95 backdrop-blur-lg px-4 py-3 pb-[calc(0.75rem+env(safe-area-inset-bottom,0px))] shadow-[0_-8px_32px_rgba(0,0,0,0.08)]">
         <div className="flex items-center justify-between gap-3 mb-2">
           <span className="text-sm font-semibold text-gray-900">{t('checkout.total')}</span>
-          <span className="text-lg font-bold text-[#007782] tabular-nums">{formatMoney(total)}</span>
+          {ROBEO_BP_MODE ? (
+            <span className="text-lg font-bold text-emerald-700 tabular-nums">
+              {t('checkout.localPickup.feeValue')}
+            </span>
+          ) : (
+            <span className="text-lg font-bold text-[#007782] tabular-nums">
+              {formatMoney(total)}
+            </span>
+          )}
         </div>
         {payButton}
       </div>
