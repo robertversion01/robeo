@@ -1,96 +1,75 @@
 # ROBEO vs Vinted (production) — Gap Analysis
 
-Utolsó audit: Bundle v2 + vacation mode + ProductCard overlay után.
+Utolsó audit: wallet bundle + pickup oszlop rename + disputes éles + offer expiry után.
 
 **Cél:** 1:1 Vinted UX, üzleti logika és edge-case parity.
 
 ---
 
-## HIGH — Következő sprint (üzleti / trust kritikus)
+## V1 lezárt (kód) — HIGH
 
-| Terület | Vinted (éles) | ROBEO V1 | Teendő |
-|--------|----------------|----------|--------|
-| Ajánlat lejárat | ~24 óra, automatikus `expired` + UI countdown | Nincs `expires_at`, nincs cron | `offers.expires_at`, worker, chat badge, auto-reject |
-| Kétlépcsős ajánlat | Vevő is counter-elhet eladó counter után | Csak eladó counter (`offerActions`) | Buyer counter flow + max rounds |
-| Checkout feltételek | Explicit elfogadás (checkbox / slider) | Passzív `termsHint` szöveg | Kötelező checkbox + bundle checkout is |
-| Packeta | Pontválasztó + díj | Statikus opció, nincs picker | Packeta widget / API parity Foxpost mintára |
-| Vacation mode | Szekrény rejtve feedből | **Kész** (`vacation_mode` + feed filter) | SQL patch futtatás |
-| Dispute / refund | Teljes ticket + pénzvisszatérítés | `DisputeDemoPanel` demo | Éles dispute state machine + admin |
-| Stripe Connect éles | Kifizetés eladónak | Demo / fallback account | Connect onboarding checklist |
-
----
-
-## HIGH — Trust & Safety
-
-| Terület | Vinted | ROBEO | Teendő |
-|--------|--------|-------|--------|
-| Verified badge | ID / phone verify flow | `seller_verified` DB + PDP panel only | Admin/KYC UI + apply flow |
-| Response time | Profil + inbox badge | `sellerResponseTime.ts` + `SellerTrustPanel` | Badge inbox listában; `SellerTrustBadges` bekötése |
-| Profile bio | Szerkeszthető + publikus | `bio` csak típusban | `profiles.bio` + edit + `PublicSellerProfile` |
-| Vacation | Toggle + feed hide | **Kész** | — |
-| Report / block | Termék + user report | Report bar részben | Block user + moderáció queue |
-| Buyer protection copy | Egységes escrow story | Van banner | PDP + checkout szöveg parity |
+| Terület | Vinted (éles) | ROBEO V1 | Státusz |
+|--------|----------------|----------|---------|
+| Ajánlat lejárat | ~24 óra, auto `expired` | `offer_expiry` cron + UI | KÉSZ |
+| Kétlépcsős ajánlat | Vevő counter | `buyerSendCounterOffer` + chat panel | KÉSZ |
+| Checkout feltételek | Explicit elfogadás | `CheckoutTermsCheckbox` (single + bundle) | KÉSZ |
+| Packeta | Pontválasztó | `PacketaPointPicker` (dev: HU statikus, live: widget key) | KÉSZ (live key kell) |
+| Vacation mode | Szekrény rejtve feedből | `vacation_mode` + feed filter | KÉSZ |
+| Dispute / refund | Ticket + refund | `patch-disputes.sql` + UI/API + admin queue | KÉSZ |
+| Bundle wallet | Egyenleg + kártya bundle-re | wallet-pay route + UI | KÉSZ |
+| Pickup unified | Foxpost+Packeta közös oszlop | `pickup_point_*` + backward compat | KÉSZ |
 
 ---
 
-## MEDIUM — Closet & feed
+## V1 lezárt (kód) — MEDIUM
 
-| Terület | Vinted | ROBEO | Teendő |
-|--------|--------|-------|--------|
-| Card overlay | Méret + márka képen | **Kész** (gradient overlay) | — |
-| Favorite count | Szív + szám a kártyán | Heart only; `favorite_count` oszlop unused | Aggregátum vagy count oszlop UI |
-| Bump badge | „Bumped” / kiemelt vizuál | `featured` pill | Vinted „Bump” copy + hero slot |
-| Reserved / sold overlay | Szürke „Eladva” | `status` filter | Sold overlay a grid-en |
-| Size filter chips | Gyors M/L/XL | Browse filter van | Chip UX mint Vinted |
-| Keresés URL sync | Shareable filter URL | Részben client | Teljes URL ↔ state sync |
-
----
-
-## MEDIUM — Chat & offers
-
-| Terület | Vinted | ROBEO | Teendő |
-|--------|--------|-------|--------|
-| Offer expiry UI | Timer a chatben | Hiányzik | Countdown komponens |
-| System messages | Ár változás, elfogadás, szállítás | `message_type=system` alap | `SaleSystemMessageCard` bekötés |
-| Chat offers panel | Ajánlatok a beszélgetésben | `ChatBuyerOffersPanel` import, **nem renderelt** | Render + accept flow |
-| Auto message on edit | Termék módosítás → system msg | Nincs | Trigger upload/edit → chat |
-| Max price drop | Ajánlat minimum % | Nincs validáció | `minOfferPercent` szabály |
-| Bundle offer thread | Csomag ajánlat chatben | `BundleOfferModal` | Thread UX finomítás |
+| Terület | ROBEO V1 | Státusz |
+|--------|-----------|---------|
+| Card overlay (méret + márka) | gradient overlay | KÉSZ |
+| Favorite count a kártyán | aggregátum | KÉSZ |
+| Saved search delete | UI gomb | KÉSZ |
+| URL ↔ filter state | debounced sync | KÉSZ |
+| Listed products keresés | csak aktív | KÉSZ |
+| Sidebar filter counts | live | KÉSZ |
+| Profile bio | `profiles.bio` + edit + public | KÉSZ |
+| Profile vacation | toggle + hide | KÉSZ |
+| Public seller profile + trust badges | full panel | KÉSZ |
+| Chat offers panel | render + accept | KÉSZ |
+| SaleSystemMessageCard | bekötve | KÉSZ |
+| Chat buyer confirm receipt | gomb + dispute banner | KÉSZ |
+| Min offer % | validáció | KÉSZ |
+| Bundle offer thread | `BundleOfferModal` | KÉSZ |
+| Heart animation | CSS pulse | KÉSZ |
+| Bump i18n | hu/en | KÉSZ |
+| Follower notify | upload → push/email | KÉSZ |
 
 ---
 
-## MEDIUM — Checkout & cart
+## Kívül (manual / infra) — HIGH
 
-| Terület | Vinted | ROBEO | Teendő |
-|--------|--------|-------|--------|
-| Shipping toggle | Azonnali összeg újraszámolás | Van `ShippingSelector` | Bundle + single parity teszt |
-| Foxpost | APT map | **Kész** picker | Live API tracking |
-| Global cart | Kosár ikon, több eladó | Csak seller bundle localStorage | `/cart` route (later) |
-| Bundle checkout | Egy fizetés N tétel | **Kész v2** | — |
-| Wallet partial pay | Egyenleg + kártya | Wallet ledger kész | Checkout UI kombináció |
-| Terms slider | Húzd az elfogadáshoz | Hiányzik | Slider/checkbox komponens |
-
----
-
-## LOW — Polish & parity
-
-| Terület | Vinted | ROBEO | Teendő |
-|--------|--------|-------|--------|
-| Heart animation | Micro-interaction | Hover color only | CSS pulse on toggle |
-| Language / locale | HU teljes | i18n hu/en | Hiányzó kulcsok audit |
-| Push categories | Granuláris | `userPreferences` | Vinted-szerű csatornák |
-| Saved search badge | „Új” a feeden | `savedSearchMatcher` | Nav badge finomítás |
-| Promote analytics | Seller dashboard | **Demo panel kész** | Valós analytics (later) |
-| DAC7 / invoicing | Éles NAV | Demo | Éles NAV integráció |
+| Terület | Mit kell |
+|---------|----------|
+| Stripe Connect éles | Onboarding flow, KYC, payout, webhook eseménytípusok élesben |
+| Resend DNS | Domain verify (SPF / DKIM), `RESEND_FROM` saját domain |
+| Foxpost live API | `FOXPOST_API_URL` éles endpoint, futár label, tracking webhook |
+| Packeta live widget | `NEXT_PUBLIC_PACKETA_API_KEY` éles kulcs, dropoff API |
+| Carrier tracking valós | Polling vagy webhook (Foxpost + Packeta) |
 
 ---
 
-## Ma implementálva (ez a commit)
+## Még nem nyitott Vinted feature (V2 candidate)
 
-- [x] `ProductCard` — méret + márka overlay a képen (Vinted grid)
-- [x] `ProfileSettingsHub` — Szabadság üzemmód → `profiles.vacation_mode`
-- [x] Fő feed + Fresh strip — vacation eladók kiszűrése
-- [x] `supabase/patch-vacation-mode.sql`
+| Terület | Vinted | ROBEO | Megjegyzés |
+|---------|--------|-------|------------|
+| Global cart | Több eladó egy fizetés | csak seller bundle | `/cart` route, multi-seller split |
+| ID / phone verify flow | KYC UI | `seller_verified` admin-only flag | KYC vendor (pl. Stripe Identity) |
+| Report / block user | block UI + moderation queue | report bar részben | block + admin queue |
+| Push categories (granuláris) | `userPreferences` | per-channel granularitás |
+| Seller dashboard | analytics | demo panel | bevétel, top termék, top vevő |
+| DAC7 / NAV számla | éles | demo invoice | NAV integráció |
+| Promote analytics | éles | demo | real impressions/clicks |
+| Auto message on edit | termék módosítás → system msg | nincs | upload/edit chat trigger |
+| Terms slider | „húzd az elfogadáshoz” | checkbox | UX polish |
 
 ---
 
@@ -98,7 +77,24 @@ Utolsó audit: Bundle v2 + vacation mode + ProductCard overlay után.
 
 1. `fix-everything-schema.sql`
 2. `patch-wallet-schema.sql` + `patch-vinted-advanced.sql` + `patch-vinted-legal.sql`
-3. `patch-bundle-v2-promote.sql`
-4. **`patch-vacation-mode.sql`** ← új
+3. `patch-vinted-masterpiece.sql`
+4. `patch-bundle-v2-promote.sql`
+5. `patch-vacation-mode.sql`
+6. `patch-profiles-admin-role.sql`
+7. `patch-products-marketplace-columns.sql`
+8. `patch-profile-bio.sql`
+9. `patch-offer-expiry.sql`
+10. `patch-disputes.sql`
+11. `patch-pickup-points-rename.sql`
 
 Ellenőrzés: `npm run db:check-patches`
+
+---
+
+## Watch / korlátok
+
+- Wallet checkout: bundle parity KÉSZ; webhook-on a `wallet_amount_paid` és `payment_provider='mixed'` mező figyelésével a refund matek helyes
+- Pickup oszlopok: új `pickup_point_*` + `pickup_provider`; régi `foxpost_terminal_*` deprecated, **mindkettőbe ír** a kód (DROP majd csak miután a teljes flotta migrálva van)
+- Offer expiry: Hobby 1 cron slot → `saved-search-scan` worker végén fut (`expireStaleOffers`)
+- Packeta DEV mód: statikus HU pontok; live widget `NEXT_PUBLIC_PACKETA_API_KEY` kell
+- Foxpost mock label: `foxpostClient.ts` createShipment éles API nélkül fake tracking number-t generál

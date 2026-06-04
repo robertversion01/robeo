@@ -66,51 +66,90 @@ src/
 └── types/             # Közös TypeScript interfészek
 ```
 
-### 🚀 Helyi fejlesztés
+### Helyi fejlesztés
 ```bash
-# Függőségek telepítése
 npm install
-
-# Fejlesztői szerver indítása
 npm run dev
-
-# Build készítése éles környezetre
 npm run build
+npm run db:check-patches   # Supabase patch állapot
 ```
 
-### 🔑 Környezeti változók
-Készíts egy `.env.local` fájlt a projekt gyökerében:
+### Környezeti változók
+Készíts egy `.env.local` fájlt — sablon: `.env.example`. Fő kulcsok:
+
 ```env
 NEXT_PUBLIC_SUPABASE_URL=https://your-project-id.supabase.co
-NEXT_PUBLIC_SUPABASE_ANON_KEY=your-supabase-anon-key-here
+NEXT_PUBLIC_SUPABASE_ANON_KEY=your-anon-key
+SUPABASE_SERVICE_ROLE_KEY=your-service-role-key
 STRIPE_SECRET_KEY=sk_test_xxx
 STRIPE_WEBHOOK_SECRET=whsec_xxx
 NEXT_PUBLIC_BASE_URL=http://localhost:3000
+CRON_SECRET=long-random-string
+NEXT_PUBLIC_OLLAMA_URL=http://127.0.0.1:11434
+NEXT_PUBLIC_OLLAMA_CHAT_MODEL=llama3
 ```
 
----
+Részletek: `.env.example` (Resend / SMTP / VAPID / Foxpost / Packeta opcionálisak).
 
-## 📋 Funkció állapot (v1.0)
+### AI (lokális, ingyenes)
 
-✅ **Kész funkciók:**
-- 🔐 Hitelesítés és fiókkezelés
-- 📤 Termék feltöltés és kezelés
-- 🖼️ Több kép feltöltés és rendezés
-- 🔍 Keresés és kategória szűrés
-- 💌 Élő üzenetküldés
-- 🤝 Ajánlat és alku rendszer
-- 💳 Online fizetés (Stripe Checkout)
-- ❤️ Kedvencek rendszer
-- ⭐ Felhasználói értékelések
-- 🧾 Vevői nyugta generálás
-- 📊 Profil statisztikák
+- Ollama (`localhost:11434`)
+- Chat: `llama3`
+- Embedding: `nomic-embed-text`
 
-🚧 **Tervezett funkciók:**
-- 📧 Email értesítések
-- 🔔 Push értesítések
-- 📍 Helyalapú szűrés
+NVIDIA RTX 3060-ra optimalizált helyi fejlesztés. **Külső fizetős AI API tilos** (lásd cursor rule).
+
+### Tesztfiókok
+
+`docs/TEST_ACCOUNTS.md` — admin / seller / buyer szerepek sablonja. Admin jog: `node scripts/grant-admin-role.mjs your@email.com`.
 
 ---
 
-## 📜 Licenc
+## Funkció állapot (V1)
+
+**Kész:**
+
+- Auth, profil, bio, vacation mode, public seller profile, trust badges
+- Termék: feltöltés (wizard), több kép, méret/márka overlay, sold/reserved overlay
+- Browse/Search: kategória, szűrők, URL ↔ state sync, listed products parity, favorite count
+- Ajánlat: küldés, eladói counter, **vevői counter**, **24h auto-expiry**, minimum % validáció
+- Chat: ajánlatok panel, system messages, sale system card, dispute banner, buyer confirm receipt
+- Checkout: Stripe egy- és **bundle**, **wallet (single + bundle)**, Foxpost picker, **Packeta picker**, kötelező terms checkbox
+- Wallet: pending/available ledger, eladói credit, kifizetés (Stripe Connect)
+- Disputes: buyer/seller flow, admin queue, refund
+- Értesítések: in-app, push (VAPID), email (Resend / SMTP), saved search, price drop, seller_new_item (követő → új termék)
+- Admin: kiemelés, seller_verified, disputes, reports, DAC7 demo
+- Cron: Vercel Hobby 1 slot (`saved-search-scan` + offer expiry chain)
+- Pickup pontok: új `pickup_point_*` oszlopok (Foxpost + Packeta közös)
+
+**Kívül (manual / DNS / key):**
+
+- Resend DNS verify (saját domain)
+- Stripe Connect éles payout
+- Foxpost live API (`FOXPOST_API_URL`)
+- Packeta live widget (`NEXT_PUBLIC_PACKETA_API_KEY`)
+- Valós futár tracking
+
+---
+
+## SQL patch sorrend (új környezetben)
+
+1. `fix-everything-schema.sql`
+2. `patch-wallet-schema.sql` + `patch-vinted-advanced.sql` + `patch-vinted-legal.sql`
+3. `patch-vinted-masterpiece.sql`
+4. `patch-bundle-v2-promote.sql`
+5. `patch-vacation-mode.sql`
+6. `patch-profiles-admin-role.sql`
+7. `patch-products-marketplace-columns.sql`
+8. `patch-profile-bio.sql`
+9. `patch-offer-expiry.sql`
+10. `patch-disputes.sql`
+11. `patch-pickup-points-rename.sql`
+
+Ellenőrzés: `npm run db:check-patches`
+
+---
+
+## Licenc
+
 Szerzői jog védett © 2026 ROBEO. Minden jog fenntartva.
