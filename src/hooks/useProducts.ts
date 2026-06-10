@@ -20,16 +20,18 @@ import {
   type CatalogFilterState,
   productMatchesCatalogFilters,
   serializeCatalogFilters,
-  conditionDbValues,
+  countActiveCatalogFilters,
 } from '@/lib/catalogFilters';
 import { VINTED_DEPARTMENTS } from '@/lib/vintedCategoryTree';
 import { getDepartmentsForListingType } from '@/lib/marketplaceTaxonomy';
-import { fetchAllVacationSellerIds } from '@/lib/vacationMode';
 import { enrichProductsWithFavoriteCounts, adjustProductFavoriteCount } from '@/lib/favoriteCounts';
+import { fetchAllVacationSellerIds } from '@/lib/vacationMode';
 import {
   applyListedProductFilter,
-  applyProductTextSearch,
+  applyCatalogFiltersToProductQuery,
+  formatSupabaseError,
   isListedProduct,
+  isSupabaseRangeError,
   LISTED_PRODUCT_STATUS_FILTER,
 } from '@/lib/listedProducts';
 
@@ -127,6 +129,12 @@ export function useProducts() {
         if (next !== prev) {
           setSelectedCategory('all');
           setSelectedSubcategory('all');
+          if (next === 'service') {
+            setSelectedBrand('all');
+            setSelectedSize('all');
+            setSelectedCondition('all');
+            setSelectedColor('all');
+          }
         }
         return next;
       });
@@ -186,66 +194,37 @@ export function useProducts() {
         const from = pageIndex * CATALOG_PAGE_SIZE;
         const to = from + CATALOG_PAGE_SIZE - 1;
 
-        let query = supabase
-          .from('products')
-          .select('*', { count: 'exact' });
-
+        let query = supabase.from('products').select('*', { count: 'exact' });
         query = applyListedProductFilter(query);
 
-        if (catalogFilters.brand !== 'all') {
-          query = query.ilike('brand', catalogFilters.brand);
-        }
-
-        const searchTerm = catalogFilters.search.trim();
-        if (searchTerm) {
-          query = applyProductTextSearch(query, searchTerm);
-        }
-
-        let sizeFilterOnServer = false;
-        if (catalogFilters.size !== 'all') {
-          sizeFilterOnServer = await canFilterProductsBySize(supabase);
-          if (sizeFilterOnServer) {
-            query = query.ilike('size', catalogFilters.size);
-          }
-        }
-
-        if (catalogFilters.condition !== 'all') {
-          const condValues = conditionDbValues(catalogFilters.condition);
-          if (condValues.length === 1) {
-            query = query.eq('condition', condValues[0]);
-          } else if (condValues.length > 1) {
-            query = query.in('condition', condValues);
-          }
-        }
-
-        if (catalogFilters.color !== 'all') {
-          query = query.ilike('color', `%${catalogFilters.color}%`);
-        }
-
-        if (catalogFilters.minPrice > 0) {
-          query = query.gte('price', catalogFilters.minPrice);
-        }
-
-        if (catalogFilters.maxPrice > 0) {
-          query = query.lte('price', catalogFilters.maxPrice);
-        }
-
         const vacationIds = await fetchAllVacationSellerIds(supabase);
-        if (vacationIds.length > 0) {
-          query = query.not('user_id', 'in', `(${vacationIds.join(',')})`);
-        }
+        const sizeFilterOnServer =
+          catalogFilters.listingType !== 'service' &&
+          catalogFilters.size !== 'all' &&
+          (await canFilterProductsBySize(supabase));
+
+        query = applyCatalogFiltersToProductQuery(query, catalogFilters, {
+          vacationIds,
+          sizeFilterOnServer,
+        });
 
         query = query.order(sortConfig.column, { ascending: sortConfig.order === 'asc' }).range(from, to);
 
         const { data, error, count } = await query;
-        if (error) throw error;
+        if (error) {
+          if (append && isSupabaseRangeError(error)) {
+            setTotalCount((prev) => Math.min(prev, from));
+            return;
+          }
+          throw error;
+        }
         if (generation !== fetchGenRef.current) return;
 
         let fetched = ((data || []) as Product[]).filter((p) => isListedProduct(p.status));
 
         fetched = fetched.filter((p) => productMatchesCatalogFilters(p, catalogFilters));
 
-        if (catalogFilters.condition !== 'all') {
+        if (catalogFilters.condition !== 'all' && catalogFilters.listingType !== 'service') {
           fetched = fetched.filter((p) =>
             conditionMatchesFilter(p.condition, catalogFilters.condition),
           );
@@ -258,8 +237,14 @@ export function useProducts() {
 
         fetched = await enrichProductsWithFavoriteCounts(supabase, fetched);
 
-        setTotalCount(count ?? fetched.length);
+        const serverTotal = count ?? fetched.length;
+        setTotalCount(serverTotal);
         setPage(pageIndex);
+
+        if (append && fetched.length === 0) {
+          setTotalCount((prev) => Math.min(prev, from));
+        }
+
         setProducts((prev) => {
           if (!append) return fetched;
           const seen = new Set(prev.map((p) => p.id));
@@ -270,10 +255,13 @@ export function useProducts() {
               merged.push(p);
             }
           }
+          if (fetched.length === 0) {
+            return prev;
+          }
           return merged;
         });
       } catch (error) {
-        console.error('Error fetching products:', error);
+        console.error('Error fetching products:', formatSupabaseError(error));
         if (generation === fetchGenRef.current && !append) {
           setProducts([]);
           setTotalCount(0);
@@ -298,7 +286,7 @@ export function useProducts() {
     await fetchProductsPage(page + 1, true);
   }, [fetchProductsPage, loading, loadingMore, page, products.length, totalCount]);
 
-  const hasMore = products.length < totalCount;
+  const hasMore = totalCount > 0 && products.length < totalCount;
 
   useEffect(() => {
     void checkUserAndFavorites();
@@ -409,28 +397,10 @@ export function useProducts() {
     }
   };
 
-  const activeFilterCount = useMemo(() => {
-    let n = 0;
-    if (selectedCategory !== 'all') n++;
-    if (selectedSubcategory !== 'all') n++;
-    if (selectedBrand !== 'all') n++;
-    if (selectedSize !== 'all') n++;
-    if (selectedCondition !== 'all') n++;
-    if (selectedColor !== 'all') n++;
-    if (selectedMinPrice > 0) n++;
-    if (selectedMaxPrice > 0 && selectedMaxPrice < maxPriceLimit) n++;
-    return n;
-  }, [
-    selectedCategory,
-    selectedSubcategory,
-    selectedBrand,
-    selectedSize,
-    selectedCondition,
-    selectedColor,
-    selectedMinPrice,
-    selectedMaxPrice,
-    maxPriceLimit,
-  ]);
+  const activeFilterCount = useMemo(
+    () => countActiveCatalogFilters(catalogFilters, maxPriceLimit),
+    [catalogFilters, maxPriceLimit],
+  );
 
   const applyCatalogFilters = useCallback(
     (filters: CatalogFilterState) => {

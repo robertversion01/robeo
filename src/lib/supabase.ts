@@ -92,6 +92,8 @@ function createNoopQueryBuilder(message: string) {
     not: () => builder,
     in: () => builder,
     is: () => builder,
+    ilike: () => builder,
+    range: () => builder,
     order: () => builder,
     limit: () => builder,
     insert: () => builder,

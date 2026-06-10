@@ -69,6 +69,27 @@ export function normalizeDepartmentId(value: string): string {
   return value;
 }
 
+/** Aktív szűrők száma — szolgáltatás módban termék-specifikus mezők kimaradnak. */
+export function countActiveCatalogFilters(
+  filters: CatalogFilterState,
+  maxPriceLimit: number,
+): number {
+  let n = 0;
+  if (filters.listingType && filters.listingType !== 'all') n++;
+  if (filters.category !== 'all') n++;
+  if (filters.subcategory !== 'all') n++;
+  const isService = filters.listingType === 'service';
+  if (!isService) {
+    if (filters.brand !== 'all') n++;
+    if (filters.size !== 'all') n++;
+    if (filters.condition !== 'all') n++;
+    if (filters.color !== 'all') n++;
+  }
+  if (filters.minPrice > 0) n++;
+  if (filters.maxPrice > 0 && filters.maxPrice < maxPriceLimit) n++;
+  return n;
+}
+
 export function serializeCatalogFilters(filters: CatalogFilterState): string {
   return JSON.stringify({
     listingType: filters.listingType ?? 'all',

@@ -1,5 +1,11 @@
 import type { SupabaseClient } from '@supabase/supabase-js';
 import type { Product } from '@/types';
+import type { CatalogFilterState } from '@/lib/catalogFilters';
+import {
+  categoryDbValues,
+  conditionDbValues,
+  subcategoryFilterDbValues,
+} from '@/lib/catalogFilters';
 import { fetchAllVacationSellerIds } from '@/lib/vacationMode';
 
 /** Supabase OR — csak böngészhető / megvásárolható termékek. */
@@ -62,6 +68,111 @@ export function applyProductTextSearch(query: ProductQuery, searchTerm: string):
   );
 }
 
+function buildCategoryAliasOr(aliases: string[]) {
+  if (aliases.length === 0) return null;
+  return aliases
+    .map((alias) => `category.ilike.%${alias.replace(/[%_\\]/g, '\\$&')}%`)
+    .join(',');
+}
+
+/** Szolgáltatás / termék szétválasztás — `svc%` prefix (LIKE, nem regex). */
+export function applyListingTypeFilter(
+  query: ProductQuery,
+  listingType: CatalogFilterState['listingType'],
+): ProductQuery {
+  if (listingType === 'service') return query.ilike('category', 'svc%');
+  if (listingType === 'product') return query.not('category', 'ilike', 'svc%');
+  return query;
+}
+
+export function applyVacationSellerExclusion(query: ProductQuery, vacationIds: string[]): ProductQuery {
+  if (vacationIds.length === 0) return query;
+  const list = vacationIds.map((id) => `"${id}"`).join(',');
+  return query.not('user_id', 'in', `(${list})`);
+}
+
+export type CatalogQueryFilterOptions = {
+  exclude?: 'category' | 'subcategory' | 'brand' | 'none';
+  vacationIds?: string[];
+  sizeFilterOnServer?: boolean;
+};
+
+/** Közös katalógus szűrők — szinkron, hogy a builder ne legyen await-elve (thenable!). */
+export function applyCatalogFiltersToProductQuery(
+  query: ProductQuery,
+  filters: CatalogFilterState,
+  options: CatalogQueryFilterOptions = {},
+): ProductQuery {
+  const exclude = options.exclude ?? 'none';
+  const isService = filters.listingType === 'service';
+
+  query = applyListingTypeFilter(query, filters.listingType ?? 'all');
+
+  if ((exclude === 'none' || exclude !== 'brand') && !isService && filters.brand !== 'all') {
+    query = query.ilike('brand', filters.brand);
+  }
+
+  const searchTerm = filters.search.trim();
+  if (searchTerm) {
+    query = applyProductTextSearch(query, searchTerm);
+  }
+
+  if (!isService && filters.condition !== 'all') {
+    const condValues = conditionDbValues(filters.condition);
+    if (condValues.length === 1) {
+      query = query.eq('condition', condValues[0]);
+    } else if (condValues.length > 1) {
+      query = query.in('condition', condValues);
+    }
+  }
+
+  if (!isService && filters.color !== 'all') {
+    query = query.ilike('color', `%${filters.color}%`);
+  }
+
+  if (!isService && filters.size !== 'all' && options.sizeFilterOnServer) {
+    query = query.ilike('size', filters.size);
+  }
+
+  if (filters.minPrice > 0) {
+    query = query.gte('price', filters.minPrice);
+  }
+
+  if (filters.maxPrice > 0) {
+    query = query.lte('price', filters.maxPrice);
+  }
+
+  if ((exclude === 'none' || exclude !== 'category') && filters.category !== 'all') {
+    const or = buildCategoryAliasOr(categoryDbValues(filters.category));
+    if (or) query = query.or(or);
+  }
+
+  if ((exclude === 'none' || exclude !== 'subcategory') && filters.subcategory !== 'all') {
+    const or = buildCategoryAliasOr(subcategoryFilterDbValues(filters.subcategory));
+    if (or) query = query.or(or);
+  }
+
+  if (options.vacationIds && options.vacationIds.length > 0) {
+    query = applyVacationSellerExclusion(query, options.vacationIds);
+  }
+
+  return query;
+}
+
+export function isSupabaseRangeError(error: { message?: string; code?: string } | null): boolean {
+  if (!error) return false;
+  const msg = (error.message ?? '').toLowerCase();
+  const code = (error.code ?? '').toUpperCase();
+  return code === 'PGRST103' || msg.includes('range not satisfiable') || msg.includes('requested range');
+}
+
+export function formatSupabaseError(error: unknown): string {
+  if (error instanceof Error) return error.message;
+  if (!error || typeof error !== 'object') return String(error);
+  const e = error as { message?: string; code?: string; details?: string; hint?: string };
+  return [e.message, e.code && `(${e.code})`, e.details].filter(Boolean).join(' ') || 'Unknown error';
+}
+
 /** Közös browse/search query építő — aktív státusz + opcionális szöveg + vacation kizárás. */
 export async function buildListedProductsQuery(
   supabase: SupabaseClient,
@@ -85,7 +196,7 @@ export async function buildListedProductsQuery(
 
   const vacationIds = await fetchAllVacationSellerIds(supabase);
   if (vacationIds.length > 0) {
-    query = query.not('user_id', 'in', `(${vacationIds.join(',')})`);
+    query = applyVacationSellerExclusion(query, vacationIds);
   }
 
   return query;

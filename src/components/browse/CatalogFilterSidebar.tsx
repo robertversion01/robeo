@@ -9,10 +9,15 @@ import {
 } from '@/lib/vintedCatalog';
 import { conditionI18nKey } from '@/lib/conditionI18n';
 import {
-  getSubcategoriesForDepartment,
   sizesForDepartment,
   VINTED_COLORS,
 } from '@/lib/vintedCategoryTree';
+import { getSubcategoriesForTaxonomyDepartment } from '@/lib/marketplaceTaxonomy';
+import {
+  departmentLabel,
+  showProductCatalogFilters,
+  subcategoryLabel,
+} from '@/lib/categoryDisplay';
 import { cn } from '@/lib/utils';
 import type { FiltersProps } from '@/components/product/Filters';
 import { useCatalogFilterCounts } from '@/hooks/useCatalogFilterCounts';
@@ -118,14 +123,15 @@ export default function CatalogFilterSidebar({
   const [brandQuery, setBrandQuery] = useState('');
   const locale = i18n.language?.startsWith('en') ? 'en-HU' : 'hu-HU';
 
+  const listingType = catalogFilters?.listingType ?? 'all';
+  const showProductFilters = showProductCatalogFilters(listingType);
+
   const categoryOptions = useMemo(
     () => [
       { id: 'all', label: t('browse.filters.allCategories') },
       ...categories.filter((c) => c.id !== 'all').map((c) => ({
         id: c.id,
-        label: t(`browse.departments.${c.id}`, {
-          defaultValue: t(`browse.categories.${c.id}`, { defaultValue: c.label }),
-        }),
+        label: departmentLabel(t, c.id, c.label),
       })),
     ],
     [categories, t],
@@ -138,8 +144,11 @@ export default function CatalogFilterSidebar({
   }, [brandQuery]);
 
   const subcategoryOptions = useMemo(() => {
-    const subs = getSubcategoriesForDepartment(selectedCategory);
-    return [{ id: 'all', label: t('browse.filters.allSubcategories') }, ...subs.map((s) => ({ id: s.id, label: t(s.labelKey) }))];
+    const subs = getSubcategoriesForTaxonomyDepartment(selectedCategory);
+    return [
+      { id: 'all', label: t('browse.filters.allSubcategories') },
+      ...subs.map((s) => ({ id: s.id, label: subcategoryLabel(t, s.id) })),
+    ];
   }, [selectedCategory, t]);
 
   const sizeOptions = useMemo(() => {
@@ -255,6 +264,8 @@ export default function CatalogFilterSidebar({
           </SidebarSection>
         ) : null}
 
+        {showProductFilters ? (
+          <>
         <SidebarSection title={t('browse.filters.brand')}>
           <div className="relative mb-2">
             <Search size={14} className="absolute left-2.5 top-1/2 -translate-y-1/2 text-gray-400" />
@@ -360,6 +371,8 @@ export default function CatalogFilterSidebar({
             ))}
           </div>
         </SidebarSection>
+          </>
+        ) : null}
 
         <SidebarSection title={t('browse.filters.price')}>
           <div className="mb-3 flex flex-wrap gap-1.5">

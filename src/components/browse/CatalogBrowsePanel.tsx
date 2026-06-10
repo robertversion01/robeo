@@ -31,6 +31,7 @@ import { fetchGlobalDiscoveryChips } from '@/lib/globalDiscovery';
 import ImmersiveFilterSheet from '@/components/browse/ImmersiveFilterSheet';
 import MobileFeedChrome from '@/components/layout/MobileFeedChrome';
 import FeedCategorySwipeSurface from '@/components/browse/FeedCategorySwipeSurface';
+import { departmentLabel } from '@/lib/categoryDisplay';
 
 function sortLabelKey(id: string) {
   if (id === 'price_asc') return 'browse.sort.priceAsc';
@@ -233,7 +234,7 @@ function CatalogBrowsePanelInner({
     () => ({
       categories: categories.map((c) => ({
         id: c.id,
-        label: t('browse.categories.' + c.id, { defaultValue: c.label }),
+        label: departmentLabel(t, c.id, c.label),
       })),
       sortOptions: localizedSortOptions,
       maxPriceLimit,
@@ -265,6 +266,7 @@ function CatalogBrowsePanelInner({
     onSortChange: setSelectedSort,
     activeFilterCount,
     onClearAll: clearAllFilters,
+    listingType: selectedListingType,
   };
 
   const discoveryProps = {
@@ -340,6 +342,7 @@ function CatalogBrowsePanelInner({
         transitionKey={filterKey}
         hasActiveFilters={hasActiveFilters}
         onClearFilters={clearAllFilters}
+        listingType={selectedListingType}
       />
       {!loading && hasMore ? (
         <div className="mt-6 flex justify-center pb-4 md:pb-8">
@@ -349,7 +352,11 @@ function CatalogBrowsePanelInner({
             disabled={loadingMore}
             className="min-h-11 rounded-xl border border-gray-200 bg-white px-6 py-2.5 text-sm font-semibold text-gray-800 shadow-sm transition hover:bg-gray-50 disabled:opacity-60"
           >
-            {loadingMore ? t('landing.catalog.loadingMore') : t('landing.catalog.loadMore')}
+            {loadingMore
+              ? t('landing.catalog.loadingMore')
+              : selectedListingType === 'service'
+                ? t('browse.pagination.loadMoreServices')
+                : t('landing.catalog.loadMore')}
           </button>
         </div>
       ) : null}
@@ -380,9 +387,7 @@ function CatalogBrowsePanelInner({
           mode="search"
           products={catalogProducts}
           favoriteIds={favorites}
-          preferredCategory={t(`browse.departments.${selectedCategory}`, {
-            defaultValue: t(`browse.categories.${selectedCategory}`, { defaultValue: selectedCategory }),
-          })}
+          preferredCategory={departmentLabel(t, selectedCategory, selectedCategory)}
         />
       ) : null}
 
@@ -413,7 +418,7 @@ function CatalogBrowsePanelInner({
                   favoriteIds={favorites}
                   preferredCategory={
                     selectedCategory !== 'all'
-                      ? t(`browse.departments.${selectedCategory}`, { defaultValue: selectedCategory })
+                      ? departmentLabel(t, selectedCategory, selectedCategory)
                       : undefined
                   }
                 />

@@ -5,8 +5,8 @@ import { useTranslation } from 'react-i18next';
 import { cn } from '@/lib/utils';
 import type { CatalogFilterState } from '@/lib/catalogFilters';
 import { formatConditionLabel } from '@/lib/conditionI18n';
-import { getSubcategoryById } from '@/lib/vintedCategoryTree';
 import { VINTED_COLORS } from '@/lib/vintedCategoryTree';
+import { departmentLabel, showProductCatalogFilters, subcategoryLabel } from '@/lib/categoryDisplay';
 
 type CategoryOption = { id: string; label: string };
 type SortOption = { id: string; label: string };
@@ -42,6 +42,7 @@ export default function ActiveFilterBar({
   className,
 }: Props) {
   const { t } = useTranslation();
+  const showProductFilters = showProductCatalogFilters(filters.listingType);
 
   const chips: Chip[] = [];
 
@@ -50,42 +51,44 @@ export default function ActiveFilterBar({
     chips.push({ key: 'search', label: `„${search}"` });
   }
 
+  if (filters.listingType && filters.listingType !== 'all') {
+    chips.push({
+      key: 'listingType',
+      label: t(`browse.listingType.${filters.listingType === 'service' ? 'services' : 'products'}`),
+    });
+  }
+
   if (filters.category !== 'all') {
     const cat = categories.find((c) => c.id === filters.category);
     chips.push({
       key: 'category',
-      label:
-        cat?.label ??
-        t(`browse.departments.${filters.category}`, {
-          defaultValue: t(`browse.categories.${filters.category}`, { defaultValue: filters.category }),
-        }),
+      label: cat?.label ?? departmentLabel(t, filters.category, filters.category),
     });
   }
 
   if (filters.subcategory !== 'all') {
-    const sub = getSubcategoryById(filters.subcategory);
     chips.push({
       key: 'subcategory',
-      label: sub ? t(sub.labelKey) : filters.subcategory,
+      label: subcategoryLabel(t, filters.subcategory),
     });
   }
 
-  if (filters.brand !== 'all') {
+  if (showProductFilters && filters.brand !== 'all') {
     chips.push({ key: 'brand', label: filters.brand });
   }
 
-  if (filters.size !== 'all') {
+  if (showProductFilters && filters.size !== 'all') {
     chips.push({ key: 'size', label: filters.size });
   }
 
-  if (filters.condition !== 'all') {
+  if (showProductFilters && filters.condition !== 'all') {
     chips.push({
       key: 'condition',
       label: formatConditionLabel(t, filters.condition),
     });
   }
 
-  if (filters.color !== 'all') {
+  if (showProductFilters && filters.color !== 'all') {
     const colorDef = VINTED_COLORS.find((c) => c.id === filters.color);
     chips.push({
       key: 'color',

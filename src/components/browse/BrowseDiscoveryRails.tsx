@@ -129,6 +129,9 @@ export default function BrowseDiscoveryRails({
 
   const sizeStats = (sizeChips?.length ? sizeChips : allowFallback ? FALLBACK_SIZES : []).slice(0, 10);
 
+  const activeListingType = activeFilters?.listingType ?? 'all';
+  const isServiceMode = activeListingType === 'service';
+
   const activeBrand = activeFilters?.brand ?? 'all';
   const activeSize = activeFilters?.size ?? 'all';
   const activeCondition = activeFilters?.condition ?? 'all';
@@ -139,9 +142,9 @@ export default function BrowseDiscoveryRails({
   const isPriceActive = (max: number) =>
     activeMin === 0 && (max === 0 ? activeMax >= maxPriceLimit : activeMax === max);
 
-  const hasBrandRow = brandStats.length > 0;
-  const hasSizeRow = !compact && sizeStats.length > 0;
-  const hasDiscoveryData = hasBrandRow || hasSizeRow || prefBrands.length > 0;
+  const hasBrandRow = !isServiceMode && brandStats.length > 0;
+  const hasSizeRow = !isServiceMode && !compact && sizeStats.length > 0;
+  const hasDiscoveryData = hasBrandRow || hasSizeRow || (!isServiceMode && prefBrands.length > 0);
 
   const renderBrand = (stat: DiscoveryChipStat, variant: 'pref' | 'default' = 'default') => {
     const active = activeBrand === stat.name;
@@ -248,7 +251,7 @@ export default function BrowseDiscoveryRails({
     </RailRow>
   );
 
-  const conditionRow = !compact ? (
+  const conditionRow = !compact && !isServiceMode ? (
     <RailRow title={t('browse.discovery.condition')}>
       {CONDITION_CHIPS.map((c) => {
         const active = activeCondition === c.id;
@@ -287,7 +290,7 @@ export default function BrowseDiscoveryRails({
 
   const inner = (
     <>
-      {prefBrands.length > 0 ? (
+      {prefBrands.length > 0 && !isServiceMode ? (
         <RailRow title={t('browse.discovery.forYou')} accent>
           {prefBrands.map((brand) => renderBrand({ name: brand, count: 0 }, 'pref'))}
         </RailRow>

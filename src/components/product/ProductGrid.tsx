@@ -17,6 +17,7 @@ interface ProductGridProps {
   transitionKey?: string;
   hasActiveFilters?: boolean;
   onClearFilters?: () => void;
+  listingType?: 'all' | 'product' | 'service';
 }
 
 export default function ProductGrid({
@@ -27,6 +28,7 @@ export default function ProductGrid({
   transitionKey = 'default',
   hasActiveFilters = false,
   onClearFilters,
+  listingType = 'all',
 }: ProductGridProps) {
   const { t } = useTranslation();
   const [visible, setVisible] = useState(true);
@@ -44,25 +46,30 @@ export default function ProductGrid({
   const displayProducts = filterProductsWithValidImages(products);
 
   if (displayProducts.length === 0) {
+    const isService = listingType === 'service';
+    const emptyTitle = hasActiveFilters
+      ? t('browse.empty.filteredTitle')
+      : isService
+        ? t('browse.empty.servicesTitle')
+        : t('browse.empty.title');
+    const emptyDescription = hasActiveFilters
+      ? t('browse.empty.filteredDescription')
+      : isService
+        ? t('browse.empty.servicesDescription')
+        : t('browse.empty.description');
+    const emptyAction = hasActiveFilters
+      ? t('browse.empty.clearFilters')
+      : isService
+        ? t('browse.empty.browseAllServices')
+        : t('browse.empty.browseAll');
+
     return (
       <EmptyState
         icon="search"
-        title={
-          hasActiveFilters
-            ? t('browse.empty.filteredTitle')
-            : t('browse.empty.title')
-        }
-        description={
-          hasActiveFilters
-            ? t('browse.empty.filteredDescription')
-            : t('browse.empty.description')
-        }
-        actionLabel={
-          hasActiveFilters
-            ? t('browse.empty.clearFilters')
-            : t('browse.empty.browseAll')
-        }
-        actionHref={hasActiveFilters ? undefined : '/browse'}
+        title={emptyTitle}
+        description={emptyDescription}
+        actionLabel={emptyAction}
+        actionHref={hasActiveFilters ? undefined : isService ? '/browse?type=service' : '/browse'}
         onAction={hasActiveFilters ? onClearFilters : undefined}
       />
     );

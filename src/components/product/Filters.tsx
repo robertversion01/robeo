@@ -10,10 +10,15 @@ import {
 } from '@/lib/vintedCatalog';
 import { conditionI18nKey } from '@/lib/conditionI18n';
 import {
-  getSubcategoriesForDepartment,
-  sizesForDepartment,
-  VINTED_COLORS,
-} from '@/lib/vintedCategoryTree';
+  getSubcategoriesForTaxonomyDepartment,
+  sizesForTaxonomy,
+} from '@/lib/marketplaceTaxonomy';
+import {
+  departmentLabel,
+  showProductCatalogFilters,
+  subcategoryLabel,
+} from '@/lib/categoryDisplay';
+import { VINTED_COLORS } from '@/lib/vintedCategoryTree';
 import FilterChipDropdown from '@/components/product/FilterChipDropdown';
 
 export interface FiltersProps {
@@ -40,6 +45,7 @@ export interface FiltersProps {
   onSortChange: (id: string) => void;
   onClearAll?: () => void;
   activeFilterCount?: number;
+  listingType?: 'all' | 'product' | 'service';
 }
 
 function buildCategoryOptions(
@@ -102,8 +108,10 @@ export default function Filters({
   onSortChange,
   onClearAll,
   activeFilterCount = 0,
+  listingType = 'all',
 }: FiltersProps) {
   const { t, i18n } = useTranslation();
+  const showProductFilters = showProductCatalogFilters(listingType);
   const [openPanelId, setOpenPanelId] = useState<string | null>(null);
   const priceBtnRef = useRef<HTMLButtonElement>(null);
   const pricePanelRef = useRef<HTMLDivElement>(null);
@@ -121,9 +129,7 @@ export default function Filters({
   const categoryOptions = useMemo(
     () =>
       buildCategoryOptions(categories, t('browse.filters.allCategories'), (id, fallback) =>
-        t(`browse.departments.${id}`, {
-          defaultValue: t(`browse.categories.${id}`, { defaultValue: fallback }),
-        }),
+        departmentLabel(t, id, fallback),
       ),
     [categories, t],
   );
@@ -142,10 +148,10 @@ export default function Filters({
   );
 
   const subcategoryOptions = useMemo(() => {
-    const subs = getSubcategoriesForDepartment(selectedCategory);
+    const subs = getSubcategoriesForTaxonomyDepartment(selectedCategory);
     return [
       { id: 'all', label: t('browse.filters.allSubcategories') },
-      ...subs.map((s) => ({ id: s.id, label: t(s.labelKey) })),
+      ...subs.map((s) => ({ id: s.id, label: subcategoryLabel(t, s.id) })),
     ];
   }, [selectedCategory, t]);
 
@@ -158,7 +164,7 @@ export default function Filters({
   );
 
   const sizeOptions = useMemo(() => {
-    const sizes = sizesForDepartment(selectedCategory, selectedSubcategory);
+    const sizes = sizesForTaxonomy(selectedCategory, selectedSubcategory);
     return [{ id: 'all', label: t('browse.filters.allSizes') }, ...sizes.map((s) => ({ id: s, label: s }))];
   }, [selectedCategory, selectedSubcategory, t]);
 
@@ -326,6 +332,7 @@ export default function Filters({
             onChange={onSubcategoryChange}
           />
         ) : null}
+        {showProductFilters ? (
         <FilterChipDropdown
           panelId={PANEL.brand}
           openPanelId={openPanelId}
@@ -335,6 +342,8 @@ export default function Filters({
           value={selectedBrand}
           onChange={onBrandChange}
         />
+        ) : null}
+        {showProductFilters ? (
         <FilterChipDropdown
           panelId={PANEL.size}
           openPanelId={openPanelId}
@@ -344,6 +353,8 @@ export default function Filters({
           value={selectedSize}
           onChange={onSizeChange}
         />
+        ) : null}
+        {showProductFilters ? (
         <FilterChipDropdown
           panelId={PANEL.condition}
           openPanelId={openPanelId}
@@ -353,6 +364,8 @@ export default function Filters({
           value={selectedCondition}
           onChange={onConditionChange}
         />
+        ) : null}
+        {showProductFilters ? (
         <FilterChipDropdown
           panelId={PANEL.color}
           openPanelId={openPanelId}
@@ -362,6 +375,7 @@ export default function Filters({
           value={selectedColor}
           onChange={onColorChange}
         />
+        ) : null}
 
         <div className="relative shrink-0">
           <button

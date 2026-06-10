@@ -29,28 +29,52 @@ function svcSub(id: string, labelKey: string, aliases: string[] = []): TaxonomyS
   return { id, labelKey, dbAliases: [id, ...aliases] };
 }
 
-/** Szolgáltatás fő kategóriák — Jófogás / FB Marketplace logika, kompakt mobil menü. */
+/** Szolgáltatás fő kategóriák — beauty / wellness / fitness / otthon (Treatwell, Fresha, Jófogás minták). */
 export const SERVICE_DEPARTMENTS: TaxonomyDepartment[] = [
-  {
-    id: 'svc_home',
-    labelKey: 'browse.serviceDepartments.home',
-    listingType: 'service',
-    subcategories: [
-      svcSub('svc_home_cleaning', 'browse.serviceSubcategories.home_cleaning', ['takaritas', 'takarítás', 'cleaning']),
-      svcSub('svc_home_repair', 'browse.serviceSubcategories.home_repair', ['javitas', 'javítás', 'repair', 'szerelo']),
-      svcSub('svc_home_moving', 'browse.serviceSubcategories.home_moving', ['koltozes', 'költöztetés', 'moving']),
-      svcSub('svc_home_garden', 'browse.serviceSubcategories.home_garden', ['kert', 'garden', 'kertesz']),
-    ],
-  },
   {
     id: 'svc_beauty',
     labelKey: 'browse.serviceDepartments.beauty',
     listingType: 'service',
     subcategories: [
-      svcSub('svc_beauty_hair', 'browse.serviceSubcategories.beauty_hair', ['fodrasz', 'fodrász', 'hair']),
-      svcSub('svc_beauty_nails', 'browse.serviceSubcategories.beauty_nails', ['manikur', 'köröm', 'nails']),
-      svcSub('svc_beauty_massage', 'browse.serviceSubcategories.beauty_massage', ['masszazs', 'masszázs', 'massage']),
-      svcSub('svc_beauty_makeup', 'browse.serviceSubcategories.beauty_makeup', ['smink', 'makeup']),
+      svcSub('svc_beauty_hairdresser', 'browse.serviceSubcategories.beauty_hairdresser', ['fodrasz', 'fodrász', 'hairdresser', 'svc_beauty_hair']),
+      svcSub('svc_beauty_barber', 'browse.serviceSubcategories.beauty_barber', ['borbely', 'borbély', 'barber']),
+      svcSub('svc_beauty_hair_color', 'browse.serviceSubcategories.beauty_hair_color', ['hajfestes', 'hajfestés', 'hair color', 'festes']),
+      svcSub('svc_beauty_hair_stylist', 'browse.serviceSubcategories.beauty_hair_stylist', ['hajstylist', 'stylist']),
+      svcSub('svc_beauty_manicure', 'browse.serviceSubcategories.beauty_manicure', ['manikur', 'manikűr', 'manicure']),
+      svcSub('svc_beauty_pedicure', 'browse.serviceSubcategories.beauty_pedicure', ['pedikur', 'pedikűr', 'pedicure']),
+      svcSub('svc_beauty_nails', 'browse.serviceSubcategories.beauty_nails', ['kormos', 'körmös', 'nails', 'gel', 'svc_beauty_nails']),
+      svcSub('svc_beauty_cosmetician', 'browse.serviceSubcategories.beauty_cosmetician', ['kozmetikus', 'kozmetika', 'cosmetician']),
+      svcSub('svc_beauty_makeup', 'browse.serviceSubcategories.beauty_makeup', ['sminkes', 'smink', 'makeup', 'svc_beauty_makeup']),
+      svcSub('svc_beauty_bridal_makeup', 'browse.serviceSubcategories.beauty_bridal_makeup', ['eskuvoi', 'esküvői', 'bridal', 'alkalmi smink']),
+      svcSub('svc_beauty_lash', 'browse.serviceSubcategories.beauty_lash', ['szempilla', 'lash', 'extensions']),
+      svcSub('svc_beauty_brow', 'browse.serviceSubcategories.beauty_brow', ['szemoldok', 'szemöldök', 'brow', 'laminalas']),
+      svcSub('svc_beauty_wax', 'browse.serviceSubcategories.beauty_wax', ['szortelenites', 'szőrtelenítés', 'wax', 'gyantazas']),
+      svcSub('svc_beauty_massage', 'browse.serviceSubcategories.beauty_massage', ['masszor', 'masszazs', 'masszázs', 'massage', 'svc_beauty_massage']),
+      svcSub('svc_beauty_spa', 'browse.serviceSubcategories.beauty_spa', ['wellness', 'spa', 'relax']),
+    ],
+  },
+  {
+    id: 'svc_fitness',
+    labelKey: 'browse.serviceDepartments.fitness',
+    listingType: 'service',
+    subcategories: [
+      svcSub('svc_fitness_personal', 'browse.serviceSubcategories.fitness_personal', ['szemelyi edzo', 'személyi edző', 'personal trainer', 'edzo', 'edző']),
+      svcSub('svc_fitness_trainer', 'browse.serviceSubcategories.fitness_trainer', ['trener', 'tréner', 'coach']),
+      svcSub('svc_fitness_yoga', 'browse.serviceSubcategories.fitness_yoga', ['joga', 'jóga', 'yoga']),
+      svcSub('svc_fitness_pilates', 'browse.serviceSubcategories.fitness_pilates', ['pilates']),
+      svcSub('svc_fitness_group', 'browse.serviceSubcategories.fitness_group', ['csoportos edzes', 'csoportos edzés', 'group training']),
+    ],
+  },
+  {
+    id: 'svc_home',
+    labelKey: 'browse.serviceDepartments.home',
+    listingType: 'service',
+    subcategories: [
+      svcSub('svc_home_cleaning', 'browse.serviceSubcategories.home_cleaning', ['takaritas', 'takarítás', 'cleaning', 'takarito']),
+      svcSub('svc_home_handyman', 'browse.serviceSubcategories.home_handyman', ['haz koruli', 'ház körüli', 'handyman', 'ezermester']),
+      svcSub('svc_home_repair', 'browse.serviceSubcategories.home_repair', ['javitas', 'javítás', 'repair', 'szerelo', 'villany']),
+      svcSub('svc_home_moving', 'browse.serviceSubcategories.home_moving', ['koltozes', 'költöztetés', 'moving']),
+      svcSub('svc_home_garden', 'browse.serviceSubcategories.home_garden', ['kert', 'garden', 'kertesz', 'kertgondozas']),
     ],
   },
   {
@@ -59,18 +83,21 @@ export const SERVICE_DEPARTMENTS: TaxonomyDepartment[] = [
     listingType: 'service',
     subcategories: [
       svcSub('svc_education_tutoring', 'browse.serviceSubcategories.education_tutoring', ['magantanar', 'magántanár', 'tutor']),
-      svcSub('svc_education_language', 'browse.serviceSubcategories.education_language', ['nyelv', 'language', 'angol']),
+      svcSub('svc_education_language', 'browse.serviceSubcategories.education_language', ['nyelv', 'language', 'angol', 'nyelvoktatas']),
       svcSub('svc_education_music', 'browse.serviceSubcategories.education_music', ['zeneora', 'zeneóra', 'music lesson']),
+      svcSub('svc_education_babysitter', 'browse.serviceSubcategories.education_babysitter', ['babysitter', 'gyerekfelugyelet', 'bébiszitter', 'babaorzo']),
     ],
   },
   {
-    id: 'svc_it',
-    labelKey: 'browse.serviceDepartments.it',
+    id: 'svc_events',
+    labelKey: 'browse.serviceDepartments.events',
     listingType: 'service',
     subcategories: [
-      svcSub('svc_it_repair', 'browse.serviceSubcategories.it_repair', ['szerviz', 'repair', 'laptop']),
-      svcSub('svc_it_web', 'browse.serviceSubcategories.it_web', ['web', 'honlap', 'website']),
-      svcSub('svc_it_other', 'browse.serviceSubcategories.it_other', ['it', 'informatika']),
+      svcSub('svc_events_catering', 'browse.serviceSubcategories.events_catering', ['catering', 'sutemeny', 'sütemény', 'etel']),
+      svcSub('svc_events_dj', 'browse.serviceSubcategories.events_dj', ['dj', 'zene', 'party']),
+      svcSub('svc_events_photo', 'browse.serviceSubcategories.events_photo', ['esemeny foto', 'esemény fotó', 'event photo']),
+      svcSub('svc_events_decor', 'browse.serviceSubcategories.events_decor', ['dekoracio', 'dekoráció', 'decor']),
+      svcSub('svc_events_other', 'browse.serviceSubcategories.events_other', ['rendezveny', 'rendezvény', 'event']),
     ],
   },
   {
@@ -78,9 +105,9 @@ export const SERVICE_DEPARTMENTS: TaxonomyDepartment[] = [
     labelKey: 'browse.serviceDepartments.creative',
     listingType: 'service',
     subcategories: [
-      svcSub('svc_creative_photo', 'browse.serviceSubcategories.creative_photo', ['foto', 'fotó', 'photo']),
-      svcSub('svc_creative_design', 'browse.serviceSubcategories.creative_design', ['design', 'grafika']),
-      svcSub('svc_creative_video', 'browse.serviceSubcategories.creative_video', ['video', 'vlog']),
+      svcSub('svc_creative_photo', 'browse.serviceSubcategories.creative_photo', ['foto', 'fotó', 'photo', 'fotos']),
+      svcSub('svc_creative_design', 'browse.serviceSubcategories.creative_design', ['design', 'grafika', 'grafikus']),
+      svcSub('svc_creative_video', 'browse.serviceSubcategories.creative_video', ['video', 'vlog', 'videós']),
     ],
   },
   {
@@ -89,18 +116,18 @@ export const SERVICE_DEPARTMENTS: TaxonomyDepartment[] = [
     listingType: 'service',
     subcategories: [
       svcSub('svc_pets_walking', 'browse.serviceSubcategories.pets_walking', ['setaltatas', 'sétáltatás', 'dog walk']),
-      svcSub('svc_pets_grooming', 'browse.serviceSubcategories.pets_grooming', ['apolas', 'ápolás', 'grooming']),
-      svcSub('svc_pets_sitting', 'browse.serviceSubcategories.pets_sitting', ['kor', 'őrzés', 'pet sit']),
+      svcSub('svc_pets_grooming', 'browse.serviceSubcategories.pets_grooming', ['apolas', 'ápolás', 'grooming', 'kutyakozmetika']),
+      svcSub('svc_pets_sitting', 'browse.serviceSubcategories.pets_sitting', ['kor', 'őrzés', 'pet sit', 'allatorzo']),
     ],
   },
   {
-    id: 'svc_events',
-    labelKey: 'browse.serviceDepartments.events',
+    id: 'svc_it',
+    labelKey: 'browse.serviceDepartments.it',
     listingType: 'service',
     subcategories: [
-      svcSub('svc_events_catering', 'browse.serviceSubcategories.events_catering', ['catering', 'sutemeny', 'sütemény']),
-      svcSub('svc_events_dj', 'browse.serviceSubcategories.events_dj', ['dj', 'zene', 'party']),
-      svcSub('svc_events_other', 'browse.serviceSubcategories.events_other', ['rendezveny', 'rendezvény', 'event']),
+      svcSub('svc_it_repair', 'browse.serviceSubcategories.it_repair', ['szerviz', 'repair', 'laptop', 'telefon javitas']),
+      svcSub('svc_it_web', 'browse.serviceSubcategories.it_web', ['web', 'honlap', 'website']),
+      svcSub('svc_it_other', 'browse.serviceSubcategories.it_other', ['it', 'informatika', 'programozas']),
     ],
   },
   {

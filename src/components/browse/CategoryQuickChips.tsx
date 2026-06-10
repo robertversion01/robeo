@@ -29,6 +29,7 @@ const CATEGORY_I18N: Record<string, string> = {
   other: 'browse.departments.other',
   svc_home: 'browse.serviceDepartments.home',
   svc_beauty: 'browse.serviceDepartments.beauty',
+  svc_fitness: 'browse.serviceDepartments.fitness',
   svc_education: 'browse.serviceDepartments.education',
   svc_it: 'browse.serviceDepartments.it',
   svc_creative: 'browse.serviceDepartments.creative',
