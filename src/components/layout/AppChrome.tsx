@@ -5,6 +5,7 @@ import { AppVersionProvider } from '@/context/AppVersionContext';
 import VersionedAppShell from '@/components/version/VersionedAppShell';
 import I18nProvider from '@/providers/I18nProvider';
 import AuthRefreshHandler from '@/components/auth/AuthRefreshHandler';
+import DeployRefreshNotifier from '@/components/version/DeployRefreshNotifier';
 
 export default function AppChrome({ children }: { children: React.ReactNode }) {
   return (
@@ -12,6 +13,7 @@ export default function AppChrome({ children }: { children: React.ReactNode }) {
       <AppVersionProvider>
         <BrowseProvider>
           <AuthRefreshHandler />
+          <DeployRefreshNotifier />
           <VersionedAppShell>{children}</VersionedAppShell>
         </BrowseProvider>
       </AppVersionProvider>

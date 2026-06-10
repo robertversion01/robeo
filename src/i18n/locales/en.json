@@ -18,6 +18,10 @@
       "title": "Browse the catalog"
     }
   },
+  "app": {
+    "updateAvailable": "A new version is available. Reload to get the latest update.",
+    "reload": "Reload"
+  },
   "nav": {
     "home": "Home",
     "search": "Search",

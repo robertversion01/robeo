@@ -22,7 +22,10 @@ export async function subscribeToWebPush(): Promise<{ ok: boolean; error?: strin
   const permission = await Notification.requestPermission();
   if (permission !== 'granted') return { ok: false, error: 'permission_denied' };
 
-  const registration = await navigator.serviceWorker.register('/sw.js', { scope: '/' });
+  const registration = await navigator.serviceWorker.register(
+    `/sw.js?v=${encodeURIComponent(process.env.NEXT_PUBLIC_APP_BUILD_ID ?? '1')}`,
+    { scope: '/' },
+  );
   await navigator.serviceWorker.ready;
 
   const subscription = await registration.pushManager.subscribe({

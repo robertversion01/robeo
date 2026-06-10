@@ -18,6 +18,10 @@
       "title": "Böngéssz a kínálatban"
     }
   },
+  "app": {
+    "updateAvailable": "Új verzió érhető el. Frissítsd az oldalt a legújabb változatért.",
+    "reload": "Frissítés"
+  },
   "nav": {
     "home": "Főoldal",
     "search": "Keresés",
