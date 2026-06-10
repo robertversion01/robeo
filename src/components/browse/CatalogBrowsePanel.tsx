@@ -8,6 +8,7 @@ import Filters from '@/components/product/Filters';
 import ProductGrid from '@/components/product/ProductGrid';
 import CatalogSearchBar from '@/components/browse/CatalogSearchBar';
 import CategoryQuickChips from '@/components/browse/CategoryQuickChips';
+import ListingTypeToggle from '@/components/browse/ListingTypeToggle';
 import SavedSearchesStrip from '@/components/browse/SavedSearchesStrip';
 import FeedPersonalizationBanner from '@/components/browse/FeedPersonalizationBanner';
 import BrowseDiscoveryRails from '@/components/browse/BrowseDiscoveryRails';
@@ -16,6 +17,7 @@ import CatalogFilterSidebar from '@/components/browse/CatalogFilterSidebar';
 import { cn } from '@/lib/utils';
 import { filterProductsWithValidImages } from '@/lib/productImageValidation';
 import type { CatalogFilterState } from '@/lib/catalogFilters';
+import type { SavedSearch } from '@/lib/savedSearches';
 import { supabase } from '@/lib/supabase';
 import { DEFAULT_FEED_PREFS, loadUserPreferences } from '@/lib/userPreferences';
 import { rankFeedProducts } from '@/lib/feedRanking';
@@ -61,7 +63,7 @@ function CatalogUrlSyncBridge(props: {
   setSelectedMinPrice: (n: number) => void;
   setSelectedMaxPrice: (n: number) => void;
   setSelectedSort: (id: string) => void;
-  setSelectedDistrict?: (id: string) => void;
+  setSelectedListingType: (type: 'all' | 'product' | 'service') => void;
 }) {
   useCatalogUrlSync(props);
   return null;
@@ -101,6 +103,8 @@ function CatalogBrowsePanelInner({
     setSearchQuery,
     selectedCategory,
     setSelectedCategory,
+    selectedListingType,
+    setSelectedListingType,
     selectedSubcategory,
     setSelectedSubcategory,
     selectedColor,
@@ -123,8 +127,6 @@ function CatalogBrowsePanelInner({
     setSelectedSize,
     selectedCondition,
     setSelectedCondition,
-    selectedDistrict,
-    setSelectedDistrict,
     activeFilterCount,
     clearAllFilters,
     applyCatalogFilters,
@@ -195,6 +197,7 @@ function CatalogBrowsePanelInner({
 
   const catalogFilters: CatalogFilterState = useMemo(
     () => ({
+      listingType: selectedListingType,
       category: selectedCategory,
       subcategory: selectedSubcategory,
       brand: selectedBrand,
@@ -205,9 +208,9 @@ function CatalogBrowsePanelInner({
       maxPrice: selectedMaxPrice,
       sort: selectedSort,
       search: searchQuery,
-      budapest_district: selectedDistrict,
     }),
     [
+      selectedListingType,
       selectedCategory,
       selectedSubcategory,
       selectedBrand,
@@ -218,7 +221,6 @@ function CatalogBrowsePanelInner({
       selectedMaxPrice,
       selectedSort,
       searchQuery,
-      selectedDistrict,
     ],
   );
 
@@ -282,8 +284,9 @@ function CatalogBrowsePanelInner({
   const hasActiveFilters =
     activeFilterCount > 0 || searchQuery.trim().length > 0 || selectedSort !== 'newest';
 
-  const applySavedSearch = (saved: typeof catalogFilters) => {
+  const applySavedSearch = (saved: SavedSearch['filters']) => {
     setSearchQuery(saved.search || '');
+    setSelectedListingType(saved.listingType || 'all');
     setSelectedCategory(saved.category || 'all');
     setSelectedSubcategory(saved.subcategory || 'all');
     setSelectedBrand(saved.brand || 'all');
@@ -369,7 +372,7 @@ function CatalogBrowsePanelInner({
         setSelectedMinPrice={setSelectedMinPrice}
         setSelectedMaxPrice={setSelectedMaxPrice}
         setSelectedSort={setSelectedSort}
-        setSelectedDistrict={setSelectedDistrict}
+        setSelectedListingType={setSelectedListingType}
       />
 
       {showPersonalization && user && isSearch && selectedCategory !== 'all' ? (
@@ -422,6 +425,11 @@ function CatalogBrowsePanelInner({
                 prefBrands={feedPrefs.brands}
                 compact
               />
+              <ListingTypeToggle
+                value={selectedListingType}
+                onChange={setSelectedListingType}
+                className="mb-2"
+              />
               <CategoryQuickChips
                 categories={categories}
                 selectedCategory={selectedCategory}
@@ -462,6 +470,11 @@ function CatalogBrowsePanelInner({
               catalogFilters={catalogFilters}
               maxPriceLimit={maxPriceLimit}
               browsePath={browsePath}
+            />
+            <ListingTypeToggle
+              value={selectedListingType}
+              onChange={setSelectedListingType}
+              className="mb-2"
             />
             <CategoryQuickChips
               categories={categories}

@@ -5,7 +5,11 @@ import { supabase } from '@/lib/supabase';
 import { useRouter } from 'next/navigation';
 import { toast } from 'sonner';
 import { useTranslation } from 'react-i18next';
-import BudapestBetaDisclaimer from '@/components/legal/BudapestBetaDisclaimer';
+import {
+  appendReturnUrl,
+  readReturnUrlFromSearch,
+  sanitizeReturnUrl,
+} from '@/lib/returnUrl';
 
 const AUTH_ERROR_KEYS: Record<string, string> = {
   'Email not confirmed': 'auth.errors.emailNotConfirmed',
@@ -23,6 +27,7 @@ export default function AuthPage() {
   const [password, setPassword] = useState('');
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
+  const [returnUrl, setReturnUrl] = useState('/');
   const router = useRouter();
 
   useEffect(() => {
@@ -30,6 +35,7 @@ export default function AuthPage() {
     const params = new URLSearchParams(window.location.search);
     const view = params.get('view');
     const mode = params.get('mode');
+    setReturnUrl(sanitizeReturnUrl(readReturnUrlFromSearch(window.location.search)));
     if (view === 'sign_up' || mode === 'register') {
       setIsLogin(false);
       return;
@@ -52,15 +58,15 @@ export default function AuthPage() {
         });
         if (signInError) throw signInError;
         toast.success(t('auth.successLogin'));
-        router.push('/');
+        router.push(returnUrl);
       } else {
         const { error: signUpError } = await supabase.auth.signUp({
           email,
           password,
         });
         if (signUpError) throw signUpError;
-        toast.success(t('auth.successRegister'));
-        router.push('/auth/complete');
+        toast.success(t('auth.successRegisterCheckEmail'));
+        router.push(appendReturnUrl('/auth/complete', returnUrl));
       }
     } catch (err: unknown) {
       let errorMessage = t('auth.errors.generic');
@@ -79,16 +85,23 @@ export default function AuthPage() {
   const switchMode = () => {
     const next = !isLogin;
     setIsLogin(next);
-    router.replace(`/auth?view=${next ? 'sign_in' : 'sign_up'}`);
+    router.replace(
+      appendReturnUrl(`/auth?view=${next ? 'sign_in' : 'sign_up'}`, returnUrl),
+    );
   };
 
   return (
     <div className="min-h-screen w-full mt-0 pt-0 bg-[#0f1a1d] text-white flex items-center justify-center px-4 py-8">
       <div className="w-full max-w-md">
         <div className="bg-[#142327] border border-[#22353a] rounded-3xl p-8 shadow-sm">
-          <h1 className="text-3xl font-bold text-center mb-6 text-white">
+          <h1 className="text-3xl font-bold text-center mb-2 text-white">
             {isLogin ? t('auth.loginTitle') : t('auth.registerTitle')}
           </h1>
+          {!isLogin ? (
+            <p className="text-center text-sm text-gray-400 mb-6">{t('auth.registerSubtitle')}</p>
+          ) : (
+            <div className="mb-6" />
+          )}
 
           {error && (
             <div className="bg-red-50 border border-red-200 text-red-600 rounded-xl p-3 mb-6 text-center text-sm">
@@ -148,7 +161,6 @@ export default function AuthPage() {
               {isLogin ? t('auth.switchRegister') : t('auth.switchLogin')}
             </button>
           </div>
-          <BudapestBetaDisclaimer variant="dark" />
         </div>
       </div>
     </div>

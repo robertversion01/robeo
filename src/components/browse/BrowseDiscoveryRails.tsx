@@ -57,6 +57,7 @@ function discoveryHref(
   maxPriceLimit = 0,
 ): string {
   const filters: CatalogFilterState = {
+    listingType: 'all',
     category: 'all',
     subcategory: 'all',
     brand: 'all',

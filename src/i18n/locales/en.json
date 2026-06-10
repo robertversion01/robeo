@@ -60,6 +60,48 @@
       "pets": "Pets",
       "other": "Other"
     },
+    "listingType": {
+      "label": "Type",
+      "all": "All",
+      "products": "Products",
+      "services": "Services"
+    },
+    "serviceDepartments": {
+      "home": "Home & garden",
+      "beauty": "Beauty & wellness",
+      "education": "Education",
+      "it": "IT & tech",
+      "creative": "Creative",
+      "pets": "Pets",
+      "events": "Events",
+      "other": "Other services"
+    },
+    "serviceSubcategories": {
+      "home_cleaning": "Cleaning",
+      "home_repair": "Repairs",
+      "home_moving": "Moving",
+      "home_garden": "Gardening",
+      "beauty_hair": "Hair",
+      "beauty_nails": "Nails",
+      "beauty_massage": "Massage",
+      "beauty_makeup": "Makeup",
+      "education_tutoring": "Tutoring",
+      "education_language": "Language lessons",
+      "education_music": "Music lessons",
+      "it_repair": "Device repair",
+      "it_web": "Web & sites",
+      "it_other": "Other IT",
+      "creative_photo": "Photography",
+      "creative_design": "Design",
+      "creative_video": "Video",
+      "pets_walking": "Dog walking",
+      "pets_grooming": "Pet grooming",
+      "pets_sitting": "Pet sitting",
+      "events_catering": "Catering",
+      "events_dj": "DJ / music",
+      "events_other": "Other events",
+      "other_misc": "Other service"
+    },
     "filters": {
       "category": "Category",
       "allCategories": "All categories",
@@ -210,10 +252,7 @@
       "applyFilters": "Apply",
       "applyWithCount": "Apply ({{count}} results)",
       "counting": "Counting…",
-      "activeFilters": "{{count}} active filters",
-      "budapestDistrict": "Budapest district",
-      "budapestDistrictAll": "All districts",
-      "budapestDistrictHint": "Only items listed in the selected district are shown."
+      "activeFilters": "{{count}} active filters"
     },
     "feed": {
       "default": "Fresh listings from the community — browse, filter, save favorites.",
@@ -450,20 +489,6 @@
     "checkoutNudge": "{{count}} more items in your bundle — save up to {{savings}}.",
     "checkoutNudgeLink": "More listings"
   },
-  "sellerInsights": {
-    "title": "Seller insights",
-    "subtitle": "Revenue, sold count, top products — last 6 months.",
-    "empty": "No sales yet.",
-    "emptyHint": "Once your first transaction is paid, you'll see metrics here.",
-    "netRevenue": "Net revenue",
-    "grossHint": "Gross: {{gross}}",
-    "lastMonth": "Last 30 days",
-    "totalSalesHint": "{{count}} sales total",
-    "avgSale": "Avg sale price",
-    "topCountHint": "{{count}} top items",
-    "monthlyTitle": "Monthly breakdown (last 6 months)",
-    "topProductsTitle": "Top 5 products by revenue"
-  },
   "sellerEngagement": {
     "title": "Interest in your listings",
     "subtitle": "Favorites and quick replies — seller view.",
@@ -484,7 +509,13 @@
     "offersTitle": "Incoming offers",
     "conversationsTitle": "Conversations",
     "emptyConversations": "No conversations yet",
+    "emptyConversationsTitle": "No messages yet",
+    "emptyConversationsDesc": "Browse listings and message sellers — negotiate and buy here.",
+    "emptyBrowseCta": "Browse catalog",
+    "emptyUploadCta": "List an item",
     "selectConversation": "Select a conversation",
+    "selectConversationTitle": "Select a conversation",
+    "selectConversationDesc": "Pick one from the list, or open a product and message the seller.",
     "placeholder": "Write a message…",
     "makeOffer": "Make an offer",
     "payLink": "Proceed to payment",
@@ -600,6 +631,25 @@
     "switchLogin": "Log in",
     "successLogin": "Logged in successfully!",
     "successRegister": "Account created!",
+    "successRegisterCheckEmail": "Account created! Confirm your email if needed, then complete your profile.",
+    "registerSubtitle": "Ready in 2 minutes — then you can list items right away.",
+    "legalRequired": "You must accept the Terms and Privacy Policy.",
+    "marketingOptIn": "I'd like occasional updates about new features (optional).",
+    "complete": {
+      "title": "Complete your profile",
+      "progressHint": "Last step — then you're ready to use Robeo.",
+      "fullNameLabel": "Full name",
+      "fullNameHint": "Shown on your seller profile.",
+      "fullNameRequired": "Please enter your full name.",
+      "usernameLabel": "Username",
+      "usernameInvalid": "Username must be 3–20 characters: letters, numbers, underscore only.",
+      "usernameTaken": "This username is already taken.",
+      "usernameSuggested": "Try this instead:",
+      "usernameChecking": "Checking…",
+      "continue": "Done — let's go!",
+      "success": "Profile complete — happy buying and selling!",
+      "problemLink": "Problem signing up?"
+    },
     "errors": {
       "generic": "Something went wrong",
       "emailNotConfirmed": "Confirm your email before logging in.",
@@ -700,6 +750,16 @@
     "pricePlaceholder": "15000",
     "category": "Category",
     "categoryPlaceholder": "Choose category",
+    "listingTypeLabel": "What are you listing?",
+    "listingType": {
+      "product": "Product",
+      "service": "Service"
+    },
+    "departmentLabel": "Main category",
+    "subcategoryLabel": "Subcategory",
+    "color": "Color",
+    "colorPlaceholder": "Choose color (optional)",
+    "servicePricingHint": "For services, price and description are enough — brand and condition are optional.",
     "brand": "Brand",
     "brandPlaceholder": "Choose brand",
     "brandSearchPlaceholder": "Search or enter custom brand…",
@@ -736,10 +796,7 @@
     "loginRequired": "Please log in first.",
     "brandSizeRequired": "Brand and size are required.",
     "success": "Listing published!",
-    "error": "Upload failed.",
-    "budapestDistrict": "Budapest district",
-    "budapestDistrictPlaceholder": "Choose a district",
-    "budapestDistrictHint": "RobeoBP: buyers filter by this during browsing."
+    "error": "Upload failed."
   },
   "checkoutSuccess": {
     "title": "Purchase successful!",
@@ -819,21 +876,10 @@
       "listHint": "Without a Packeta widget key we use the built-in demo point list.",
       "noResults": "No results — try a different search."
     },
-    "localPickup": {
-      "title": "Local pickup — cash / direct P2P",
-      "body": "RobeoBP beta: free local pickup in Budapest. After booking, coordinate the meet-up, location and payment in chat. No Stripe, no courier, no fee.",
-      "reserveButton": "Book it for free",
-      "feeLabel": "Community beta",
-      "feeValue": "Free",
-      "disclaimerTitle": "Disclaimer (Budapest Beta)",
-      "disclaimerBody": "RobeoBP is a free community test app. We don't handle payments and accept no liability for in-person meetings or items. Always arrange meetups in safe, public places."
-    },
     "shippingOptions": {
       "foxpost": "Foxpost locker",
       "packeta": "Packeta pickup point",
       "home": "Home delivery",
-      "localPickup": "Local pickup (Cash / Direct P2P)",
-      "localPickupDays": "Time agreed in chat",
       "foxpostDays": "2–3 business days",
       "packetaDays": "2–4 business days",
       "homeDays": "1–2 business days"
@@ -856,6 +902,7 @@
   "uploadWizard": {
     "title": "List an item",
     "subtitle": "Step by step — your draft is saved automatically",
+    "subtitleFast": "4 quick steps — draft saved automatically",
     "stepOf": "Step {{current}} of {{total}}",
     "back": "Back",
     "next": "Next",
@@ -864,9 +911,12 @@
     "clearDraft": "Clear draft",
     "draftRestored": "Draft restored (please re-select photos).",
     "draftCleared": "Draft cleared.",
-    "photosHint": "The first photo is the cover. Up to 6 photos.",
+    "photosHint": "First photo is the cover. Up to 6 — more photos help sell faster!",
     "steps": {
       "photos": "Photos",
+      "listing": "Category",
+      "pricing": "Price & details",
+      "publish": "Description",
       "category": "Category",
       "brand": "Brand",
       "condition": "Condition",
@@ -876,22 +926,20 @@
     "errors": {
       "photosRequired": "Add at least one photo.",
       "categoryRequired": "Choose a category.",
+      "departmentRequired": "Choose a main category.",
+      "subcategoryRequired": "Choose a subcategory.",
+      "districtRequired": "Choose a Budapest district.",
       "sizeRequired": "Choose a size.",
       "brandRequired": "Choose a brand.",
       "conditionRequired": "Choose a condition.",
       "priceRequired": "Enter a valid price.",
-      "nameRequired": "Enter the item title.",
-      "descriptionRequired": "Add a description.",
-      "districtRequired": "Choose the Budapest district."
+      "nameRequired": "Enter a listing title.",
+      "descriptionRequired": "Add a description."
     }
   },
   "ordersHub": {
     "purchasesHint": "Track your purchases — payment, shipping, pickup confirmation.",
     "salesHint": "Manage your sales — print labels, mark shipped, track pickup."
-  },
-  "offerExpiry": {
-    "expired": "Expired",
-    "remaining": "{{time}} left"
   },
   "orders": {
     "title": "Order history",

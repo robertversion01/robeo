@@ -164,6 +164,7 @@ export default function CatalogFilterSidebar({
 
   const filterCounts = useCatalogFilterCounts(
     catalogFilters ?? {
+      listingType: 'all',
       category: selectedCategory,
       subcategory: selectedSubcategory,
       brand: selectedBrand,

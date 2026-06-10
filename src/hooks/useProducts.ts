@@ -23,6 +23,7 @@ import {
   conditionDbValues,
 } from '@/lib/catalogFilters';
 import { VINTED_DEPARTMENTS } from '@/lib/vintedCategoryTree';
+import { getDepartmentsForListingType } from '@/lib/marketplaceTaxonomy';
 import { fetchAllVacationSellerIds } from '@/lib/vacationMode';
 import { enrichProductsWithFavoriteCounts, adjustProductFavoriteCount } from '@/lib/favoriteCounts';
 import {
@@ -41,7 +42,7 @@ const SORT_OPTIONS = [
   { id: 'price_desc', label: 'Legdrágább előre', column: 'price', order: 'desc' as const },
 ];
 
-const CATEGORIES = [
+const CATEGORIES_ALL = [
   { id: 'all', label: 'Összes' },
   ...VINTED_DEPARTMENTS.map((d) => ({ id: d.id, label: d.id })),
 ];
@@ -54,6 +55,7 @@ export function useProducts() {
   const [totalCount, setTotalCount] = useState(0);
   const [page, setPage] = useState(0);
   const [filterRevision, setFilterRevision] = useState(0);
+  const [selectedListingType, setSelectedListingType] = useState<'all' | 'product' | 'service'>('all');
   const [selectedCategory, setSelectedCategory] = useState('all');
   const [selectedSubcategory, setSelectedSubcategory] = useState('all');
   const [selectedColor, setSelectedColor] = useState('all');
@@ -64,14 +66,19 @@ export function useProducts() {
   const [selectedBrand, setSelectedBrand] = useState('all');
   const [selectedSize, setSelectedSize] = useState('all');
   const [selectedCondition, setSelectedCondition] = useState('all');
-  /** RobeoBP only — kerület szűrő ('all' vagy I…XXIII). V1 módban ignorált. */
-  const [selectedDistrict, setSelectedDistrict] = useState('all');
   const [favorites, setFavorites] = useState<Set<string>>(new Set());
   const [user, setUser] = useState<any>(null);
   const fetchGenRef = useRef(0);
 
+  const categories = useMemo(() => {
+    if (selectedListingType === 'all') return CATEGORIES_ALL;
+    const depts = getDepartmentsForListingType(selectedListingType);
+    return [{ id: 'all', label: 'Összes' }, ...depts.map((d) => ({ id: d.id, label: d.id }))];
+  }, [selectedListingType]);
+
   const catalogFilters: CatalogFilterState = useMemo(
     () => ({
+      listingType: selectedListingType,
       category: selectedCategory,
       subcategory: selectedSubcategory,
       brand: selectedBrand,
@@ -82,9 +89,9 @@ export function useProducts() {
       maxPrice: selectedMaxPrice,
       sort: selectedSort,
       search: searchQuery,
-      budapest_district: selectedDistrict,
     }),
     [
+      selectedListingType,
       selectedCategory,
       selectedSubcategory,
       selectedBrand,
@@ -95,7 +102,6 @@ export function useProducts() {
       selectedMaxPrice,
       selectedSort,
       searchQuery,
-      selectedDistrict,
     ],
   );
 
@@ -111,6 +117,21 @@ export function useProducts() {
         setter(value);
         bumpFilterRevision();
       },
+    [bumpFilterRevision],
+  );
+
+  const setSelectedListingTypeWrapped = useCallback(
+    (value: SetStateAction<'all' | 'product' | 'service'>) => {
+      setSelectedListingType((prev) => {
+        const next = typeof value === 'function' ? value(prev) : value;
+        if (next !== prev) {
+          setSelectedCategory('all');
+          setSelectedSubcategory('all');
+        }
+        return next;
+      });
+      bumpFilterRevision();
+    },
     [bumpFilterRevision],
   );
 
@@ -279,15 +300,8 @@ export function useProducts() {
 
   const hasMore = products.length < totalCount;
 
-  const fetchProductsRef = useRef(fetchProductsPage);
-
-  useEffect(() => {
-    fetchProductsRef.current = fetchProductsPage;
-  }, [fetchProductsPage]);
-
   useEffect(() => {
     void checkUserAndFavorites();
-    // eslint-disable-next-line react-hooks/exhaustive-deps -- once on mount
   }, []);
 
   useEffect(() => {
@@ -297,6 +311,9 @@ export function useProducts() {
     window.addEventListener(CATALOG_UPDATED_EVENT, onCatalogRefresh);
     return () => window.removeEventListener(CATALOG_UPDATED_EVENT, onCatalogRefresh);
   }, [fetchProductsPage]);
+
+  const fetchProductsRef = useRef(fetchProductsPage);
+  fetchProductsRef.current = fetchProductsPage;
 
   useEffect(() => {
     const channelName = `catalog-products-${Math.random().toString(36).slice(2)}`;
@@ -418,6 +435,7 @@ export function useProducts() {
   const applyCatalogFilters = useCallback(
     (filters: CatalogFilterState) => {
       setSearchQuery(filters.search || '');
+      setSelectedListingType(filters.listingType || 'all');
       setSelectedCategory(filters.category || 'all');
       setSelectedSubcategory(filters.subcategory || 'all');
       setSelectedBrand(filters.brand || 'all');
@@ -428,7 +446,6 @@ export function useProducts() {
       if (filters.maxPrice && filters.maxPrice > 0) setSelectedMaxPrice(filters.maxPrice);
       else setSelectedMaxPrice(maxPriceLimit);
       setSelectedSort(filters.sort || 'newest');
-      setSelectedDistrict(filters.budapest_district || 'all');
       bumpFilterRevision();
     },
     [maxPriceLimit, bumpFilterRevision, setSearchQuery],
@@ -436,6 +453,7 @@ export function useProducts() {
 
   const clearAllFilters = useCallback(() => {
     setSearchQuery('');
+    setSelectedListingType('all');
     setSelectedCategory('all');
     setSelectedSubcategory('all');
     setSelectedBrand('all');
@@ -445,7 +463,6 @@ export function useProducts() {
     setSelectedMinPrice(0);
     setSelectedMaxPrice(maxPriceLimit);
     setSelectedSort('newest');
-    setSelectedDistrict('all');
     bumpFilterRevision();
   }, [maxPriceLimit, bumpFilterRevision, setSearchQuery]);
 
@@ -454,6 +471,11 @@ export function useProducts() {
       switch (key) {
         case 'search':
           setSearchQuery('');
+          break;
+        case 'listingType':
+          setSelectedListingType('all');
+          setSelectedCategory('all');
+          setSelectedSubcategory('all');
           break;
         case 'category':
           setSelectedCategory('all');
@@ -483,9 +505,6 @@ export function useProducts() {
         case 'sort':
           setSelectedSort('newest');
           break;
-        case 'budapest_district':
-          setSelectedDistrict('all');
-          break;
         default:
           break;
       }
@@ -505,6 +524,8 @@ export function useProducts() {
     filterKey: `${filterKey}:${filterRevision}`,
     searchQuery,
     setSearchQuery,
+    selectedListingType,
+    setSelectedListingType: setSelectedListingTypeWrapped,
     selectedCategory,
     setSelectedCategory: setSelectedCategoryWrapped,
     selectedSubcategory,
@@ -527,13 +548,11 @@ export function useProducts() {
     favorites,
     toggleFavorite,
     sortOptions: SORT_OPTIONS,
-    categories: CATEGORIES,
+    categories,
     selectedBrand,
     setSelectedBrand: setSelectedBrandWrapped,
     selectedSize,
     setSelectedSize: setSelectedSizeWrapped,
-    selectedDistrict,
-    setSelectedDistrict: wrapFilterSetter(setSelectedDistrict),
     user,
   };
 }

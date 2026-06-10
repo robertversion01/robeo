@@ -1,5 +1,5 @@
 export type UploadDraft = {
-  version: 2;
+  version: 3;
   step: number;
   name: string;
   description: string;
@@ -8,15 +8,18 @@ export type UploadDraft = {
   condition: string;
   brand: string;
   size: string;
+  color: string;
+  listingType: 'product' | 'service';
+  departmentId: string;
+  subcategoryId: string;
+  budapestDistrict: string;
   /** Csak darabszám — képek nem kerülnek localStorage-ba (mobil quota / parse crash). */
   imageCount: number;
-  /** RobeoBP only — egyébként üres string. Opcionális marad a back-compat miatt. */
-  budapestDistrict?: string;
   savedAt: string;
 };
 
-const STORAGE_KEY = 'robeo_upload_draft_v2';
-const LEGACY_KEYS = ['robeo_upload_draft_v1'];
+const STORAGE_KEY = 'robeo_upload_draft_v3';
+const LEGACY_KEYS = ['robeo_upload_draft_v1', 'robeo_upload_draft_v2'];
 
 /** Régi base64 draftok törlése — mobilon a JSON.parse is összeomolhatott. */
 export function purgeCorruptUploadDrafts(): void {
@@ -41,7 +44,7 @@ export function purgeCorruptUploadDrafts(): void {
 
 function normalizeDraft(parsed: Record<string, unknown>): UploadDraft | null {
   const version = parsed?.version;
-  if (version !== 2 && version !== 1) return null;
+  if (version !== 3 && version !== 2 && version !== 1) return null;
 
   const legacyImages = parsed.images;
   const imageCount =
@@ -52,7 +55,7 @@ function normalizeDraft(parsed: Record<string, unknown>): UploadDraft | null {
         : 0;
 
   return {
-    version: 2,
+    version: 3,
     step: typeof parsed.step === 'number' ? parsed.step : 0,
     name: typeof parsed.name === 'string' ? parsed.name : '',
     description: typeof parsed.description === 'string' ? parsed.description : '',
@@ -61,9 +64,12 @@ function normalizeDraft(parsed: Record<string, unknown>): UploadDraft | null {
     condition: typeof parsed.condition === 'string' ? parsed.condition : '',
     brand: typeof parsed.brand === 'string' ? parsed.brand : '',
     size: typeof parsed.size === 'string' ? parsed.size : '',
+    color: typeof parsed.color === 'string' ? parsed.color : '',
+    listingType: parsed.listingType === 'service' ? 'service' : 'product',
+    departmentId: typeof parsed.departmentId === 'string' ? parsed.departmentId : '',
+    subcategoryId: typeof parsed.subcategoryId === 'string' ? parsed.subcategoryId : '',
+    budapestDistrict: typeof parsed.budapestDistrict === 'string' ? parsed.budapestDistrict : '',
     imageCount,
-    budapestDistrict:
-      typeof parsed.budapestDistrict === 'string' ? parsed.budapestDistrict : '',
     savedAt: typeof parsed.savedAt === 'string' ? parsed.savedAt : new Date().toISOString(),
   };
 }
@@ -90,7 +96,7 @@ export function saveUploadDraft(draft: Omit<UploadDraft, 'version' | 'savedAt'>)
   if (typeof window === 'undefined') return;
   const payload: UploadDraft = {
     ...draft,
-    version: 2,
+    version: 3,
     savedAt: new Date().toISOString(),
   };
   try {

@@ -1,12 +1,16 @@
 import { VINTED_CONDITIONS } from '@/lib/vintedCatalog';
 import {
   LEGACY_CATEGORY_TO_DEPARTMENT,
-  productMatchesDepartment,
-  productMatchesSubcategory,
   productMatchesColor,
-  departmentDbAliases,
-  subcategoryDbAliases,
 } from '@/lib/vintedCategoryTree';
+import {
+  type ListingType,
+  productMatchesListingTypeFilter,
+  productMatchesTaxonomyDepartment,
+  productMatchesTaxonomySubcategory,
+  departmentDbAliasesForTaxonomy,
+  subcategoryDbAliasesForTaxonomy,
+} from '@/lib/marketplaceTaxonomy';
 
 /** @deprecated — régi flat aliasok; új fa: vintedCategoryTree */
 export const CATEGORY_ALIASES: Record<string, string[]> = {
@@ -18,7 +22,9 @@ export const CATEGORY_ALIASES: Record<string, string[]> = {
 };
 
 export type CatalogFilterState = {
-  /** Fő kategória (department): women, men, kids, … */
+  /** Termék / szolgáltatás / mind */
+  listingType: 'all' | ListingType;
+  /** Fő kategória (department): women, men, kids, svc_home, … */
   category: string;
   /** Alkategória: women_dresses, men_shoes, … */
   subcategory: string;
@@ -65,6 +71,7 @@ export function normalizeDepartmentId(value: string): string {
 
 export function serializeCatalogFilters(filters: CatalogFilterState): string {
   return JSON.stringify({
+    listingType: filters.listingType ?? 'all',
     category: filters.category,
     subcategory: filters.subcategory,
     brand: filters.brand,
@@ -89,20 +96,20 @@ export function conditionDbValues(filterId: string): string[] {
 export function categoryDbValues(filterId: string): string[] {
   if (filterId === 'all') return [];
   const dept = normalizeDepartmentId(filterId);
-  const fromTree = departmentDbAliases(dept);
+  const fromTree = departmentDbAliasesForTaxonomy(dept);
   if (fromTree.length > 0) return fromTree;
   return CATEGORY_ALIASES[filterId] || [filterId];
 }
 
 export function subcategoryFilterDbValues(subcategoryId: string): string[] {
-  return subcategoryDbAliases(subcategoryId);
+  return subcategoryDbAliasesForTaxonomy(subcategoryId);
 }
 
 export function productMatchesCategory(
   productCategory: string | null | undefined,
   filterId: string,
 ): boolean {
-  return productMatchesDepartment(productCategory, normalizeDepartmentId(filterId));
+  return productMatchesTaxonomyDepartment(productCategory, normalizeDepartmentId(filterId));
 }
 
 export function productMatchesCatalogFilters(
@@ -112,10 +119,11 @@ export function productMatchesCatalogFilters(
     color?: string | null;
     size?: string | null;
   },
-  filters: Pick<CatalogFilterState, 'category' | 'subcategory' | 'color'>,
+  filters: Pick<CatalogFilterState, 'listingType' | 'category' | 'subcategory' | 'color'>,
 ): boolean {
-  if (!productMatchesDepartment(product.category, filters.category)) return false;
-  if (!productMatchesSubcategory(product.category, filters.subcategory)) return false;
+  if (!productMatchesListingTypeFilter(product.category, filters.listingType ?? 'all')) return false;
+  if (!productMatchesTaxonomyDepartment(product.category, filters.category)) return false;
+  if (!productMatchesTaxonomySubcategory(product.category, filters.subcategory)) return false;
   if (!productMatchesColor(product.color, filters.color)) return false;
   return true;
 }

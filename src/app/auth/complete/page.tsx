@@ -14,6 +14,7 @@ import {
   normalizeUsername,
   usernameFromEmail,
 } from '@/lib/profileRegistration';
+import { readReturnUrlFromSearch, sanitizeReturnUrl } from '@/lib/returnUrl';
 
 function MaterialField({
   id,
@@ -67,6 +68,12 @@ export default function AuthCompletePage() {
   const [checkingUsername, setCheckingUsername] = useState(false);
   const [acceptedLegal, setAcceptedLegal] = useState(false);
   const [marketingOptIn, setMarketingOptIn] = useState(false);
+  const [returnUrl, setReturnUrl] = useState('/browse');
+
+  useEffect(() => {
+    if (typeof window === 'undefined') return;
+    setReturnUrl(sanitizeReturnUrl(readReturnUrlFromSearch(window.location.search), '/browse'));
+  }, []);
 
   useEffect(() => {
     void (async () => {
@@ -88,7 +95,7 @@ export default function AuthCompletePage() {
         .maybeSingle();
 
       if (isProfileRegistrationComplete(profile)) {
-        router.replace('/profile');
+        router.replace(returnUrl);
         return;
       }
 
@@ -104,7 +111,7 @@ export default function AuthCompletePage() {
 
       setLoading(false);
     })();
-  }, [router]);
+  }, [router, returnUrl]);
 
   const checkUsername = useCallback(
     async (raw: string, uid: string | null) => {
@@ -203,7 +210,7 @@ export default function AuthCompletePage() {
       });
 
       toast.success(t('auth.complete.success'));
-      router.replace('/profile');
+      router.replace(returnUrl);
     } catch (err: unknown) {
       const message = err instanceof Error ? err.message : t('auth.errors.generic');
       toast.error(message);
@@ -227,7 +234,9 @@ export default function AuthCompletePage() {
           {t('auth.complete.title')}
         </h1>
 
-        <form onSubmit={handleSubmit} className="mt-10 space-y-8">
+        <p className="mt-2 text-center text-sm text-gray-500">{t('auth.complete.progressHint')}</p>
+
+        <form onSubmit={handleSubmit} className="mt-8 space-y-8">
           <MaterialField
             id="fullName"
             label={t('auth.complete.fullNameLabel')}

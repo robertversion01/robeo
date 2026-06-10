@@ -3,12 +3,13 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { supabase } from '@/lib/supabase';
 import { toast } from 'sonner';
-import { X, Plus, ArrowUp, ArrowDown, ChevronLeft, ChevronRight, Check } from 'lucide-react';
+import { X, Plus, ArrowUp, ArrowDown, ChevronLeft, ChevronRight, Check, Sparkles } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 import { useRouter } from 'next/navigation';
 import CustomSelect from '@/components/ui/CustomSelect';
 import BrandCombobox from '@/components/upload/BrandCombobox';
-import { VINTED_CATEGORIES, sizesForCategory } from '@/lib/vintedCatalog';
+import ListingCategoryPicker from '@/components/upload/ListingCategoryPicker';
+import { OTHER_BRAND } from '@/lib/vintedCatalog';
 import { MAIN_TOP_PADDING, STICKY_ACTION_BAR_CLASS } from '@/lib/layoutTokens';
 import { revalidateCatalog } from '@/app/actions/revalidateCatalog';
 import { notifyCatalogUpdated } from '@/lib/catalogRefresh';
@@ -16,11 +17,19 @@ import { clearUploadDraft, loadUploadDraft, saveUploadDraft } from '@/lib/upload
 import { cn } from '@/lib/utils';
 import { suggestListingCopy } from '@/lib/uploadListingAi';
 import { isOllamaReachable } from '@/lib/ollamaClient';
-import { Sparkles } from 'lucide-react';
 import { ROBEO_BP_MODE } from '@/lib/features';
 import { BUDAPEST_DISTRICTS, isValidBudapestDistrict } from '@/lib/budapestDistricts';
+import { appendReturnUrl } from '@/lib/returnUrl';
+import {
+  type ListingType,
+  categoryRequiresBrand,
+  categoryRequiresCondition,
+  categoryRequiresSize,
+  getDepartmentForCategory,
+  isServiceCategory,
+} from '@/lib/marketplaceTaxonomy';
 
-const STEPS = ['photos', 'category', 'brand', 'condition', 'price', 'details'] as const;
+const STEPS = ['photos', 'listing', 'pricing', 'publish'] as const;
 type StepId = (typeof STEPS)[number];
 
 interface UploadedImage {
@@ -37,7 +46,10 @@ type FormState = {
   condition: string;
   brand: string;
   size: string;
-  /** RobeoBP only — Budapest kerület (római szám). V1 módban üres marad. */
+  color: string;
+  listingType: ListingType;
+  departmentId: string;
+  subcategoryId: string;
   budapestDistrict: string;
 };
 
@@ -49,6 +61,10 @@ const emptyForm: FormState = {
   condition: '',
   brand: '',
   size: '',
+  color: '',
+  listingType: 'product',
+  departmentId: '',
+  subcategoryId: '',
   budapestDistrict: '',
 };
 
@@ -59,6 +75,7 @@ export default function UploadWizard() {
   const [formData, setFormData] = useState<FormState>(emptyForm);
   const [images, setImages] = useState<UploadedImage[]>([]);
   const [loading, setLoading] = useState(false);
+  const [authChecked, setAuthChecked] = useState(false);
   const [draftRestored, setDraftRestored] = useState(false);
   const [aiLoading, setAiLoading] = useState(false);
   const [ollamaOk, setOllamaOk] = useState<boolean | null>(null);
@@ -66,21 +83,46 @@ export default function UploadWizard() {
 
   const stepId = STEPS[stepIndex];
   const progress = ((stepIndex + 1) / STEPS.length) * 100;
+  const isService = formData.listingType === 'service';
 
   useEffect(() => {
-    if (stepId !== 'details') return;
+    void (async () => {
+      const {
+        data: { user },
+      } = await supabase.auth.getUser();
+      if (!user) {
+        router.replace(appendReturnUrl('/auth?view=sign_up', '/upload'));
+        return;
+      }
+      setAuthChecked(true);
+    })();
+  }, [router]);
+
+  useEffect(() => {
+    if (stepId !== 'publish') return;
     void isOllamaReachable().then(setOllamaOk);
   }, [stepId]);
 
+  const syncCategoryFromPicker = useCallback(
+    (patch: Partial<Pick<FormState, 'listingType' | 'departmentId' | 'subcategoryId' | 'size' | 'color'>>) => {
+      setFormData((prev) => {
+        const next = { ...prev, ...patch };
+        next.category = next.subcategoryId || next.departmentId || '';
+        return next;
+      });
+    },
+    [],
+  );
+
   const runAiSuggest = async () => {
-    if (!formData.category || !formData.brand) {
+    if (!formData.subcategoryId && !formData.category) {
       toast.error(t('upload.ai.needBasics'));
       return;
     }
     setAiLoading(true);
     const input = {
       category: formData.category,
-      brand: formData.brand,
+      brand: formData.brand || OTHER_BRAND,
       size: formData.size,
       condition: formData.condition,
       price: formData.price,
@@ -125,15 +167,26 @@ export default function UploadWizard() {
   useEffect(() => {
     const draft = loadUploadDraft();
     if (!draft || draftRestored) return;
+
+    const listingType: ListingType =
+      draft.listingType === 'service' || isServiceCategory(draft.category) ? 'service' : 'product';
+    const departmentId =
+      draft.departmentId || getDepartmentForCategory(draft.category) || '';
+    const subcategoryId = draft.subcategoryId || draft.category || '';
+
     setFormData({
       name: draft.name || '',
       description: draft.description || '',
       price: draft.price || '',
-      category: draft.category || '',
+      category: subcategoryId || draft.category || '',
       condition: draft.condition || '',
       brand: draft.brand || '',
       size: draft.size || '',
-      budapestDistrict: (draft as { budapestDistrict?: string }).budapestDistrict || '',
+      color: draft.color || '',
+      listingType,
+      departmentId,
+      subcategoryId,
+      budapestDistrict: draft.budapestDistrict || '',
     });
     if (draft.step >= 0 && draft.step < STEPS.length) {
       setStepIndex(draft.step);
@@ -161,22 +214,25 @@ export default function UploadWizard() {
       case 'photos':
         if (images.length === 0) return t('uploadWizard.errors.photosRequired');
         return null;
-      case 'category':
-        if (!formData.category) return t('uploadWizard.errors.categoryRequired');
-        if (!formData.size) return t('uploadWizard.errors.sizeRequired');
+      case 'listing':
+        if (!formData.departmentId) return t('uploadWizard.errors.departmentRequired');
+        if (!formData.subcategoryId) return t('uploadWizard.errors.subcategoryRequired');
+        if (categoryRequiresSize(formData.listingType) && !formData.size) {
+          return t('uploadWizard.errors.sizeRequired');
+        }
         return null;
-      case 'brand':
-        if (!formData.brand) return t('uploadWizard.errors.brandRequired');
-        return null;
-      case 'condition':
-        if (!formData.condition) return t('uploadWizard.errors.conditionRequired');
-        return null;
-      case 'price': {
+      case 'pricing': {
+        if (categoryRequiresBrand(formData.listingType) && !formData.brand.trim()) {
+          return t('uploadWizard.errors.brandRequired');
+        }
+        if (categoryRequiresCondition(formData.listingType) && !formData.condition) {
+          return t('uploadWizard.errors.conditionRequired');
+        }
         const p = parseInt(formData.price, 10);
         if (!Number.isFinite(p) || p <= 0) return t('uploadWizard.errors.priceRequired');
         return null;
       }
-      case 'details':
+      case 'publish':
         if (!formData.name.trim()) return t('uploadWizard.errors.nameRequired');
         if (!formData.description.trim()) return t('uploadWizard.errors.descriptionRequired');
         if (ROBEO_BP_MODE && !isValidBudapestDistrict(formData.budapestDistrict)) {
@@ -244,7 +300,9 @@ export default function UploadWizard() {
         .from('product-images')
         .upload(fileName, image.file);
       if (uploadError) throw uploadError;
-      const { data: { publicUrl } } = supabase.storage.from('product-images').getPublicUrl(fileName);
+      const {
+        data: { publicUrl },
+      } = supabase.storage.from('product-images').getPublicUrl(fileName);
       urls.push(publicUrl);
     }
     return urls;
@@ -262,7 +320,9 @@ export default function UploadWizard() {
 
     setLoading(true);
     try {
-      const { data: { user } } = await supabase.auth.getUser();
+      const {
+        data: { user },
+      } = await supabase.auth.getUser();
       if (!user) throw new Error(t('upload.loginRequired'));
 
       const imageUrls = images.length > 0 ? await uploadImages(user.id) : [];
@@ -271,10 +331,11 @@ export default function UploadWizard() {
         name: formData.name.trim(),
         description: formData.description.trim(),
         price: parseInt(formData.price, 10),
-        category: formData.category,
-        condition: formData.condition,
-        brand: formData.brand,
+        category: formData.subcategoryId || formData.category,
+        condition: isService ? 'service' : formData.condition,
+        brand: formData.brand.trim() || OTHER_BRAND,
         size: formData.size || null,
+        color: formData.color || null,
         image_url: imageUrls[0] || null,
         images: imageUrls,
         user_id: user.id,
@@ -295,7 +356,7 @@ export default function UploadWizard() {
       notifyCatalogUpdated();
       clearUploadDraft();
       toast.success(t('upload.success'));
-      window.location.href = '/';
+      window.location.href = '/profile?tab=shop';
     } catch (error: unknown) {
       const msg = error instanceof Error ? error.message : '';
       toast.error(t('upload.error') + (msg ? ` ${msg}` : ''));
@@ -312,19 +373,25 @@ export default function UploadWizard() {
     { value: 'poor', label: t('upload.conditions.poor') },
   ];
 
+  if (!authChecked) {
+    return (
+      <div className="flex min-h-screen items-center justify-center bg-white text-gray-500">
+        {t('auth.processing')}
+      </div>
+    );
+  }
+
   return (
     <div className="min-h-screen bg-white text-gray-900">
       <main className={`${MAIN_TOP_PADDING} pb-36 max-w-lg mx-auto px-4`}>
         <div className="pt-3 mb-4">
           <h1 className="text-xl font-bold">{t('uploadWizard.title')}</h1>
-          <p className="text-sm text-gray-500 mt-0.5">{t('uploadWizard.subtitle')}</p>
+          <p className="text-sm text-gray-500 mt-0.5">{t('uploadWizard.subtitleFast')}</p>
         </div>
 
         <div className="mb-4">
           <div className="flex justify-between text-xs font-semibold text-gray-500 mb-2">
-            <span>
-              {t('uploadWizard.stepOf', { current: stepIndex + 1, total: STEPS.length })}
-            </span>
+            <span>{t('uploadWizard.stepOf', { current: stepIndex + 1, total: STEPS.length })}</span>
             <span>{Math.round(progress)}%</span>
           </div>
           <div className="h-2 rounded-full bg-gray-100 overflow-hidden">
@@ -365,17 +432,33 @@ export default function UploadWizard() {
                     >
                       <img src={image.preview} alt="" className="w-full h-full object-cover" />
                       <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 flex items-center justify-center gap-1 transition-opacity">
-                        <button type="button" onClick={() => moveImage(index, 'up')} disabled={index === 0} className="p-1 rounded-full bg-white/30 text-white disabled:opacity-30">
+                        <button
+                          type="button"
+                          onClick={() => moveImage(index, 'up')}
+                          disabled={index === 0}
+                          className="p-1 rounded-full bg-white/30 text-white disabled:opacity-30"
+                        >
                           <ArrowUp size={14} />
                         </button>
-                        <button type="button" onClick={() => moveImage(index, 'down')} disabled={index === images.length - 1} className="p-1 rounded-full bg-white/30 text-white disabled:opacity-30">
+                        <button
+                          type="button"
+                          onClick={() => moveImage(index, 'down')}
+                          disabled={index === images.length - 1}
+                          className="p-1 rounded-full bg-white/30 text-white disabled:opacity-30"
+                        >
                           <ArrowDown size={14} />
                         </button>
                       </div>
-                      <button type="button" onClick={() => removeImage(image.id)} className="absolute top-1 right-1 p-1 rounded-full bg-black/60 text-white">
+                      <button
+                        type="button"
+                        onClick={() => removeImage(image.id)}
+                        className="absolute top-1 right-1 p-1 rounded-full bg-black/60 text-white"
+                      >
                         <X size={12} />
                       </button>
-                      <span className="absolute bottom-1 left-1 text-[9px] bg-black/50 text-white px-1 rounded">{index + 1}</span>
+                      <span className="absolute bottom-1 left-1 text-[9px] bg-black/50 text-white px-1 rounded">
+                        {index + 1}
+                      </span>
                     </div>
                   ))}
                 </div>
@@ -391,70 +474,86 @@ export default function UploadWizard() {
                   <p className="text-xs text-gray-500 mt-1">{t('upload.imagesCount', { count: images.length })}</p>
                 </button>
               )}
-              <input ref={fileInputRef} type="file" accept="image/*" multiple className="hidden" onChange={handleImagesChange} />
-            </div>
-          )}
-
-          {stepId === 'category' && (
-            <div className="space-y-4">
-              <label className="block text-sm font-medium">{t('upload.category')}</label>
-              <CustomSelect
-                options={VINTED_CATEGORIES.map((c) => ({ value: c.id, label: c.label }))}
-                value={formData.category}
-                onChange={(val) => setFormData((p) => ({ ...p, category: val, size: '' }))}
-                placeholder={t('upload.categoryPlaceholder')}
-              />
-              <label className="block text-sm font-medium">{t('upload.size')}</label>
-              <CustomSelect
-                options={sizesForCategory(formData.category || 'clothing').map((s) => ({ value: s, label: s }))}
-                value={formData.size}
-                onChange={(val) => setFormData((p) => ({ ...p, size: val }))}
-                placeholder={t('upload.sizePlaceholder')}
-              />
-            </div>
-          )}
-
-          {stepId === 'brand' && (
-            <div>
-              <label className="block text-sm font-medium mb-2">{t('upload.brand')}</label>
-              <BrandCombobox
-                value={formData.brand}
-                onChange={(val) => setFormData((p) => ({ ...p, brand: val }))}
-                placeholder={t('upload.brandSearchPlaceholder')}
-                bottomReservePx={0}
-              />
-              <p className="mt-2 text-[11px] text-gray-500">{t('upload.brandTypeaheadHint')}</p>
-            </div>
-          )}
-
-          {stepId === 'condition' && (
-            <div>
-              <label className="block text-sm font-medium mb-2">{t('upload.condition')}</label>
-              <CustomSelect
-                options={conditionOptions}
-                value={formData.condition}
-                onChange={(val) => setFormData((p) => ({ ...p, condition: val }))}
-                placeholder={t('upload.conditionPlaceholder')}
-              />
-            </div>
-          )}
-
-          {stepId === 'price' && (
-            <div>
-              <label className="block text-sm font-medium mb-2">{t('upload.price')}</label>
               <input
-                type="number"
-                inputMode="numeric"
-                min={0}
-                value={formData.price}
-                onChange={(e) => setFormData((p) => ({ ...p, price: e.target.value }))}
-                placeholder={t('upload.pricePlaceholder')}
-                className="input-base w-full text-center text-2xl font-bold tabular-nums"
+                ref={fileInputRef}
+                type="file"
+                accept="image/*"
+                multiple
+                className="hidden"
+                onChange={handleImagesChange}
               />
             </div>
           )}
 
-          {stepId === 'details' && (
+          {stepId === 'listing' && (
+            <ListingCategoryPicker
+              listingType={formData.listingType}
+              onListingTypeChange={(type) =>
+                syncCategoryFromPicker({
+                  listingType: type,
+                  departmentId: '',
+                  subcategoryId: '',
+                  size: '',
+                  color: '',
+                })
+              }
+              departmentId={formData.departmentId}
+              onDepartmentChange={(id) =>
+                syncCategoryFromPicker({ departmentId: id, subcategoryId: '', size: '' })
+              }
+              subcategoryId={formData.subcategoryId}
+              onSubcategoryChange={(id) => syncCategoryFromPicker({ subcategoryId: id, size: '' })}
+              size={formData.size}
+              onSizeChange={(size) => setFormData((p) => ({ ...p, size }))}
+              color={formData.color}
+              onColorChange={(color) => setFormData((p) => ({ ...p, color }))}
+            />
+          )}
+
+          {stepId === 'pricing' && (
+            <div className="space-y-5">
+              {!isService ? (
+                <>
+                  <div>
+                    <label className="block text-sm font-medium mb-2">{t('upload.brand')}</label>
+                    <BrandCombobox
+                      value={formData.brand}
+                      onChange={(val) => setFormData((p) => ({ ...p, brand: val }))}
+                      placeholder={t('upload.brandSearchPlaceholder')}
+                      bottomReservePx={0}
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-sm font-medium mb-2">{t('upload.condition')}</label>
+                    <CustomSelect
+                      options={conditionOptions}
+                      value={formData.condition}
+                      onChange={(val) => setFormData((p) => ({ ...p, condition: val }))}
+                      placeholder={t('upload.conditionPlaceholder')}
+                    />
+                  </div>
+                </>
+              ) : (
+                <p className="text-sm text-gray-600 rounded-xl bg-gray-50 border border-gray-200 p-3">
+                  {t('upload.servicePricingHint')}
+                </p>
+              )}
+              <div>
+                <label className="block text-sm font-medium mb-2">{t('upload.price')}</label>
+                <input
+                  type="number"
+                  inputMode="numeric"
+                  min={0}
+                  value={formData.price}
+                  onChange={(e) => setFormData((p) => ({ ...p, price: e.target.value }))}
+                  placeholder={t('upload.pricePlaceholder')}
+                  className="input-base w-full text-center text-2xl font-bold tabular-nums"
+                />
+              </div>
+            </div>
+          )}
+
+          {stepId === 'publish' && (
             <div className="space-y-4">
               <div className="rounded-xl border border-[#007782]/20 bg-[#007782]/5 p-3">
                 <p className="text-xs text-gray-600 mb-2">{t('upload.ai.hint')}</p>
@@ -495,21 +594,15 @@ export default function UploadWizard() {
                 <div>
                   <label className="block text-sm font-medium mb-2">
                     {t('upload.budapestDistrict')}{' '}
-                    <span className="text-red-500" aria-hidden>
-                      *
-                    </span>
+                    <span className="text-red-500">*</span>
                   </label>
                   <CustomSelect
-                    options={BUDAPEST_DISTRICTS.map((d) => ({ value: d.id, label: d.label }))}
+                    options={BUDAPEST_DISTRICTS.map((d) => ({ value: String(d), label: String(d) }))}
                     value={formData.budapestDistrict}
-                    onChange={(val) =>
-                      setFormData((p) => ({ ...p, budapestDistrict: val }))
-                    }
+                    onChange={(val) => setFormData((p) => ({ ...p, budapestDistrict: val }))}
                     placeholder={t('upload.budapestDistrictPlaceholder')}
                   />
-                  <p className="mt-1 text-[11px] text-gray-500">
-                    {t('upload.budapestDistrictHint')}
-                  </p>
+                  <p className="mt-1.5 text-[11px] text-gray-500">{t('upload.budapestDistrictHint')}</p>
                 </div>
               ) : null}
             </div>
@@ -534,22 +627,40 @@ export default function UploadWizard() {
       <div className={STICKY_ACTION_BAR_CLASS}>
         <div className="max-w-lg mx-auto flex gap-3">
           {stepIndex > 0 ? (
-            <button type="button" onClick={goBack} disabled={loading} className="flex-1 btn-base btn-secondary min-h-12 inline-flex items-center justify-center gap-1">
+            <button
+              type="button"
+              onClick={goBack}
+              disabled={loading}
+              className="flex-1 btn-base btn-secondary min-h-12 inline-flex items-center justify-center gap-1"
+            >
               <ChevronLeft size={18} />
               {t('uploadWizard.back')}
             </button>
           ) : (
-            <button type="button" onClick={() => router.push('/browse')} className="flex-1 btn-base btn-secondary min-h-12">
+            <button
+              type="button"
+              onClick={() => router.push('/browse')}
+              className="flex-1 btn-base btn-secondary min-h-12"
+            >
               {t('uploadWizard.cancel')}
             </button>
           )}
           {stepIndex < STEPS.length - 1 ? (
-            <button type="button" onClick={goNext} className="flex-[2] btn-base btn-primary min-h-12 inline-flex items-center justify-center gap-1">
+            <button
+              type="button"
+              onClick={goNext}
+              className="flex-[2] btn-base btn-primary min-h-12 inline-flex items-center justify-center gap-1"
+            >
               {t('uploadWizard.next')}
               <ChevronRight size={18} />
             </button>
           ) : (
-            <button type="button" onClick={() => void handlePublish()} disabled={loading} className="flex-[2] btn-base btn-primary min-h-12 disabled:opacity-50">
+            <button
+              type="button"
+              onClick={() => void handlePublish()}
+              disabled={loading}
+              className="flex-[2] btn-base btn-primary min-h-12 disabled:opacity-50"
+            >
               {loading ? t('upload.submitting') : t('uploadWizard.publish')}
             </button>
           )}

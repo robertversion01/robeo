@@ -60,6 +60,48 @@
       "pets": "Állatok",
       "other": "Egyéb"
     },
+    "listingType": {
+      "label": "Típus",
+      "all": "Mind",
+      "products": "Termékek",
+      "services": "Szolgáltatások"
+    },
+    "serviceDepartments": {
+      "home": "Otthon & kert",
+      "beauty": "Szépség & wellness",
+      "education": "Oktatás",
+      "it": "IT & tech",
+      "creative": "Kreatív",
+      "pets": "Állatok",
+      "events": "Rendezvény",
+      "other": "Egyéb szolgáltatás"
+    },
+    "serviceSubcategories": {
+      "home_cleaning": "Takarítás",
+      "home_repair": "Javítás & szerelés",
+      "home_moving": "Költöztetés",
+      "home_garden": "Kertészet",
+      "beauty_hair": "Fodrászat",
+      "beauty_nails": "Manikűr / pedikűr",
+      "beauty_massage": "Masszázs",
+      "beauty_makeup": "Smink",
+      "education_tutoring": "Magántanár",
+      "education_language": "Nyelvoktatás",
+      "education_music": "Zeneóra",
+      "it_repair": "Szerviz & javítás",
+      "it_web": "Web & honlap",
+      "it_other": "Egyéb IT",
+      "creative_photo": "Fotózás",
+      "creative_design": "Grafika & design",
+      "creative_video": "Videó",
+      "pets_walking": "Kutyasétáltatás",
+      "pets_grooming": "Állatápolás",
+      "pets_sitting": "Állatőrzés",
+      "events_catering": "Catering",
+      "events_dj": "DJ / zene",
+      "events_other": "Egyéb rendezvény",
+      "other_misc": "Egyéb szolgáltatás"
+    },
     "filters": {
       "category": "Kategória",
       "allCategories": "Összes kategória",
@@ -210,10 +252,7 @@
       "applyFilters": "Alkalmaz",
       "applyWithCount": "Alkalmaz ({{count}} találat)",
       "counting": "Számolás…",
-      "activeFilters": "{{count}} aktív szűrő",
-      "budapestDistrict": "Budapest kerület",
-      "budapestDistrictAll": "Összes kerület",
-      "budapestDistrictHint": "Csak a kiválasztott kerületben hirdetett termékek látszanak."
+      "activeFilters": "{{count}} aktív szűrő"
     },
     "feed": {
       "default": "Friss hirdetések a közösségtől — böngéssz, szűrj, ments kedvenceket.",
@@ -457,20 +496,6 @@
     "checkoutNudge": "Még {{count}} tétel van a csomagodban — akár {{savings}} megtakarítás.",
     "checkoutNudgeLink": "További hirdetések"
   },
-  "sellerInsights": {
-    "title": "Eladói riportok",
-    "subtitle": "Bevétel, eladott darabszám, top termékek — utolsó 6 hónap.",
-    "empty": "Még nincs eladás.",
-    "emptyHint": "Amint az első tranzakció kifizetve állapotba kerül, itt látod az értékeit.",
-    "netRevenue": "Nettó bevétel",
-    "grossHint": "Bruttó: {{gross}}",
-    "lastMonth": "Utolsó 30 nap",
-    "totalSalesHint": "Összesen {{count}} eladás",
-    "avgSale": "Átlag eladási ár",
-    "topCountHint": "{{count}} top termék",
-    "monthlyTitle": "Havi bontás (utolsó 6 hónap)",
-    "topProductsTitle": "Top 5 termék bevétel szerint"
-  },
   "sellerEngagement": {
     "title": "Érdeklődés a hirdetéseid iránt",
     "subtitle": "Kedvencek és gyors reakció — Vinted-szerű eladói nézet.",
@@ -491,7 +516,13 @@
     "offersTitle": "Beérkező ajánlatok",
     "conversationsTitle": "Beszélgetések",
     "emptyConversations": "Nincs még beszélgetésed",
+    "emptyConversationsTitle": "Még nincs üzeneted",
+    "emptyConversationsDesc": "Böngéssz, és írj az eladónak — itt folytathatod az alkut és a vásárlást.",
+    "emptyBrowseCta": "Böngéssz a kínálatban",
+    "emptyUploadCta": "Adj fel hirdetést",
     "selectConversation": "Válassz ki egy beszélgetést",
+    "selectConversationTitle": "Válassz beszélgetést",
+    "selectConversationDesc": "Bal oldalon a listából, vagy nyiss meg egy terméket és írj az eladónak.",
     "placeholder": "Üzenet írása…",
     "makeOffer": "Ajánlatot teszek",
     "payLink": "Fizetés indítása",
@@ -542,6 +573,25 @@
     "switchLogin": "Jelentkezz be",
     "successLogin": "Sikeres bejelentkezés!",
     "successRegister": "Sikeres regisztráció!",
+    "successRegisterCheckEmail": "Fiók létrehozva! Ha kell, erősítsd meg az e-mail címedet, majd töltsd ki a profilod.",
+    "registerSubtitle": "2 perc alatt kész — utána azonnal feltölthetsz hirdetést.",
+    "legalRequired": "Az ÁSZF és adatkezelési tájékoztató elfogadása kötelező.",
+    "marketingOptIn": "Szeretnék hírlevelet kapni új funkciókról és akciókról (opcionális).",
+    "complete": {
+      "title": "Profil befejezése",
+      "progressHint": "Utolsó lépés — ezután azonnal használhatod a Robeót.",
+      "fullNameLabel": "Teljes név",
+      "fullNameHint": "Ez jelenik meg az eladói profilodon.",
+      "fullNameRequired": "Add meg a teljes neved.",
+      "usernameLabel": "Felhasználónév",
+      "usernameInvalid": "A felhasználónév 3–20 karakter, csak betű, szám és aláhúzás.",
+      "usernameTaken": "Ez a felhasználónév már foglalt.",
+      "usernameSuggested": "Próbáld ezt:",
+      "usernameChecking": "Ellenőrzés…",
+      "continue": "Kész, indulhatok!",
+      "success": "Profil kész — jó vásárlást és eladást!",
+      "problemLink": "Probléma a regisztrációval?"
+    },
     "errors": {
       "generic": "Hiba történt",
       "emailNotConfirmed": "Igazold vissza az e-mail címedet a bejelentkezés előtt!",
@@ -642,6 +692,16 @@
     "pricePlaceholder": "15000",
     "category": "Kategória",
     "categoryPlaceholder": "Válassz kategóriát",
+    "listingTypeLabel": "Mit adsz fel?",
+    "listingType": {
+      "product": "Termék",
+      "service": "Szolgáltatás"
+    },
+    "departmentLabel": "Fő kategória",
+    "subcategoryLabel": "Alkategória",
+    "color": "Szín",
+    "colorPlaceholder": "Válassz színt (opcionális)",
+    "servicePricingHint": "Szolgáltatásnál elég az ár és a leírás — márka és állapot nem kötelező.",
     "brand": "Márka",
     "brandPlaceholder": "Válassz márkát",
     "brandSearchPlaceholder": "Keresés vagy egyedi márka…",
@@ -678,10 +738,7 @@
     "loginRequired": "Először jelentkezz be!",
     "brandSizeRequired": "Márka és méret kötelező.",
     "success": "Sikeres feltöltés!",
-    "error": "Hiba történt a feltöltés során.",
-    "budapestDistrict": "Budapest kerület",
-    "budapestDistrictPlaceholder": "Válaszd ki a kerületet",
-    "budapestDistrictHint": "RobeoBP: a vevő ez alapján szűr a böngészésnél."
+    "error": "Hiba történt a feltöltés során."
   },
   "checkoutSuccess": {
     "title": "Sikeres vásárlás!",
@@ -761,21 +818,10 @@
       "listHint": "Packeta widget kulcs nélkül a beépített pontlistát használjuk (demo).",
       "noResults": "Nincs találat — próbálj más keresőszót."
     },
-    "localPickup": {
-      "title": "Személyes átvétel — készpénz / direct P2P",
-      "body": "RobeoBP béta: ingyenes, helyi átvétel Budapesten. A foglalás után a chatben egyeztessétek a találkozót, helyszínt és fizetést. Nincs Stripe, nincs futár, nincs jutalék.",
-      "reserveButton": "Lefoglalom ingyen",
-      "feeLabel": "Közösségi béta",
-      "feeValue": "Ingyenes",
-      "disclaimerTitle": "Felelősségkizárás (Budapest Béta)",
-      "disclaimerBody": "A RobeoBP egy ingyenes közösségi tesztalkalmazás. Nem kezelünk pénzt és nem vállalunk felelősséget a személyes találkozókért vagy a termékekért. A találkozókat javasolt nyilvános, biztonságos helyen lebonyolítani."
-    },
     "shippingOptions": {
       "foxpost": "Foxpost automatába",
       "packeta": "Packeta pontba",
       "home": "Házhozszállítás",
-      "localPickup": "Személyes átvétel (Készpénz / Direct P2P)",
-      "localPickupDays": "A chatben egyeztetett időpont",
       "foxpostDays": "2–3 munkanap",
       "packetaDays": "2–4 munkanap",
       "homeDays": "1–2 munkanap"
@@ -796,8 +842,9 @@
     }
   },
   "uploadWizard": {
-    "title": "Termék feltöltése",
+    "title": "Hirdetés feladása",
     "subtitle": "Lépésről lépésre — a piszkozat automatikusan mentve",
+    "subtitleFast": "4 gyors lépés — a piszkozat automatikusan mentve",
     "stepOf": "{{current}} / {{total}} lépés",
     "back": "Vissza",
     "next": "Tovább",
@@ -806,9 +853,12 @@
     "clearDraft": "Piszkozat törlése",
     "draftRestored": "Korábbi piszkozat betöltve (a fotókat újra kell választani).",
     "draftCleared": "Piszkozat törölve.",
-    "photosHint": "Az első kép lesz a fő kép. Maximum 6 fotó.",
+    "photosHint": "Az első kép lesz a fő kép. Maximum 6 fotó — minél több, annál jobb!",
     "steps": {
       "photos": "Fotók",
+      "listing": "Kategória",
+      "pricing": "Ár & részletek",
+      "publish": "Leírás",
       "category": "Kategória",
       "brand": "Márka",
       "condition": "Állapot",
@@ -818,22 +868,20 @@
     "errors": {
       "photosRequired": "Legalább egy fotó szükséges.",
       "categoryRequired": "Válassz kategóriát.",
+      "departmentRequired": "Válassz fő kategóriát.",
+      "subcategoryRequired": "Válassz alkategóriát.",
+      "districtRequired": "Válassz budapesti kerületet.",
       "sizeRequired": "Válassz méretet.",
       "brandRequired": "Válassz márkát.",
       "conditionRequired": "Válassz állapotot.",
       "priceRequired": "Adj meg érvényes árat.",
-      "nameRequired": "Add meg a termék nevét.",
-      "descriptionRequired": "Írj leírást a termékhez.",
-      "districtRequired": "Válaszd ki a Budapest kerületet."
+      "nameRequired": "Add meg a hirdetés címét.",
+      "descriptionRequired": "Írj leírást."
     }
   },
   "ordersHub": {
     "purchasesHint": "Vásárlásaid követése — fizetés, szállítás, átvétel megerősítése.",
     "salesHint": "Eladásaid kezelése — címkenyomtatás, feladás, átvétel követése."
-  },
-  "offerExpiry": {
-    "expired": "Lejárt",
-    "remaining": "{{time}} maradt"
   },
   "orders": {
     "title": "Rendeléstörténet",

@@ -22,8 +22,7 @@ type CatalogUrlSyncArgs = {
   setSelectedMinPrice: (n: number) => void;
   setSelectedMaxPrice: (n: number) => void;
   setSelectedSort: (id: string) => void;
-  /** RobeoBP only — opcionális, V1 módban nem kell beadni. */
-  setSelectedDistrict?: (id: string) => void;
+  setSelectedListingType: (type: 'all' | 'product' | 'service') => void;
 };
 
 export function useCatalogUrlSync({
@@ -40,7 +39,7 @@ export function useCatalogUrlSync({
   setSelectedMinPrice,
   setSelectedMaxPrice,
   setSelectedSort,
-  setSelectedDistrict,
+  setSelectedListingType,
 }: CatalogUrlSyncArgs) {
   const pathname = usePathname();
   const router = useRouter();
@@ -66,6 +65,7 @@ export function useCatalogUrlSync({
 
     skipWriteRef.current = true;
     if (parsed.search != null) setSearchQuery(parsed.search);
+    if (parsed.listingType) setSelectedListingType(parsed.listingType);
     if (parsed.category) setSelectedCategory(parsed.category);
     if (parsed.subcategory) setSelectedSubcategory(parsed.subcategory);
     if (parsed.brand) setSelectedBrand(parsed.brand);
@@ -75,9 +75,6 @@ export function useCatalogUrlSync({
     if (parsed.minPrice != null) setSelectedMinPrice(parsed.minPrice);
     if (parsed.maxPrice != null && parsed.maxPrice > 0) setSelectedMaxPrice(parsed.maxPrice);
     if (parsed.sort) setSelectedSort(parsed.sort);
-    if (parsed.budapest_district && setSelectedDistrict) {
-      setSelectedDistrict(parsed.budapest_district);
-    }
 
     hydratedRef.current = true;
     requestAnimationFrame(() => {
@@ -96,7 +93,7 @@ export function useCatalogUrlSync({
     setSelectedMinPrice,
     setSelectedMaxPrice,
     setSelectedSort,
-    setSelectedDistrict,
+    setSelectedListingType,
   ]);
 
   useEffect(() => {

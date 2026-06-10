@@ -53,6 +53,7 @@ export default function SavedSearchesStrip({ filters, onApply, hasActiveFilters 
     setSyncing(true);
     try {
       const payload = {
+        listingType: filters.listingType ?? 'all',
         category: filters.category,
         subcategory: filters.subcategory,
         brand: filters.brand,

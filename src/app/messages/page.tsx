@@ -21,7 +21,7 @@ import { isUuid } from '@/lib/validators';
 import { isListedProduct } from '@/lib/listedProducts';
 import { MAIN_TOP_PADDING } from '@/lib/layoutTokens';
 import { useTranslation } from 'react-i18next';
-import { ROBEO_BP_MODE } from '@/lib/features';
+import EmptyState from '@/components/ui/EmptyState';
 
 interface Message {
   id: string;
@@ -37,6 +37,7 @@ interface Message {
 interface Conversation {
   user_id: string;
   email: string;
+  display_name: string;
   last_message: string;
   last_message_time: string;
   product_id?: string | null;
@@ -48,6 +49,7 @@ export default function MessagesPage() {
   const [conversations, setConversations] = useState<Conversation[]>([]);
   const [selectedConversation, setSelectedConversation] = useState<string | null>(null);
   const [selectedEmail, setSelectedEmail] = useState<string>('');
+  const [selectedDisplayName, setSelectedDisplayName] = useState<string>('');
   const [messages, setMessages] = useState<Message[]>([]);
   const [newMessage, setNewMessage] = useState('');
   const [showOfferModal, setShowOfferModal] = useState(false);
@@ -260,13 +262,18 @@ export default function MessagesPage() {
     const userIds = Array.from(convMap.keys());
     const { data: userData } = await supabase
       .from('profiles')
-      .select('id, email')
+      .select('id, email, name, full_name')
       .in('id', userIds);
 
     const emailMap = new Map<string, string>();
-    (userData as Array<{ id: string; email: string }> | null)?.forEach((u) =>
-      emailMap.set(u.id, u.email)
-    );
+    const displayMap = new Map<string, string>();
+    (
+      userData as Array<{ id: string; email: string; name?: string | null; full_name?: string | null }> | null
+    )?.forEach((u) => {
+      emailMap.set(u.id, u.email);
+      const label = u.name?.trim() || u.full_name?.trim() || u.email?.split('@')[0] || t('messages.defaultUser');
+      displayMap.set(u.id, label);
+    });
 
     const blockedIds = await fetchMyBlockedUserIds(supabase, user.id);
     const { data: blockedByRows } = await supabase
@@ -283,15 +290,17 @@ export default function MessagesPage() {
       user.id,
       emailMap,
       t('messages.defaultUser'),
+      displayMap,
     )
       .filter((c) => !hiddenIds.has(c.user_id)) as Conversation[];
 
     setConversations(convList);
   };
 
-  const loadConversation = async (otherUserId: string, email?: string) => {
+  const loadConversation = async (otherUserId: string, email?: string, displayName?: string) => {
     setSelectedConversation(otherUserId);
     setSelectedEmail(email || '');
+    setSelectedDisplayName(displayName || email?.split('@')[0] || '');
     const blockCheck = await checkBlockBetween(supabase, user.id, otherUserId);
     setThreadBlocked(blockCheck.eitherBlocked);
     if (blockCheck.eitherBlocked) {
@@ -525,54 +534,54 @@ export default function MessagesPage() {
       >
         <div className="max-w-6xl mx-auto h-full flex flex-col md:flex-row">
           
-          {/* Offers Section - RobeoBP-ben elrejtve, mert BP modban nincs
-              ajanlat-flow (csak "Lefoglalom ingyen" foglalas). V1 buildben
-              minden tovabbi feltetel nelkul renderlodik. */}
+          {/* Offers Section */}
           <div className={`w-full md:w-80 border-b md:border-b-0 md:border-r border-gray-200 overflow-y-auto flex flex-col min-h-0 ${selectedConversation ? 'hidden md:flex' : ''}`}>
-            {!ROBEO_BP_MODE ? (
-              <div className="border-b border-gray-200 shrink-0">
-                <button
-                  type="button"
-                  onClick={() => setOffersOpen((o) => !o)}
-                  className="md:hidden w-full flex items-center justify-between px-4 py-3 text-left font-bold text-gray-900 touch-manipulation"
-                  aria-expanded={offersOpen}
-                >
-                  {t('messages.offersCollapsible')}
-                  <ChevronDown
-                    size={20}
-                    className={`transition-transform ${offersOpen ? 'rotate-180' : ''}`}
-                  />
-                </button>
-                <div className={`${offersOpen ? 'block' : 'hidden'} md:block p-4 md:p-5`}>
-                  <h2 className="hidden md:block text-xl font-bold mb-4">{t('messages.offersTitle')}</h2>
-                  <OffersList />
-                </div>
+            <div className="border-b border-gray-200 shrink-0">
+              <button
+                type="button"
+                onClick={() => setOffersOpen((o) => !o)}
+                className="md:hidden w-full flex items-center justify-between px-4 py-3 text-left font-bold text-gray-900 touch-manipulation"
+                aria-expanded={offersOpen}
+              >
+                {t('messages.offersCollapsible')}
+                <ChevronDown
+                  size={20}
+                  className={`transition-transform ${offersOpen ? 'rotate-180' : ''}`}
+                />
+              </button>
+              <div className={`${offersOpen ? 'block' : 'hidden'} md:block p-4 md:p-5`}>
+                <h2 className="hidden md:block text-xl font-bold mb-4">{t('messages.offersTitle')}</h2>
+                <OffersList />
               </div>
-            ) : null}
+            </div>
 
             <h2 className="text-lg font-bold px-4 py-3 border-b border-gray-200 shrink-0">{t('messages.conversationsTitle')}</h2>
             
             {conversations.length === 0 ? (
-              <div className="p-8 text-center text-gray-500">
-                {t('messages.emptyConversations')}
-              </div>
+              <EmptyState
+                icon="messages"
+                title={t('messages.emptyConversationsTitle')}
+                description={t('messages.emptyConversationsDesc')}
+                actionLabel={t('messages.emptyBrowseCta')}
+                actionHref="/browse"
+              />
             ) : (
               <div className="flex-1 min-h-0 overflow-y-auto">
                 {conversations.map((conv) => (
                   <button
                     key={conv.user_id}
                     type="button"
-                    onClick={() => loadConversation(conv.user_id, conv.email)}
+                    onClick={() => loadConversation(conv.user_id, conv.email, conv.display_name)}
                     className={`w-full text-left p-4 border-b border-gray-100 hover:bg-gray-50 transition-colors touch-manipulation ${
                       selectedConversation === conv.user_id ? 'bg-[#007782]/5' : ''
                     }`}
                   >
                     <div className="flex items-center gap-3">
                       <div className="w-10 h-10 rounded-full bg-[#007782]/10 flex items-center justify-center text-[#007782] font-bold shrink-0">
-                        {conv.email?.charAt(0).toUpperCase() || '?'}
+                        {conv.display_name?.charAt(0).toUpperCase() || '?'}
                       </div>
                       <div className="flex-1 min-w-0">
-                        <div className="font-medium mb-0.5 truncate text-sm">{conv.email}</div>
+                        <div className="font-medium mb-0.5 truncate text-sm">{conv.display_name}</div>
                         <div className="text-xs text-gray-500 truncate">{conv.last_message}</div>
                       </div>
                       {conv.product_id ? (
@@ -594,17 +603,21 @@ export default function MessagesPage() {
           {/* Chat Area */}
           <div className={`flex-1 flex flex-col min-h-0 ${selectedConversation ? 'flex' : 'hidden md:flex'}`}>
             {!selectedConversation ? (
-              <div className="flex-1 flex items-center justify-center text-gray-500">
-                {t('messages.selectConversation')}
-              </div>
+              <EmptyState
+                icon="messages"
+                title={t('messages.selectConversationTitle')}
+                description={t('messages.selectConversationDesc')}
+                actionLabel={t('messages.emptyBrowseCta')}
+                actionHref="/browse"
+              />
             ) : (
               <>
                 {/* Chat Header (mobile back button) */}
                 <div className="hidden md:flex items-center gap-3 px-4 py-3 border-b border-gray-200 shrink-0">
                   <div className="w-9 h-9 rounded-full bg-[#007782]/10 flex items-center justify-center text-[#007782] font-bold text-sm">
-                    {selectedEmail?.charAt(0).toUpperCase() || '?'}
+                    {selectedDisplayName?.charAt(0).toUpperCase() || selectedEmail?.charAt(0).toUpperCase() || '?'}
                   </div>
-                  <span className="font-semibold truncate flex-1">{selectedEmail}</span>
+                  <span className="font-semibold truncate flex-1">{selectedDisplayName || selectedEmail}</span>
                   {selectedConversation ? (
                     <BlockUserButton
                       otherUserId={selectedConversation}
@@ -625,9 +638,9 @@ export default function MessagesPage() {
                     <ChevronLeft size={22} />
                   </button>
                   <div className="w-8 h-8 rounded-full bg-[#007782]/10 flex items-center justify-center text-[#007782] font-bold text-sm">
-                    {selectedEmail?.charAt(0).toUpperCase() || '?'}
+                    {selectedDisplayName?.charAt(0).toUpperCase() || selectedEmail?.charAt(0).toUpperCase() || '?'}
                   </div>
-                  <span className="font-medium truncate flex-1">{selectedEmail}</span>
+                  <span className="font-medium truncate flex-1">{selectedDisplayName || selectedEmail}</span>
                   {selectedConversation ? (
                     <BlockUserButton
                       otherUserId={selectedConversation}
@@ -639,12 +652,14 @@ export default function MessagesPage() {
                   ) : null}
                 </div>
                 <ChatProductSummary productId={activeProductId} />
-                {/* RobeoBP: a teljes order-status stepper / Foxpost label /
-                    timeline panel ki van zarva BP modban - a chat tiszta
-                    p2p kommunikacios dobozzal indul, semmilyen e-commerce
-                    "kovetes" UI nem terheli a felulet tetejet. A V1 panel
-                    erintetlen marad, csak nem renderlodik BP buildben. */}
-                {!ROBEO_BP_MODE && user && selectedConversation ? (
+                {user && selectedConversation && productSellerId && user.id !== productSellerId ? (
+                  <ChatBuyerOffersPanel
+                    buyerId={user.id}
+                    productId={activeProductId}
+                    sellerId={productSellerId}
+                  />
+                ) : null}
+                {user && selectedConversation ? (
                   <ChatTransactionPanel
                     userId={user.id}
                     otherUserId={selectedConversation}
@@ -704,7 +719,7 @@ export default function MessagesPage() {
                     <p className="mb-2 text-center text-xs text-gray-500">{t('block.threadClosed')}</p>
                   ) : null}
                   <form onSubmit={sendMessage} className="flex flex-nowrap items-center gap-2 max-w-full box-border">
-                    {canMakeOffer && !ROBEO_BP_MODE ? (
+                    {canMakeOffer ? (
                       <button
                         type="button"
                         onClick={() => setShowOfferModal(true)}

@@ -8,7 +8,7 @@ export type SavedSearch = {
   label: string;
   filters: Pick<
     CatalogFilterState,
-    'category' | 'subcategory' | 'brand' | 'size' | 'condition' | 'color' | 'minPrice' | 'maxPrice' | 'sort' | 'search'
+    'listingType' | 'category' | 'subcategory' | 'brand' | 'size' | 'condition' | 'color' | 'minPrice' | 'maxPrice' | 'sort' | 'search'
   >;
   createdAt: string;
 };
