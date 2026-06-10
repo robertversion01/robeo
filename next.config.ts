@@ -1,11 +1,13 @@
 import type { NextConfig } from "next";
 
+const appBuildId =
+  process.env.VERCEL_GIT_COMMIT_SHA?.trim() ||
+  process.env.NEXT_PUBLIC_APP_BUILD_ID?.trim() ||
+  "development";
+
 const nextConfig: NextConfig = {
   env: {
-    NEXT_PUBLIC_APP_BUILD_ID:
-      process.env.NEXT_PUBLIC_APP_BUILD_ID ??
-      process.env.VERCEL_GIT_COMMIT_SHA ??
-      "development",
+    NEXT_PUBLIC_APP_BUILD_ID: appBuildId,
   },
   images: {
     remotePatterns: [

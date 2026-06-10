@@ -4,6 +4,7 @@ import "./globals.css";
 import AppChrome from "../components/layout/AppChrome";
 import { Toaster } from "sonner";
 import { buildPageMetadata, siteConfig } from "@/lib/seo";
+import { getAppBuildId } from "@/lib/appBuild";
 
 /** Next 16: client oldalak static prerenderje workStore hibát dob Vercelen — teljes app dinamikus. */
 export const dynamic = "force-dynamic";
@@ -41,6 +42,11 @@ export const metadata: Metadata = {
   authors: [{ name: siteConfig.name }],
 };
 
+const APP_BUILD_ID = getAppBuildId();
+
+/** Régi bundle / cache-elt HTML észlelése — React betöltése előtt fut. */
+const DEPLOY_SYNC_SCRIPT = `(function(){try{var reload=function(){var u=new URL(location.href);u.searchParams.set('_robeo',String(Date.now()));location.replace(u.toString());};fetch('/api/app-version',{cache:'no-store',headers:{'Cache-Control':'no-cache'}}).then(function(r){return r.json();}).then(function(d){var api=d&&d.buildId;if(!api||api==='development')return;var meta=document.querySelector('meta[name="robeo-build"]');var html=meta&&meta.getAttribute('content');if(html&&html!==api){reload();return;}var prev=localStorage.getItem('robeo_server_build');localStorage.setItem('robeo_server_build',api);if(prev&&prev!==api){reload();}}).catch(function(){});}catch(e){}})();`;
+
 export default function RootLayout({
   children,
 }: Readonly<{
@@ -51,6 +57,10 @@ export default function RootLayout({
       lang="hu"
       className={`${interSans.variable} ${geistMono.variable} h-full antialiased overflow-x-clip max-w-[100vw]`}
     >
+      <head>
+        <meta name="robeo-build" content={APP_BUILD_ID} />
+        <script dangerouslySetInnerHTML={{ __html: DEPLOY_SYNC_SCRIPT }} />
+      </head>
       <body className="min-h-full flex flex-col overflow-x-clip max-w-[100vw]">
         <AppChrome>{children}</AppChrome>
         <Toaster 

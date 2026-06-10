@@ -1,49 +1,89 @@
 'use client';
 
-import { useEffect, useRef } from 'react';
+import { useCallback, useEffect, useRef } from 'react';
 import { toast } from 'sonner';
 import { useTranslation } from 'react-i18next';
 
-const BUILD_ID = process.env.NEXT_PUBLIC_APP_BUILD_ID ?? 'development';
-const STORAGE_KEY = 'robeo_seen_build_id';
+const CLIENT_BUILD_ID = process.env.NEXT_PUBLIC_APP_BUILD_ID ?? 'development';
 
-/** Új Vercel deploy után jelzi, ha a telefon/böngésző még régi bundle-t futtat. */
+async function fetchServerBuildId(): Promise<string | null> {
+  try {
+    const res = await fetch('/api/app-version', {
+      cache: 'no-store',
+      headers: { 'Cache-Control': 'no-cache' },
+    });
+    if (!res.ok) return null;
+    const data = (await res.json()) as { buildId?: string };
+    return data.buildId?.trim() || null;
+  } catch {
+    return null;
+  }
+}
+
+function reloadWithoutCache() {
+  const url = new URL(window.location.href);
+  url.searchParams.set('_robeo', String(Date.now()));
+  window.location.replace(url.toString());
+}
+
+async function unregisterServiceWorkers() {
+  if (!('serviceWorker' in navigator)) return;
+  const registrations = await navigator.serviceWorker.getRegistrations();
+  await Promise.all(registrations.map((r) => r.unregister()));
+}
+
+/** Bundle vs szerver build — régi JS mellett is működik. */
 export default function DeployRefreshNotifier() {
   const { t } = useTranslation();
   const promptedRef = useRef(false);
 
-  useEffect(() => {
-    if (BUILD_ID === 'development') return;
+  const checkForUpdate = useCallback(async () => {
+    const serverBuildId = await fetchServerBuildId();
+    if (!serverBuildId || serverBuildId === 'development') return;
 
-    const seen = window.localStorage.getItem(STORAGE_KEY);
-    if (!seen) {
-      window.localStorage.setItem(STORAGE_KEY, BUILD_ID);
+    const htmlBuildId =
+      document.querySelector('meta[name="robeo-build"]')?.getAttribute('content')?.trim() ?? null;
+
+    const staleBundle = CLIENT_BUILD_ID !== 'development' && CLIENT_BUILD_ID !== serverBuildId;
+    const staleHtml = Boolean(htmlBuildId && htmlBuildId !== serverBuildId);
+
+    if (!staleBundle && !staleHtml) {
+      window.localStorage.setItem('robeo_server_build', serverBuildId);
       return;
     }
 
-    const promptReload = () => {
-      if (seen === BUILD_ID || promptedRef.current) return;
-      promptedRef.current = true;
-      toast(t('app.updateAvailable'), {
-        duration: Infinity,
-        action: {
-          label: t('app.reload'),
-          onClick: () => {
-            window.localStorage.setItem(STORAGE_KEY, BUILD_ID);
-            window.location.reload();
-          },
-        },
-      });
-    };
+    if (promptedRef.current) return;
+    promptedRef.current = true;
 
-    promptReload();
+    toast(t('app.updateAvailable'), {
+      duration: Infinity,
+      action: {
+        label: t('app.reload'),
+        onClick: () => {
+          void (async () => {
+            window.localStorage.setItem('robeo_server_build', serverBuildId);
+            await unregisterServiceWorkers();
+            reloadWithoutCache();
+          })();
+        },
+      },
+    });
+  }, [t]);
+
+  useEffect(() => {
+    void checkForUpdate();
 
     const onVisible = () => {
-      if (document.visibilityState === 'visible') promptReload();
+      if (document.visibilityState === 'visible') void checkForUpdate();
     };
     document.addEventListener('visibilitychange', onVisible);
-    return () => document.removeEventListener('visibilitychange', onVisible);
-  }, [t]);
+    const interval = window.setInterval(() => void checkForUpdate(), 60_000);
+
+    return () => {
+      document.removeEventListener('visibilitychange', onVisible);
+      window.clearInterval(interval);
+    };
+  }, [checkForUpdate]);
 
   return null;
 }
