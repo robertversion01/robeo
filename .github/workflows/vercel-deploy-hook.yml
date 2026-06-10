@@ -1,5 +1,8 @@
 # Fallback: ha a Vercel Git push webhook nem indít buildet, POST-olja a Deploy Hook URL-t.
 # Beállítás: docs/VERCEL_DEPLOY.md → GitHub repo secret: VERCEL_DEPLOY_HOOK_URL
+#
+# FONTOS: secrets NEM használható job-level `if`-ben (GitHub Actions validation error).
+# Ha nincs hook secret, a step csendesen kihagyja a POST-ot.
 
 name: Trigger Vercel Deploy
 
@@ -16,8 +19,6 @@ jobs:
   trigger:
     runs-on: ubuntu-latest
     timeout-minutes: 5
-    # Ha nincs hook secret, a job kihagyva — a Vercel Git integrációt külön kell beállítani.
-    if: ${{ secrets.VERCEL_DEPLOY_HOOK_URL != '' }}
     steps:
       - name: POST Vercel Deploy Hook (production / main)
         env:
@@ -25,6 +26,11 @@ jobs:
           SHA: ${{ github.sha }}
           REF: ${{ github.ref_name }}
         run: |
+          if [ -z "${HOOK}" ]; then
+            echo "VERCEL_DEPLOY_HOOK_URL nincs beállítva — kihagyva."
+            echo "Ellenőrizd a Vercel Git integrációt (Settings → Git → Automatically deploy pushes)."
+            exit 0
+          fi
           echo "Triggering Vercel deploy for ${REF} @ ${SHA:0:7}"
           HTTP=$(curl -sS -o /tmp/vercel-hook.json -w "%{http_code}" -X POST "$HOOK")
           cat /tmp/vercel-hook.json || true
