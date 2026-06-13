@@ -48,6 +48,10 @@ frontend/dist/
 backend/Postgres.local.env
 backend/*.local.env
 
+# .NET build output (backend / v2 API) — regenerálódik, soha ne committoljuk
+backend/**/bin/
+backend/**/obj/
+
 # Cursor agent helper scripts (local only)
 _cursor_*.ps1
 _cursor_*.txt
