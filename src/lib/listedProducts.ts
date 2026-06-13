@@ -4,6 +4,7 @@ import type { CatalogFilterState } from '@/lib/catalogFilters';
 import {
   categoryDbValues,
   conditionDbValues,
+  getBudapestDistrictFilter,
   subcategoryFilterDbValues,
 } from '@/lib/catalogFilters';
 import { fetchAllVacationSellerIds } from '@/lib/vacationMode';
@@ -150,6 +151,11 @@ export function applyCatalogFiltersToProductQuery(
   if ((exclude === 'none' || exclude !== 'subcategory') && filters.subcategory !== 'all') {
     const or = buildCategoryAliasOr(subcategoryFilterDbValues(filters.subcategory));
     if (or) query = query.or(or);
+  }
+
+  const district = getBudapestDistrictFilter(filters);
+  if (district) {
+    query = query.eq('budapest_district', district);
   }
 
   if (options.vacationIds && options.vacationIds.length > 0) {

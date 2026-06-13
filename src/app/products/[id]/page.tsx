@@ -6,7 +6,7 @@ import { supabase } from '@/lib/supabase';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { toast } from 'sonner';
-import { ZoomIn, ZoomOut } from 'lucide-react';
+import { ZoomIn, ZoomOut, MapPin } from 'lucide-react';
 import { getOptimizedImageUrl, shouldLazyLoad } from '@/lib/imageUtils';
 import { getValidProductImageUrls } from '@/lib/productImageValidation';
 import ProductImage from '@/components/product/ProductImage';
@@ -26,6 +26,7 @@ import { canViewProductDetail, isListedProduct, isSoldListing } from '@/lib/list
 import { recordPriceSnapshot } from '@/lib/priceHistory';
 import { MAIN_TOP_PADDING, MOBILE_PRODUCT_STICKY_CTA_PAD } from '@/lib/layoutTokens';
 import { formatConditionLabel } from '@/lib/conditionI18n';
+import { getDistrictLabel } from '@/lib/budapestDistricts';
 
 export default function ProductPage({ params }: { params: Promise<{ id: string }> }) {
   const { id } = use(params);
@@ -441,6 +442,12 @@ export default function ProductPage({ params }: { params: Promise<{ id: string }
                   <div className="bg-gray-100 px-2 py-1 rounded-md text-xs">
                     <span className="text-gray-500">{t('product.condition')}:</span>{' '}
                     {formatConditionLabel(t, product.condition)}
+                  </div>
+                )}
+                {getDistrictLabel(product.budapest_district) && (
+                  <div className="inline-flex items-center gap-1 rounded-md bg-[#007782]/10 px-2 py-1 text-xs font-medium text-[#007782]">
+                    <MapPin size={12} aria-hidden />
+                    {getDistrictLabel(product.budapest_district)}
                   </div>
                 )}
               </div>

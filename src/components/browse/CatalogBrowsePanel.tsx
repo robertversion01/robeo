@@ -65,6 +65,7 @@ function CatalogUrlSyncBridge(props: {
   setSelectedMaxPrice: (n: number) => void;
   setSelectedSort: (id: string) => void;
   setSelectedListingType: (type: 'all' | 'product' | 'service') => void;
+  setSelectedBudapestDistrict: (id: string) => void;
 }) {
   useCatalogUrlSync(props);
   return null;
@@ -128,6 +129,8 @@ function CatalogBrowsePanelInner({
     setSelectedSize,
     selectedCondition,
     setSelectedCondition,
+    selectedBudapestDistrict,
+    setSelectedBudapestDistrict,
     activeFilterCount,
     clearAllFilters,
     applyCatalogFilters,
@@ -209,6 +212,7 @@ function CatalogBrowsePanelInner({
       maxPrice: selectedMaxPrice,
       sort: selectedSort,
       search: searchQuery,
+      budapest_district: selectedBudapestDistrict,
     }),
     [
       selectedListingType,
@@ -222,6 +226,7 @@ function CatalogBrowsePanelInner({
       selectedMaxPrice,
       selectedSort,
       searchQuery,
+      selectedBudapestDistrict,
     ],
   );
 
@@ -267,6 +272,8 @@ function CatalogBrowsePanelInner({
     activeFilterCount,
     onClearAll: clearAllFilters,
     listingType: selectedListingType,
+    selectedBudapestDistrict,
+    onBudapestDistrictChange: setSelectedBudapestDistrict,
   };
 
   const discoveryProps = {
@@ -299,6 +306,7 @@ function CatalogBrowsePanelInner({
     if (saved.maxPrice && saved.maxPrice > 0) setSelectedMaxPrice(saved.maxPrice);
     else setSelectedMaxPrice(maxPriceLimit);
     setSelectedSort(saved.sort || 'newest');
+    setSelectedBudapestDistrict(saved.budapest_district || 'all');
   };
 
   const activeFilterBarProps = {
@@ -380,6 +388,7 @@ function CatalogBrowsePanelInner({
         setSelectedMaxPrice={setSelectedMaxPrice}
         setSelectedSort={setSelectedSort}
         setSelectedListingType={setSelectedListingType}
+        setSelectedBudapestDistrict={setSelectedBudapestDistrict}
       />
 
       {showPersonalization && user && isSearch && selectedCategory !== 'all' ? (

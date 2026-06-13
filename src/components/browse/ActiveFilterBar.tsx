@@ -3,7 +3,8 @@
 import { X } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 import { cn } from '@/lib/utils';
-import type { CatalogFilterState } from '@/lib/catalogFilters';
+import { type CatalogFilterState, getBudapestDistrictFilter } from '@/lib/catalogFilters';
+import { getDistrictLabel } from '@/lib/budapestDistricts';
 import { formatConditionLabel } from '@/lib/conditionI18n';
 import { VINTED_COLORS } from '@/lib/vintedCategoryTree';
 import { departmentLabel, showProductCatalogFilters, subcategoryLabel } from '@/lib/categoryDisplay';
@@ -115,6 +116,14 @@ export default function ActiveFilterBar({
     chips.push({
       key: 'sort',
       label: sort?.label ?? t(sortLabelKey(filters.sort)),
+    });
+  }
+
+  const district = getBudapestDistrictFilter(filters);
+  if (district) {
+    chips.push({
+      key: 'budapest_district',
+      label: getDistrictLabel(district) || district,
     });
   }
 

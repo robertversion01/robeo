@@ -597,7 +597,7 @@ export default function UploadWizard() {
                     <span className="text-red-500">*</span>
                   </label>
                   <CustomSelect
-                    options={BUDAPEST_DISTRICTS.map((d) => ({ value: String(d), label: String(d) }))}
+                    options={BUDAPEST_DISTRICTS.map((d) => ({ value: d.id, label: d.label }))}
                     value={formData.budapestDistrict}
                     onChange={(val) => setFormData((p) => ({ ...p, budapestDistrict: val }))}
                     placeholder={t('upload.budapestDistrictPlaceholder')}

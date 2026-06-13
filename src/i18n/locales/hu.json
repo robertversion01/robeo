@@ -133,6 +133,8 @@
     "filters": {
       "category": "Kategória",
       "allCategories": "Összes kategória",
+      "district": "Kerület",
+      "allDistricts": "Összes kerület",
       "subcategory": "Alkategória",
       "allSubcategories": "Összes alkategória",
       "brand": "Márka",

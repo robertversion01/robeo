@@ -68,6 +68,7 @@ export function useProducts() {
   const [selectedBrand, setSelectedBrand] = useState('all');
   const [selectedSize, setSelectedSize] = useState('all');
   const [selectedCondition, setSelectedCondition] = useState('all');
+  const [selectedBudapestDistrict, setSelectedBudapestDistrict] = useState('all');
   const [favorites, setFavorites] = useState<Set<string>>(new Set());
   const [user, setUser] = useState<any>(null);
   const fetchGenRef = useRef(0);
@@ -91,6 +92,7 @@ export function useProducts() {
       maxPrice: selectedMaxPrice,
       sort: selectedSort,
       search: searchQuery,
+      budapest_district: selectedBudapestDistrict,
     }),
     [
       selectedListingType,
@@ -104,6 +106,7 @@ export function useProducts() {
       selectedMaxPrice,
       selectedSort,
       searchQuery,
+      selectedBudapestDistrict,
     ],
   );
 
@@ -159,6 +162,7 @@ export function useProducts() {
   const setSelectedBrandWrapped = wrapFilterSetter(setSelectedBrand);
   const setSelectedSizeWrapped = wrapFilterSetter(setSelectedSize);
   const setSelectedConditionWrapped = wrapFilterSetter(setSelectedCondition);
+  const setSelectedBudapestDistrictWrapped = wrapFilterSetter(setSelectedBudapestDistrict);
   const setSelectedMinPriceWrapped = wrapFilterSetter(setSelectedMinPrice);
   const setSelectedMaxPriceWrapped = wrapFilterSetter(setSelectedMaxPrice);
   const setSelectedSortWrapped = wrapFilterSetter(setSelectedSort);
@@ -416,6 +420,7 @@ export function useProducts() {
       if (filters.maxPrice && filters.maxPrice > 0) setSelectedMaxPrice(filters.maxPrice);
       else setSelectedMaxPrice(maxPriceLimit);
       setSelectedSort(filters.sort || 'newest');
+      setSelectedBudapestDistrict(filters.budapest_district || 'all');
       bumpFilterRevision();
     },
     [maxPriceLimit, bumpFilterRevision, setSearchQuery],
@@ -433,6 +438,7 @@ export function useProducts() {
     setSelectedMinPrice(0);
     setSelectedMaxPrice(maxPriceLimit);
     setSelectedSort('newest');
+    setSelectedBudapestDistrict('all');
     bumpFilterRevision();
   }, [maxPriceLimit, bumpFilterRevision, setSearchQuery]);
 
@@ -475,6 +481,9 @@ export function useProducts() {
         case 'sort':
           setSelectedSort('newest');
           break;
+        case 'budapest_district':
+          setSelectedBudapestDistrict('all');
+          break;
         default:
           break;
       }
@@ -509,6 +518,8 @@ export function useProducts() {
     maxPriceLimit,
     selectedCondition,
     setSelectedCondition: setSelectedConditionWrapped,
+    selectedBudapestDistrict,
+    setSelectedBudapestDistrict: setSelectedBudapestDistrictWrapped,
     activeFilterCount,
     clearAllFilters,
     applyCatalogFilters,

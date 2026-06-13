@@ -1,5 +1,5 @@
 import type { CatalogFilterState } from '@/lib/catalogFilters';
-import { normalizeDepartmentId } from '@/lib/catalogFilters';
+import { getBudapestDistrictFilter, normalizeDepartmentId } from '@/lib/catalogFilters';
 
 const DEFAULTS: CatalogFilterState = {
   listingType: 'all',
@@ -59,6 +59,9 @@ export function parseCatalogFromUrl(params: URLSearchParams): Partial<CatalogFil
   const sort = params.get('sort');
   if (sort) next.sort = sort;
 
+  const dist = params.get('dist');
+  if (dist) next.budapest_district = dist.trim().toUpperCase();
+
   return next;
 }
 
@@ -82,6 +85,9 @@ export function buildCatalogUrlParams(
   if (filters.condition !== DEFAULTS.condition) params.set('cond', filters.condition);
   if (filters.color !== DEFAULTS.color) params.set('color', filters.color);
   if (filters.sort !== DEFAULTS.sort) params.set('sort', filters.sort);
+
+  const district = getBudapestDistrictFilter(filters);
+  if (district) params.set('dist', district);
 
   if (filters.minPrice > 0) params.set('min', String(Math.round(filters.minPrice)));
   if (

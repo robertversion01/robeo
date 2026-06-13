@@ -23,6 +23,7 @@ type CatalogUrlSyncArgs = {
   setSelectedMaxPrice: (n: number) => void;
   setSelectedSort: (id: string) => void;
   setSelectedListingType: (type: 'all' | 'product' | 'service') => void;
+  setSelectedBudapestDistrict?: (id: string) => void;
 };
 
 export function useCatalogUrlSync({
@@ -40,6 +41,7 @@ export function useCatalogUrlSync({
   setSelectedMaxPrice,
   setSelectedSort,
   setSelectedListingType,
+  setSelectedBudapestDistrict,
 }: CatalogUrlSyncArgs) {
   const pathname = usePathname();
   const router = useRouter();
@@ -75,6 +77,9 @@ export function useCatalogUrlSync({
     if (parsed.minPrice != null) setSelectedMinPrice(parsed.minPrice);
     if (parsed.maxPrice != null && parsed.maxPrice > 0) setSelectedMaxPrice(parsed.maxPrice);
     if (parsed.sort) setSelectedSort(parsed.sort);
+    if (parsed.budapest_district && setSelectedBudapestDistrict) {
+      setSelectedBudapestDistrict(parsed.budapest_district);
+    }
 
     hydratedRef.current = true;
     requestAnimationFrame(() => {
@@ -94,6 +99,7 @@ export function useCatalogUrlSync({
     setSelectedMaxPrice,
     setSelectedSort,
     setSelectedListingType,
+    setSelectedBudapestDistrict,
   ]);
 
   useEffect(() => {

@@ -133,6 +133,8 @@
     "filters": {
       "category": "Category",
       "allCategories": "All categories",
+      "district": "District",
+      "allDistricts": "All districts",
       "subcategory": "Subcategory",
       "allSubcategories": "All subcategories",
       "brand": "Brand",

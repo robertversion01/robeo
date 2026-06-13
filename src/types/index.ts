@@ -25,6 +25,8 @@ export interface Product {
   size?: string | null;
   color?: string;
   favorite_count?: number;
+  /** RobeoBP (Budapest Béta) — átvételi kerület (`I`…`XXIII`). */
+  budapest_district?: string | null;
   transaction_id?: string;
   created_at: string;
   updated_at: string;

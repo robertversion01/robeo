@@ -2,9 +2,10 @@
 
 import { useState } from 'react';
 import Link from 'next/link';
-import { Heart } from 'lucide-react';
+import { Heart, MapPin } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 import { cn, formatPrice } from '@/lib/utils';
+import { getDistrictLabel } from '@/lib/budapestDistricts';
 import { getOptimizedImageUrl } from '@/lib/imageUtils';
 import { normalizePrimaryProductImageUrl } from '@/lib/productImageValidation';
 import ProductImage from '@/components/product/ProductImage';
@@ -41,6 +42,7 @@ export default function ProductCard({ product, isFavorite, onToggleFavorite }: P
   const isSold = product.status === 'sold';
   const isReserved = product.status === 'reserved';
   const favoriteCount = Math.max(0, Number(product.favorite_count) || 0);
+  const districtLabel = getDistrictLabel(product.budapest_district);
 
   return (
     <div className="group card-base overflow-hidden rounded-lg sm:rounded-xl transition-all duration-200 relative border-0 sm:border sm:border-gray-100 hover:border-[#007782]/40 hover:shadow-md active:scale-[0.98] touch-manipulation">
@@ -124,7 +126,12 @@ export default function ProductCard({ product, isFavorite, onToggleFavorite }: P
           <span className="text-gray-400 mx-0.5">·</span>
           <span className="text-gray-500">{sizePart}</span>
         </p>
-        {categoryShort ? (
+        {districtLabel ? (
+          <p className="flex items-center gap-0.5 text-[10px] font-medium text-[#007782] truncate leading-none">
+            <MapPin size={10} className="shrink-0" aria-hidden />
+            {districtLabel}
+          </p>
+        ) : categoryShort ? (
           <p className="text-[10px] uppercase tracking-wide text-gray-400 truncate leading-none">
             {categoryShort}
           </p>

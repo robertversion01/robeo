@@ -8,6 +8,8 @@ import Filters from '@/components/product/Filters';
 import { type CatalogFilterState, countActiveCatalogFilters } from '@/lib/catalogFilters';
 import { supabase } from '@/lib/supabase';
 import { fetchCatalogMatchCount } from '@/lib/catalogFilterCounts';
+import { ROBEO_BP_MODE } from '@/lib/features';
+import { BUDAPEST_DISTRICTS } from '@/lib/budapestDistricts';
 
 export type ImmersiveFiltersMeta = {
   categories: { id: string; label: string }[];
@@ -90,6 +92,7 @@ export default function ImmersiveFilterSheet({
       minPrice: 0,
       maxPrice: maxPriceLimit,
       sort: 'newest',
+      budapest_district: 'all',
     }));
   }, [maxPriceLimit]);
 
@@ -136,6 +139,25 @@ export default function ImmersiveFilterSheet({
           </button>
         </div>
         <div className="flex-1 overflow-y-auto px-4 py-3">
+          {ROBEO_BP_MODE ? (
+            <div className="mb-4">
+              <h3 className="mb-2 text-xs font-bold uppercase tracking-wide text-gray-700">
+                {t('browse.filters.district')}
+              </h3>
+              <select
+                value={draft.budapest_district ?? 'all'}
+                onChange={(e) => patchDraft({ budapest_district: e.target.value })}
+                className="h-11 w-full rounded-lg border border-gray-200 bg-gray-50 px-3 text-sm text-gray-800 focus:outline-none focus:ring-2 focus:ring-[#007782]/30"
+              >
+                <option value="all">{t('browse.filters.allDistricts')}</option>
+                {BUDAPEST_DISTRICTS.map((d) => (
+                  <option key={d.id} value={d.id}>
+                    {d.label}
+                  </option>
+                ))}
+              </select>
+            </div>
+          ) : null}
                     <Filters
             categories={categories}
             selectedCategory={draft.category}

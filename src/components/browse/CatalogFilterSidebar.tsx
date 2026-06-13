@@ -21,10 +21,14 @@ import {
 import { cn } from '@/lib/utils';
 import type { FiltersProps } from '@/components/product/Filters';
 import { useCatalogFilterCounts } from '@/hooks/useCatalogFilterCounts';
+import { ROBEO_BP_MODE } from '@/lib/features';
+import { BUDAPEST_DISTRICTS } from '@/lib/budapestDistricts';
 
 type Props = FiltersProps & {
   className?: string;
   catalogFilters?: import('@/lib/catalogFilters').CatalogFilterState;
+  selectedBudapestDistrict?: string;
+  onBudapestDistrictChange?: (id: string) => void;
 };
 
 function SidebarSection({
@@ -118,6 +122,8 @@ export default function CatalogFilterSidebar({
   activeFilterCount = 0,
   className,
   catalogFilters,
+  selectedBudapestDistrict = 'all',
+  onBudapestDistrictChange,
 }: Props) {
   const { t, i18n } = useTranslation();
   const [brandQuery, setBrandQuery] = useState('');
@@ -234,6 +240,23 @@ export default function CatalogFilterSidebar({
       </div>
 
       <div className="max-h-[calc(100dvh-8rem)] overflow-y-auto px-4 py-3 space-y-1">
+        {ROBEO_BP_MODE && onBudapestDistrictChange ? (
+          <SidebarSection title={t('browse.filters.district')}>
+            <select
+              value={selectedBudapestDistrict}
+              onChange={(e) => onBudapestDistrictChange(e.target.value)}
+              className="h-10 w-full rounded-lg border border-gray-200 bg-gray-50 px-3 text-sm text-gray-800 focus:outline-none focus:ring-2 focus:ring-[#007782]/30"
+            >
+              <option value="all">{t('browse.filters.allDistricts')}</option>
+              {BUDAPEST_DISTRICTS.map((d) => (
+                <option key={d.id} value={d.id}>
+                  {d.label}
+                </option>
+              ))}
+            </select>
+          </SidebarSection>
+        ) : null}
+
         <SidebarSection title={t('browse.filters.category')}>
           <div className="space-y-0.5">
             {categoryOptions.map((opt) => (

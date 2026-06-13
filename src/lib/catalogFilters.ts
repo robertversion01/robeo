@@ -87,6 +87,7 @@ export function countActiveCatalogFilters(
   }
   if (filters.minPrice > 0) n++;
   if (filters.maxPrice > 0 && filters.maxPrice < maxPriceLimit) n++;
+  if (getBudapestDistrictFilter(filters)) n++;
   return n;
 }
 
@@ -139,12 +140,20 @@ export function productMatchesCatalogFilters(
     condition?: string | null;
     color?: string | null;
     size?: string | null;
+    budapest_district?: string | null;
   },
-  filters: Pick<CatalogFilterState, 'listingType' | 'category' | 'subcategory' | 'color'>,
+  filters: Pick<
+    CatalogFilterState,
+    'listingType' | 'category' | 'subcategory' | 'color' | 'budapest_district'
+  >,
 ): boolean {
   if (!productMatchesListingTypeFilter(product.category, filters.listingType ?? 'all')) return false;
   if (!productMatchesTaxonomyDepartment(product.category, filters.category)) return false;
   if (!productMatchesTaxonomySubcategory(product.category, filters.subcategory)) return false;
   if (!productMatchesColor(product.color, filters.color)) return false;
+  const district = getBudapestDistrictFilter(filters);
+  if (district && String(product.budapest_district || '').trim().toUpperCase() !== district) {
+    return false;
+  }
   return true;
 }
