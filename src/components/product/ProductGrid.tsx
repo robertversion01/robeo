@@ -18,6 +18,10 @@ interface ProductGridProps {
   hasActiveFilters?: boolean;
   onClearFilters?: () => void;
   listingType?: 'all' | 'product' | 'service';
+  /** RobeoBP — aktív kerület címke (üres-állapot üzenethez). */
+  districtLabel?: string;
+  /** RobeoBP — csak a kerület-szűrő törlése (a többit megtartja). */
+  onClearDistrict?: () => void;
 }
 
 export default function ProductGrid({
@@ -29,6 +33,8 @@ export default function ProductGrid({
   hasActiveFilters = false,
   onClearFilters,
   listingType = 'all',
+  districtLabel,
+  onClearDistrict,
 }: ProductGridProps) {
   const { t } = useTranslation();
   const [visible, setVisible] = useState(true);
@@ -46,6 +52,17 @@ export default function ProductGrid({
   const displayProducts = filterProductsWithValidImages(products);
 
   if (displayProducts.length === 0) {
+    if (districtLabel) {
+      return (
+        <EmptyState
+          icon="search"
+          title={t('browse.empty.districtTitle', { district: districtLabel })}
+          description={t('browse.empty.districtDescription', { district: districtLabel })}
+          actionLabel={t('browse.empty.viewAllDistricts')}
+          onAction={onClearDistrict ?? onClearFilters}
+        />
+      );
+    }
     const isService = listingType === 'service';
     const emptyTitle = hasActiveFilters
       ? t('browse.empty.filteredTitle')

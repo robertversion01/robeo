@@ -240,7 +240,10 @@
       "filteredDescription": "Try loosening your filters or a different search term.",
       "clearFilters": "Clear filters",
       "browseAll": "Browse all products",
-      "browseAllServices": "Browse all services"
+      "browseAllServices": "Browse all services",
+      "districtTitle": "No items yet in {{district}}",
+      "districtDescription": "Be the first to list here, or check listings in other Budapest districts.",
+      "viewAllDistricts": "View all districts"
     },
     "pagination": {
       "loadMore": "Load more products",

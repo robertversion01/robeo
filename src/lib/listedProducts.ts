@@ -96,6 +96,8 @@ export type CatalogQueryFilterOptions = {
   exclude?: 'category' | 'subcategory' | 'brand' | 'none';
   vacationIds?: string[];
   sizeFilterOnServer?: boolean;
+  /** RobeoBP kerület szűrő szerver-oldalon — csak ha az oszlop létezik. Alap: true. */
+  districtFilterOnServer?: boolean;
 };
 
 /** Közös katalógus szűrők — szinkron, hogy a builder ne legyen await-elve (thenable!). */
@@ -154,7 +156,7 @@ export function applyCatalogFiltersToProductQuery(
   }
 
   const district = getBudapestDistrictFilter(filters);
-  if (district) {
+  if (district && (options.districtFilterOnServer ?? true)) {
     query = query.eq('budapest_district', district);
   }
 

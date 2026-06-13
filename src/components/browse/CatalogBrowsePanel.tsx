@@ -32,6 +32,8 @@ import ImmersiveFilterSheet from '@/components/browse/ImmersiveFilterSheet';
 import MobileFeedChrome from '@/components/layout/MobileFeedChrome';
 import FeedCategorySwipeSurface from '@/components/browse/FeedCategorySwipeSurface';
 import { departmentLabel } from '@/lib/categoryDisplay';
+import { ROBEO_BP_MODE } from '@/lib/features';
+import { getDistrictLabel } from '@/lib/budapestDistricts';
 
 function sortLabelKey(id: string) {
   if (id === 'price_asc') return 'browse.sort.priceAsc';
@@ -339,6 +341,11 @@ function CatalogBrowsePanelInner({
     </p>
   );
 
+  const activeDistrictLabel =
+    ROBEO_BP_MODE && selectedBudapestDistrict && selectedBudapestDistrict !== 'all'
+      ? getDistrictLabel(selectedBudapestDistrict)
+      : undefined;
+
   const productGridBlock = (
     <>
       {resultsLine}
@@ -351,6 +358,8 @@ function CatalogBrowsePanelInner({
         hasActiveFilters={hasActiveFilters}
         onClearFilters={clearAllFilters}
         listingType={selectedListingType}
+        districtLabel={activeDistrictLabel || undefined}
+        onClearDistrict={() => removeFilter('budapest_district')}
       />
       {!loading && hasMore ? (
         <div className="mt-6 flex justify-center pb-4 md:pb-8">

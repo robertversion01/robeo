@@ -1,13 +1,21 @@
 import type { Product } from '@/types';
 import type { SavedSearch } from '@/lib/savedSearches';
 import { conditionMatchesFilter } from '@/lib/vintedCatalog';
-import { productMatchesCategory } from '@/lib/catalogFilters';
+import { getBudapestDistrictFilter, productMatchesCategory } from '@/lib/catalogFilters';
 
 /** Szerver és kliens közös mentett keresés egyezés */
 export function productMatchesSavedSearch(
   product: Pick<
     Product,
-    'id' | 'name' | 'description' | 'brand' | 'category' | 'size' | 'condition' | 'price'
+    | 'id'
+    | 'name'
+    | 'description'
+    | 'brand'
+    | 'category'
+    | 'size'
+    | 'condition'
+    | 'price'
+    | 'budapest_district'
   >,
   filters: SavedSearch['filters'],
 ): boolean {
@@ -36,6 +44,10 @@ export function productMatchesSavedSearch(
   const price = Number(product.price) || 0;
   if (filters.minPrice > 0 && price < filters.minPrice) return false;
   if (filters.maxPrice > 0 && price > filters.maxPrice) return false;
+  const district = getBudapestDistrictFilter(filters);
+  if (district && String(product.budapest_district || '').trim().toUpperCase() !== district) {
+    return false;
+  }
   return true;
 }
 
@@ -44,7 +56,15 @@ export function findNewSavedSearchMatches(
   products: Array<
     Pick<
       Product,
-      'id' | 'name' | 'description' | 'brand' | 'category' | 'size' | 'condition' | 'price'
+      | 'id'
+      | 'name'
+      | 'description'
+      | 'brand'
+      | 'category'
+      | 'size'
+      | 'condition'
+      | 'price'
+      | 'budapest_district'
     >
   >,
   seenIds: Set<string>,

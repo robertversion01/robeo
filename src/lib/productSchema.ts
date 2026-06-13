@@ -7,7 +7,15 @@ import { LISTED_PRODUCT_STATUS_FILTER } from '@/lib/listedProducts';
 
 export type ProductScanRow = Pick<
   Product,
-  'id' | 'name' | 'description' | 'brand' | 'category' | 'size' | 'condition' | 'price'
+  | 'id'
+  | 'name'
+  | 'description'
+  | 'brand'
+  | 'category'
+  | 'size'
+  | 'condition'
+  | 'price'
+  | 'budapest_district'
 >;
 
 const PRODUCT_SCAN_BASE =
@@ -15,6 +23,7 @@ const PRODUCT_SCAN_BASE =
 const PRODUCT_SCAN_WITH_SIZE = `${PRODUCT_SCAN_BASE}, size`;
 
 let sizeColumnCache: boolean | null = null;
+let districtColumnCache: boolean | null = null;
 
 function isMissingColumnError(message: string | undefined, column: string): boolean {
   if (!message) return false;
@@ -38,13 +47,32 @@ export async function productsHasSizeColumn(supabase: SupabaseClient): Promise<b
   return false;
 }
 
+/** Egyszeri probe: létezik-e a products.budapest_district oszlop (RobeoBP). */
+export async function productsHasDistrictColumn(supabase: SupabaseClient): Promise<boolean> {
+  if (districtColumnCache !== null) return districtColumnCache;
+  const { error } = await supabase.from('products').select('budapest_district').limit(1);
+  if (!error) {
+    districtColumnCache = true;
+    return true;
+  }
+  if (isMissingColumnError(error.message, 'budapest_district')) {
+    districtColumnCache = false;
+    return false;
+  }
+  return false;
+}
+
 export function resetProductSchemaCache() {
   sizeColumnCache = null;
+  districtColumnCache = null;
 }
 
 export async function resolveProductScanSelect(supabase: SupabaseClient): Promise<string> {
   const hasSize = await productsHasSizeColumn(supabase);
-  return hasSize ? PRODUCT_SCAN_WITH_SIZE : PRODUCT_SCAN_BASE;
+  const hasDistrict = await productsHasDistrictColumn(supabase);
+  let select = hasSize ? PRODUCT_SCAN_WITH_SIZE : PRODUCT_SCAN_BASE;
+  if (hasDistrict) select = `${select}, budapest_district`;
+  return select;
 }
 
 export async function fetchProductsForScan(
@@ -72,6 +100,7 @@ export async function fetchProductsForScan(
     condition: row.condition ?? undefined,
     price: Number(row.price) || 0,
     size: row.size ?? null,
+    budapest_district: row.budapest_district ?? null,
   }));
 
   return { data: rows, error: null };

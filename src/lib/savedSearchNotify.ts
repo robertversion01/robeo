@@ -75,7 +75,15 @@ export async function runSavedSearchAlertScan(
   products: Array<
     Pick<
       Product,
-      'id' | 'name' | 'description' | 'brand' | 'category' | 'size' | 'condition' | 'price'
+      | 'id'
+      | 'name'
+      | 'description'
+      | 'brand'
+      | 'category'
+      | 'size'
+      | 'condition'
+      | 'price'
+      | 'budapest_district'
     >
   >,
   userEmail?: string | null,

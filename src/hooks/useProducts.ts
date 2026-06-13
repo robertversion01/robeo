@@ -15,9 +15,10 @@ import type { Product } from '@/types';
 import { CATALOG_UPDATED_EVENT } from '@/lib/catalogRefresh';
 import { insertAppNotificationSafe } from '@/lib/supabaseResilience';
 import { conditionMatchesFilter } from '@/lib/vintedCatalog';
-import { canFilterProductsBySize } from '@/lib/productSchema';
+import { canFilterProductsBySize, productsHasDistrictColumn } from '@/lib/productSchema';
 import {
   type CatalogFilterState,
+  getBudapestDistrictFilter,
   productMatchesCatalogFilters,
   serializeCatalogFilters,
   countActiveCatalogFilters,
@@ -207,9 +208,14 @@ export function useProducts() {
           catalogFilters.size !== 'all' &&
           (await canFilterProductsBySize(supabase));
 
+        const districtFilterOnServer =
+          Boolean(getBudapestDistrictFilter(catalogFilters)) &&
+          (await productsHasDistrictColumn(supabase));
+
         query = applyCatalogFiltersToProductQuery(query, catalogFilters, {
           vacationIds,
           sizeFilterOnServer,
+          districtFilterOnServer,
         });
 
         query = query.order(sortConfig.column, { ascending: sortConfig.order === 'asc' }).range(from, to);

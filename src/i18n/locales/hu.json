@@ -240,7 +240,10 @@
       "filteredDescription": "Próbáld lazítani a szűrőket, vagy más keresőkifejezést.",
       "clearFilters": "Szűrők törlése",
       "browseAll": "Összes termék",
-      "browseAllServices": "Összes szolgáltatás"
+      "browseAllServices": "Összes szolgáltatás",
+      "districtTitle": "Még nincs termék itt: {{district}}",
+      "districtDescription": "Légy te az első, vagy nézd meg a többi budapesti kerület hirdetéseit.",
+      "viewAllDistricts": "Összes kerület megtekintése"
     },
     "pagination": {
       "loadMore": "Több termék betöltése",
