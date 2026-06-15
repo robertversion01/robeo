@@ -25,6 +25,7 @@ import { loadProfileBio, saveProfileBio } from '@/lib/profileBio';
 import { notifyCatalogUpdated } from '@/lib/catalogRefresh';
 import { Palmtree } from 'lucide-react';
 import { ROBEO_BP_MODE } from '@/lib/features';
+import { STYLE_TAG_OPTIONS } from '@/lib/styleTags';
 import HomeDistrictPicker from '@/components/browse/HomeDistrictPicker';
 
 type Props = {
@@ -289,6 +290,24 @@ export default function ProfileSettingsHub({ userId }: Props) {
             onChange={(styles) => void persist({ ...prefs, feed: { ...prefs.feed, styles } })}
             placeholder={t('settings.personalisation.stylesPlaceholder')}
           />
+          <div className="flex flex-wrap gap-1.5">
+            {STYLE_TAG_OPTIONS.map((tag) => (
+              <button
+                key={tag}
+                type="button"
+                onClick={() => {
+                  if (prefs.feed.styles.includes(tag)) return;
+                  void persist({
+                    ...prefs,
+                    feed: { ...prefs.feed, styles: [...prefs.feed.styles, tag].slice(0, 8) },
+                  });
+                }}
+                className="rounded-full border border-gray-200 px-2 py-0.5 text-[10px] font-semibold text-gray-600 hover:border-[#007782]/40"
+              >
+                + {t(`styleTags.${tag}`)}
+              </button>
+            ))}
+          </div>
           <TagInput
             label={t('settings.personalisation.conditions')}
             hint={t('settings.personalisation.conditionsHint')}

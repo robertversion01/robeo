@@ -18,6 +18,7 @@ import {
 } from '@/lib/sellerBundleCart';
 import { fetchSellerBundleDiscountSettings } from '@/lib/bundleDiscount';
 import type { Product } from '@/types';
+import SellerTrustPanel from '@/components/profile/SellerTrustPanel';
 import PageHeader from '@/components/layout/PageHeader';
 import { MAIN_TOP_PADDING } from '@/lib/layoutTokens';
 
@@ -91,6 +92,7 @@ export default function SellerClosetPage() {
         />
 
         <p className="text-sm text-gray-600 mb-4">{t('closet.hint')}</p>
+        <SellerTrustPanel sellerId={sellerId} className="mb-4" />
 
         <div className="grid grid-cols-2 gap-3 sm:grid-cols-3">
           {products.map((p) => {

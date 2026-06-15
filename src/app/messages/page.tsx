@@ -22,6 +22,7 @@ import { isListedProduct } from '@/lib/listedProducts';
 import { MAIN_TOP_PADDING } from '@/lib/layoutTokens';
 import { useTranslation } from 'react-i18next';
 import EmptyState from '@/components/ui/EmptyState';
+import PaymentPresetChips from '@/components/messages/PaymentPresetChips';
 
 interface Message {
   id: string;
@@ -718,6 +719,10 @@ export default function MessagesPage() {
                   {threadBlocked ? (
                     <p className="mb-2 text-center text-xs text-gray-500">{t('block.threadClosed')}</p>
                   ) : null}
+                  <PaymentPresetChips
+                    disabled={threadBlocked}
+                    onInsert={(text) => setNewMessage((prev) => (prev ? `${prev} ${text}` : text))}
+                  />
                   <form onSubmit={sendMessage} className="flex flex-nowrap items-center gap-2 max-w-full box-border">
                     {canMakeOffer ? (
                       <button

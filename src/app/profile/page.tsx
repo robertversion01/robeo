@@ -42,6 +42,8 @@ import { useRouter } from 'next/navigation';
 import { useIsAdmin } from '@/hooks/useIsAdmin';
 import { isProfileRegistrationComplete } from '@/lib/profileRegistration';
 import { ROBEO_BP_MODE } from '@/lib/features';
+import { relistProduct } from '@/lib/relistListing';
+import { RotateCcw } from 'lucide-react';
 
 export default function ProfilePage() {
   const { t, i18n } = useTranslation();
@@ -57,6 +59,7 @@ export default function ProfilePage() {
   const [deleteBusy, setDeleteBusy] = useState(false);
   const [bulkDeleteOpen, setBulkDeleteOpen] = useState(false);
   const [bulkBusy, setBulkBusy] = useState(false);
+  const [relistBusyId, setRelistBusyId] = useState<string | null>(null);
   const [statsTick, setStatsTick] = useState(0);
   const router = useRouter();
   const [activeTab, setActiveTab] = useState<ProfileTabId>('shop');
@@ -208,6 +211,28 @@ export default function ProfilePage() {
       setSoldProducts(enriched);
     } catch (error) {
       console.error('Error fetching sold products:', error);
+    }
+  };
+
+  const handleRelist = async (productId: string) => {
+    if (!user?.id || relistBusyId) return;
+    setRelistBusyId(productId);
+    try {
+      const result = await relistProduct(supabase, productId, user.id);
+      if ('error' in result) {
+        toast.error(t('profile.relistFailed'));
+        return;
+      }
+      toast.success(t('profile.relistSuccess'));
+      await Promise.all([loadUserProducts(user.id), loadSoldProducts(user.id)]);
+      try {
+        await revalidateCatalog();
+      } catch {
+        /* non-fatal */
+      }
+      notifyCatalogUpdated();
+    } finally {
+      setRelistBusyId(null);
     }
   };
 
@@ -624,7 +649,8 @@ export default function ProfilePage() {
             ) : (
               <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-2">
                 {soldProducts.map((product) => (
-                  <Link key={product.id} href={`/products/${product.id}`} className="group bg-white border border-gray-200 rounded-lg overflow-hidden relative">
+                  <div key={product.id} className="group bg-white border border-gray-200 rounded-lg overflow-hidden relative">
+                    <Link href={`/products/${product.id}`} className="block">
                     <div className="aspect-[4/5] overflow-hidden relative">
                       {product.image_url ? (
                         <img
@@ -645,9 +671,18 @@ export default function ProfilePage() {
                     <div className="p-1.5">
                       <h3 className="font-medium text-[11px] truncate leading-tight text-gray-800">{product.name}</h3>
                       <div className="text-gray-500 font-bold text-xs">{formatPrice(product.price)}</div>
-                      <p className="text-[9px] text-gray-400 mt-0.5">{t('profile.soldListingHint')}</p>
                     </div>
-                  </Link>
+                    </Link>
+                    <button
+                      type="button"
+                      disabled={relistBusyId === product.id}
+                      onClick={() => void handleRelist(product.id)}
+                      className="mx-1.5 mb-1.5 flex w-[calc(100%-0.75rem)] items-center justify-center gap-1 rounded-lg border border-[#007782]/30 bg-[#007782]/5 py-1.5 text-[10px] font-bold text-[#007782] hover:bg-[#007782]/10 disabled:opacity-50"
+                    >
+                      <RotateCcw size={12} />
+                      {relistBusyId === product.id ? t('profile.relistBusy') : t('profile.relist')}
+                    </button>
+                  </div>
                 ))}
               </div>
             )}

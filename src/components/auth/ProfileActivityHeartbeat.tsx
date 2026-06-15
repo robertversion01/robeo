@@ -1,0 +1,35 @@
+'use client';
+
+import { useEffect } from 'react';
+import { supabase } from '@/lib/supabase';
+import { pingProfileActivity } from '@/lib/profileActivity';
+
+/** Bejelentkezett user utolsó aktivitásának frissítése (throttled). */
+export default function ProfileActivityHeartbeat() {
+  useEffect(() => {
+    let cancelled = false;
+
+    const run = async () => {
+      const {
+        data: { user },
+      } = await supabase.auth.getUser();
+      if (cancelled || !user) return;
+      await pingProfileActivity(supabase, user.id);
+    };
+
+    void run();
+    const onVisible = () => {
+      if (document.visibilityState === 'visible') void run();
+    };
+    document.addEventListener('visibilitychange', onVisible);
+    const interval = window.setInterval(() => void run(), 10 * 60 * 1000);
+
+    return () => {
+      cancelled = true;
+      document.removeEventListener('visibilitychange', onVisible);
+      window.clearInterval(interval);
+    };
+  }, []);
+
+  return null;
+}

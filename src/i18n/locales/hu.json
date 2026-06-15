@@ -333,6 +333,9 @@
     "favoriteAdd": "Kedvencekhez adás",
     "favoriteRemove": "Eltávolítás a kedvencekből",
     "featured": "Kiemelt",
+    "badgeNew": "Új",
+    "badgeJustNow": "Épp most",
+    "reserved": "Lefoglalva",
     "bundleHint": "Több termék egy eladótól: {{percent}}% kedvezmény {{items}}+ darabnál.",
     "browseCategory": "Több ebben a kategóriában",
     "share": "Megosztás",
@@ -382,6 +385,10 @@
     "sentOffers": "Küldött ajánlataim",
     "myListings": "Saját hirdetéseim",
     "soldItems": "Eladott termékeim",
+    "relist": "Újralistázás",
+    "relistBusy": "Listázás…",
+    "relistSuccess": "Hirdetés újra közzétéve!",
+    "relistFailed": "Az újralistázás nem sikerült.",
     "reviews": "Kapott értékelések",
     "noReviews": "Még nincs értékelésed.",
     "marketplace": {
@@ -499,7 +506,29 @@
     "responseNew": "Új eladó a piactéren",
     "responseWithinHours": "Általában {{hours}} órán belül válaszol",
     "trustScore": "Bizalmi pont: {{score}}",
-    "active": "Aktív eladó"
+    "active": "Aktív eladó",
+    "activeNow": "Épp most aktív",
+    "activeHours": "Aktív {{hours}} órája",
+    "activeDays": "Aktív {{days}} napja"
+  },
+  "feed": {
+    "followed": {
+      "title": "Követett eladók új tételei",
+      "hint": "Friss hirdetések azoktól, akiket követsz.",
+      "more": "Összes"
+    }
+  },
+  "styleTags": {
+    "streetwear": "Streetwear",
+    "vintage": "Vintage",
+    "minimal": "Minimal",
+    "y2k": "Y2K",
+    "sport": "Sport",
+    "designer": "Designer",
+    "casual": "Casual",
+    "formal": "Elegáns",
+    "bohemian": "Bohém",
+    "skate": "Skate"
   },
   "trust": {
     "compactTitle": "Biztonságos vásárlás",
@@ -793,6 +822,39 @@
       "defaultProductTitle": "Használt termék",
       "defaultServiceTitle": "Szolgáltatás",
       "descriptionFooter": "Személyes átvétel egyeztetéssel. Kérdés esetén írj üzenetet!"
+    },
+    "styleTags": {
+      "label": "Stílus (opcionális, max. 3)"
+    },
+    "defectPhotos": {
+      "hint": "Közeli kép a sérülésről vagy hibáról.",
+      "add": "Hibakép hozzáadása"
+    },
+    "conditionWizard": {
+      "intro": "Válaszd ki, milyen állapotban van a tárgy — segít a vevőnek.",
+      "checklistTitle": "Ellenőrzőlista",
+      "defectPhotoRequired": "Közepes vagy rossz állapotnál tölts fel hibaképet is.",
+      "desc": {
+        "new": "Soha nem volt használva, eredeti címkével.",
+        "excellent": "Újszerű, alig látható használat.",
+        "very_good": "Enyhe használati nyomok, tiszta állapot.",
+        "good": "Normál használati nyomok, jól működik.",
+        "fair": "Látható kopás vagy apró hiba — jelezd a képeken.",
+        "poor": "Erős kopás vagy jelentős hiba — legyél őszinte."
+      },
+      "check": {
+        "newTag": "Eredeti címke vagy csomagolás megvan.",
+        "noWear": "Nincs kopás vagy folt.",
+        "likeNew": "Csak próbára volt használva.",
+        "noFlaws": "Nincs folt, szakadás vagy hiányzó rész.",
+        "lightWear": "Enyhe kopás, de tiszta.",
+        "noStains": "Nincs folt vagy szag.",
+        "normalWear": "Használati nyomok, de jó állapot.",
+        "clean": "Tiszta, mosott.",
+        "visibleWear": "Látható kopás vagy apró sérülés.",
+        "photoDefects": "Hibát mutató közeli kép készül.",
+        "heavyWear": "Erős kopás vagy nagyobb hiba."
+      }
     }
   },
   "checkoutSuccess": {
@@ -924,6 +986,18 @@
         "daylight": "Nappali időben, biztonságos helyen.",
         "cash": "A fizetést személyesen, egyeztetéssel intézd."
       }
+    },
+    "payment": {
+      "chip": {
+        "cash": "Készpénz",
+        "revolut": "Revolut",
+        "transfer": "Átutalás",
+        "pickup": "Átvételkor"
+      },
+      "cash": "Szívesen készpénzzel is rendezhetjük átvételkor.",
+      "revolut": "Revoluton is tudok fizetést fogadni — írd meg a linkedet.",
+      "transfer": "Banki átutalás is megoldható, ha előtte egyeztetjük.",
+      "pickup": "Átvételkor fizetek, ha minden rendben van a termékkel."
     }
   },
   "uploadWizard": {

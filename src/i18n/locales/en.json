@@ -333,6 +333,9 @@
     "favoriteAdd": "Add to favorites",
     "favoriteRemove": "Remove from favorites",
     "featured": "Featured",
+    "badgeNew": "New",
+    "badgeJustNow": "Just now",
+    "reserved": "Reserved",
     "bundleHint": "Bundle from this seller: {{percent}}% off when buying {{items}}+ items.",
     "browseCategory": "More in this category",
     "share": "Share",
@@ -382,6 +385,10 @@
     "sentOffers": "Sent offers",
     "myListings": "My listings",
     "soldItems": "Sold items",
+    "relist": "List again",
+    "relistBusy": "Listing…",
+    "relistSuccess": "Listing published again!",
+    "relistFailed": "Could not relist this item.",
     "reviews": "Reviews received",
     "noReviews": "No reviews yet."
   },
@@ -492,7 +499,29 @@
     "responseNew": "New on marketplace",
     "responseWithinHours": "Usually replies within {{hours}} hours",
     "trustScore": "Trust score: {{score}}",
-    "active": "Active seller"
+    "active": "Active seller",
+    "activeNow": "Active now",
+    "activeHours": "Active {{hours}}h ago",
+    "activeDays": "Active {{days}}d ago"
+  },
+  "feed": {
+    "followed": {
+      "title": "New from sellers you follow",
+      "hint": "Fresh listings from people you follow.",
+      "more": "Browse all"
+    }
+  },
+  "styleTags": {
+    "streetwear": "Streetwear",
+    "vintage": "Vintage",
+    "minimal": "Minimal",
+    "y2k": "Y2K",
+    "sport": "Sport",
+    "designer": "Designer",
+    "casual": "Casual",
+    "formal": "Formal",
+    "bohemian": "Bohemian",
+    "skate": "Skate"
   },
   "trust": {
     "compactTitle": "Safe shopping",
@@ -851,6 +880,39 @@
       "defaultProductTitle": "Pre-loved item",
       "defaultServiceTitle": "Service",
       "descriptionFooter": "Local pickup by arrangement. Message me with any questions!"
+    },
+    "styleTags": {
+      "label": "Style (optional, max 3)"
+    },
+    "defectPhotos": {
+      "hint": "Close-up of the defect or damage.",
+      "add": "Add defect photo"
+    },
+    "conditionWizard": {
+      "intro": "Pick the item condition — helps buyers decide.",
+      "checklistTitle": "Checklist",
+      "defectPhotoRequired": "For fair or poor condition, add a defect photo.",
+      "desc": {
+        "new": "Never worn, with original tags.",
+        "excellent": "Like new, barely any signs of use.",
+        "very_good": "Light wear, clean overall.",
+        "good": "Normal wear, works well.",
+        "fair": "Visible wear or minor flaw — show it in photos.",
+        "poor": "Heavy wear or major flaw — be honest."
+      },
+      "check": {
+        "newTag": "Original tag or packaging included.",
+        "noWear": "No wear or stains.",
+        "likeNew": "Only tried on.",
+        "noFlaws": "No stains, tears or missing parts.",
+        "lightWear": "Light wear but clean.",
+        "noStains": "No stains or odour.",
+        "normalWear": "Normal wear, good shape.",
+        "clean": "Clean, washed.",
+        "visibleWear": "Visible wear or minor damage.",
+        "photoDefects": "Close-up defect photo included.",
+        "heavyWear": "Heavy wear or major flaw."
+      }
     }
   },
   "checkoutSuccess": {
@@ -982,6 +1044,18 @@
         "daylight": "Prefer daytime and safe locations.",
         "cash": "Handle payment in person by arrangement."
       }
+    },
+    "payment": {
+      "chip": {
+        "cash": "Cash",
+        "revolut": "Revolut",
+        "transfer": "Transfer",
+        "pickup": "On pickup"
+      },
+      "cash": "Happy to pay cash on pickup.",
+      "revolut": "I can pay via Revolut — send me your link.",
+      "transfer": "Bank transfer works too if we agree first.",
+      "pickup": "I'll pay when I pick up, if the item matches the listing."
     }
   },
   "uploadWizard": {

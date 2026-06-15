@@ -5,7 +5,7 @@ import { supabase } from '@/lib/supabase';
 import { toast } from 'sonner';
 import { X, Plus, ArrowUp, ArrowDown, ChevronLeft, ChevronRight, Check, Sparkles } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
-import { useRouter } from 'next/navigation';
+import { useRouter, useSearchParams } from 'next/navigation';
 import CustomSelect from '@/components/ui/CustomSelect';
 import BrandCombobox from '@/components/upload/BrandCombobox';
 import ListingCategoryPicker from '@/components/upload/ListingCategoryPicker';
@@ -26,6 +26,9 @@ import {
   type SimilarPriceHint,
 } from '@/lib/listingPriceHint';
 import { buildListingDescription, buildListingTitle } from '@/lib/listingTitleTemplate';
+import ConditionWizardStep from '@/components/upload/ConditionWizardStep';
+import { fetchLastListingDefaults } from '@/lib/listingDefaults';
+import { STYLE_TAG_OPTIONS, type StyleTagId } from '@/lib/styleTags';
 import {
   type ListingType,
   categoryRequiresBrand,
@@ -34,6 +37,7 @@ import {
   getDepartmentForCategory,
   isServiceCategory,
 } from '@/lib/marketplaceTaxonomy';
+import type { Product } from '@/types';
 
 const STEPS = ['photos', 'listing', 'pricing', 'publish'] as const;
 const EXPRESS_STEPS = ['photos', 'express', 'confirm'] as const;
@@ -80,6 +84,8 @@ const emptyForm: FormState = {
 export default function UploadWizard() {
   const { t } = useTranslation();
   const router = useRouter();
+  const searchParams = useSearchParams();
+  const relistFromId = searchParams.get('relistFrom');
   const [stepIndex, setStepIndex] = useState(0);
   const [formData, setFormData] = useState<FormState>(emptyForm);
   const [images, setImages] = useState<UploadedImage[]>([]);
@@ -90,6 +96,10 @@ export default function UploadWizard() {
   const [ollamaOk, setOllamaOk] = useState<boolean | null>(null);
   const [expressMode, setExpressMode] = useState(ROBEO_BP_MODE);
   const [priceHint, setPriceHint] = useState<SimilarPriceHint | null>(null);
+  const [styleTags, setStyleTags] = useState<StyleTagId[]>([]);
+  const [defectImages, setDefectImages] = useState<UploadedImage[]>([]);
+  const [requiresDefectPhoto, setRequiresDefectPhoto] = useState(false);
+  const defectInputRef = useRef<HTMLInputElement>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   const activeSteps = expressMode && ROBEO_BP_MODE ? EXPRESS_STEPS : STEPS;
@@ -107,8 +117,45 @@ export default function UploadWizard() {
         return;
       }
       setAuthChecked(true);
+
+      const defaults = await fetchLastListingDefaults(supabase, user.id);
+      if (defaults && !relistFromId) {
+        setFormData((prev) => ({
+          ...prev,
+          ...defaults,
+          name: prev.name,
+          description: prev.description,
+          price: prev.price,
+        }));
+      }
+
+      if (relistFromId) {
+        const { data: relistSource } = await supabase
+          .from('products')
+          .select('*')
+          .eq('id', relistFromId)
+          .eq('user_id', user.id)
+          .maybeSingle();
+        if (relistSource) {
+          const row = relistSource as FormState & Product & { budapest_district?: string };
+          setFormData((prev) => ({
+            ...prev,
+            name: row.name || '',
+            description: row.description || '',
+            price: String(row.price ?? ''),
+            category: row.category || '',
+            condition: row.condition || '',
+            brand: row.brand || '',
+            size: row.size || '',
+            color: row.color || '',
+            budapestDistrict: row.budapest_district || '',
+            subcategoryId: row.category || '',
+            departmentId: getDepartmentForCategory(row.category) || '',
+          }));
+        }
+      }
     })();
-  }, [router]);
+  }, [router, relistFromId]);
 
   useEffect(() => {
     if (stepId !== 'publish' || expressMode) return;
@@ -369,11 +416,14 @@ export default function UploadWizard() {
     setImages(newImages);
   };
 
-  const uploadImages = async (userId: string): Promise<string[]> => {
+  const uploadImagesFromFiles = async (
+    userId: string,
+    files: UploadedImage[],
+  ): Promise<string[]> => {
     const urls: string[] = [];
-    for (const image of images) {
+    for (const image of files) {
       const fileExt = image.file.name.split('.').pop();
-      const fileName = `${userId}/${Math.random().toString(36).slice(2)}.${fileExt}`;
+      const fileName = `${userId}/defect-${Math.random().toString(36).slice(2)}.${fileExt}`;
       const { error: uploadError } = await supabase.storage
         .from('product-images')
         .upload(fileName, image.file);
@@ -384,6 +434,10 @@ export default function UploadWizard() {
       urls.push(publicUrl);
     }
     return urls;
+  };
+
+  const uploadImages = async (userId: string): Promise<string[]> => {
+    return uploadImagesFromFiles(userId, images);
   };
 
   const handlePublish = async () => {
@@ -404,6 +458,8 @@ export default function UploadWizard() {
       if (!user) throw new Error(t('upload.loginRequired'));
 
       const imageUrls = images.length > 0 ? await uploadImages(user.id) : [];
+      const defectUrls =
+        defectImages.length > 0 ? await uploadImagesFromFiles(user.id, defectImages) : [];
 
       const insertPayload: Record<string, unknown> = {
         name: formData.name.trim(),
@@ -421,6 +477,12 @@ export default function UploadWizard() {
       };
       if (ROBEO_BP_MODE && isValidBudapestDistrict(formData.budapestDistrict)) {
         insertPayload.budapest_district = formData.budapestDistrict;
+      }
+      if (styleTags.length > 0) {
+        insertPayload.style_tags = styleTags;
+      }
+      if (defectUrls.length > 0) {
+        insertPayload.defect_images = defectUrls;
       }
       const { error } = await supabase.from('products').insert(insertPayload);
 
@@ -442,14 +504,6 @@ export default function UploadWizard() {
       setLoading(false);
     }
   };
-
-  const conditionOptions = [
-    { value: 'new', label: t('upload.conditions.new') },
-    { value: 'excellent', label: t('upload.conditions.excellent') },
-    { value: 'good', label: t('upload.conditions.good') },
-    { value: 'fair', label: t('upload.conditions.fair') },
-    { value: 'poor', label: t('upload.conditions.poor') },
-  ];
 
   if (!authChecked) {
     return (
@@ -592,6 +646,7 @@ export default function UploadWizard() {
                 ref={fileInputRef}
                 type="file"
                 accept="image/*"
+                capture="environment"
                 multiple
                 className="hidden"
                 onChange={handleImagesChange}
@@ -639,11 +694,11 @@ export default function UploadWizard() {
                   </div>
                   <div>
                     <label className="block text-sm font-medium mb-2">{t('upload.condition')}</label>
-                    <CustomSelect
-                      options={conditionOptions}
+                    <ConditionWizardStep
                       value={formData.condition}
                       onChange={(val) => setFormData((p) => ({ ...p, condition: val }))}
-                      placeholder={t('upload.conditionPlaceholder')}
+                      requiresDefectPhoto={requiresDefectPhoto}
+                      onRequiresDefectPhotoChange={setRequiresDefectPhoto}
                     />
                   </div>
                 </>
@@ -705,12 +760,39 @@ export default function UploadWizard() {
                   </div>
                   <div>
                     <label className="block text-sm font-medium mb-2">{t('upload.condition')}</label>
-                    <CustomSelect
-                      options={conditionOptions}
+                    <ConditionWizardStep
                       value={formData.condition}
                       onChange={(val) => setFormData((p) => ({ ...p, condition: val }))}
-                      placeholder={t('upload.conditionPlaceholder')}
+                      requiresDefectPhoto={requiresDefectPhoto}
+                      onRequiresDefectPhotoChange={setRequiresDefectPhoto}
                     />
+                  </div>
+                  <div>
+                    <p className="text-xs font-medium text-gray-700 mb-2">{t('upload.styleTags.label')}</p>
+                    <div className="flex flex-wrap gap-1.5">
+                      {STYLE_TAG_OPTIONS.map((tag) => {
+                        const active = styleTags.includes(tag);
+                        return (
+                          <button
+                            key={tag}
+                            type="button"
+                            onClick={() =>
+                              setStyleTags((prev) =>
+                                active ? prev.filter((t) => t !== tag) : [...prev, tag].slice(0, 3),
+                              )
+                            }
+                            className={cn(
+                              'rounded-full border px-2.5 py-1 text-[11px] font-semibold',
+                              active
+                                ? 'border-[#007782] bg-[#007782]/10 text-[#007782]'
+                                : 'border-gray-200 text-gray-600',
+                            )}
+                          >
+                            {t(`styleTags.${tag}`)}
+                          </button>
+                        );
+                      })}
+                    </div>
                   </div>
                 </>
               ) : null}

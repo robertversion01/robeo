@@ -26,6 +26,7 @@ import {
 import { VINTED_DEPARTMENTS } from '@/lib/vintedCategoryTree';
 import { getDepartmentsForListingType } from '@/lib/marketplaceTaxonomy';
 import { enrichProductsWithFavoriteCounts, adjustProductFavoriteCount } from '@/lib/favoriteCounts';
+import { enrichProductsWithSellerInfo } from '@/lib/sellerCardEnrichment';
 import { fetchAllVacationSellerIds } from '@/lib/vacationMode';
 import {
   applyListedProductFilter,
@@ -246,6 +247,7 @@ export function useProducts() {
         }
 
         fetched = await enrichProductsWithFavoriteCounts(supabase, fetched);
+        fetched = await enrichProductsWithSellerInfo(supabase, fetched);
 
         const serverTotal = count ?? fetched.length;
         setTotalCount(serverTotal);

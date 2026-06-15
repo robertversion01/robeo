@@ -31,6 +31,7 @@ import { fetchGlobalDiscoveryChips } from '@/lib/globalDiscovery';
 import ImmersiveFilterSheet from '@/components/browse/ImmersiveFilterSheet';
 import MobileFeedChrome from '@/components/layout/MobileFeedChrome';
 import FeedCategorySwipeSurface from '@/components/browse/FeedCategorySwipeSurface';
+import FollowedSellersStrip from '@/components/home/FollowedSellersStrip';
 import DistrictDiscoveryRail from '@/components/browse/DistrictDiscoveryRail';
 import HomeDistrictPicker from '@/components/browse/HomeDistrictPicker';
 import { departmentLabel } from '@/lib/categoryDisplay';
@@ -432,6 +433,7 @@ function CatalogBrowsePanelInner({
             />
             {showPersonalization && user ? (
               <div className="mb-3 hidden md:block">
+                <FollowedSellersStrip />
                 <FeedPersonalizationBanner
                   mode="feed"
                   products={catalogProducts}
@@ -500,6 +502,7 @@ function CatalogBrowsePanelInner({
             <Filters {...filtersProps} />
             <ActiveFilterBar {...activeFilterBarProps} className="pt-2 pb-1" />
           </div>
+          {user && showPersonalization ? <FollowedSellersStrip className="mb-3 lg:hidden" /> : null}
           {ROBEO_BP_MODE ? (
             <>
               {user ? <HomeDistrictPicker className="mb-3" /> : null}

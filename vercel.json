@@ -5,6 +5,14 @@
     {
       "path": "/api/workers/saved-search-scan",
       "schedule": "0 21 * * *"
+    },
+    {
+      "path": "/api/workers/notification-digest",
+      "schedule": "0 7 * * *"
+    },
+    {
+      "path": "/api/workers/district-digest",
+      "schedule": "0 8 * * 1"
     }
   ],
   "headers": [

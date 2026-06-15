@@ -6,6 +6,7 @@ import { useTranslation } from 'react-i18next';
 import { supabase } from '@/lib/supabase';
 import { fetchSellerTrustSignals, type SellerTrustSignals } from '@/lib/sellerTrust';
 import { formatMedianResponseHours } from '@/lib/sellerResponseTime';
+import { formatLastActiveLabel } from '@/lib/profileActivity';
 import StarRating from '@/components/review/StarRating';
 import Badge from '@/components/ui/Badge';
 import { cn } from '@/lib/utils';
@@ -68,6 +69,14 @@ export default function SellerTrustPanel({ sellerId, className }: Props) {
       <span className="rounded-full border border-gray-200 bg-white px-2.5 py-1 text-xs text-gray-600">
         {t('sellerTrust.memberSince', { date: memberLabel })}
       </span>
+      {(() => {
+        const activeLabel = formatLastActiveLabel(signals.lastActiveAt, t);
+        return activeLabel ? (
+          <span className="rounded-full border border-gray-200 bg-white px-2.5 py-1 text-xs text-gray-600">
+            {activeLabel}
+          </span>
+        ) : null;
+      })()}
       <span className="rounded-full border border-gray-200 bg-white px-2.5 py-1 text-xs text-gray-600">
         {t('sellerTrust.listings', { count: signals.listingsCount })}
       </span>
