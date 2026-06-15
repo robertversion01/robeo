@@ -105,3 +105,20 @@ export async function fetchSubcategoryFilterCounts(
   );
   return Object.fromEntries(entries);
 }
+
+/** RobeoBP — aktív hirdetések száma kerületenként. */
+export async function fetchDistrictFilterCounts(
+  supabase: SupabaseClient,
+  filters: CatalogFilterState,
+  districtIds: string[],
+): Promise<CountMap> {
+  const entries = await Promise.all(
+    districtIds.map(async (id) => {
+      const count = await countWithFilters(supabase, filters, 'none', (q) =>
+        q.eq('budapest_district', id),
+      );
+      return [id, count] as const;
+    }),
+  );
+  return Object.fromEntries(entries);
+}

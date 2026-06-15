@@ -15,12 +15,20 @@
 
 import { useEffect, useState } from 'react';
 import Link from 'next/link';
+import { MapPin } from 'lucide-react';
+import { useTranslation } from 'react-i18next';
 import { supabase } from '@/lib/supabase';
 import { formatPrice } from '@/lib/utils';
 import { getOptimizedImageUrl } from '@/lib/imageUtils';
 import ClientFormattedTime from '@/components/ui/ClientFormattedTime';
 import SystemMessageRoleBadge from '@/components/messages/SystemMessageRoleBadge';
 import { useResolvedTransactionRole } from '@/hooks/useResolvedTransactionRole';
+import { ROBEO_BP_MODE } from '@/lib/features';
+import { getDistrictLabel, normalizeBudapestDistrict } from '@/lib/budapestDistricts';
+import {
+  getMeetingPointsForDistrict,
+  MEETING_POINT_SAFETY_TIPS,
+} from '@/lib/budapestMeetingPoints';
 
 type Props = {
   productId: string | null;
@@ -38,6 +46,7 @@ type ProductSnippet = {
   price: number;
   user_id?: string;
   thumbnail: string | null;
+  budapest_district?: string | null;
 };
 
 const BODY_TEXT =
@@ -52,6 +61,7 @@ export default function LocalPickupSystemMessageCard({
   sellerId: sellerIdProp = null,
   timeLocale = 'hu-HU',
 }: Props) {
+  const { t } = useTranslation();
   const [product, setProduct] = useState<ProductSnippet | null>(null);
 
   useEffect(() => {
@@ -63,7 +73,7 @@ export default function LocalPickupSystemMessageCard({
     void (async () => {
       const { data } = await supabase
         .from('products')
-        .select('id, name, price, user_id, images, image_url')
+        .select('id, name, price, user_id, images, image_url, budapest_district')
         .eq('id', productId)
         .maybeSingle();
       if (cancelled || !data) return;
@@ -78,6 +88,9 @@ export default function LocalPickupSystemMessageCard({
         price: Number(data.price) || 0,
         user_id: data.user_id,
         thumbnail: rawThumb ? getOptimizedImageUrl(rawThumb, 80, 70) : null,
+        budapest_district: normalizeBudapestDistrict(
+          (data as { budapest_district?: string | null }).budapest_district,
+        ),
       });
     })();
     return () => {
@@ -88,6 +101,10 @@ export default function LocalPickupSystemMessageCard({
   const sellerId = product?.user_id ?? sellerIdProp;
   const role = useResolvedTransactionRole(viewerId, sellerId);
   const title = role === 'seller' ? 'Új foglalás érkezett' : 'Sikeres foglalás!';
+  const districtLabel = getDistrictLabel(product?.budapest_district);
+  const meetingPoints = ROBEO_BP_MODE
+    ? getMeetingPointsForDistrict(product?.budapest_district)
+    : [];
 
   // senderId/receiverId-t a API contract miatt fogadjuk (SaleSystemMessageCard
   // egysegesseg), de itt nem hasznaljuk — void-dal hallgatjuk el a lintert.
@@ -130,6 +147,33 @@ export default function LocalPickupSystemMessageCard({
             </p>
           </div>
         </Link>
+      ) : null}
+      {ROBEO_BP_MODE && meetingPoints.length > 0 ? (
+        <div className="mt-3 rounded-lg border border-emerald-200/80 bg-white/90 px-3 py-2.5 text-left">
+          <p className="flex items-center gap-1 text-xs font-semibold text-emerald-900">
+            <MapPin size={12} aria-hidden />
+            {districtLabel
+              ? t('bp.meeting.titleDistrict', { district: districtLabel })
+              : t('bp.meeting.titleGeneric')}
+          </p>
+          <ul className="mt-2 space-y-1">
+            {meetingPoints.slice(0, 3).map((point) => (
+              <li key={point.id} className="text-[11px] text-gray-700 leading-snug">
+                <span className="font-medium">{point.label}</span>
+                {point.hint ? (
+                  <span className="block text-[10px] text-gray-500">{t(point.hint)}</span>
+                ) : null}
+              </li>
+            ))}
+          </ul>
+          <ul className="mt-2 space-y-0.5 border-t border-emerald-100 pt-2">
+            {MEETING_POINT_SAFETY_TIPS.map((tipKey) => (
+              <li key={tipKey} className="text-[10px] text-emerald-800/90">
+                · {t(tipKey)}
+              </li>
+            ))}
+          </ul>
+        </div>
       ) : null}
       <p className="text-center text-xs text-gray-700 mt-3 leading-snug">{BODY_TEXT}</p>
       <div className="mt-2 text-center text-[10px] text-gray-400">

@@ -490,6 +490,7 @@
     "responseNormal": "Active seller",
     "responseSlow": "Slower response time",
     "responseNew": "New on marketplace",
+    "responseWithinHours": "Usually replies within {{hours}} hours",
     "trustScore": "Trust score: {{score}}",
     "active": "Active seller"
   },
@@ -834,7 +835,23 @@
     "loginRequired": "Please log in first.",
     "brandSizeRequired": "Brand and size are required.",
     "success": "Listing published!",
-    "error": "Upload failed."
+    "error": "Upload failed.",
+    "express": {
+      "modeQuick": "Quick list",
+      "modeDetailed": "Detailed",
+      "hint": "Pick category, price and district — title and description are filled automatically.",
+      "confirmHint": "Review title and description. Edit if needed, then publish."
+    },
+    "priceHint": {
+      "similar": "Similar listings median: {{median}} Ft ({{count}} items)",
+      "range": "Suggested range: {{low}}–{{high}} Ft",
+      "useMedian": "Use median: {{value}} Ft"
+    },
+    "template": {
+      "defaultProductTitle": "Pre-loved item",
+      "defaultServiceTitle": "Service",
+      "descriptionFooter": "Local pickup by arrangement. Message me with any questions!"
+    }
   },
   "checkoutSuccess": {
     "title": "Purchase successful!",
@@ -937,6 +954,36 @@
       "serviceUnavailable": "Payment service is temporarily unavailable."
     }
   },
+  "bp": {
+    "discovery": {
+      "districtTitle": "Browse by district",
+      "districtHint": "Find listings near you."
+    },
+    "homeDistrict": {
+      "label": "My home district",
+      "none": "Not set",
+      "hint": "Your feed prioritizes listings from your district and neighbors.",
+      "saved": "Saved: {{district}}",
+      "cleared": "District preference cleared.",
+      "browseLink": "Listings in my district",
+      "settingsTitle": "My Budapest district"
+    },
+    "meeting": {
+      "titleDistrict": "Suggested meetup spots — {{district}}",
+      "titleGeneric": "Suggested meetup spots",
+      "hint": {
+        "metro": "Busy metro station — well lit",
+        "landmark": "Known public place",
+        "busy": "Busy public square",
+        "public": "Public, visible spot"
+      },
+      "tip": {
+        "public": "Always meet in a public, well-lit place.",
+        "daylight": "Prefer daytime and safe locations.",
+        "cash": "Handle payment in person by arrangement."
+      }
+    }
+  },
   "uploadWizard": {
     "title": "List an item",
     "subtitle": "Step by step — your draft is saved automatically",
@@ -955,6 +1002,8 @@
       "listing": "Category",
       "pricing": "Price & details",
       "publish": "Description",
+      "express": "Quick details",
+      "confirm": "Review",
       "category": "Category",
       "brand": "Brand",
       "condition": "Condition",

@@ -1,5 +1,6 @@
 import type { Product } from '@/types';
 import type { FeedPreferences } from '@/lib/userPreferences';
+import { districtProximity } from '@/lib/budapestDistricts';
 
 function norm(s: string | null | undefined) {
   return (s || '').trim().toLowerCase();
@@ -11,15 +12,16 @@ export function rankFeedProducts(products: Product[], prefs: FeedPreferences): P
   const sizes = prefs.sizes.map(norm).filter(Boolean);
   const styles = prefs.styles.map(norm).filter(Boolean);
   const conditions = prefs.conditions.map(norm).filter(Boolean);
+  const homeDistrict = prefs.homeDistrict?.trim().toUpperCase() || null;
 
-  if (
-    brands.length === 0 &&
-    sizes.length === 0 &&
-    styles.length === 0 &&
-    conditions.length === 0
-  ) {
-    return products;
-  }
+  const hasPrefs =
+    brands.length > 0 ||
+    sizes.length > 0 ||
+    styles.length > 0 ||
+    conditions.length > 0 ||
+    Boolean(homeDistrict);
+
+  if (!hasPrefs) return products;
 
   const score = (p: Product) => {
     let s = 0;
@@ -42,6 +44,13 @@ export function rankFeedProducts(products: Product[], prefs: FeedPreferences): P
     for (const st of styles) {
       if (name.includes(st) || desc.includes(st) || cat.includes(st)) s += 1;
     }
+
+    if (homeDistrict) {
+      const prox = districtProximity(p.budapest_district, homeDistrict);
+      if (prox === 'same') s += 8;
+      else if (prox === 'neighbor') s += 4;
+    }
+
     return s;
   };
 

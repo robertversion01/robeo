@@ -5,6 +5,7 @@ import { BadgeCheck, Clock, Star } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 import { supabase } from '@/lib/supabase';
 import { fetchSellerTrustSignals, type SellerTrustSignals } from '@/lib/sellerTrust';
+import { formatMedianResponseHours } from '@/lib/sellerResponseTime';
 import StarRating from '@/components/review/StarRating';
 import Badge from '@/components/ui/Badge';
 import { cn } from '@/lib/utils';
@@ -56,7 +57,13 @@ export default function SellerTrustPanel({ sellerId, className }: Props) {
       ) : null}
       <span className="inline-flex items-center gap-1 rounded-full border border-gray-200 bg-white px-2.5 py-1 text-xs text-gray-700">
         <Clock size={12} className="text-[#007782]" />
-        {t(signals.responseLabelKey)}
+        {(() => {
+          const hours = formatMedianResponseHours(signals.medianResponseHours);
+          if (hours != null && signals.responseSampleCount >= 2) {
+            return t('sellerTrust.responseWithinHours', { hours });
+          }
+          return t(signals.responseLabelKey);
+        })()}
       </span>
       <span className="rounded-full border border-gray-200 bg-white px-2.5 py-1 text-xs text-gray-600">
         {t('sellerTrust.memberSince', { date: memberLabel })}

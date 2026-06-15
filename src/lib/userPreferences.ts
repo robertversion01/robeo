@@ -5,6 +5,8 @@ export type FeedPreferences = {
   sizes: string[];
   styles: string[];
   conditions: string[];
+  /** RobeoBP — otthoni kerület (feed-boost). */
+  homeDistrict?: string;
 };
 
 export type NotificationChannelPrefs = {
@@ -47,11 +49,13 @@ export const DEFAULT_USER_PREFS: UserPreferenceBundle = {
 function normalizeFeed(raw: unknown): FeedPreferences {
   if (!raw || typeof raw !== 'object') return { ...DEFAULT_FEED_PREFS };
   const o = raw as Record<string, unknown>;
+  const homeRaw = typeof o.homeDistrict === 'string' ? o.homeDistrict.trim().toUpperCase() : '';
   return {
     brands: Array.isArray(o.brands) ? o.brands.map(String).filter(Boolean) : [],
     sizes: Array.isArray(o.sizes) ? o.sizes.map(String).filter(Boolean) : [],
     styles: Array.isArray(o.styles) ? o.styles.map(String).filter(Boolean) : [],
     conditions: Array.isArray(o.conditions) ? o.conditions.map(String).filter(Boolean) : [],
+    homeDistrict: homeRaw || undefined,
   };
 }
 

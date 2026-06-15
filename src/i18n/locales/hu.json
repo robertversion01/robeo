@@ -497,6 +497,7 @@
     "responseNormal": "Aktív eladó",
     "responseSlow": "Lassabb válaszidő",
     "responseNew": "Új eladó a piactéren",
+    "responseWithinHours": "Általában {{hours}} órán belül válaszol",
     "trustScore": "Bizalmi pont: {{score}}",
     "active": "Aktív eladó"
   },
@@ -776,7 +777,23 @@
     "loginRequired": "Először jelentkezz be!",
     "brandSizeRequired": "Márka és méret kötelező.",
     "success": "Sikeres feltöltés!",
-    "error": "Hiba történt a feltöltés során."
+    "error": "Hiba történt a feltöltés során.",
+    "express": {
+      "modeQuick": "Gyors feladás",
+      "modeDetailed": "Részletes",
+      "hint": "Válaszd ki a kategóriát, add meg az árat és a kerületet — a cím és leírás automatikusan készül.",
+      "confirmHint": "Ellenőrizd a címet és leírást. Ha kell, módosítsd, majd tedd közzé."
+    },
+    "priceHint": {
+      "similar": "Hasonló hirdetések medián ára: {{median}} Ft ({{count}} db)",
+      "range": "Ajánlott sáv: {{low}}–{{high}} Ft",
+      "useMedian": "Medián használata: {{value}} Ft"
+    },
+    "template": {
+      "defaultProductTitle": "Használt termék",
+      "defaultServiceTitle": "Szolgáltatás",
+      "descriptionFooter": "Személyes átvétel egyeztetéssel. Kérdés esetén írj üzenetet!"
+    }
   },
   "checkoutSuccess": {
     "title": "Sikeres vásárlás!",
@@ -879,6 +896,36 @@
       "serviceUnavailable": "A fizetési szolgáltatás átmenetileg nem elérhető."
     }
   },
+  "bp": {
+    "discovery": {
+      "districtTitle": "Böngéssz kerület szerint",
+      "districtHint": "Találd meg a közeledben lévő hirdetéseket."
+    },
+    "homeDistrict": {
+      "label": "Saját kerületem",
+      "none": "Nincs beállítva",
+      "hint": "A feedben előrébb hozzuk a saját és szomszédos kerületek hirdetéseit.",
+      "saved": "Mentve: {{district}}",
+      "cleared": "Kerület-preferencia törölve.",
+      "browseLink": "Hirdetések a kerületemben",
+      "settingsTitle": "Budapesti kerületem"
+    },
+    "meeting": {
+      "titleDistrict": "Ajánlott találkozási helyek — {{district}}",
+      "titleGeneric": "Ajánlott találkozási helyek",
+      "hint": {
+        "metro": "Forgalmas metróállomás — jól megvilágított",
+        "landmark": "Ismert, nyilvános hely",
+        "busy": "Forgalmas, nyilvános tér",
+        "public": "Nyilvános, jól látható hely"
+      },
+      "tip": {
+        "public": "Mindig nyilvános, jól megvilágított helyen találkozz.",
+        "daylight": "Nappali időben, biztonságos helyen.",
+        "cash": "A fizetést személyesen, egyeztetéssel intézd."
+      }
+    }
+  },
   "uploadWizard": {
     "title": "Hirdetés feladása",
     "subtitle": "Lépésről lépésre — a piszkozat automatikusan mentve",
@@ -897,6 +944,8 @@
       "listing": "Kategória",
       "pricing": "Ár & részletek",
       "publish": "Leírás",
+      "express": "Gyors adatok",
+      "confirm": "Ellenőrzés",
       "category": "Kategória",
       "brand": "Márka",
       "condition": "Állapot",

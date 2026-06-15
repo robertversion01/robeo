@@ -67,6 +67,13 @@ export async function fetchSellerResponseStats(
   return { medianHours, sampleCount: deltas.length, labelKey };
 }
 
+/** UI: kerekített óraszám „Általában X órán belül válaszol" badge-hez. */
+export function formatMedianResponseHours(hours: number | null): number | null {
+  if (hours == null || !Number.isFinite(hours)) return null;
+  if (hours < 1) return 1;
+  return Math.max(1, Math.round(hours));
+}
+
 /** Inbox: több eladó válaszideje párhuzamosan (max ~12 partner). */
 export async function fetchSellerResponseLabelsBatch(
   supabase: SupabaseClient,

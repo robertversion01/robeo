@@ -21,6 +21,12 @@ import { ROBEO_BP_MODE } from '@/lib/features';
 import { BUDAPEST_DISTRICTS, isValidBudapestDistrict } from '@/lib/budapestDistricts';
 import { appendReturnUrl } from '@/lib/returnUrl';
 import {
+  fetchSimilarPriceHint,
+  formatPriceHintRange,
+  type SimilarPriceHint,
+} from '@/lib/listingPriceHint';
+import { buildListingDescription, buildListingTitle } from '@/lib/listingTitleTemplate';
+import {
   type ListingType,
   categoryRequiresBrand,
   categoryRequiresCondition,
@@ -30,7 +36,10 @@ import {
 } from '@/lib/marketplaceTaxonomy';
 
 const STEPS = ['photos', 'listing', 'pricing', 'publish'] as const;
+const EXPRESS_STEPS = ['photos', 'express', 'confirm'] as const;
 type StepId = (typeof STEPS)[number];
+type ExpressStepId = (typeof EXPRESS_STEPS)[number];
+type ActiveStepId = StepId | ExpressStepId;
 
 interface UploadedImage {
   file: File;
@@ -79,10 +88,13 @@ export default function UploadWizard() {
   const [draftRestored, setDraftRestored] = useState(false);
   const [aiLoading, setAiLoading] = useState(false);
   const [ollamaOk, setOllamaOk] = useState<boolean | null>(null);
+  const [expressMode, setExpressMode] = useState(ROBEO_BP_MODE);
+  const [priceHint, setPriceHint] = useState<SimilarPriceHint | null>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
-  const stepId = STEPS[stepIndex];
-  const progress = ((stepIndex + 1) / STEPS.length) * 100;
+  const activeSteps = expressMode && ROBEO_BP_MODE ? EXPRESS_STEPS : STEPS;
+  const stepId = activeSteps[stepIndex] as ActiveStepId;
+  const progress = ((stepIndex + 1) / activeSteps.length) * 100;
   const isService = formData.listingType === 'service';
 
   useEffect(() => {
@@ -99,9 +111,52 @@ export default function UploadWizard() {
   }, [router]);
 
   useEffect(() => {
-    if (stepId !== 'publish') return;
+    if (stepId !== 'publish' || expressMode) return;
     void isOllamaReachable().then(setOllamaOk);
-  }, [stepId]);
+  }, [stepId, expressMode]);
+
+  useEffect(() => {
+    if (stepId !== 'express' || !formData.category) {
+      setPriceHint(null);
+      return;
+    }
+    let cancelled = false;
+    void fetchSimilarPriceHint(supabase, {
+      category: formData.category,
+      brand: formData.brand,
+      condition: formData.condition,
+      listingType: formData.listingType,
+    }).then((hint) => {
+      if (!cancelled) setPriceHint(hint);
+    });
+    return () => {
+      cancelled = true;
+    };
+  }, [
+    stepId,
+    formData.category,
+    formData.brand,
+    formData.condition,
+    formData.listingType,
+  ]);
+
+  const applyListingTemplates = useCallback(() => {
+    const templateInput = {
+      brand: formData.brand,
+      category: formData.category,
+      subcategoryId: formData.subcategoryId,
+      size: formData.size,
+      condition: formData.condition,
+      price: formData.price,
+      budapestDistrict: formData.budapestDistrict,
+      listingType: formData.listingType,
+    };
+    setFormData((p) => ({
+      ...p,
+      name: p.name.trim() || buildListingTitle(templateInput, t),
+      description: p.description.trim() || buildListingDescription(templateInput, t),
+    }));
+  }, [formData, t]);
 
   const syncCategoryFromPicker = useCallback(
     (patch: Partial<Pick<FormState, 'listingType' | 'departmentId' | 'subcategoryId' | 'size' | 'color'>>) => {
@@ -202,17 +257,44 @@ export default function UploadWizard() {
 
   const stepLabels = useMemo(
     () =>
-      STEPS.map((id) => ({
+      activeSteps.map((id) => ({
         id,
         label: t(`uploadWizard.steps.${id}`),
       })),
-    [t],
+    [activeSteps, t],
   );
 
-  const validateStep = (id: StepId): string | null => {
+  const validateStep = (id: ActiveStepId): string | null => {
     switch (id) {
       case 'photos':
         if (images.length === 0) return t('uploadWizard.errors.photosRequired');
+        return null;
+      case 'express': {
+        if (!formData.departmentId) return t('uploadWizard.errors.departmentRequired');
+        if (!formData.subcategoryId) return t('uploadWizard.errors.subcategoryRequired');
+        if (categoryRequiresSize(formData.listingType) && !formData.size) {
+          return t('uploadWizard.errors.sizeRequired');
+        }
+        if (categoryRequiresBrand(formData.listingType) && !formData.brand.trim()) {
+          return t('uploadWizard.errors.brandRequired');
+        }
+        if (categoryRequiresCondition(formData.listingType) && !formData.condition) {
+          return t('uploadWizard.errors.conditionRequired');
+        }
+        const ep = parseInt(formData.price, 10);
+        if (!Number.isFinite(ep) || ep <= 0) return t('uploadWizard.errors.priceRequired');
+        if (ROBEO_BP_MODE && !isValidBudapestDistrict(formData.budapestDistrict)) {
+          return t('uploadWizard.errors.districtRequired');
+        }
+        return null;
+      }
+      case 'confirm':
+      case 'publish':
+        if (!formData.name.trim()) return t('uploadWizard.errors.nameRequired');
+        if (!formData.description.trim()) return t('uploadWizard.errors.descriptionRequired');
+        if (ROBEO_BP_MODE && !isValidBudapestDistrict(formData.budapestDistrict)) {
+          return t('uploadWizard.errors.districtRequired');
+        }
         return null;
       case 'listing':
         if (!formData.departmentId) return t('uploadWizard.errors.departmentRequired');
@@ -232,13 +314,6 @@ export default function UploadWizard() {
         if (!Number.isFinite(p) || p <= 0) return t('uploadWizard.errors.priceRequired');
         return null;
       }
-      case 'publish':
-        if (!formData.name.trim()) return t('uploadWizard.errors.nameRequired');
-        if (!formData.description.trim()) return t('uploadWizard.errors.descriptionRequired');
-        if (ROBEO_BP_MODE && !isValidBudapestDistrict(formData.budapestDistrict)) {
-          return t('uploadWizard.errors.districtRequired');
-        }
-        return null;
       default:
         return null;
     }
@@ -250,7 +325,10 @@ export default function UploadWizard() {
       toast.error(err);
       return;
     }
-    setStepIndex((i) => Math.min(i + 1, STEPS.length - 1));
+    if (stepId === 'express') {
+      applyListingTemplates();
+    }
+    setStepIndex((i) => Math.min(i + 1, activeSteps.length - 1));
   };
 
   const goBack = () => setStepIndex((i) => Math.max(i - 1, 0));
@@ -387,11 +465,47 @@ export default function UploadWizard() {
         <div className="pt-3 mb-4">
           <h1 className="text-xl font-bold">{t('uploadWizard.title')}</h1>
           <p className="text-sm text-gray-500 mt-0.5">{t('uploadWizard.subtitleFast')}</p>
+          {ROBEO_BP_MODE ? (
+            <div className="mt-3 flex gap-2">
+              <button
+                type="button"
+                onClick={() => {
+                  setExpressMode(true);
+                  setStepIndex(0);
+                }}
+                className={cn(
+                  'flex-1 rounded-full border px-3 py-2 text-xs font-semibold transition-colors',
+                  expressMode
+                    ? 'border-[#007782] bg-[#007782] text-white'
+                    : 'border-gray-200 bg-white text-gray-600',
+                )}
+              >
+                {t('upload.express.modeQuick')}
+              </button>
+              <button
+                type="button"
+                onClick={() => {
+                  setExpressMode(false);
+                  setStepIndex(0);
+                }}
+                className={cn(
+                  'flex-1 rounded-full border px-3 py-2 text-xs font-semibold transition-colors',
+                  !expressMode
+                    ? 'border-[#007782] bg-[#007782] text-white'
+                    : 'border-gray-200 bg-white text-gray-600',
+                )}
+              >
+                {t('upload.express.modeDetailed')}
+              </button>
+            </div>
+          ) : null}
         </div>
 
         <div className="mb-4">
           <div className="flex justify-between text-xs font-semibold text-gray-500 mb-2">
-            <span>{t('uploadWizard.stepOf', { current: stepIndex + 1, total: STEPS.length })}</span>
+            <span>
+              {t('uploadWizard.stepOf', { current: stepIndex + 1, total: activeSteps.length })}
+            </span>
             <span>{Math.round(progress)}%</span>
           </div>
           <div className="h-2 rounded-full bg-gray-100 overflow-hidden">
@@ -553,23 +667,131 @@ export default function UploadWizard() {
             </div>
           )}
 
-          {stepId === 'publish' && (
-            <div className="space-y-4">
-              <div className="rounded-xl border border-[#007782]/20 bg-[#007782]/5 p-3">
-                <p className="text-xs text-gray-600 mb-2">{t('upload.ai.hint')}</p>
-                <button
-                  type="button"
-                  disabled={aiLoading || ollamaOk === false}
-                  onClick={() => void runAiSuggest()}
-                  className="inline-flex items-center gap-2 rounded-full bg-[#007782] px-4 py-2 text-xs font-semibold text-white disabled:opacity-50"
-                >
-                  <Sparkles size={14} />
-                  {aiLoading ? t('upload.ai.loading') : t('upload.ai.cta')}
-                </button>
-                {ollamaOk === false ? (
-                  <p className="text-[11px] text-amber-700 mt-2">{t('upload.ai.offline')}</p>
+          {stepId === 'express' && (
+            <div className="space-y-5">
+              <p className="text-sm text-gray-600">{t('upload.express.hint')}</p>
+              <ListingCategoryPicker
+                listingType={formData.listingType}
+                onListingTypeChange={(type) =>
+                  syncCategoryFromPicker({
+                    listingType: type,
+                    departmentId: '',
+                    subcategoryId: '',
+                    size: '',
+                    color: '',
+                  })
+                }
+                departmentId={formData.departmentId}
+                onDepartmentChange={(id) =>
+                  syncCategoryFromPicker({ departmentId: id, subcategoryId: '', size: '' })
+                }
+                subcategoryId={formData.subcategoryId}
+                onSubcategoryChange={(id) => syncCategoryFromPicker({ subcategoryId: id, size: '' })}
+                size={formData.size}
+                onSizeChange={(size) => setFormData((p) => ({ ...p, size }))}
+                color={formData.color}
+                onColorChange={(color) => setFormData((p) => ({ ...p, color }))}
+              />
+              {!isService ? (
+                <>
+                  <div>
+                    <label className="block text-sm font-medium mb-2">{t('upload.brand')}</label>
+                    <BrandCombobox
+                      value={formData.brand}
+                      onChange={(val) => setFormData((p) => ({ ...p, brand: val }))}
+                      placeholder={t('upload.brandSearchPlaceholder')}
+                      bottomReservePx={0}
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-sm font-medium mb-2">{t('upload.condition')}</label>
+                    <CustomSelect
+                      options={conditionOptions}
+                      value={formData.condition}
+                      onChange={(val) => setFormData((p) => ({ ...p, condition: val }))}
+                      placeholder={t('upload.conditionPlaceholder')}
+                    />
+                  </div>
+                </>
+              ) : null}
+              <div>
+                <label className="block text-sm font-medium mb-2">{t('upload.price')}</label>
+                {priceHint ? (
+                  <p className="mb-2 text-xs text-[#007782]">
+                    {t('upload.priceHint.similar', {
+                      median: priceHint.median.toLocaleString('hu-HU'),
+                      count: priceHint.sampleCount,
+                    })}
+                    {' · '}
+                    {t('upload.priceHint.range', {
+                      low: formatPriceHintRange(priceHint).low.toLocaleString('hu-HU'),
+                      high: formatPriceHintRange(priceHint).high.toLocaleString('hu-HU'),
+                    })}
+                  </p>
+                ) : null}
+                <input
+                  type="number"
+                  inputMode="numeric"
+                  min={0}
+                  value={formData.price}
+                  onChange={(e) => setFormData((p) => ({ ...p, price: e.target.value }))}
+                  placeholder={t('upload.pricePlaceholder')}
+                  className="input-base w-full text-center text-2xl font-bold tabular-nums"
+                />
+                {priceHint ? (
+                  <button
+                    type="button"
+                    onClick={() =>
+                      setFormData((p) => ({ ...p, price: String(priceHint.median) }))
+                    }
+                    className="mt-2 text-xs font-semibold text-[#007782] hover:underline"
+                  >
+                    {t('upload.priceHint.useMedian', {
+                      value: priceHint.median.toLocaleString('hu-HU'),
+                    })}
+                  </button>
                 ) : null}
               </div>
+              {ROBEO_BP_MODE ? (
+                <div>
+                  <label className="block text-sm font-medium mb-2">
+                    {t('upload.budapestDistrict')} <span className="text-red-500">*</span>
+                  </label>
+                  <CustomSelect
+                    options={BUDAPEST_DISTRICTS.map((d) => ({ value: d.id, label: d.label }))}
+                    value={formData.budapestDistrict}
+                    onChange={(val) => setFormData((p) => ({ ...p, budapestDistrict: val }))}
+                    placeholder={t('upload.budapestDistrictPlaceholder')}
+                  />
+                </div>
+              ) : null}
+            </div>
+          )}
+
+          {(stepId === 'confirm' || stepId === 'publish') && (
+            <div className="space-y-4">
+              {expressMode && stepId === 'confirm' ? (
+                <p className="text-sm text-gray-600 rounded-xl bg-[#007782]/5 border border-[#007782]/15 p-3">
+                  {t('upload.express.confirmHint')}
+                </p>
+              ) : null}
+              {!expressMode && stepId === 'publish' ? (
+                <div className="rounded-xl border border-[#007782]/20 bg-[#007782]/5 p-3">
+                  <p className="text-xs text-gray-600 mb-2">{t('upload.ai.hint')}</p>
+                  <button
+                    type="button"
+                    disabled={aiLoading || ollamaOk === false}
+                    onClick={() => void runAiSuggest()}
+                    className="inline-flex items-center gap-2 rounded-full bg-[#007782] px-4 py-2 text-xs font-semibold text-white disabled:opacity-50"
+                  >
+                    <Sparkles size={14} />
+                    {aiLoading ? t('upload.ai.loading') : t('upload.ai.cta')}
+                  </button>
+                  {ollamaOk === false ? (
+                    <p className="text-[11px] text-amber-700 mt-2">{t('upload.ai.offline')}</p>
+                  ) : null}
+                </div>
+              ) : null}
               <div>
                 <label className="block text-sm font-medium mb-2">{t('upload.name')}</label>
                 <input
@@ -590,7 +812,7 @@ export default function UploadWizard() {
                   className="textarea-base w-full resize-none"
                 />
               </div>
-              {ROBEO_BP_MODE ? (
+              {ROBEO_BP_MODE && !expressMode ? (
                 <div>
                   <label className="block text-sm font-medium mb-2">
                     {t('upload.budapestDistrict')}{' '}
@@ -645,7 +867,7 @@ export default function UploadWizard() {
               {t('uploadWizard.cancel')}
             </button>
           )}
-          {stepIndex < STEPS.length - 1 ? (
+          {stepIndex < activeSteps.length - 1 ? (
             <button
               type="button"
               onClick={goNext}

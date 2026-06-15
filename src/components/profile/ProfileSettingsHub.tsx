@@ -24,6 +24,8 @@ import { loadProfileVacationMode, setProfileVacationMode } from '@/lib/vacationM
 import { loadProfileBio, saveProfileBio } from '@/lib/profileBio';
 import { notifyCatalogUpdated } from '@/lib/catalogRefresh';
 import { Palmtree } from 'lucide-react';
+import { ROBEO_BP_MODE } from '@/lib/features';
+import HomeDistrictPicker from '@/components/browse/HomeDistrictPicker';
 
 type Props = {
   userId?: string;
@@ -256,6 +258,12 @@ export default function ProfileSettingsHub({ userId }: Props) {
           </button>
         </div>
       </ProfileSection>
+
+      {ROBEO_BP_MODE ? (
+        <ProfileSection title={t('bp.homeDistrict.settingsTitle')}>
+          <HomeDistrictPicker />
+        </ProfileSection>
+      ) : null}
 
       <ProfileSection title={t('settings.personalisation.title')}>
         <p className="text-xs text-gray-500 mb-4">{t('settings.personalisation.hint')}</p>

@@ -31,6 +31,8 @@ import { fetchGlobalDiscoveryChips } from '@/lib/globalDiscovery';
 import ImmersiveFilterSheet from '@/components/browse/ImmersiveFilterSheet';
 import MobileFeedChrome from '@/components/layout/MobileFeedChrome';
 import FeedCategorySwipeSurface from '@/components/browse/FeedCategorySwipeSurface';
+import DistrictDiscoveryRail from '@/components/browse/DistrictDiscoveryRail';
+import HomeDistrictPicker from '@/components/browse/HomeDistrictPicker';
 import { departmentLabel } from '@/lib/categoryDisplay';
 import { ROBEO_BP_MODE } from '@/lib/features';
 import { getDistrictLabel } from '@/lib/budapestDistricts';
@@ -442,6 +444,19 @@ function CatalogBrowsePanelInner({
                 />
               </div>
             ) : null}
+            {ROBEO_BP_MODE && user ? (
+              <HomeDistrictPicker className="mb-3 hidden md:block" />
+            ) : null}
+            {ROBEO_BP_MODE ? (
+              <DistrictDiscoveryRail
+                browsePath={browsePath}
+                catalogFilters={catalogFilters}
+                maxPriceLimit={maxPriceLimit}
+                selectedDistrict={selectedBudapestDistrict}
+                onDistrictPick={setSelectedBudapestDistrict}
+                className="mb-3 hidden lg:block"
+              />
+            ) : null}
             <div className="mb-4 hidden space-y-3 lg:block">
               <BrowseDiscoveryRails
                 {...discoveryProps}
@@ -485,6 +500,19 @@ function CatalogBrowsePanelInner({
             <Filters {...filtersProps} />
             <ActiveFilterBar {...activeFilterBarProps} className="pt-2 pb-1" />
           </div>
+          {ROBEO_BP_MODE ? (
+            <>
+              {user ? <HomeDistrictPicker className="mb-3" /> : null}
+              <DistrictDiscoveryRail
+                browsePath={browsePath}
+                catalogFilters={catalogFilters}
+                maxPriceLimit={maxPriceLimit}
+                selectedDistrict={selectedBudapestDistrict}
+                onDistrictPick={setSelectedBudapestDistrict}
+                className="mb-3"
+              />
+            </>
+          ) : null}
           <div className="hidden space-y-3 pb-2 lg:block">
             <BrowseDiscoveryRails {...discoveryProps} compact />
             <CatalogSearchBar
@@ -524,6 +552,18 @@ function CatalogBrowsePanelInner({
           </aside>
 
           <div className="min-w-0">
+            {ROBEO_BP_MODE ? (
+              <div className="mb-4 hidden lg:block">
+                {user ? <HomeDistrictPicker className="mb-3" /> : null}
+                <DistrictDiscoveryRail
+                  browsePath={browsePath}
+                  catalogFilters={catalogFilters}
+                  maxPriceLimit={maxPriceLimit}
+                  selectedDistrict={selectedBudapestDistrict}
+                  onDistrictPick={setSelectedBudapestDistrict}
+                />
+              </div>
+            ) : null}
             <div className="mb-4 hidden space-y-3 lg:block">
               <CatalogSearchBar
                 value={searchQuery}
