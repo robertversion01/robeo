@@ -419,7 +419,6 @@ export default function ProductPage({ params }: { params: Promise<{ id: string }
               </div>
 
               <SellerBundleHint sellerId={product.user_id} />
-              <TrustSafetyBlock variant="compact" className="mb-3" />
               {isPurchasable && viewerId && viewerId !== product.user_id ? (
                 <SellerClosetBundle
                   sellerId={product.user_id}

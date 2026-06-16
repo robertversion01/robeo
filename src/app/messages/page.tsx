@@ -4,7 +4,7 @@ import { useEffect, useState, useRef } from 'react';
 import { supabase } from '@/lib/supabase';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
-import { ChevronDown, ChevronLeft } from 'lucide-react';
+import { ChevronDown, ChevronLeft, BadgeCheck, Star } from 'lucide-react';
 import OffersList from '@/components/product/OffersList';
 import ChatProductSummary from '@/components/messages/ChatProductSummary';
 import ChatTransactionPanel from '@/components/messages/ChatTransactionPanel';
@@ -22,6 +22,7 @@ import { isListedProduct } from '@/lib/listedProducts';
 import { MAIN_TOP_PADDING } from '@/lib/layoutTokens';
 import { getOptimizedImageUrl } from '@/lib/imageUtils';
 import { buildChatRenderItems, formatConversationTimestamp } from '@/lib/chatMessageGrouping';
+import { fetchChatPartnerTrust, type ChatPartnerTrust } from '@/lib/chatPartnerTrust';
 import { useTranslation } from 'react-i18next';
 import EmptyState from '@/components/ui/EmptyState';
 import PaymentPresetChips from '@/components/messages/PaymentPresetChips';
@@ -72,6 +73,7 @@ export default function MessagesPage() {
   const [offersOpen, setOffersOpen] = useState(true);
   const [inboxTab, setInboxTab] = useState<'messages' | 'notifications'>('messages');
   const [threadBlocked, setThreadBlocked] = useState(false);
+  const [partnerTrust, setPartnerTrust] = useState<ChatPartnerTrust | null>(null);
   const [productSellerId, setProductSellerId] = useState<string | null>(null);
   const [activeProductStatus, setActiveProductStatus] = useState<string | null>(null);
   const threadBlockedRef = useRef(false);
@@ -131,16 +133,33 @@ export default function MessagesPage() {
     localStorage.setItem(`messages_last_seen_at_${user.id}`, new Date().toISOString());
     window.dispatchEvent(new CustomEvent('messages:seen'));
     loadConversations();
-    subscribeToMessages();
+    const channel = subscribeToMessages();
 
     return () => {
-      supabase.removeAllChannels();
+      // Csak a saját csatornát bontjuk — a removeAllChannels megölné az
+      // értesítés/feed/wallet realtime csatornákat is (app-szintű bug volt).
+      if (channel) void supabase.removeChannel(channel);
     };
   }, [user]);
 
   useEffect(() => {
     scrollToBottom();
   }, [messages]);
+
+  useEffect(() => {
+    if (!selectedConversation) {
+      setPartnerTrust(null);
+      return;
+    }
+    let cancelled = false;
+    setPartnerTrust(null);
+    void fetchChatPartnerTrust(supabase, selectedConversation).then((trust) => {
+      if (!cancelled) setPartnerTrust(trust);
+    });
+    return () => {
+      cancelled = true;
+    };
+  }, [selectedConversation]);
 
   useEffect(() => {
     selectedConversationRef.current = selectedConversation;
@@ -198,7 +217,7 @@ export default function MessagesPage() {
     setLoading(false);
   };
 
-  const subscribeToMessages = () => {
+  const subscribeToMessages = (): ReturnType<typeof supabase.channel> => {
     const channel = supabase.channel('messages')
       .on('postgres_changes', {
         event: 'INSERT',
@@ -244,6 +263,7 @@ export default function MessagesPage() {
         }
       })
       .subscribe();
+    return channel;
   };
 
   const loadConversations = async () => {
@@ -687,7 +707,25 @@ export default function MessagesPage() {
                   <div className="w-9 h-9 rounded-full bg-[#007782]/10 flex items-center justify-center text-[#007782] font-bold text-sm">
                     {selectedDisplayName?.charAt(0).toUpperCase() || selectedEmail?.charAt(0).toUpperCase() || '?'}
                   </div>
-                  <span className="font-semibold truncate flex-1">{selectedDisplayName || selectedEmail}</span>
+                  <div className="min-w-0 flex-1">
+                    <div className="font-semibold truncate">{selectedDisplayName || selectedEmail}</div>
+                    {partnerTrust && (partnerTrust.verified || partnerTrust.reviewCount > 0) ? (
+                      <span className="mt-0.5 flex items-center gap-2 text-[11px] text-gray-500">
+                        {partnerTrust.verified ? (
+                          <span className="inline-flex items-center gap-0.5 font-medium text-[#007782]">
+                            <BadgeCheck size={12} aria-hidden />
+                            {t('sellerTrust.verified')}
+                          </span>
+                        ) : null}
+                        {partnerTrust.reviewCount > 0 && partnerTrust.avgRating != null ? (
+                          <span className="inline-flex items-center gap-0.5 tabular-nums">
+                            <Star size={11} className="fill-amber-400 text-amber-400" aria-hidden />
+                            {partnerTrust.avgRating.toFixed(1)} ({partnerTrust.reviewCount})
+                          </span>
+                        ) : null}
+                      </span>
+                    ) : null}
+                  </div>
                   {selectedConversation ? (
                     <BlockUserButton
                       otherUserId={selectedConversation}
@@ -710,7 +748,25 @@ export default function MessagesPage() {
                   <div className="w-8 h-8 rounded-full bg-[#007782]/10 flex items-center justify-center text-[#007782] font-bold text-sm">
                     {selectedDisplayName?.charAt(0).toUpperCase() || selectedEmail?.charAt(0).toUpperCase() || '?'}
                   </div>
-                  <span className="font-medium truncate flex-1">{selectedDisplayName || selectedEmail}</span>
+                  <div className="min-w-0 flex-1">
+                    <div className="font-medium truncate">{selectedDisplayName || selectedEmail}</div>
+                    {partnerTrust && (partnerTrust.verified || partnerTrust.reviewCount > 0) ? (
+                      <span className="mt-0.5 flex items-center gap-2 text-[11px] text-gray-500">
+                        {partnerTrust.verified ? (
+                          <span className="inline-flex items-center gap-0.5 font-medium text-[#007782]">
+                            <BadgeCheck size={12} aria-hidden />
+                            {t('sellerTrust.verified')}
+                          </span>
+                        ) : null}
+                        {partnerTrust.reviewCount > 0 && partnerTrust.avgRating != null ? (
+                          <span className="inline-flex items-center gap-0.5 tabular-nums">
+                            <Star size={11} className="fill-amber-400 text-amber-400" aria-hidden />
+                            {partnerTrust.avgRating.toFixed(1)} ({partnerTrust.reviewCount})
+                          </span>
+                        ) : null}
+                      </span>
+                    ) : null}
+                  </div>
                   {selectedConversation ? (
                     <BlockUserButton
                       otherUserId={selectedConversation}
