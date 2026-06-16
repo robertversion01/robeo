@@ -3,7 +3,7 @@
 import { useState } from 'react';
 import Link from 'next/link';
 import { useTranslation } from 'react-i18next';
-import { MessageCircle, ShieldCheck, Truck, HelpCircle, Mail, FileText, MessageSquarePlus } from 'lucide-react';
+import { MessageCircle, ShieldCheck, Truck, HelpCircle, Mail, FileText, MessageSquarePlus, Users } from 'lucide-react';
 import FeedbackModal from '@/components/feedback/FeedbackModal';
 
 const entries = [
@@ -11,6 +11,7 @@ const entries = [
   { icon: ShieldCheck, titleKey: 'help.entries.buyerProtection.title', descKey: 'help.entries.buyerProtection.desc', href: '/help#protection', internal: true },
   { icon: Truck, titleKey: 'help.entries.shipping.title', descKey: 'help.entries.shipping.desc', href: '/help#shipping', internal: true },
   { icon: FileText, titleKey: 'help.entries.orders.title', descKey: 'help.entries.orders.desc', href: '/orders' },
+  { icon: Users, titleKey: 'community.title', descKey: 'community.subtitle', href: '/community', internal: true },
   { icon: HelpCircle, titleKey: 'help.entries.faq.title', descKey: 'help.entries.faq.desc', href: '/help#faq', internal: true },
   { icon: Mail, titleKey: 'help.entries.support.title', descKey: 'help.entries.support.desc', href: 'mailto:support@robeo.hu', external: true },
 ] as const;

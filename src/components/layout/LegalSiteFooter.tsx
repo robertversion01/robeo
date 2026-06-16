@@ -6,6 +6,7 @@ const LEGAL_COLUMNS = [
     links: [
       { href: '/help', label: 'Súgó' },
       { href: '/browse', label: 'Böngészés' },
+      { href: '/community', label: 'Közösségi alapelvek' },
     ],
   },
   {

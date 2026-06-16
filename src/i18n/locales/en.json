@@ -1271,6 +1271,27 @@
     "submit": "Send offer",
     "sending": "Sending…"
   },
+  "community": {
+    "title": "Community guidelines",
+    "subtitle": "In short: what keeps ROBEO safe and pleasant for everyone.",
+    "principles": {
+      "kindnessTitle": "Be fair and kind",
+      "kindnessBody": "Treat others how you'd like to be treated. No harassment, insults or discrimination.",
+      "honestyTitle": "Honest listings",
+      "honestyBody": "Real photos and accurate descriptions. Disclose flaws — it builds trust.",
+      "safetyTitle": "Safe meetups",
+      "safetyBody": "For local pickup, choose a public place and check the item on handover.",
+      "prohibitedTitle": "No prohibited items",
+      "prohibitedBody": "Don't list illegal, dangerous or counterfeit items. These get removed.",
+      "reportTitle": "Speak up if something's off",
+      "reportBody": "Report or block a suspicious listing or user in a couple of taps."
+    },
+    "linksTitle": "Related documents",
+    "termsLink": "Terms of Service",
+    "privacyLink": "Privacy Policy",
+    "helpLink": "Help center",
+    "feedbackHint": "Have an idea or comment? You can send feedback from Help."
+  },
   "qa": {
     "title": "Questions & answers",
     "empty": "No questions yet. Be the first to ask!",

@@ -1278,6 +1278,27 @@
     "submit": "Ajánlat elküldése",
     "sending": "Küldés…"
   },
+  "community": {
+    "title": "Közösségi alapelvek",
+    "subtitle": "Röviden: mitől marad a ROBEO biztonságos és jó hely mindenkinek.",
+    "principles": {
+      "kindnessTitle": "Légy korrekt és kedves",
+      "kindnessBody": "Bánj másokkal úgy, ahogy te is szeretnéd. Nincs zaklatás, sértegetés vagy diszkrimináció.",
+      "honestyTitle": "Őszinte hirdetések",
+      "honestyBody": "Valós fotók és pontos leírás. Tüntesd fel a hibákat — ez bizalmat épít.",
+      "safetyTitle": "Biztonságos találkozók",
+      "safetyBody": "Személyes átvételnél válassz nyilvános helyet, és ellenőrizd a terméket átvételkor.",
+      "prohibitedTitle": "Tiltott termékek nélkül",
+      "prohibitedBody": "Ne hirdess illegális, veszélyes vagy hamisított terméket. Ezeket eltávolítjuk.",
+      "reportTitle": "Jelezd, ha valami nem stimmel",
+      "reportBody": "Gyanús hirdetést vagy felhasználót pár kattintással jelenthetsz vagy letilthatsz."
+    },
+    "linksTitle": "Kapcsolódó dokumentumok",
+    "termsLink": "Általános Szerződési Feltételek",
+    "privacyLink": "Adatvédelmi tájékoztató",
+    "helpLink": "Súgóközpont",
+    "feedbackHint": "Van ötleted vagy észrevételed? A Súgóban küldhetsz visszajelzést."
+  },
   "qa": {
     "title": "Kérdések és válaszok",
     "empty": "Még nincs kérdés. Tedd fel az elsőt!",
