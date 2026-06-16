@@ -32,11 +32,21 @@ type FilterId =
 
 function formatWhen(iso: string, locale: string) {
   try {
-    return new Date(iso).toLocaleString(locale, {
+    const date = new Date(iso);
+    if (Number.isNaN(date.getTime())) return '';
+    const diffMs = Date.now() - date.getTime();
+    const diffMin = Math.round(diffMs / 60000);
+    const rtf = new Intl.RelativeTimeFormat(locale, { numeric: 'auto' });
+    if (diffMin < 1) return rtf.format(0, 'minute');
+    if (diffMin < 60) return rtf.format(-diffMin, 'minute');
+    const diffHours = Math.round(diffMin / 60);
+    if (diffHours < 24) return rtf.format(-diffHours, 'hour');
+    const diffDays = Math.round(diffHours / 24);
+    if (diffDays < 7) return rtf.format(-diffDays, 'day');
+    return date.toLocaleDateString(locale, {
+      year: 'numeric',
       month: 'short',
       day: 'numeric',
-      hour: '2-digit',
-      minute: '2-digit',
     });
   } catch {
     return '';
