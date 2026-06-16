@@ -622,6 +622,8 @@
     "defaultProduct": "Termék",
     "imagePreview": "Kép",
     "back": "Vissza",
+    "today": "Ma",
+    "yesterday": "Tegnap",
     "chatImageAlt": "Csatolt kép",
     "noProductContext": "Ehhez a beszélgetéshez nincs termék hozzárendelve.",
     "sendAria": "Üzenet küldése",

@@ -21,6 +21,7 @@ import { isUuid } from '@/lib/validators';
 import { isListedProduct } from '@/lib/listedProducts';
 import { MAIN_TOP_PADDING } from '@/lib/layoutTokens';
 import { getOptimizedImageUrl } from '@/lib/imageUtils';
+import { buildChatRenderItems, formatConversationTimestamp } from '@/lib/chatMessageGrouping';
 import { useTranslation } from 'react-i18next';
 import EmptyState from '@/components/ui/EmptyState';
 import PaymentPresetChips from '@/components/messages/PaymentPresetChips';
@@ -642,18 +643,26 @@ export default function MessagesPage() {
                         {conv.display_name?.charAt(0).toUpperCase() || '?'}
                       </div>
                       <div className="flex-1 min-w-0">
-                        <div className="font-medium mb-0.5 truncate text-sm">{conv.display_name}</div>
-                        <div className="text-xs text-gray-500 truncate">{conv.last_message}</div>
+                        <div className="flex items-baseline justify-between gap-2">
+                          <span className="font-medium truncate text-sm">{conv.display_name}</span>
+                          <span className="shrink-0 text-[10px] text-gray-400 tabular-nums">
+                            {formatConversationTimestamp(conv.last_message_time, timeLocale, t)}
+                          </span>
+                        </div>
+                        <div className="mt-0.5 flex items-center gap-1.5">
+                          <span className="flex-1 truncate text-xs text-gray-500">{conv.last_message}</span>
+                          {conv.product_id ? (
+                            <Link
+                              href={`/products/${conv.product_id}`}
+                              onClick={(e) => e.stopPropagation()}
+                              className="shrink-0 text-[10px] font-semibold text-[#007782] hover:underline"
+                              aria-label={t('messages.viewProduct')}
+                            >
+                              →
+                            </Link>
+                          ) : null}
+                        </div>
                       </div>
-                      {conv.product_id ? (
-                        <Link
-                          href={`/products/${conv.product_id}`}
-                          onClick={(e) => e.stopPropagation()}
-                          className="shrink-0 text-[10px] font-semibold text-[#007782] hover:underline"
-                        >
-                          →
-                        </Link>
-                      ) : null}
                     </div>
                   </button>
                 ))}
@@ -728,47 +737,69 @@ export default function MessagesPage() {
                     userEmail={user.email}
                   />
                 ) : null}
-                <div className="flex-1 min-h-0 overflow-y-auto p-4 md:p-6 space-y-4">
-                  {messages.map((msg) => {
-                    const isSystem =
-                      msg.message_type === 'system' ||
-                      (msg as { is_system_message?: boolean }).is_system_message;
-
-                    if (isSystem) {
-                      return (
-                        <ChatSystemMessageBubble
-                          key={msg.id}
-                          msg={msg}
-                          viewerId={user.id}
-                          otherUserId={selectedConversation!}
-                          timeLocale={timeLocale}
-                          sellerId={productSellerId}
-                        />
-                      );
-                    }
+                <div className="flex-1 min-h-0 overflow-y-auto p-4 md:p-6 flex flex-col">
+                  {buildChatRenderItems(messages, timeLocale, t).map((item) => {
+                    const msg = item.message;
+                    const mine = msg.sender_id === user.id;
 
                     return (
-                    <div
-                      key={msg.id}
-                      className={`flex ${msg.sender_id === user.id ? 'justify-end' : 'justify-start'}`}
-                    >
-                      <div
-                        className={`max-w-xs md:max-w-md px-4 py-2.5 rounded-2xl shadow-sm ${
-                          msg.sender_id === user.id 
-                            ? 'bg-[#007782] text-white rounded-br-none'
-                            : 'bg-gray-100 text-gray-800 rounded-bl-none border border-gray-200'
-                        }`}
-                      >
-                        {msg.message_type === 'image' && msg.media_url ? (
-                          <img src={getOptimizedImageUrl(msg.media_url, 600, 80)} alt={t('messages.chatImageAlt')} loading="lazy" decoding="async" className="max-w-full rounded-lg" />
+                      <div key={msg.id}>
+                        {item.showDateSeparator ? (
+                          <div className="flex justify-center my-3">
+                            <span className="rounded-full bg-gray-100 px-3 py-0.5 text-[11px] font-medium text-gray-500">
+                              {item.dateLabel}
+                            </span>
+                          </div>
+                        ) : null}
+
+                        {item.isSystem ? (
+                          <div className={item.showDateSeparator ? '' : 'mt-2'}>
+                            <ChatSystemMessageBubble
+                              msg={msg}
+                              viewerId={user.id}
+                              otherUserId={selectedConversation!}
+                              timeLocale={timeLocale}
+                              sellerId={productSellerId}
+                            />
+                          </div>
                         ) : (
-                          msg.content
+                          <div
+                            className={`flex ${mine ? 'justify-end' : 'justify-start'} ${
+                              item.isFirstInGroup && !item.showDateSeparator ? 'mt-3' : 'mt-0.5'
+                            }`}
+                          >
+                            <div className={`flex max-w-xs flex-col md:max-w-md ${mine ? 'items-end' : 'items-start'}`}>
+                              <div
+                                className={`px-3.5 py-2 text-sm shadow-sm break-words rounded-2xl ${
+                                  mine
+                                    ? `bg-[#007782] text-white ${item.isLastInGroup ? 'rounded-br-md' : ''}`
+                                    : `bg-gray-100 text-gray-800 border border-gray-200 ${item.isLastInGroup ? 'rounded-bl-md' : ''}`
+                                }`}
+                              >
+                                {msg.message_type === 'image' && msg.media_url ? (
+                                  <img
+                                    src={getOptimizedImageUrl(msg.media_url, 600, 80)}
+                                    alt={t('messages.chatImageAlt')}
+                                    loading="lazy"
+                                    decoding="async"
+                                    className="max-w-full rounded-lg"
+                                  />
+                                ) : (
+                                  msg.content
+                                )}
+                              </div>
+                              {item.showTime ? (
+                                <div className="mt-0.5 px-1 text-[10px] text-gray-400">
+                                  {new Date(msg.created_at).toLocaleTimeString(timeLocale, {
+                                    hour: '2-digit',
+                                    minute: '2-digit',
+                                  })}
+                                </div>
+                              ) : null}
+                            </div>
+                          </div>
                         )}
-                        <div className={`mt-1 text-[10px] ${msg.sender_id === user.id ? 'text-white/80' : 'text-gray-500'}`}>
-                          {new Date(msg.created_at).toLocaleTimeString(timeLocale, { hour: '2-digit', minute: '2-digit' })}
-                        </div>
                       </div>
-                    </div>
                     );
                   })}
                   <div ref={messagesEndRef} />

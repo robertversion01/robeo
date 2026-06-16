@@ -615,6 +615,8 @@
     "defaultProduct": "Product",
     "imagePreview": "Image",
     "back": "Back",
+    "today": "Today",
+    "yesterday": "Yesterday",
     "chatImageAlt": "Attached image",
     "noProductContext": "No product linked to this conversation.",
     "sendAria": "Send message",
