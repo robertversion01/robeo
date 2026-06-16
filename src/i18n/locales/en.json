@@ -504,6 +504,24 @@
     "activeHours": "Active {{hours}}h ago",
     "activeDays": "Active {{days}}d ago"
   },
+  "feedback": {
+    "entryTitle": "Send feedback",
+    "entryDesc": "Found a bug or have an idea? Even one sentence helps.",
+    "title": "Feedback",
+    "subtitle": "Tell us briefly about your experience. Can be sent anonymously.",
+    "types": {
+      "bug": "Bug",
+      "idea": "Idea",
+      "praise": "Praise"
+    },
+    "placeholder": "Describe it briefly…",
+    "submit": "Send",
+    "submitting": "Sending…",
+    "cancel": "Cancel",
+    "success": "Thanks for your feedback!",
+    "error": "Could not send. Please try again later.",
+    "tooShort": "Please write at least a few words."
+  },
   "feed": {
     "followed": {
       "title": "New from sellers you follow",
@@ -526,9 +544,12 @@
   "trust": {
     "compactTitle": "Safe shopping",
     "compactBody": "Buyer protection, tracked shipping, dispute help — like major marketplaces.",
+    "bpCompactBody": "Local pickup, direct chat with the seller, and reporting if something feels off.",
     "protection": { "title": "Buyer protection", "body": "Fee covers dispute handling and secure checkout." },
     "secure": { "title": "Secure payment", "body": "Card payments processed via Stripe." },
-    "shipping": { "title": "Tracked shipping", "body": "Foxpost, Packeta or home delivery — status in messages." }
+    "shipping": { "title": "Tracked shipping", "body": "Foxpost, Packeta or home delivery — status in messages." },
+    "local": { "title": "Local pickup", "body": "Meet in a public place and check the item on handover." },
+    "report": { "title": "Report and block", "body": "Report or block a suspicious user in a couple of taps." }
   },
   "bundle": {
     "closet": {

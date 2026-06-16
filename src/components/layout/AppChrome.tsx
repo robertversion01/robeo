@@ -7,6 +7,7 @@ import I18nProvider from '@/providers/I18nProvider';
 import AuthRefreshHandler from '@/components/auth/AuthRefreshHandler';
 import ProfileActivityHeartbeat from '@/components/auth/ProfileActivityHeartbeat';
 import DeployRefreshNotifier from '@/components/version/DeployRefreshNotifier';
+import ErrorMonitor from '@/components/observability/ErrorMonitor';
 
 export default function AppChrome({ children }: { children: React.ReactNode }) {
   return (
@@ -14,6 +15,7 @@ export default function AppChrome({ children }: { children: React.ReactNode }) {
       <AppVersionProvider>
         <BrowseProvider>
           <AuthRefreshHandler />
+          <ErrorMonitor />
           <ProfileActivityHeartbeat />
           <DeployRefreshNotifier />
           <VersionedAppShell>{children}</VersionedAppShell>

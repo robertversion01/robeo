@@ -511,6 +511,24 @@
     "activeHours": "Aktív {{hours}} órája",
     "activeDays": "Aktív {{days}} napja"
   },
+  "feedback": {
+    "entryTitle": "Visszajelzés küldése",
+    "entryDesc": "Találtál hibát, vagy van ötleted? Egy mondat is sokat segít.",
+    "title": "Visszajelzés",
+    "subtitle": "Mondd el röviden, mi a tapasztalatod. Anonim is küldhető.",
+    "types": {
+      "bug": "Hiba",
+      "idea": "Ötlet",
+      "praise": "Dicséret"
+    },
+    "placeholder": "Írd le röviden…",
+    "submit": "Küldés",
+    "submitting": "Küldés…",
+    "cancel": "Mégse",
+    "success": "Köszönjük a visszajelzést!",
+    "error": "A küldés nem sikerült. Próbáld újra később.",
+    "tooShort": "Kérlek írj legalább pár szót."
+  },
   "feed": {
     "followed": {
       "title": "Követett eladók új tételei",
@@ -533,9 +551,12 @@
   "trust": {
     "compactTitle": "Biztonságos vásárlás",
     "compactBody": "Fizetés védelemmel, biztonságos szállítás, vitás esetben segítünk — mint a nagy piactereken.",
+    "bpCompactBody": "Helyi átvétel, közvetlen egyeztetés az eladóval, és jelentési lehetőség, ha valami gyanús.",
     "protection": { "title": "Vevővédelem", "body": "A díj biztosítja a vitás ügyintézést és a biztonságos tranzakciót." },
     "secure": { "title": "Biztonságos fizetés", "body": "A kártyás fizetés Stripe-on keresztül történik." },
-    "shipping": { "title": "Nyomon követhető szállítás", "body": "Foxpost, Packeta vagy házhoz — státusz az üzenetekben." }
+    "shipping": { "title": "Nyomon követhető szállítás", "body": "Foxpost, Packeta vagy házhoz — státusz az üzenetekben." },
+    "local": { "title": "Helyi átvétel", "body": "Találkozz nyilvános helyen, és ellenőrizd a terméket átvételkor." },
+    "report": { "title": "Jelentés és tiltás", "body": "Gyanús felhasználót pár kattintással jelenthetsz vagy letilthatsz." }
   },
   "bundle": {
     "closet": {

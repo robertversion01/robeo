@@ -3,6 +3,7 @@
 import { useEffect } from 'react';
 import Link from 'next/link';
 import { MAIN_TOP_PADDING } from '@/lib/layoutTokens';
+import { reportClientError } from '@/lib/clientErrorReporter';
 
 /** Szegmens-szintű hibahatár — barátságos UI, nem üres képernyő. */
 export default function Error({
@@ -16,6 +17,10 @@ export default function Error({
     if (process.env.NODE_ENV !== 'production') {
       console.error(error);
     }
+    reportClientError(error?.message || 'segment error boundary', {
+      stack: error?.stack,
+      source: 'error-boundary',
+    });
   }, [error]);
 
   return (

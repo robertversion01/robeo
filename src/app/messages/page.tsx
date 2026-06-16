@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useState, useRef } from 'react';
+import { useEffect, useState, useRef, useMemo } from 'react';
 import { supabase } from '@/lib/supabase';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
@@ -23,6 +23,7 @@ import { MAIN_TOP_PADDING } from '@/lib/layoutTokens';
 import { getOptimizedImageUrl } from '@/lib/imageUtils';
 import { buildChatRenderItems, formatConversationTimestamp } from '@/lib/chatMessageGrouping';
 import { fetchChatPartnerTrust, type ChatPartnerTrust } from '@/lib/chatPartnerTrust';
+import { trackEvent, AnalyticsEvent } from '@/lib/analytics';
 import { useTranslation } from 'react-i18next';
 import EmptyState from '@/components/ui/EmptyState';
 import PaymentPresetChips from '@/components/messages/PaymentPresetChips';
@@ -145,6 +146,11 @@ export default function MessagesPage() {
   useEffect(() => {
     scrollToBottom();
   }, [messages]);
+
+  const chatRenderItems = useMemo(
+    () => buildChatRenderItems(messages, timeLocale, t),
+    [messages, timeLocale, t],
+  );
 
   useEffect(() => {
     if (!selectedConversation) {
@@ -380,6 +386,7 @@ export default function MessagesPage() {
         product_id: latestProductMessage?.product_id || null,
         message_type: 'text'
       });
+    trackEvent(AnalyticsEvent.MessageSent);
   };
 
   const sendImageMessage = async (file: File) => {
@@ -489,6 +496,7 @@ export default function MessagesPage() {
         is_system_message: true,
       });
 
+      trackEvent(AnalyticsEvent.OfferSent, { source: 'chat' });
       toast.success(t('messages.offerSent'));
       setShowOfferModal(false);
       setOfferAmount('');
@@ -794,7 +802,7 @@ export default function MessagesPage() {
                   />
                 ) : null}
                 <div className="flex-1 min-h-0 overflow-y-auto p-4 md:p-6 flex flex-col">
-                  {buildChatRenderItems(messages, timeLocale, t).map((item) => {
+                  {chatRenderItems.map((item) => {
                     const msg = item.message;
                     const mine = msg.sender_id === user.id;
 

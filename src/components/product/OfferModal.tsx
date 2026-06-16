@@ -7,6 +7,7 @@ import { X, Send } from 'lucide-react';
 import { isUuid } from '@/lib/validators';
 import { buildOfferInsertRow, formatSupabaseError, minimumOfferHuf } from '@/lib/offers';
 import { insertChatSystemMessage } from '@/lib/chatMessages';
+import { trackEvent, AnalyticsEvent } from '@/lib/analytics';
 import PriceBreakdown from '@/components/product/PriceBreakdown';
 import { useTranslation } from 'react-i18next';
 
@@ -154,6 +155,7 @@ export default function OfferModal({
           console.warn('[OfferModal] seller notify message failed', notify.error);
         }
 
+        trackEvent(AnalyticsEvent.OfferSent, { source: 'product' });
         toast.success('Ajánlat elküldve. Az eladó értesítést kap az üzenetekben.');
         window.dispatchEvent(new CustomEvent('offers:updated'));
         onCloseRef.current();

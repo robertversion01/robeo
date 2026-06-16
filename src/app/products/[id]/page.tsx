@@ -8,6 +8,7 @@ import { useRouter } from 'next/navigation';
 import { toast } from 'sonner';
 import { ZoomIn, ZoomOut, MapPin } from 'lucide-react';
 import { getOptimizedImageUrl, shouldLazyLoad } from '@/lib/imageUtils';
+import { trackEvent, AnalyticsEvent } from '@/lib/analytics';
 import { getValidProductImageUrls } from '@/lib/productImageValidation';
 import ProductImage from '@/components/product/ProductImage';
 import ProductFavoriteButton from '@/components/product/ProductFavoriteButton';
@@ -104,6 +105,7 @@ export default function ProductPage({ params }: { params: Promise<{ id: string }
       }
 
       setProduct(data);
+      trackEvent(AnalyticsEvent.ProductView, { category: data.category ?? null });
       if (isListedProduct(data.status)) {
         void recordPriceSnapshot(supabase, data.id, data.price);
       }

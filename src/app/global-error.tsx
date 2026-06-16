@@ -1,6 +1,7 @@
 'use client';
 
 import { useEffect } from 'react';
+import { reportClientError } from '@/lib/clientErrorReporter';
 
 /** Gyökér-szintű hibahatár (a root layout helyett renderel) — önálló html/body. */
 export default function GlobalError({
@@ -14,6 +15,10 @@ export default function GlobalError({
     if (process.env.NODE_ENV !== 'production') {
       console.error(error);
     }
+    reportClientError(error?.message || 'global error boundary', {
+      stack: error?.stack,
+      source: 'global-error-boundary',
+    });
   }, [error]);
 
   return (

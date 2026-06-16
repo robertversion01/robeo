@@ -2,6 +2,7 @@
 
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { supabase } from '@/lib/supabase';
+import { trackEvent, AnalyticsEvent } from '@/lib/analytics';
 import { toast } from 'sonner';
 import { X, Plus, ArrowUp, ArrowDown, ChevronLeft, ChevronRight, Check, Sparkles, Image as ImageIcon, Camera } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
@@ -503,6 +504,9 @@ export default function UploadWizard() {
       }
       notifyCatalogUpdated();
       clearUploadDraft();
+      trackEvent(AnalyticsEvent.ListingCreated, {
+        listing_type: (insertPayload as { listing_type?: string }).listing_type ?? null,
+      });
       toast.success(t('upload.success'));
       window.location.href = '/profile?tab=shop';
     } catch (error: unknown) {

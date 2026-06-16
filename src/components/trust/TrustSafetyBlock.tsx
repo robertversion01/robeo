@@ -1,8 +1,9 @@
 'use client';
 
-import { ShieldCheck, Lock, Truck } from 'lucide-react';
+import { ShieldCheck, Lock, Truck, MapPin, Flag } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 import { cn } from '@/lib/utils';
+import { ROBEO_BP_MODE } from '@/lib/features';
 
 type Variant = 'compact' | 'full';
 
@@ -14,11 +15,18 @@ type Props = {
 export default function TrustSafetyBlock({ variant = 'compact', className }: Props) {
   const { t } = useTranslation();
 
-  const items = [
-    { icon: ShieldCheck, title: t('trust.protection.title'), body: t('trust.protection.body') },
-    { icon: Lock, title: t('trust.secure.title'), body: t('trust.secure.body') },
-    { icon: Truck, title: t('trust.shipping.title'), body: t('trust.shipping.body') },
-  ];
+  // BP-modban a helyi atvetel a fokusz — a Stripe/szallitas uzenet felrevezeto lenne.
+  const items = ROBEO_BP_MODE
+    ? [
+        { icon: ShieldCheck, title: t('trust.protection.title'), body: t('trust.protection.body') },
+        { icon: MapPin, title: t('trust.local.title'), body: t('trust.local.body') },
+        { icon: Flag, title: t('trust.report.title'), body: t('trust.report.body') },
+      ]
+    : [
+        { icon: ShieldCheck, title: t('trust.protection.title'), body: t('trust.protection.body') },
+        { icon: Lock, title: t('trust.secure.title'), body: t('trust.secure.body') },
+        { icon: Truck, title: t('trust.shipping.title'), body: t('trust.shipping.body') },
+      ];
 
   if (variant === 'compact') {
     return (
@@ -29,7 +37,9 @@ export default function TrustSafetyBlock({ variant = 'compact', className }: Pro
         )}
       >
         <p className="font-semibold text-[#007782] mb-1">{t('trust.compactTitle')}</p>
-        <p className="leading-relaxed">{t('trust.compactBody')}</p>
+        <p className="leading-relaxed">
+          {ROBEO_BP_MODE ? t('trust.bpCompactBody') : t('trust.compactBody')}
+        </p>
       </div>
     );
   }

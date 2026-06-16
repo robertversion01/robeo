@@ -15,6 +15,7 @@ import {
   usernameFromEmail,
 } from '@/lib/profileRegistration';
 import { readReturnUrlFromSearch, sanitizeReturnUrl } from '@/lib/returnUrl';
+import { trackEvent, AnalyticsEvent } from '@/lib/analytics';
 
 function MaterialField({
   id,
@@ -209,6 +210,7 @@ export default function AuthCompletePage() {
         },
       });
 
+      trackEvent(AnalyticsEvent.SignupCompleted);
       toast.success(t('auth.complete.success'));
       router.replace(returnUrl);
     } catch (err: unknown) {

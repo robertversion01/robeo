@@ -1,8 +1,10 @@
 'use client';
 
+import { useState } from 'react';
 import Link from 'next/link';
 import { useTranslation } from 'react-i18next';
-import { MessageCircle, ShieldCheck, Truck, HelpCircle, Mail, FileText } from 'lucide-react';
+import { MessageCircle, ShieldCheck, Truck, HelpCircle, Mail, FileText, MessageSquarePlus } from 'lucide-react';
+import FeedbackModal from '@/components/feedback/FeedbackModal';
 
 const entries = [
   { icon: MessageCircle, titleKey: 'help.entries.contactSeller.title', descKey: 'help.entries.contactSeller.desc', href: '/browse', actionKey: 'help.entries.contactSeller.action' },
@@ -15,9 +17,11 @@ const entries = [
 
 export default function HelpSupportHub() {
   const { t } = useTranslation();
+  const [feedbackOpen, setFeedbackOpen] = useState(false);
 
   return (
     <div className="space-y-6">
+      <FeedbackModal open={feedbackOpen} onClose={() => setFeedbackOpen(false)} />
       <section className="rounded-2xl border border-[#007782]/20 bg-[#007782]/5 p-5">
         <h2 className="text-lg font-bold text-gray-900">{t('help.quickTitle')}</h2>
         <p className="text-sm text-gray-600 mt-1">{t('help.quickSubtitle')}</p>
@@ -28,6 +32,20 @@ export default function HelpSupportHub() {
           {t('help.browseCta')}
         </Link>
       </section>
+
+      <button
+        type="button"
+        onClick={() => setFeedbackOpen(true)}
+        className="flex w-full items-start gap-3 rounded-xl border border-gray-200 bg-white p-4 text-left hover:border-[#007782]/30 hover:bg-[#007782]/5 transition-colors touch-manipulation"
+      >
+        <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-[#007782]/10 text-[#007782]">
+          <MessageSquarePlus size={20} />
+        </span>
+        <div className="min-w-0 flex-1">
+          <p className="font-semibold text-gray-900 text-sm">{t('feedback.entryTitle')}</p>
+          <p className="text-xs text-gray-500 mt-0.5 leading-relaxed">{t('feedback.entryDesc')}</p>
+        </div>
+      </button>
 
       <ul className="space-y-2">
         {entries.map((entry) => {
