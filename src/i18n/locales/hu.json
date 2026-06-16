@@ -828,7 +828,8 @@
     },
     "defectPhotos": {
       "hint": "Közeli kép a sérülésről vagy hibáról.",
-      "add": "Hibakép hozzáadása"
+      "add": "Hibakép hozzáadása",
+      "remove": "Hibakép törlése"
     },
     "conditionWizard": {
       "intro": "Válaszd ki, milyen állapotban van a tárgy — segít a vevőnek.",
@@ -1037,7 +1038,8 @@
       "conditionRequired": "Válassz állapotot.",
       "priceRequired": "Adj meg érvényes árat.",
       "nameRequired": "Add meg a hirdetés címét.",
-      "descriptionRequired": "Írj leírást."
+      "descriptionRequired": "Írj leírást.",
+      "defectPhotoRequired": "Közepes vagy rossz állapotnál legalább egy hibakép kötelező."
     }
   },
   "ordersHub": {

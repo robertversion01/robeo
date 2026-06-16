@@ -886,7 +886,8 @@
     },
     "defectPhotos": {
       "hint": "Close-up of the defect or damage.",
-      "add": "Add defect photo"
+      "add": "Add defect photo",
+      "remove": "Remove defect photo"
     },
     "conditionWizard": {
       "intro": "Pick the item condition — helps buyers decide.",
@@ -1095,7 +1096,8 @@
       "conditionRequired": "Choose a condition.",
       "priceRequired": "Enter a valid price.",
       "nameRequired": "Enter a listing title.",
-      "descriptionRequired": "Add a description."
+      "descriptionRequired": "Add a description.",
+      "defectPhotoRequired": "Fair or poor condition requires at least one defect photo."
     }
   },
   "ordersHub": {

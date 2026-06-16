@@ -27,6 +27,7 @@ import {
 } from '@/lib/listingPriceHint';
 import { buildListingDescription, buildListingTitle } from '@/lib/listingTitleTemplate';
 import ConditionWizardStep from '@/components/upload/ConditionWizardStep';
+import DefectPhotoUpload, { conditionNeedsDefectPhoto } from '@/components/upload/DefectPhotoUpload';
 import { fetchLastListingDefaults } from '@/lib/listingDefaults';
 import { STYLE_TAG_OPTIONS, type StyleTagId } from '@/lib/styleTags';
 import {
@@ -99,7 +100,6 @@ export default function UploadWizard() {
   const [styleTags, setStyleTags] = useState<StyleTagId[]>([]);
   const [defectImages, setDefectImages] = useState<UploadedImage[]>([]);
   const [requiresDefectPhoto, setRequiresDefectPhoto] = useState(false);
-  const defectInputRef = useRef<HTMLInputElement>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   const activeSteps = expressMode && ROBEO_BP_MODE ? EXPRESS_STEPS : STEPS;
@@ -312,6 +312,11 @@ export default function UploadWizard() {
   );
 
   const validateStep = (id: ActiveStepId): string | null => {
+    const defectErr =
+      requiresDefectPhoto && defectImages.length === 0
+        ? t('uploadWizard.errors.defectPhotoRequired')
+        : null;
+
     switch (id) {
       case 'photos':
         if (images.length === 0) return t('uploadWizard.errors.photosRequired');
@@ -333,6 +338,7 @@ export default function UploadWizard() {
         if (ROBEO_BP_MODE && !isValidBudapestDistrict(formData.budapestDistrict)) {
           return t('uploadWizard.errors.districtRequired');
         }
+        if (defectErr) return defectErr;
         return null;
       }
       case 'confirm':
@@ -359,6 +365,7 @@ export default function UploadWizard() {
         }
         const p = parseInt(formData.price, 10);
         if (!Number.isFinite(p) || p <= 0) return t('uploadWizard.errors.priceRequired');
+        if (defectErr) return defectErr;
         return null;
       }
       default:
@@ -696,9 +703,17 @@ export default function UploadWizard() {
                     <label className="block text-sm font-medium mb-2">{t('upload.condition')}</label>
                     <ConditionWizardStep
                       value={formData.condition}
-                      onChange={(val) => setFormData((p) => ({ ...p, condition: val }))}
+                      onChange={(val) => {
+                        setFormData((p) => ({ ...p, condition: val }));
+                        setRequiresDefectPhoto(conditionNeedsDefectPhoto(val));
+                      }}
                       requiresDefectPhoto={requiresDefectPhoto}
                       onRequiresDefectPhotoChange={setRequiresDefectPhoto}
+                    />
+                    <DefectPhotoUpload
+                      visible={requiresDefectPhoto}
+                      images={defectImages}
+                      onChange={setDefectImages}
                     />
                   </div>
                 </>
@@ -762,9 +777,17 @@ export default function UploadWizard() {
                     <label className="block text-sm font-medium mb-2">{t('upload.condition')}</label>
                     <ConditionWizardStep
                       value={formData.condition}
-                      onChange={(val) => setFormData((p) => ({ ...p, condition: val }))}
+                      onChange={(val) => {
+                        setFormData((p) => ({ ...p, condition: val }));
+                        setRequiresDefectPhoto(conditionNeedsDefectPhoto(val));
+                      }}
                       requiresDefectPhoto={requiresDefectPhoto}
                       onRequiresDefectPhotoChange={setRequiresDefectPhoto}
+                    />
+                    <DefectPhotoUpload
+                      visible={requiresDefectPhoto}
+                      images={defectImages}
+                      onChange={setDefectImages}
                     />
                   </div>
                   <div>
