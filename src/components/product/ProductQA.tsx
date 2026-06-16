@@ -1,11 +1,14 @@
 'use client';
 
-import { useCallback, useEffect, useState } from 'react';
+import { useCallback, useEffect, useMemo, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { toast } from 'sonner';
 import { MessageCircleQuestion, Send } from 'lucide-react';
 import Link from 'next/link';
 import { supabase } from '@/lib/supabase';
+import SavedReplyChips from '@/components/seller/SavedReplyChips';
+import SellerSavedRepliesEditor from '@/components/seller/SellerSavedRepliesEditor';
+import { loadAllSavedReplies, type SellerSavedReply } from '@/lib/sellerSavedReplies';
 
 type QuestionRow = {
   id: string;
@@ -21,10 +24,79 @@ type Props = {
   viewerId: string | null;
 };
 
+function QuestionBlock({
+  q,
+  locale,
+  isOwner,
+  answerDraft,
+  savingId,
+  savedReplies,
+  onDraftChange,
+  onAnswer,
+  t,
+}: {
+  q: QuestionRow;
+  locale: string;
+  isOwner: boolean;
+  answerDraft: string;
+  savingId: string | null;
+  savedReplies: SellerSavedReply[];
+  onDraftChange: (value: string) => void;
+  onAnswer: () => void;
+  t: (key: string) => string;
+}) {
+  return (
+    <li className="rounded-lg bg-gray-50 border border-gray-200 p-2.5">
+      <div className="flex items-start justify-between gap-2">
+        <p className="text-sm text-gray-800">
+          <span className="font-semibold text-gray-500">Q:</span> {q.question}
+        </p>
+        <span className="shrink-0 text-[10px] text-gray-400">
+          {new Date(q.created_at).toLocaleDateString(locale)}
+        </span>
+      </div>
+
+      {q.answer ? (
+        <p className="mt-1.5 rounded border-l-2 border-[#007782] bg-white px-2 py-1 text-sm text-gray-700">
+          <span className="font-semibold text-[#007782]">A:</span> {q.answer}
+        </p>
+      ) : isOwner ? (
+        <div className="mt-2 space-y-2">
+          <SavedReplyChips
+            replies={savedReplies}
+            onPick={(body) => onDraftChange(answerDraft ? `${answerDraft} ${body}` : body)}
+          />
+          <div className="flex gap-2">
+            <input
+              type="text"
+              value={answerDraft}
+              onChange={(e) => onDraftChange(e.target.value)}
+              maxLength={500}
+              placeholder={t('qa.answerPlaceholder')}
+              className="flex-1 rounded-lg border border-gray-300 px-2.5 py-1.5 text-sm focus:border-[#007782] focus:outline-none"
+            />
+            <button
+              type="button"
+              disabled={savingId === q.id}
+              onClick={onAnswer}
+              className="rounded-lg bg-[#007782] px-3 py-1.5 text-xs font-semibold text-white hover:bg-[#00616b] disabled:opacity-60"
+            >
+              {t('qa.answerCta')}
+            </button>
+          </div>
+        </div>
+      ) : (
+        <p className="mt-1 text-[11px] text-gray-400">{t('qa.unanswered')}</p>
+      )}
+    </li>
+  );
+}
+
 export default function ProductQA({ productId, sellerId, viewerId }: Props) {
   const { t, i18n } = useTranslation();
   const locale = i18n.language?.startsWith('en') ? 'en-HU' : 'hu-HU';
   const [questions, setQuestions] = useState<QuestionRow[]>([]);
+  const [savedReplies, setSavedReplies] = useState<SellerSavedReply[]>([]);
   const [loaded, setLoaded] = useState(false);
   const [available, setAvailable] = useState(true);
   const [draft, setDraft] = useState('');
@@ -52,6 +124,25 @@ export default function ProductQA({ productId, sellerId, viewerId }: Props) {
   useEffect(() => {
     void load();
   }, [load]);
+
+  useEffect(() => {
+    if (!isOwner) return;
+    void loadAllSavedReplies(supabase, t).then(setSavedReplies);
+  }, [isOwner, t]);
+
+  const { answered, pending } = useMemo(() => {
+    const a = questions
+      .filter((q) => q.answer)
+      .sort(
+        (x, y) =>
+          new Date(y.answered_at || y.created_at).getTime() -
+          new Date(x.answered_at || x.created_at).getTime(),
+      );
+    const p = questions
+      .filter((q) => !q.answer)
+      .sort((x, y) => new Date(y.created_at).getTime() - new Date(x.created_at).getTime());
+    return { answered: a, pending: p };
+  }, [questions]);
 
   const ask = async () => {
     const q = draft.trim();
@@ -102,7 +193,6 @@ export default function ProductQA({ productId, sellerId, viewerId }: Props) {
     }
   };
 
-  // Ha a tabla meg nincs migralva, ne mutassunk semmit (graceful).
   if (loaded && !available) return null;
 
   return (
@@ -114,8 +204,10 @@ export default function ProductQA({ productId, sellerId, viewerId }: Props) {
           <span className="text-xs font-normal text-gray-400">({questions.length})</span>
         ) : null}
       </h3>
+      <p className="mt-0.5 text-[11px] text-gray-500 leading-snug">{t('qa.subtitle')}</p>
 
-      {/* Kerdes feltetele (nem az elado, bejelentkezve) */}
+      {isOwner ? <SellerSavedRepliesEditor className="mt-2" /> : null}
+
       {!isOwner ? (
         viewerId ? (
           <div className="mt-2 flex gap-2">
@@ -147,53 +239,60 @@ export default function ProductQA({ productId, sellerId, viewerId }: Props) {
         )
       ) : null}
 
-      {/* Lista */}
       {questions.length === 0 ? (
         <p className="mt-2 text-xs text-gray-500">{t('qa.empty')}</p>
       ) : (
-        <ul className="mt-3 space-y-3">
-          {questions.map((q) => (
-            <li key={q.id} className="rounded-lg bg-gray-50 border border-gray-200 p-2.5">
-              <div className="flex items-start justify-between gap-2">
-                <p className="text-sm text-gray-800">
-                  <span className="font-semibold text-gray-500">Q:</span> {q.question}
-                </p>
-                <span className="shrink-0 text-[10px] text-gray-400">
-                  {new Date(q.created_at).toLocaleDateString(locale)}
-                </span>
-              </div>
-
-              {q.answer ? (
-                <p className="mt-1.5 rounded border-l-2 border-[#007782] bg-white px-2 py-1 text-sm text-gray-700">
-                  <span className="font-semibold text-[#007782]">A:</span> {q.answer}
-                </p>
-              ) : isOwner ? (
-                <div className="mt-1.5 flex gap-2">
-                  <input
-                    type="text"
-                    value={answerDrafts[q.id] || ''}
-                    onChange={(e) =>
-                      setAnswerDrafts((prev) => ({ ...prev, [q.id]: e.target.value }))
-                    }
-                    maxLength={500}
-                    placeholder={t('qa.answerPlaceholder')}
-                    className="flex-1 rounded-lg border border-gray-300 px-2.5 py-1.5 text-sm focus:border-[#007782] focus:outline-none"
+        <div className="mt-3 space-y-3">
+          {answered.length > 0 ? (
+            <div>
+              <p className="text-[11px] font-semibold uppercase tracking-wide text-gray-500 mb-2">
+                {t('qa.faqTitle')}
+              </p>
+              <ul className="space-y-2">
+                {answered.map((q) => (
+                  <QuestionBlock
+                    key={q.id}
+                    q={q}
+                    locale={locale}
+                    isOwner={isOwner}
+                    answerDraft={answerDrafts[q.id] || ''}
+                    savingId={savingId}
+                    savedReplies={savedReplies}
+                    onDraftChange={(v) => setAnswerDrafts((prev) => ({ ...prev, [q.id]: v }))}
+                    onAnswer={() => void answer(q.id)}
+                    t={t}
                   />
-                  <button
-                    type="button"
-                    disabled={savingId === q.id}
-                    onClick={() => void answer(q.id)}
-                    className="rounded-lg bg-[#007782] px-3 py-1.5 text-xs font-semibold text-white hover:bg-[#00616b] disabled:opacity-60"
-                  >
-                    {t('qa.answerCta')}
-                  </button>
-                </div>
-              ) : (
-                <p className="mt-1 text-[11px] text-gray-400">{t('qa.unanswered')}</p>
-              )}
-            </li>
-          ))}
-        </ul>
+                ))}
+              </ul>
+            </div>
+          ) : null}
+
+          {pending.length > 0 ? (
+            <div>
+              {answered.length > 0 ? (
+                <p className="text-[11px] font-semibold uppercase tracking-wide text-gray-500 mb-2">
+                  {t('qa.pendingTitle')}
+                </p>
+              ) : null}
+              <ul className="space-y-2">
+                {pending.map((q) => (
+                  <QuestionBlock
+                    key={q.id}
+                    q={q}
+                    locale={locale}
+                    isOwner={isOwner}
+                    answerDraft={answerDrafts[q.id] || ''}
+                    savingId={savingId}
+                    savedReplies={savedReplies}
+                    onDraftChange={(v) => setAnswerDrafts((prev) => ({ ...prev, [q.id]: v }))}
+                    onAnswer={() => void answer(q.id)}
+                    t={t}
+                  />
+                ))}
+              </ul>
+            </div>
+          ) : null}
+        </div>
       )}
     </section>
   );

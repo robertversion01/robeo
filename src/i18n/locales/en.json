@@ -1368,6 +1368,9 @@
   },
   "qa": {
     "title": "Questions & answers",
+    "subtitle": "Common questions here — fewer messages, faster decisions.",
+    "faqTitle": "Common questions",
+    "pendingTitle": "Awaiting answer",
     "empty": "No questions yet. Be the first to ask!",
     "askPlaceholder": "Ask the seller…",
     "askCta": "Send",
@@ -1379,6 +1382,28 @@
     "sent": "Question sent.",
     "answerSaved": "Answer saved.",
     "error": "Action failed."
+  },
+  "savedReplies": {
+    "quickInsert": "Quick reply",
+    "manage": "My quick replies",
+    "add": "Save template",
+    "remove": "Remove",
+    "labelPlaceholder": "Short label (e.g. Pickup)",
+    "bodyPlaceholder": "Reply text…",
+    "customEmpty": "No custom templates yet — built-in ones are always available.",
+    "tooShort": "Write at least 3 characters.",
+    "saved": "Quick reply saved.",
+    "error": "Could not save.",
+    "tpl": {
+      "availableLabel": "Available",
+      "availableBody": "Yes, still available — message me to arrange pickup.",
+      "conditionLabel": "Condition",
+      "conditionBody": "The item matches the description and photos. Ask if anything is unclear.",
+      "pickupLabel": "Local pickup",
+      "pickupBody": "Local pickup in the district — we'll agree on time in chat.",
+      "shippingLabel": "Shipping",
+      "shippingBody": "Shipping is possible — let's agree on details in messages."
+    }
   },
   "review": {
     "commentPlaceholder": "Share your experience (optional)…",

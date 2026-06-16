@@ -1375,6 +1375,9 @@
   },
   "qa": {
     "title": "Kérdések és válaszok",
+    "subtitle": "Gyakori kérdések itt — kevesebb üzenet, gyorsabb döntés.",
+    "faqTitle": "Gyakori kérdések",
+    "pendingTitle": "Válaszra vár",
     "empty": "Még nincs kérdés. Tedd fel az elsőt!",
     "askPlaceholder": "Kérdezz az eladótól…",
     "askCta": "Küldés",
@@ -1386,6 +1389,28 @@
     "sent": "Kérdés elküldve.",
     "answerSaved": "Válasz elmentve.",
     "error": "Sikertelen művelet."
+  },
+  "savedReplies": {
+    "quickInsert": "Gyors válasz",
+    "manage": "Saját gyors válaszok",
+    "add": "Sablon mentése",
+    "remove": "Törlés",
+    "labelPlaceholder": "Rövid címke (pl. Átvétel)",
+    "bodyPlaceholder": "Válasz szövege…",
+    "customEmpty": "Még nincs saját sablonod — a beépítettek mindig elérhetők.",
+    "tooShort": "Írj legalább 3 karaktert.",
+    "saved": "Gyors válasz mentve.",
+    "error": "Mentés sikertelen.",
+    "tpl": {
+      "availableLabel": "Elérhető",
+      "availableBody": "Igen, még elérhető — írj üzenetet az átvétel egyeztetéséhez.",
+      "conditionLabel": "Állapot",
+      "conditionBody": "A termék pontosan olyan, mint a leírás és a fotók. Kérdezz, ha bármi nem világos.",
+      "pickupLabel": "Személyes átvétel",
+      "pickupBody": "Személyes átvétel kerületben, időpont egyeztetéssel a chatben.",
+      "shippingLabel": "Szállítás",
+      "shippingBody": "Szállítás is megoldható — egyeztessük az üzenetekben a részleteket."
+    }
   },
   "review": {
     "commentPlaceholder": "Oszd meg a tapasztalataidat (opcionális)…",

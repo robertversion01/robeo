@@ -467,6 +467,8 @@ export default function ProductPage({ params }: { params: Promise<{ id: string }
                 {product.description}
               </div>
 
+              <ProductQA productId={product.id} sellerId={product.user_id} viewerId={viewerId} />
+
               <SimilarProductsRail
                 productId={product.id}
                 category={product.category}
@@ -505,8 +507,6 @@ export default function ProductPage({ params }: { params: Promise<{ id: string }
               </div>
 
               <DistrictMeetingHint district={product.budapest_district} className="mb-3" />
-
-              <ProductQA productId={product.id} sellerId={product.user_id} viewerId={viewerId} />
 
               {isPurchasable && viewerId !== product.user_id ? (
                 <ProductStickyCta

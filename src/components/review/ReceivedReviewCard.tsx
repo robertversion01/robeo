@@ -1,10 +1,12 @@
 'use client';
 
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { toast } from 'sonner';
 import { MessageSquareReply } from 'lucide-react';
 import { supabase } from '@/lib/supabase';
+import { loadAllSavedReplies, type SellerSavedReply } from '@/lib/sellerSavedReplies';
+import SavedReplyChips from '@/components/seller/SavedReplyChips';
 import StarRating from './StarRating';
 
 export type ReceivedReview = {
@@ -29,6 +31,12 @@ export default function ReceivedReviewCard({ review, editable = false, onUpdated
   const [editing, setEditing] = useState(false);
   const [draft, setDraft] = useState(review.seller_response ?? '');
   const [saving, setSaving] = useState(false);
+  const [savedReplies, setSavedReplies] = useState<SellerSavedReply[]>([]);
+
+  useEffect(() => {
+    if (!editable || !editing) return;
+    void loadAllSavedReplies(supabase, t).then(setSavedReplies);
+  }, [editable, editing, t]);
 
   const save = async () => {
     setSaving(true);
@@ -83,6 +91,11 @@ export default function ReceivedReviewCard({ review, editable = false, onUpdated
       {editable ? (
         editing ? (
           <div className="mt-2">
+            <SavedReplyChips
+              replies={savedReplies}
+              onPick={(body) => setDraft((prev) => (prev.trim() ? `${prev.trim()} ${body}` : body))}
+              className="mb-2"
+            />
             <textarea
               value={draft}
               onChange={(e) => setDraft(e.target.value)}
