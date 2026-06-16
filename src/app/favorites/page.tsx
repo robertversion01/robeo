@@ -11,6 +11,7 @@ import FreshOffersStrip from '@/components/home/FreshOffersStrip';
 import PageHeader from '@/components/layout/PageHeader';
 import FavoritesSortBar, { type FavoritesSortId } from '@/components/favorites/FavoritesSortBar';
 import FavoritePriceWatchPanel from '@/components/favorites/FavoritePriceWatchPanel';
+import WatchlistSummaryStrip from '@/components/favorites/WatchlistSummaryStrip';
 import TrustSafetyBlock from '@/components/trust/TrustSafetyBlock';
 import { detectPriceDrops } from '@/lib/priceWatch';
 import { enrichProductsWithFavoriteCounts } from '@/lib/favoriteCounts';
@@ -105,6 +106,7 @@ export default function FavoritesPage() {
         <div className="max-w-7xl mx-auto">
           <PageHeader title={t('favorites.title')} subtitle={t('favorites.subtitle')} />
           <TrustSafetyBlock variant="compact" className="mb-4" />
+          <WatchlistSummaryStrip />
 
           {products.length > 0 ? <FavoritePriceWatchPanel products={products} /> : null}
 

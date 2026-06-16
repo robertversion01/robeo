@@ -126,7 +126,7 @@ export default function FavoritePriceWatchPanel({ products }: Props) {
                   : 'border-gray-200 text-gray-500'
               }`}
             >
-              {on ? '🔔' : '○'} {p.name.slice(0, 18)}
+              {on ? t('priceWatch.watching') : t('priceWatch.paused')} {p.name.slice(0, 18)}
               {p.name.length > 18 ? '…' : ''}
             </button>
           );

@@ -22,6 +22,7 @@ import PriceHistoryBadge from '@/components/product/PriceHistoryBadge';
 import TrustSafetyBlock from '@/components/trust/TrustSafetyBlock';
 import SellerTrustPanel from '@/components/profile/SellerTrustPanel';
 import ProductQA from '@/components/product/ProductQA';
+import ProductAlertsBar from '@/components/product/ProductAlertsBar';
 import DistrictMeetingHint from '@/components/product/DistrictMeetingHint';
 import BundleOfferModal from '@/components/product/BundleOfferModal';
 import type { Product } from '@/types';
@@ -347,6 +348,8 @@ export default function ProductPage({ params }: { params: Promise<{ id: string }
                 />
                 <ProductFavoriteButton
                   productId={product.id}
+                  productName={product.name}
+                  productPrice={product.price}
                   className="absolute top-3 right-3 z-10"
                 />
                 <button
@@ -422,6 +425,10 @@ export default function ProductPage({ params }: { params: Promise<{ id: string }
                 <PriceHistoryBadge productId={product.id} currentPrice={product.price} />
               </div>
 
+              {isPurchasable && viewerId !== product.user_id ? (
+                <ProductAlertsBar product={product} className="mb-3" />
+              ) : null}
+
               <SellerBundleHint sellerId={product.user_id} />
               {isPurchasable && viewerId && viewerId !== product.user_id ? (
                 <SellerClosetBundle
@@ -465,6 +472,11 @@ export default function ProductPage({ params }: { params: Promise<{ id: string }
                 category={product.category}
                 brand={product.brand}
                 size={product.size}
+                price={product.price}
+                district={product.budapest_district}
+                alertProduct={
+                  isPurchasable && viewerId !== product.user_id ? product : null
+                }
               />
 
               <div className="mb-4 rounded-xl border border-gray-200 bg-gray-50 p-3">

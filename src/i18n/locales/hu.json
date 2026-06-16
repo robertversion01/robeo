@@ -347,8 +347,27 @@
     "moreFromSeller": "Több ettől az eladótól",
     "viewCloset": "Szekrény",
     "similar": "Hasonló termékek",
+    "similarFew": "Kevés hasonló találat — érdemes mentett keresést beállítani.",
+    "similarEmpty": "Nincs közeli találat. Mentsd el a keresést, és értesítünk, ha megjelenik valami hasonló.",
     "priceDropped": "{{from}} → {{to}} Ft",
-    "priceDroppedShort": "Árcsökkenés"
+    "priceDroppedShort": "Árcsökkenés",
+    "alerts": {
+      "title": "Ne maradj le",
+      "subtitle": "Árfigyelő és hasonló keresés — értesítünk, ha csökken az ár vagy új találat érkezik.",
+      "priceWatch": "Árfigyelő",
+      "priceWatching": "Árfigyelve",
+      "priceOn": "Árfigyelő bekapcsolva.",
+      "priceOff": "Árfigyelő kikapcsolva.",
+      "saveSimilarSearch": "Hasonló keresés mentése",
+      "searchWatching": "Keresés figyelve",
+      "searchSavedMuted": "Keresés mentve (értesítés ki)",
+      "searchSaved": "Mentett keresés — értesítünk az új találatokról.",
+      "searchOn": "Értesítés bekapcsolva.",
+      "searchOff": "Értesítés kikapcsolva.",
+      "error": "Nem sikerült menteni.",
+      "digestHint": "Napi összefoglaló e-mailhez:",
+      "digestLink": "Beállítások"
+    }
   },
   "closet": {
     "pageTitle": "Eladó szekrénye",
@@ -599,7 +618,16 @@
     "title": "Árfigyelő",
     "hint": "{{count}} termék figyelve — értesítünk, ha csökken az ár.",
     "noDrops": "Jelenleg nincs friss árcsökkenés a kedvenceid között.",
-    "view": "Megnézem"
+    "view": "Megnézem",
+    "watching": "Figyelve",
+    "paused": "Szünet"
+  },
+  "watchlist": {
+    "summaryTitle": "Figyeléseid",
+    "priceWatchCount": "{{count}} árfigyelő aktív",
+    "searchAlertCount": "{{count}} mentett keresés értesítéssel",
+    "browseSaved": "Mentett keresések",
+    "digestSettings": "Napi digest beállítása"
   },
   "messages": {
     "offersTitle": "Beérkező ajánlatok",

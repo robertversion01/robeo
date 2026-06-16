@@ -347,8 +347,27 @@
     "moreFromSeller": "More from this seller",
     "viewCloset": "Closet",
     "similar": "Similar items",
+    "similarFew": "Few similar matches — consider saving a search alert.",
+    "similarEmpty": "No close matches. Save a search and we'll notify you when something similar appears.",
     "priceDropped": "{{from}} → {{to}} Ft",
-    "priceDroppedShort": "Price drop"
+    "priceDroppedShort": "Price drop",
+    "alerts": {
+      "title": "Don't miss out",
+      "subtitle": "Price watch and similar search — we'll notify you on drops or new matches.",
+      "priceWatch": "Price watch",
+      "priceWatching": "Watching price",
+      "priceOn": "Price watch enabled.",
+      "priceOff": "Price watch disabled.",
+      "saveSimilarSearch": "Save similar search",
+      "searchWatching": "Search alert on",
+      "searchSavedMuted": "Search saved (alert off)",
+      "searchSaved": "Search saved — we'll notify you of new matches.",
+      "searchOn": "Alert enabled.",
+      "searchOff": "Alert disabled.",
+      "error": "Could not save.",
+      "digestHint": "For daily email digest:",
+      "digestLink": "Settings"
+    }
   },
   "closet": {
     "pageTitle": "Seller closet",
@@ -592,7 +611,16 @@
     "title": "Price watch",
     "hint": "Watching {{count}} items — we highlight price drops.",
     "noDrops": "No fresh price drops among favorites.",
-    "view": "View"
+    "view": "View",
+    "watching": "Watching",
+    "paused": "Paused"
+  },
+  "watchlist": {
+    "summaryTitle": "Your watches",
+    "priceWatchCount": "{{count}} active price watches",
+    "searchAlertCount": "{{count}} saved searches with alerts",
+    "browseSaved": "Saved searches",
+    "digestSettings": "Daily digest settings"
   },
   "messages": {
     "offersTitle": "Incoming offers",

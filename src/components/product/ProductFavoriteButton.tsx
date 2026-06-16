@@ -7,12 +7,22 @@ import { useRouter } from 'next/navigation';
 import { supabase } from '@/lib/supabase';
 import { cn } from '@/lib/utils';
 
+import { upsertPriceWatch, removePriceWatch, listPriceWatches } from '@/lib/priceWatch';
+import { syncPriceWatchesToServer } from '@/lib/priceWatchSync';
+
 type Props = {
   productId: string;
+  productName?: string;
+  productPrice?: number;
   className?: string;
 };
 
-export default function ProductFavoriteButton({ productId, className }: Props) {
+export default function ProductFavoriteButton({
+  productId,
+  productName,
+  productPrice,
+  className,
+}: Props) {
   const { t } = useTranslation();
   const router = useRouter();
   const [isFavorite, setIsFavorite] = useState(false);
@@ -59,12 +69,23 @@ export default function ProductFavoriteButton({ productId, className }: Props) {
     try {
       if (next) {
         await supabase.from('favorites').insert({ user_id: user.id, product_id: productId });
+        if (productName != null && productPrice != null) {
+          upsertPriceWatch({
+            productId,
+            productName,
+            lastPrice: productPrice,
+            alertEnabled: true,
+          });
+          void syncPriceWatchesToServer(listPriceWatches());
+        }
       } else {
         await supabase
           .from('favorites')
           .delete()
           .eq('user_id', user.id)
           .eq('product_id', productId);
+        removePriceWatch(productId);
+        void syncPriceWatchesToServer(listPriceWatches());
       }
     } catch {
       setIsFavorite(!next);
