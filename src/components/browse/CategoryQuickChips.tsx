@@ -3,6 +3,7 @@
 import { useTranslation } from 'react-i18next';
 import { useCallback, useEffect, useRef } from 'react';
 import HorizontalScrollRow from '@/components/ui/HorizontalScrollRow';
+import { categoryDisplayLabel } from '@/lib/categoryDisplay';
 import { cn } from '@/lib/utils';
 
 type Category = { id: string; label: string };
@@ -145,7 +146,7 @@ export default function CategoryQuickChips({
 
   const tabs = categories.map((cat) => {
     const labelKey = CATEGORY_I18N[cat.id];
-    const label = labelKey ? t(labelKey) : cat.label;
+    const label = labelKey ? t(labelKey) : categoryDisplayLabel(t, cat.id) || cat.label;
     return (
       <CategoryTab
         key={cat.id}

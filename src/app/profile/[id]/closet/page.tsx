@@ -105,7 +105,7 @@ export default function SellerClosetPage() {
                 <Link href={`/products/${p.id}`} className="block aspect-[4/5] bg-gray-100">
                   {p.image_url ? (
                     <img
-                      src={getOptimizedImageUrl(p.image_url, 200, 250)}
+                      src={getOptimizedImageUrl(p.image_url, 300, 80)}
                       alt=""
                       loading="lazy"
                       decoding="async"

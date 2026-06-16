@@ -27,6 +27,7 @@ import { recordPriceSnapshot } from '@/lib/priceHistory';
 import { MAIN_TOP_PADDING, MOBILE_PRODUCT_STICKY_CTA_PAD } from '@/lib/layoutTokens';
 import { formatConditionLabel } from '@/lib/conditionI18n';
 import { getDistrictLabel } from '@/lib/budapestDistricts';
+import { categoryDisplayLabel } from '@/lib/categoryDisplay';
 
 export default function ProductPage({ params }: { params: Promise<{ id: string }> }) {
   const { id } = use(params);
@@ -225,7 +226,7 @@ export default function ProductPage({ params }: { params: Promise<{ id: string }
 
   const categoryKey = product.category || 'other';
   const categoryBrowseHref = `/browse?cat=${encodeURIComponent(categoryKey)}#catalog`;
-  const categoryLabel = t(`browse.categories.${categoryKey}`, { defaultValue: product.category });
+  const categoryLabel = categoryDisplayLabel(t, categoryKey);
 
   const safeSelectedIndex = Math.min(selectedImageIndex, productImages.length - 1);
   const activeImage = productImages[safeSelectedIndex];

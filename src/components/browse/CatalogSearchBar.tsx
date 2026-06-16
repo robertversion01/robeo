@@ -8,6 +8,7 @@ import { supabase } from '@/lib/supabase';
 import { catalogUrlFromFilters } from '@/lib/catalogUrlParams';
 import type { CatalogFilterState } from '@/lib/catalogFilters';
 import { fetchListedProductTypeahead, type ProductTypeaheadRow } from '@/lib/listedProducts';
+import { categoryDisplayLabel } from '@/lib/categoryDisplay';
 import { cn } from '@/lib/utils';
 
 type Props = {
@@ -103,19 +104,22 @@ export default function SearchTypeahead({
             <div className="px-3 py-2 text-xs text-gray-500">{t('browse.search.noResults')}</div>
           ) : (
             <div className="max-h-56 overflow-y-auto overscroll-contain pb-[max(0.5rem,env(safe-area-inset-bottom,0px))]">
-              {liveResults.map((item) => (
-                <Link
-                  key={item.id}
-                  href={`/products/${item.id}`}
-                  onClick={() => setOpen(false)}
-                  className="block border-b border-gray-100 px-3 py-2 last:border-b-0 hover:bg-gray-50"
-                >
-                  <p className="truncate text-xs font-medium text-gray-900">{item.name}</p>
-                  <p className="truncate text-[11px] text-gray-500">
-                    {[item.brand, item.category].filter(Boolean).join(' · ') || item.category}
-                  </p>
-                </Link>
-              ))}
+              {liveResults.map((item) => {
+                const catLabel = categoryDisplayLabel(t, item.category);
+                return (
+                  <Link
+                    key={item.id}
+                    href={`/products/${item.id}`}
+                    onClick={() => setOpen(false)}
+                    className="block border-b border-gray-100 px-3 py-2 last:border-b-0 hover:bg-gray-50"
+                  >
+                    <p className="truncate text-xs font-medium text-gray-900">{item.name}</p>
+                    <p className="truncate text-[11px] text-gray-500">
+                      {[item.brand, catLabel].filter(Boolean).join(' · ') || catLabel}
+                    </p>
+                  </Link>
+                );
+              })}
             </div>
           )}
           <Link

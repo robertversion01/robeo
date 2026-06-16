@@ -1,5 +1,5 @@
 import { getDistrictLabel } from '@/lib/budapestDistricts';
-import { subcategoryLabel } from '@/lib/categoryDisplay';
+import { categoryDisplayLabel, subcategoryLabel } from '@/lib/categoryDisplay';
 import { formatConditionLabel } from '@/lib/conditionI18n';
 import type { TFunction } from 'i18next';
 
@@ -26,7 +26,7 @@ export function buildListingTitle(input: ListingTemplateInput, t: TFunction): st
     input.subcategoryId && input.subcategoryId !== 'all'
       ? subcategoryLabel(t, input.subcategoryId)
       : input.category
-        ? t(`browse.categories.${input.category}`, { defaultValue: input.category.replace(/_/g, ' ') })
+        ? categoryDisplayLabel(t, input.category)
         : '';
 
   if (catLabel) parts.push(catLabel);

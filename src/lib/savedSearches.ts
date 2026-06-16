@@ -1,7 +1,10 @@
 import type { SupabaseClient } from '@supabase/supabase-js';
+import type { TFunction } from 'i18next';
 import type { CatalogFilterState } from '@/lib/catalogFilters';
 import { removeSavedSearchAlert } from '@/lib/savedSearchAlerts';
 import { purgeSavedSearchMatcherData } from '@/lib/savedSearchMatcher';
+import { categoryDisplayLabel, subcategoryLabel } from '@/lib/categoryDisplay';
+import { formatConditionLabel } from '@/lib/conditionI18n';
 
 export type SavedSearch = {
   id: string;
@@ -227,12 +230,21 @@ export function removeSavedSearch(id: string) {
   writeLocal(readLocal().filter((s) => s.id !== id));
 }
 
-export function defaultSavedSearchLabel(filters: SavedSearch['filters']): string {
+export function defaultSavedSearchLabel(
+  filters: SavedSearch['filters'],
+  t?: TFunction,
+): string {
   const parts: string[] = [];
   if (filters.search.trim()) parts.push(filters.search.trim());
-  if (filters.category !== 'all') parts.push(filters.category);
+  if (filters.subcategory && filters.subcategory !== 'all') {
+    parts.push(t ? subcategoryLabel(t, filters.subcategory) : filters.subcategory);
+  } else if (filters.category !== 'all') {
+    parts.push(t ? categoryDisplayLabel(t, filters.category) : filters.category);
+  }
   if (filters.brand !== 'all') parts.push(filters.brand);
   if (filters.size !== 'all') parts.push(filters.size);
-  if (filters.condition !== 'all') parts.push(filters.condition);
-  return parts.slice(0, 3).join(' · ') || 'search';
+  if (filters.condition !== 'all') {
+    parts.push(t ? formatConditionLabel(t, filters.condition) : filters.condition);
+  }
+  return parts.slice(0, 3).join(' · ') || (t ? t('browse.search.label', { defaultValue: 'search' }) : 'search');
 }

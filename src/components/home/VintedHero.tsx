@@ -5,6 +5,7 @@ import Link from 'next/link';
 import { motion, useReducedMotion } from 'framer-motion';
 import { useTranslation } from 'react-i18next';
 import { formatPrice } from '@/lib/utils';
+import { getOptimizedImageUrl } from '@/lib/imageUtils';
 import GuestLandingHeader from '@/components/home/GuestLandingHeader';
 import BudapestBetaBanner from '@/components/home/BudapestBetaBanner';
 import {
@@ -174,11 +175,12 @@ function HeroImageTile({
       className={`landing-hero-tile block w-full shrink-0 overflow-hidden rounded-lg sm:rounded-xl md:rounded-2xl ${heightClass}`}
     >
       <img
-        src={tile.imageUrl}
+        src={getOptimizedImageUrl(tile.imageUrl, 320, 70)}
         alt=""
         role="presentation"
         className="h-full w-full object-cover"
         loading={priority ? 'eager' : 'lazy'}
+        fetchPriority={priority ? 'high' : 'auto'}
         decoding="async"
         onError={() => setLoadFailed(true)}
       />
@@ -454,7 +456,7 @@ export default function VintedHero({
                     }`}
                   >
                     <img
-                      src={imageSrc}
+                      src={getOptimizedImageUrl(imageSrc, 320, 75)}
                       alt={item.name}
                       loading="lazy"
                       decoding="async"

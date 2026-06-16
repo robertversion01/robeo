@@ -68,7 +68,7 @@ export default function SavedSearchesStrip({ filters, onApply, hasActiveFilters 
       };
       await saveSearchEntry(
         supabase,
-        defaultSavedSearchLabel(payload),
+        defaultSavedSearchLabel(payload, t),
         payload,
       );
       await refresh();

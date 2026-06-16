@@ -319,7 +319,7 @@ function CatalogBrowsePanelInner({
     maxPriceLimit,
     categories: categories.map((c) => ({
       id: c.id,
-      label: t(`browse.categories.${c.id}`, { defaultValue: c.label }),
+      label: departmentLabel(t, c.id, c.label),
     })),
     sortOptions: localizedSortOptions,
     onRemove: removeFilter,

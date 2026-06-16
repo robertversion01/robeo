@@ -4,6 +4,7 @@ import { useEffect, useState } from 'react';
 import Link from 'next/link';
 import { useTranslation } from 'react-i18next';
 import { supabase } from '@/lib/supabase';
+import { getOptimizedImageUrl } from '@/lib/imageUtils';
 import {
   fetchVacationSellerIdSet,
   filterProductsExcludingVacationSellers,
@@ -90,7 +91,7 @@ export default function FreshOffersStrip({
                 <div className="h-14 w-14 bg-gray-100 rounded-lg overflow-hidden shrink-0">
                   {item.image_url ? (
                     <img
-                      src={item.image_url}
+                      src={getOptimizedImageUrl(item.image_url, 112, 80)}
                       alt={item.name || t('product.defaultProduct')}
                       loading="lazy"
                       decoding="async"

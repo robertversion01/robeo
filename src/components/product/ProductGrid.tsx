@@ -102,12 +102,13 @@ export default function ProductGrid({
         transition={{ duration: 0.28, ease: 'easeOut' }}
         className="grid grid-cols-2 gap-1.5 sm:grid-cols-3 sm:gap-2 lg:grid-cols-5 xl:grid-cols-6 lg:gap-3"
       >
-        {displayProducts.map((product) => (
+        {displayProducts.map((product, index) => (
           <ProductCard
             key={product.id}
             product={product}
             isFavorite={favorites.has(product.id)}
             onToggleFavorite={() => onToggleFavorite(product.id)}
+            priority={index < 6}
           />
         ))}
       </motion.div>

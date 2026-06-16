@@ -25,8 +25,39 @@ export function departmentLabel(
 export function subcategoryLabel(t: TFunction, subcategoryId: string): string {
   if (subcategoryId === 'all') return t('browse.filters.allSubcategories');
   const sub = getSubcategoryByTaxonomyId(subcategoryId);
-  if (sub?.labelKey) return t(sub.labelKey);
-  return subcategoryId;
+  if (sub?.labelKey) {
+    return t(sub.labelKey, { defaultValue: subcategoryId.replace(/_/g, ' ') });
+  }
+  return subcategoryId.replace(/_/g, ' ');
+}
+
+/**
+ * Egységes kategória-címke tetszőleges nyers id-hez (department, alkategória,
+ * legacy flat id vagy DB-ben tárolt kategória). Mindig lokalizált címkét ad,
+ * soha nem szivárogtat nyers angol id-t (men/kids/home stb.).
+ */
+export function categoryDisplayLabel(
+  t: TFunction,
+  rawId: string | null | undefined,
+): string {
+  if (!rawId) return '';
+  const id = String(rawId).trim();
+  if (!id) return '';
+  if (id === 'all') return t('browse.filters.allCategories', { defaultValue: id });
+
+  const sub = getSubcategoryByTaxonomyId(id);
+  if (sub?.labelKey) {
+    return t(sub.labelKey, { defaultValue: id.replace(/_/g, ' ') });
+  }
+
+  if (id.startsWith(SERVICE_CATEGORY_PREFIX)) {
+    return t(departmentI18nKey(id), { defaultValue: id.replace(/_/g, ' ') });
+  }
+
+  // Termék-department (browse.departments.*) vagy legacy flat (browse.categories.*).
+  return t([`browse.departments.${id}`, `browse.categories.${id}`], {
+    defaultValue: id.replace(/_/g, ' '),
+  });
 }
 
 export function isServiceListingMode(

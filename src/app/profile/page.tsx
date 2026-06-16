@@ -12,6 +12,7 @@ import TransactionList from '@/components/profile/TransactionList';
 import ProductGrid from '@/components/product/ProductGrid';
 import { formatPrice } from '@/lib/utils';
 import { getOptimizedImageUrl } from '@/lib/imageUtils';
+import { categoryDisplayLabel } from '@/lib/categoryDisplay';
 import type { Product } from '@/types';
 import { DESKTOP_TOP_PADDING } from '@/lib/layoutTokens';
 import { Bell } from 'lucide-react';
@@ -400,14 +401,6 @@ export default function ProfilePage() {
     );
   }
 
-  const categoryLabels: Record<string, string> = {
-    clothing: 'Ruházat',
-    shoes: 'Cipő',
-    accessories: 'Kiegészítők',
-    electronics: 'Elektronika',
-    other: 'Egyéb'
-  };
-
   const isProductFeatured = (product: Product) =>
     typeof product.featured_until === 'string' &&
     new Date(product.featured_until).getTime() > Date.now();
@@ -611,7 +604,7 @@ export default function ProfilePage() {
 
                     <div className="p-1.5 space-y-0.5">
                       <div className="text-gray-500 text-[8px] uppercase tracking-wider">
-                        {categoryLabels[product.category] || product.category}
+                        {categoryDisplayLabel(t, product.category)}
                       </div>
                       <h3 className="font-medium text-[11px] truncate leading-tight text-gray-800">{product.name}</h3>
                       <div className="text-accent font-bold text-xs">{formatPrice(product.price)}</div>

@@ -6,6 +6,7 @@ import { Heart, MapPin } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 import { cn, formatPrice } from '@/lib/utils';
 import { getDistrictLabel } from '@/lib/budapestDistricts';
+import { categoryDisplayLabel } from '@/lib/categoryDisplay';
 import { getOptimizedImageUrl } from '@/lib/imageUtils';
 import { normalizePrimaryProductImageUrl } from '@/lib/productImageValidation';
 import { getListingAgeBadge, getProductCardImages } from '@/lib/productListingBadges';
@@ -17,9 +18,16 @@ interface ProductCardProps {
   product: ProductWithSeller;
   isFavorite: boolean;
   onToggleFavorite: () => void;
+  /** Above-the-fold kártya: azonnali (eager) + magas prioritású képbetöltés. */
+  priority?: boolean;
 }
 
-export default function ProductCard({ product, isFavorite, onToggleFavorite }: ProductCardProps) {
+export default function ProductCard({
+  product,
+  isFavorite,
+  onToggleFavorite,
+  priority = false,
+}: ProductCardProps) {
   const { t } = useTranslation();
   const cardImages = getProductCardImages(product);
   const primaryImage = normalizePrimaryProductImageUrl(product) || cardImages[0];
@@ -47,11 +55,7 @@ export default function ProductCard({ product, isFavorite, onToggleFavorite }: P
 
   const brandOrName = product.brand || product.name;
   const sizePart = product.size || '—';
-  const categoryShort = product.category
-    ? t(`browse.categories.${product.category}`, {
-        defaultValue: product.category.replace(/_/g, ' '),
-      })
-    : '';
+  const categoryShort = categoryDisplayLabel(t, product.category);
 
   const isSold = product.status === 'sold';
   const isReserved = product.status === 'reserved';
@@ -86,7 +90,8 @@ export default function ProductCard({ product, isFavorite, onToggleFavorite }: P
         <ProductImage
           src={getOptimizedImageUrl(displayImage, 320, 82)}
           alt={product.name}
-          loading="lazy"
+          loading={priority ? 'eager' : 'lazy'}
+          fetchPriority={priority ? 'high' : 'auto'}
           className={cn(
             'w-full h-full object-cover transition-transform duration-300 ease-out group-hover:scale-[1.07] group-active:scale-[1.04]',
             isSold && 'opacity-60 grayscale',
@@ -186,6 +191,8 @@ export default function ProductCard({ product, isFavorite, onToggleFavorite }: P
               <img
                 src={getOptimizedImageUrl(product.sellerAvatarUrl, 32, 80)}
                 alt=""
+                loading="lazy"
+                decoding="async"
                 className="h-4 w-4 rounded-full object-cover shrink-0"
               />
             ) : (

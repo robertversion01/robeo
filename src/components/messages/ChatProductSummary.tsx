@@ -99,6 +99,8 @@ export default function ChatProductSummary({ productId }: Props) {
           <img
             src={getOptimizedImageUrl(product.image_url, 112, 80)}
             alt={product.name}
+            loading="lazy"
+            decoding="async"
             className="h-full w-full object-cover"
           />
         ) : (
