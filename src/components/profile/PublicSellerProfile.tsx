@@ -11,6 +11,7 @@ import SellerTrustPanel from '@/components/profile/SellerTrustPanel';
 import SellerTrustBadges from '@/components/profile/SellerTrustBadges';
 import TrustSafetyBlock from '@/components/trust/TrustSafetyBlock';
 import ProductGrid from '@/components/product/ProductGrid';
+import ReceivedReviewCard, { type ReceivedReview } from '@/components/review/ReceivedReviewCard';
 import type { Product } from '@/types';
 import { isActiveListing } from '@/lib/listedProducts';
 import { enrichProductsWithFavoriteCounts } from '@/lib/favoriteCounts';
@@ -31,6 +32,7 @@ export default function PublicSellerProfile({ sellerId }: Props) {
   const [following, setFollowing] = useState(0);
   const [avgRating, setAvgRating] = useState<number | null>(null);
   const [reviewCount, setReviewCount] = useState(0);
+  const [reviews, setReviews] = useState<ReceivedReview[]>([]);
   const [viewerId, setViewerId] = useState<string | null>(null);
   const [favorites, setFavorites] = useState<Set<string>>(new Set());
 
@@ -55,7 +57,11 @@ export default function PublicSellerProfile({ sellerId }: Props) {
           .eq('user_id', sellerId)
           .or('status.eq.active,status.is.null')
           .order('created_at', { ascending: false }),
-        supabase.from('reviews').select('rating').eq('reviewed_id', sellerId),
+        supabase
+          .from('reviews')
+          .select('id, rating, comment, created_at, seller_response, seller_response_at')
+          .eq('reviewed_id', sellerId)
+          .order('created_at', { ascending: false }),
       ]);
 
       setDisplayName(getSellerDisplayName(profile));
@@ -66,9 +72,20 @@ export default function PublicSellerProfile({ sellerId }: Props) {
       const enriched = await enrichProductsWithFavoriteCounts(supabase, rows);
       setProducts(enriched);
 
-      const ratings = (reviewsRes.data || []).map((r) => Number(r.rating)).filter((n) => n > 0);
+      // Graceful fallback, ha a seller_response oszlop meg nincs migralva.
+      let reviewRows = (reviewsRes.data || []) as ReceivedReview[];
+      if (reviewsRes.error) {
+        const fb = await supabase
+          .from('reviews')
+          .select('id, rating, comment, created_at')
+          .eq('reviewed_id', sellerId)
+          .order('created_at', { ascending: false });
+        reviewRows = (fb.data || []) as ReceivedReview[];
+      }
+      const ratings = reviewRows.map((r) => Number(r.rating)).filter((n) => n > 0);
       setReviewCount(ratings.length);
       setAvgRating(ratings.length ? ratings.reduce((a, b) => a + b, 0) / ratings.length : null);
+      setReviews(reviewRows.filter((r) => r.comment || r.seller_response).slice(0, 5));
 
       if (user) {
         const { data: favs } = await supabase
@@ -162,6 +179,19 @@ export default function PublicSellerProfile({ sellerId }: Props) {
             ) : null}
           </div>
         </div>
+
+        {reviews.length > 0 ? (
+          <section className="mb-6">
+            <h2 className="text-lg font-bold text-gray-900 mb-3">
+              {t('publicSeller.reviewsTitle')}
+            </h2>
+            <div className="space-y-3">
+              {reviews.map((review) => (
+                <ReceivedReviewCard key={review.id} review={review} />
+              ))}
+            </div>
+          </section>
+        ) : null}
 
         <h2 className="text-lg font-bold text-gray-900 mb-3">{t('publicSeller.listingsTitle')}</h2>
         <ProductGrid

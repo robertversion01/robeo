@@ -1254,7 +1254,8 @@
     "emptyListings": "Nincs aktív hirdetés.",
     "refresh": "Frissítés",
     "ownProfileLink": "Saját profil beállítások →",
-    "listingsTitle": "Eladó termékei"
+    "listingsTitle": "Eladó termékei",
+    "reviewsTitle": "Értékelések"
   },
   "notFound": {
     "title": "Az oldal nem található",
@@ -1278,6 +1279,16 @@
     "sending": "Küldés…"
   },
   "review": {
-    "commentPlaceholder": "Oszd meg a tapasztalataidat (opcionális)…"
+    "commentPlaceholder": "Oszd meg a tapasztalataidat (opcionális)…",
+    "sellerResponseLabel": "Eladó válasza",
+    "respondCta": "Válasz",
+    "editResponse": "Válasz szerkesztése",
+    "responsePlaceholder": "Válaszolj az értékelésre…",
+    "saveResponse": "Válasz mentése",
+    "saving": "Mentés…",
+    "responseSaved": "Válasz elmentve.",
+    "responseError": "A mentés nem sikerült.",
+    "removeResponse": "Törlés",
+    "cancel": "Mégse"
   }
 }

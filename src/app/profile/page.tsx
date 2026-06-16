@@ -6,6 +6,7 @@ import Link from 'next/link';
 import { toast } from 'sonner';
 import { useUserStats } from '@/hooks/useUserStats';
 import StarRating from '@/components/review/StarRating';
+import ReceivedReviewCard, { type ReceivedReview } from '@/components/review/ReceivedReviewCard';
 import OffersList from '@/components/product/OffersList';
 import BuyerOffersList from '@/components/product/BuyerOffersList';
 import TransactionList from '@/components/profile/TransactionList';
@@ -50,7 +51,7 @@ export default function ProfilePage() {
   const { t, i18n } = useTranslation();
   const [products, setProducts] = useState<Product[]>([]);
   const [soldProducts, setSoldProducts] = useState<Product[]>([]);
-  const [receivedReviews, setReceivedReviews] = useState<Array<{ id: string; rating: number; comment: string | null; created_at: string }>>([]);
+  const [receivedReviews, setReceivedReviews] = useState<ReceivedReview[]>([]);
   const [loading, setLoading] = useState(true);
   const [user, setUser] = useState<any>(null);
   const [promotingProductIds, setPromotingProductIds] = useState<Set<string>>(new Set());
@@ -239,13 +240,23 @@ export default function ProfilePage() {
 
   const loadReceivedReviews = async (userId: string) => {
     try {
-      const { data, error } = await supabase
+      let { data, error } = await supabase
         .from('reviews')
-        .select('id, rating, comment, created_at')
+        .select('id, rating, comment, created_at, seller_response, seller_response_at')
         .eq('reviewed_id', userId)
         .order('created_at', { ascending: false });
+      // Graceful fallback, ha a seller_response oszlop meg nincs migralva.
+      if (error) {
+        const retry = await supabase
+          .from('reviews')
+          .select('id, rating, comment, created_at')
+          .eq('reviewed_id', userId)
+          .order('created_at', { ascending: false });
+        data = retry.data;
+        error = retry.error;
+      }
       if (error) throw error;
-      setReceivedReviews((data || []) as Array<{ id: string; rating: number; comment: string | null; created_at: string }>);
+      setReceivedReviews((data || []) as ReceivedReview[]);
     } catch (error) {
       console.error('Error fetching reviews:', error);
     }
@@ -767,19 +778,16 @@ export default function ProfilePage() {
             ) : (
               <div className="space-y-3">
                 {receivedReviews.map((review) => (
-                  <div key={review.id} className="bg-gray-50 border border-gray-200 rounded-lg p-3">
-                    <div className="flex items-center justify-between">
-                      <StarRating rating={review.rating} size={16} />
-                      <span className="text-xs text-gray-500">
-                        {new Date(review.created_at).toLocaleDateString(
-                          i18n.language?.startsWith('en') ? 'en-HU' : 'hu-HU',
-                        )}
-                      </span>
-                    </div>
-                    {review.comment ? (
-                      <p className="text-sm mt-2 text-gray-700">{review.comment}</p>
-                    ) : null}
-                  </div>
+                  <ReceivedReviewCard
+                    key={review.id}
+                    review={review}
+                    editable
+                    onUpdated={(updated) =>
+                      setReceivedReviews((prev) =>
+                        prev.map((r) => (r.id === updated.id ? updated : r)),
+                      )
+                    }
+                  />
                 ))}
               </div>
             )}

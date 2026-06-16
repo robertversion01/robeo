@@ -706,7 +706,8 @@
     "emptyListings": "No active listings.",
     "refresh": "Refresh",
     "ownProfileLink": "My profile settings →",
-    "listingsTitle": "Seller listings"
+    "listingsTitle": "Seller listings",
+    "reviewsTitle": "Reviews"
   },
   "auth": {
     "loginTitle": "Log in",
@@ -1271,6 +1272,16 @@
     "sending": "Sending…"
   },
   "review": {
-    "commentPlaceholder": "Share your experience (optional)…"
+    "commentPlaceholder": "Share your experience (optional)…",
+    "sellerResponseLabel": "Seller's response",
+    "respondCta": "Reply",
+    "editResponse": "Edit reply",
+    "responsePlaceholder": "Reply to this review…",
+    "saveResponse": "Save reply",
+    "saving": "Saving…",
+    "responseSaved": "Reply saved.",
+    "responseError": "Could not save.",
+    "removeResponse": "Remove",
+    "cancel": "Cancel"
   }
 }
