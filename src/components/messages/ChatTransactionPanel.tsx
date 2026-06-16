@@ -16,6 +16,7 @@ import { useTranslation } from 'react-i18next';
 import { orderStatusI18nKey } from '@/lib/orderStatusI18n';
 import { markPackageShipped, type ShippingTransaction } from '@/lib/sellerShipping';
 import OrderTimelinePanel from '@/components/messages/OrderTimelinePanel';
+import DisputePanel from '@/components/orders/DisputePanel';
 import { focusOrderPanel, ORDER_PANEL_FOCUS_EVENT, ORDER_PANEL_PRINT_EVENT } from '@/lib/orderPanelActions';
 import { printTransactionLabel } from '@/lib/printTransactionLabel';
 import Link from 'next/link';
@@ -385,10 +386,19 @@ export default function ChatTransactionPanel({
         <p className="text-xs text-gray-500 animate-pulse">{t('common.loading')}</p>
       ) : null}
 
-      {!loading && hasDispute ? (
+      {!loading && hasDispute && isSeller ? (
         <p className="text-xs text-amber-800 bg-amber-50 border border-amber-200 rounded-lg px-2 py-1.5">
           {t('chatTransaction.disputeOpen')}
         </p>
+      ) : null}
+
+      {!loading && transaction && isBuyer ? (
+        <DisputePanel
+          transactionId={transaction.id}
+          productName={transaction.productName}
+          txStatus={transaction.status}
+          disputeStatus={transaction.dispute_status ?? null}
+        />
       ) : null}
 
       {!loading && isSeller && canDownloadLabel ? (
