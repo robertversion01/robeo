@@ -28,6 +28,7 @@ export default function AdminDisputesPanel() {
   const [rows, setRows] = useState<DisputeAdminRow[]>([]);
   const [loading, setLoading] = useState(true);
   const [busyId, setBusyId] = useState<string | null>(null);
+  const [statusFilter, setStatusFilter] = useState<'open' | 'under_review' | 'resolved_refund' | 'resolved_reject' | 'all'>('open');
 
   const adminFetch = useCallback(async (path: string, init?: RequestInit) => {
     const { data: { session } } = await supabase.auth.getSession();
@@ -48,7 +49,7 @@ export default function AdminDisputesPanel() {
   const load = useCallback(async () => {
     setLoading(true);
     try {
-      const data = await adminFetch('/api/admin/disputes?status=open');
+      const data = await adminFetch(`/api/admin/disputes?status=${statusFilter}`);
       setRows(data.disputes || []);
     } catch (e) {
       toast.error(e instanceof Error ? e.message : 'Betöltés sikertelen.');
@@ -56,7 +57,7 @@ export default function AdminDisputesPanel() {
     } finally {
       setLoading(false);
     }
-  }, [adminFetch]);
+  }, [adminFetch, statusFilter]);
 
   useEffect(() => {
     void load();
@@ -82,14 +83,28 @@ export default function AdminDisputesPanel() {
     <div className="space-y-3">
       <div className="flex items-center justify-between gap-2">
         <h3 className="text-sm font-bold text-gray-900">{t('disputes.admin.title')}</h3>
-        <button
-          type="button"
-          onClick={() => void load()}
-          className="inline-flex items-center gap-1 text-xs text-[#007782] font-semibold"
-        >
-          <RefreshCw size={14} />
-          {t('disputes.admin.refresh')}
-        </button>
+        <div className="flex items-center gap-2">
+          <select
+            value={statusFilter}
+            onChange={(e) => setStatusFilter(e.target.value as typeof statusFilter)}
+            className="rounded-md border border-gray-300 px-2 py-1 text-[11px]"
+            aria-label={t('disputes.admin.statusFilter')}
+          >
+            <option value="open">{t('disputes.admin.filterOpen')}</option>
+            <option value="under_review">{t('disputes.admin.filterReview')}</option>
+            <option value="resolved_refund">{t('disputes.status.resolved_refund')}</option>
+            <option value="resolved_reject">{t('disputes.status.resolved_reject')}</option>
+            <option value="all">{t('disputes.admin.filterAll')}</option>
+          </select>
+          <button
+            type="button"
+            onClick={() => void load()}
+            className="inline-flex items-center gap-1 text-xs text-[#007782] font-semibold"
+          >
+            <RefreshCw size={14} />
+            {t('disputes.admin.refresh')}
+          </button>
+        </div>
       </div>
 
       {loading ? (
@@ -115,7 +130,12 @@ export default function AdminDisputesPanel() {
                 </p>
                 <p className="text-[10px] text-gray-400 mt-1">
                   {new Date(row.created_at).toLocaleString(locale === 'en' ? 'en-HU' : 'hu-HU')}
+                  {' · '}
+                  <span className="font-semibold text-gray-500">
+                    {t(`disputes.status.${row.status}`)}
+                  </span>
                 </p>
+                {row.status === 'open' || row.status === 'under_review' ? (
                 <div className="mt-2 flex flex-wrap gap-2">
                   <button
                     type="button"
@@ -142,6 +162,7 @@ export default function AdminDisputesPanel() {
                     {t('disputes.admin.reject')}
                   </button>
                 </div>
+                ) : null}
               </li>
             );
           })}

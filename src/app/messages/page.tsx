@@ -16,6 +16,7 @@ import {
 } from '@/lib/conversationList';
 import { fetchMyBlockedUserIds, checkBlockBetween } from '@/lib/userBlocks';
 import BlockUserButton from '@/components/trust/BlockUserButton';
+import ReportUserButton from '@/components/trust/ReportUserButton';
 import { toast } from 'sonner';
 import { isUuid } from '@/lib/validators';
 import { isListedProduct } from '@/lib/listedProducts';
@@ -735,13 +736,16 @@ export default function MessagesPage() {
                     ) : null}
                   </div>
                   {selectedConversation ? (
-                    <BlockUserButton
-                      otherUserId={selectedConversation}
-                      onBlocked={() => {
-                        setThreadBlocked(true);
-                        void loadConversations();
-                      }}
-                    />
+                    <div className="flex items-center gap-3">
+                      <ReportUserButton reportedId={selectedConversation} context="message" />
+                      <BlockUserButton
+                        otherUserId={selectedConversation}
+                        onBlocked={() => {
+                          setThreadBlocked(true);
+                          void loadConversations();
+                        }}
+                      />
+                    </div>
                   ) : null}
                 </div>
                 <div className="flex items-center gap-3 p-3 border-b border-gray-200 md:hidden shrink-0">
@@ -776,13 +780,16 @@ export default function MessagesPage() {
                     ) : null}
                   </div>
                   {selectedConversation ? (
-                    <BlockUserButton
-                      otherUserId={selectedConversation}
-                      onBlocked={() => {
-                        setThreadBlocked(true);
-                        void loadConversations();
-                      }}
-                    />
+                    <div className="flex items-center gap-3">
+                      <ReportUserButton reportedId={selectedConversation} context="message" />
+                      <BlockUserButton
+                        otherUserId={selectedConversation}
+                        onBlocked={() => {
+                          setThreadBlocked(true);
+                          void loadConversations();
+                        }}
+                      />
+                    </div>
                   ) : null}
                 </div>
                 <ChatProductSummary productId={activeProductId} />

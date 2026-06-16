@@ -1271,6 +1271,48 @@
     "submit": "Send offer",
     "sending": "Sending…"
   },
+  "moderation": {
+    "title": "Moderation",
+    "refresh": "Refresh",
+    "loading": "Loading…",
+    "repeatTitle": "Repeat offenders",
+    "repeatEmpty": "No repeat offenders.",
+    "reportsTitle": "User reports",
+    "reportsEmpty": "No reports.",
+    "listingReports": "Listing reports",
+    "userReports": "User reports",
+    "disputes": "Disputes",
+    "actioned": "Action taken",
+    "dismiss": "Dismiss",
+    "resolved": "Report resolved.",
+    "schemaMissing": "Run supabase/patch-community-trust.sql first.",
+    "status": {
+      "pending": "Pending",
+      "actioned": "Action taken",
+      "dismissed": "Dismissed",
+      "all": "All"
+    }
+  },
+  "report": {
+    "action": "Report",
+    "title": "Report user",
+    "subtitle": "An admin will review the report. We act on abuse.",
+    "reasonLabel": "Why are you reporting?",
+    "reasons": {
+      "harassment": "Harassment or insults",
+      "scam": "Scam / fraud",
+      "spam": "Spam or ads",
+      "inappropriate": "Inappropriate content",
+      "other": "Other"
+    },
+    "detailsPlaceholder": "Details (optional)…",
+    "submit": "Send report",
+    "cancel": "Cancel",
+    "success": "Report sent — thank you.",
+    "error": "Could not send report.",
+    "schemaMissing": "Run supabase/patch-community-trust.sql first.",
+    "loginRequired": "Sign in to report."
+  },
   "community": {
     "title": "Community guidelines",
     "subtitle": "In short: what keeps ROBEO safe and pleasant for everyone.",

@@ -10,6 +10,7 @@ import AdminReportedItems from '@/components/admin/AdminReportedItems';
 import AdminDisputesPanel from '@/components/admin/AdminDisputesPanel';
 import AdminDac7Report from '@/components/admin/AdminDac7Report';
 import AdminObservabilityPanel from '@/components/admin/AdminObservabilityPanel';
+import AdminModerationPanel from '@/components/admin/AdminModerationPanel';
 import ProfileSection from '@/components/profile/ProfileSection';
 import { cn } from '@/lib/utils';
 
@@ -339,6 +340,10 @@ export default function AdminHub({ userId }: Props) {
 
       <ProfileSection title="Jelentések" description="Felhasználók által jelentett hirdetések.">
         <AdminReportedItems />
+      </ProfileSection>
+
+      <ProfileSection title="Moderálás és visszaélések" description="Felhasználó-jelentések és visszaeső felhasználók (termék-report + user-report + vitatás).">
+        <AdminModerationPanel />
       </ProfileSection>
 
       <ProfileSection title="DAC7 jelentés" description="Demo export admin célokra.">

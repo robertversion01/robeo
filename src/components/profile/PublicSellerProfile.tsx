@@ -7,6 +7,7 @@ import { fetchFollowCounts } from '@/lib/followCounts';
 import { fetchSellerDisplayProfile, getSellerDisplayName } from '@/lib/sellerProfile';
 import FollowSellerButton from '@/components/product/FollowSellerButton';
 import BlockUserButton from '@/components/trust/BlockUserButton';
+import ReportUserButton from '@/components/trust/ReportUserButton';
 import SellerTrustPanel from '@/components/profile/SellerTrustPanel';
 import SellerTrustBadges from '@/components/profile/SellerTrustBadges';
 import TrustSafetyBlock from '@/components/trust/TrustSafetyBlock';
@@ -170,7 +171,10 @@ export default function PublicSellerProfile({ sellerId }: Props) {
               {t('publicSeller.refresh')}
             </button>
             {viewerId && viewerId !== sellerId ? (
-              <BlockUserButton otherUserId={sellerId} className="ml-auto" />
+              <span className="ml-auto flex items-center gap-3">
+                <ReportUserButton reportedId={sellerId} context="profile" />
+                <BlockUserButton otherUserId={sellerId} />
+              </span>
             ) : null}
             {viewerId === sellerId ? (
               <Link href="/profile" className="text-sm font-semibold text-[#007782] hover:underline">

@@ -1278,6 +1278,48 @@
     "submit": "Ajánlat elküldése",
     "sending": "Küldés…"
   },
+  "moderation": {
+    "title": "Moderálás",
+    "refresh": "Frissítés",
+    "loading": "Betöltés…",
+    "repeatTitle": "Visszaeső felhasználók",
+    "repeatEmpty": "Nincs visszaeső felhasználó.",
+    "reportsTitle": "Felhasználó-jelentések",
+    "reportsEmpty": "Nincs jelentés.",
+    "listingReports": "Termék-jelentések",
+    "userReports": "Felhasználó-jelentések",
+    "disputes": "Vitatások",
+    "actioned": "Intézkedve",
+    "dismiss": "Elvetés",
+    "resolved": "Jelentés lezárva.",
+    "schemaMissing": "Futtasd a supabase/patch-community-trust.sql fájlt.",
+    "status": {
+      "pending": "Függőben",
+      "actioned": "Intézkedve",
+      "dismissed": "Elvetve",
+      "all": "Összes"
+    }
+  },
+  "report": {
+    "action": "Jelentés",
+    "title": "Felhasználó jelentése",
+    "subtitle": "A jelentést az admin felülvizsgálja. Visszaélés esetén intézkedünk.",
+    "reasonLabel": "Miért jelented?",
+    "reasons": {
+      "harassment": "Zaklatás vagy sértegetés",
+      "scam": "Átverés / csalás",
+      "spam": "Spam vagy reklám",
+      "inappropriate": "Nem megfelelő tartalom",
+      "other": "Egyéb"
+    },
+    "detailsPlaceholder": "Részletek (opcionális)…",
+    "submit": "Jelentés küldése",
+    "cancel": "Mégse",
+    "success": "Jelentés elküldve — köszönjük.",
+    "error": "A jelentés nem sikerült.",
+    "schemaMissing": "Futtasd a supabase/patch-community-trust.sql fájlt.",
+    "loginRequired": "Jelentkezz be a jelentéshez."
+  },
   "community": {
     "title": "Közösségi alapelvek",
     "subtitle": "Röviden: mitől marad a ROBEO biztonságos és jó hely mindenkinek.",
