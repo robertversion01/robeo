@@ -1278,6 +1278,20 @@
     "submit": "Ajánlat elküldése",
     "sending": "Küldés…"
   },
+  "qa": {
+    "title": "Kérdések és válaszok",
+    "empty": "Még nincs kérdés. Tedd fel az elsőt!",
+    "askPlaceholder": "Kérdezz az eladótól…",
+    "askCta": "Küldés",
+    "loginToAsk": "Jelentkezz be a kérdéshez",
+    "answerPlaceholder": "Válasz…",
+    "answerCta": "Válasz",
+    "unanswered": "Válaszra vár",
+    "tooShort": "Kérlek írj egy rövid kérdést.",
+    "sent": "Kérdés elküldve.",
+    "answerSaved": "Válasz elmentve.",
+    "error": "Sikertelen művelet."
+  },
   "review": {
     "commentPlaceholder": "Oszd meg a tapasztalataidat (opcionális)…",
     "sellerResponseLabel": "Eladó válasza",

@@ -1271,6 +1271,20 @@
     "submit": "Send offer",
     "sending": "Sending…"
   },
+  "qa": {
+    "title": "Questions & answers",
+    "empty": "No questions yet. Be the first to ask!",
+    "askPlaceholder": "Ask the seller…",
+    "askCta": "Send",
+    "loginToAsk": "Sign in to ask",
+    "answerPlaceholder": "Answer…",
+    "answerCta": "Answer",
+    "unanswered": "Awaiting answer",
+    "tooShort": "Please write a short question.",
+    "sent": "Question sent.",
+    "answerSaved": "Answer saved.",
+    "error": "Action failed."
+  },
   "review": {
     "commentPlaceholder": "Share your experience (optional)…",
     "sellerResponseLabel": "Seller's response",

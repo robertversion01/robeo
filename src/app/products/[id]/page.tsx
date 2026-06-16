@@ -21,6 +21,7 @@ import ProductStickyCta from '@/components/product/ProductStickyCta';
 import PriceHistoryBadge from '@/components/product/PriceHistoryBadge';
 import TrustSafetyBlock from '@/components/trust/TrustSafetyBlock';
 import SellerTrustPanel from '@/components/profile/SellerTrustPanel';
+import ProductQA from '@/components/product/ProductQA';
 import BundleOfferModal from '@/components/product/BundleOfferModal';
 import type { Product } from '@/types';
 import { canViewProductDetail, isListedProduct, isSoldListing } from '@/lib/listedProducts';
@@ -489,6 +490,8 @@ export default function ProductPage({ params }: { params: Promise<{ id: string }
                   {t('product.browseCategory')} →
                 </Link>
               </div>
+
+              <ProductQA productId={product.id} sellerId={product.user_id} viewerId={viewerId} />
 
               {isPurchasable && viewerId !== product.user_id ? (
                 <ProductStickyCta
