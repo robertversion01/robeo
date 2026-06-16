@@ -2,7 +2,7 @@
 
 import { useCallback, useRef, useState } from 'react';
 import Link from 'next/link';
-import { Heart, MapPin } from 'lucide-react';
+import { Heart, MapPin, BadgeCheck } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 import { cn, formatPrice } from '@/lib/utils';
 import { getDistrictLabel } from '@/lib/budapestDistricts';
@@ -201,6 +201,13 @@ export default function ProductCard({
               </span>
             )}
             <span className="truncate">{sellerName}</span>
+            {product.sellerVerified ? (
+              <BadgeCheck
+                size={12}
+                className="shrink-0 text-[#007782]"
+                aria-label={t('sellerTrust.verified')}
+              />
+            ) : null}
           </Link>
         ) : null}
         {districtLabel ? (

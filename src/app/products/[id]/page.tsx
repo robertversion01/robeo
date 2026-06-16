@@ -22,6 +22,7 @@ import PriceHistoryBadge from '@/components/product/PriceHistoryBadge';
 import TrustSafetyBlock from '@/components/trust/TrustSafetyBlock';
 import SellerTrustPanel from '@/components/profile/SellerTrustPanel';
 import ProductQA from '@/components/product/ProductQA';
+import DistrictMeetingHint from '@/components/product/DistrictMeetingHint';
 import BundleOfferModal from '@/components/product/BundleOfferModal';
 import type { Product } from '@/types';
 import { canViewProductDetail, isListedProduct, isSoldListing } from '@/lib/listedProducts';
@@ -490,6 +491,8 @@ export default function ProductPage({ params }: { params: Promise<{ id: string }
                   {t('product.browseCategory')} →
                 </Link>
               </div>
+
+              <DistrictMeetingHint district={product.budapest_district} className="mb-3" />
 
               <ProductQA productId={product.id} sellerId={product.user_id} viewerId={viewerId} />
 

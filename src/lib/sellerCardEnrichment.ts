@@ -6,6 +6,7 @@ import { getSellerDisplayName, type SellerDisplayProfile } from '@/lib/sellerPro
 export type ProductSellerInfo = {
   sellerName: string;
   sellerAvatarUrl: string | null;
+  sellerVerified: boolean;
 };
 
 export type ProductWithSeller = Product & Partial<ProductSellerInfo>;
@@ -26,7 +27,10 @@ export async function enrichProductsWithSellerInfo(
         name?: string | null;
         full_name?: string | null;
         avatar_url?: string | null;
+        seller_verified?: boolean | null;
       }>(supabase, sellerId, [
+        'email, name, avatar_url, seller_verified',
+        'email, name, full_name, avatar_url, seller_verified',
         'email, name, avatar_url',
         'email, name, full_name, avatar_url',
         'email, name',
@@ -34,6 +38,7 @@ export async function enrichProductsWithSellerInfo(
       infoMap.set(sellerId, {
         sellerName: getSellerDisplayName(profile as SellerDisplayProfile | null),
         sellerAvatarUrl: profile?.avatar_url?.trim() || null,
+        sellerVerified: Boolean(profile?.seller_verified),
       });
     }),
   );

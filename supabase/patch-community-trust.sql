@@ -51,9 +51,9 @@ CREATE TABLE IF NOT EXISTS public.user_reports (
   reporter_id UUID NOT NULL REFERENCES auth.users(id) ON DELETE CASCADE,
   reported_id UUID NOT NULL REFERENCES auth.users(id) ON DELETE CASCADE,
   context TEXT NOT NULL DEFAULT 'message'
-    CHECK (context IN ('message', 'profile', 'other')),
+    CHECK (context IN ('message', 'profile', 'meetup', 'other')),
   reason TEXT NOT NULL DEFAULT 'other'
-    CHECK (reason IN ('harassment', 'scam', 'spam', 'inappropriate', 'other')),
+    CHECK (reason IN ('harassment', 'scam', 'spam', 'inappropriate', 'no_show', 'other')),
   details TEXT,
   status TEXT NOT NULL DEFAULT 'pending'
     CHECK (status IN ('pending', 'dismissed', 'actioned')),
@@ -81,5 +81,16 @@ CREATE POLICY "user_reports_select_own"
   USING (auth.uid() = reporter_id);
 
 GRANT SELECT, INSERT ON public.user_reports TO authenticated;
+
+-- Idempotens: mar letezo user_reports tablan is engedjuk a no_show / meetup ertekeket.
+ALTER TABLE public.user_reports DROP CONSTRAINT IF EXISTS user_reports_context_check;
+ALTER TABLE public.user_reports
+  ADD CONSTRAINT user_reports_context_check
+  CHECK (context IN ('message', 'profile', 'meetup', 'other'));
+
+ALTER TABLE public.user_reports DROP CONSTRAINT IF EXISTS user_reports_reason_check;
+ALTER TABLE public.user_reports
+  ADD CONSTRAINT user_reports_reason_check
+  CHECK (reason IN ('harassment', 'scam', 'spam', 'inappropriate', 'no_show', 'other'));
 
 NOTIFY pgrst, 'reload schema';

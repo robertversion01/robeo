@@ -1303,6 +1303,7 @@
       "scam": "Scam / fraud",
       "spam": "Spam or ads",
       "inappropriate": "Inappropriate content",
+      "no_show": "Didn't show up at meetup",
       "other": "Other"
     },
     "detailsPlaceholder": "Details (optional)…",
@@ -1311,7 +1312,10 @@
     "success": "Report sent — thank you.",
     "error": "Could not send report.",
     "schemaMissing": "Run supabase/patch-community-trust.sql first.",
-    "loginRequired": "Sign in to report."
+    "loginRequired": "Sign in to report.",
+    "noShowAction": "Did the other party not show up?",
+    "noShowConfirm": "Report that the other party didn't show up at the agreed meetup?",
+    "noShowSuccess": "Thanks — the no-show was recorded."
   },
   "community": {
     "title": "Community guidelines",

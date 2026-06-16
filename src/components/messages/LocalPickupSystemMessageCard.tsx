@@ -17,6 +17,7 @@ import { useEffect, useState } from 'react';
 import Link from 'next/link';
 import { MapPin } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
+import { toast } from 'sonner';
 import { supabase } from '@/lib/supabase';
 import { formatPrice } from '@/lib/utils';
 import { getOptimizedImageUrl } from '@/lib/imageUtils';
@@ -63,6 +64,46 @@ export default function LocalPickupSystemMessageCard({
 }: Props) {
   const { t } = useTranslation();
   const [product, setProduct] = useState<ProductSnippet | null>(null);
+  const [noShowBusy, setNoShowBusy] = useState(false);
+  const [noShowDone, setNoShowDone] = useState(false);
+
+  // A masik fel a beszelgetesben (akit a no-show jelzes erint).
+  const otherPartyId = [senderId, receiverId].find((id) => id && id !== viewerId) || null;
+
+  const reportNoShow = async () => {
+    if (!otherPartyId) return;
+    if (!window.confirm(t('report.noShowConfirm'))) return;
+    setNoShowBusy(true);
+    try {
+      const {
+        data: { user },
+      } = await supabase.auth.getUser();
+      if (!user?.id) {
+        toast.error(t('report.loginRequired'));
+        return;
+      }
+      const { error } = await supabase.from('user_reports').insert({
+        reporter_id: user.id,
+        reported_id: otherPartyId,
+        context: 'meetup',
+        reason: 'no_show',
+        details: productId ? `product:${productId}` : null,
+      });
+      if (error) {
+        if (/relation|does not exist|schema|constraint|check/i.test(error.message)) {
+          toast.error(t('report.schemaMissing'));
+          return;
+        }
+        throw error;
+      }
+      setNoShowDone(true);
+      toast.success(t('report.noShowSuccess'));
+    } catch (e) {
+      toast.error(e instanceof Error ? e.message : t('report.error'));
+    } finally {
+      setNoShowBusy(false);
+    }
+  };
 
   useEffect(() => {
     if (!productId) {
@@ -105,11 +146,6 @@ export default function LocalPickupSystemMessageCard({
   const meetingPoints = ROBEO_BP_MODE
     ? getMeetingPointsForDistrict(product?.budapest_district)
     : [];
-
-  // senderId/receiverId-t a API contract miatt fogadjuk (SaleSystemMessageCard
-  // egysegesseg), de itt nem hasznaljuk — void-dal hallgatjuk el a lintert.
-  void senderId;
-  void receiverId;
 
   return (
     <div className="max-w-md rounded-xl border border-emerald-500/30 bg-emerald-50/80 px-4 py-3 text-sm text-gray-800">
@@ -176,6 +212,18 @@ export default function LocalPickupSystemMessageCard({
         </div>
       ) : null}
       <p className="text-center text-xs text-gray-700 mt-3 leading-snug">{BODY_TEXT}</p>
+      {otherPartyId && !noShowDone ? (
+        <div className="mt-2 text-center">
+          <button
+            type="button"
+            disabled={noShowBusy}
+            onClick={() => void reportNoShow()}
+            className="text-[10px] font-medium text-gray-400 underline hover:text-red-600 disabled:opacity-50"
+          >
+            {t('report.noShowAction')}
+          </button>
+        </div>
+      ) : null}
       <div className="mt-2 text-center text-[10px] text-gray-400">
         <ClientFormattedTime iso={createdAt} locale={timeLocale} />
       </div>

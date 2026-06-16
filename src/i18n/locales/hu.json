@@ -1310,6 +1310,7 @@
       "scam": "Átverés / csalás",
       "spam": "Spam vagy reklám",
       "inappropriate": "Nem megfelelő tartalom",
+      "no_show": "Nem jelent meg a találkozón",
       "other": "Egyéb"
     },
     "detailsPlaceholder": "Részletek (opcionális)…",
@@ -1318,7 +1319,10 @@
     "success": "Jelentés elküldve — köszönjük.",
     "error": "A jelentés nem sikerült.",
     "schemaMissing": "Futtasd a supabase/patch-community-trust.sql fájlt.",
-    "loginRequired": "Jelentkezz be a jelentéshez."
+    "loginRequired": "Jelentkezz be a jelentéshez.",
+    "noShowAction": "A másik fél nem jelent meg?",
+    "noShowConfirm": "Jelented, hogy a másik fél nem jelent meg a megbeszélt találkozón?",
+    "noShowSuccess": "Köszönjük — rögzítettük a no-show jelzést."
   },
   "community": {
     "title": "Közösségi alapelvek",
