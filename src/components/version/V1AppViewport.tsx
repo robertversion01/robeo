@@ -40,8 +40,12 @@ function V1AppViewportInner({ children }: { children: React.ReactNode }) {
     };
   }, []);
 
+  // Az /messages saját belső térkezelést használ (full-height chat + lista),
+  // ezért ott nem adunk globális alsó paddinget.
   const showMobileBottomPad =
-    shouldPadForMobileBottomNav(pathname, loggedIn) && !shellChromeHidden;
+    shouldPadForMobileBottomNav(pathname, loggedIn) &&
+    !shellChromeHidden &&
+    !pathname.startsWith('/messages');
 
   return (
     <NotificationProvider>

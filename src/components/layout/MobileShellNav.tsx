@@ -46,6 +46,7 @@ export default function MobileShellNav() {
   const { t } = useTranslation();
   const pathname = usePathname();
   const [loggedIn, setLoggedIn] = useState<boolean | null>(null);
+  const [messagesThreadOpen, setMessagesThreadOpen] = useState(false);
   const { shellChromeHidden } = useImmersiveBrowse();
 
   useEffect(() => {
@@ -68,8 +69,27 @@ export default function MobileShellNav() {
     };
   }, []);
 
+  // Megnyitott beszélgetésben (mobil) full-screen chat → nincs alsó nav.
+  useEffect(() => {
+    const sync = () => {
+      if (typeof window === 'undefined') return;
+      const open =
+        pathname.startsWith('/messages') &&
+        !!new URLSearchParams(window.location.search).get('with');
+      setMessagesThreadOpen(open);
+    };
+    sync();
+    window.addEventListener('messages:thread-changed', sync);
+    window.addEventListener('popstate', sync);
+    return () => {
+      window.removeEventListener('messages:thread-changed', sync);
+      window.removeEventListener('popstate', sync);
+    };
+  }, [pathname]);
+
   if (loggedIn === null) return null;
   if (!shouldShowMobileBottomNav(pathname, loggedIn)) return null;
+  if (messagesThreadOpen) return null;
 
   if (!loggedIn) {
     return (
@@ -121,7 +141,7 @@ export default function MobileShellNav() {
       )}
       aria-label={t('nav.home')}
     >
-      <div className="mx-auto grid h-[3.25rem] max-w-lg grid-cols-5 items-end px-3">
+      <div className="mx-auto grid h-[3.75rem] max-w-lg grid-cols-5 items-stretch px-1">
         {LOGGED_IN_TABS.map((item) => {
           const active = item.match(pathname);
           const label = t(item.labelKey);
@@ -132,10 +152,13 @@ export default function MobileShellNav() {
                 key={item.href}
                 href={item.href}
                 aria-label={label}
-                className="flex items-end justify-center pb-1"
+                className="flex flex-col items-center justify-center"
               >
-                <span className="flex h-10 w-10 -translate-y-1.5 items-center justify-center rounded-xl bg-[#007782] text-white shadow-sm">
+                <span className="flex h-10 w-10 items-center justify-center rounded-xl bg-[#007782] text-white shadow-sm">
                   <item.Icon size={20} strokeWidth={2.5} />
+                </span>
+                <span className="mt-0.5 text-[10px] font-semibold leading-none text-[#007782]">
+                  {label}
                 </span>
               </Link>
             );
@@ -148,7 +171,7 @@ export default function MobileShellNav() {
               aria-label={label}
               aria-current={active ? 'page' : undefined}
               className={cn(
-                'relative flex items-center justify-center py-2.5',
+                'relative flex flex-col items-center justify-center gap-0.5 py-1.5',
                 active ? 'text-[#007782]' : 'text-gray-400',
               )}
             >
@@ -159,6 +182,14 @@ export default function MobileShellNav() {
               {'feedBadge' in item && item.feedBadge ? (
                 <FeedNavBadge className="top-0.5 right-[calc(50%-18px)]" />
               ) : null}
+              <span
+                className={cn(
+                  'text-[10px] font-semibold leading-none',
+                  active ? 'text-[#007782]' : 'text-gray-500',
+                )}
+              >
+                {label}
+              </span>
             </Link>
           );
         })}

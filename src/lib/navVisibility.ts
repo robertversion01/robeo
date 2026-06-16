@@ -2,9 +2,10 @@
 
 const AUTH_PATHS = ['/auth', '/login', '/register'];
 
-/** Alsó tab bar rejtve (mobil) */
+/** Alsó tab bar rejtve (mobil) — fókuszált flow-k, ahol saját alsó sáv van.
+ *  Az /messages NEM rejtett: a tab bar Vinted-szerűen fix a lista nézetben,
+ *  csak a megnyitott beszélgetésben tűnik el (full-screen chat). */
 const BOTTOM_NAV_SUPPRESSED_PREFIXES = [
-  '/messages',
   '/checkout',
   '/upload',
   '/products/',

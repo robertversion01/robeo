@@ -583,6 +583,9 @@
   "messages": {
     "offersTitle": "Beérkező ajánlatok",
     "conversationsTitle": "Beszélgetések",
+    "inboxTitle": "Beérkezett üzenetek",
+    "tabMessages": "Üzenetek",
+    "tabNotifications": "Értesítések",
     "emptyConversations": "Nincs még beszélgetésed",
     "emptyConversationsTitle": "Még nincs üzeneted",
     "emptyConversationsDesc": "Böngéssz, és írj az eladónak — itt folytathatod az alkut és a vásárlást.",
@@ -796,6 +799,8 @@
     "images": "Képek",
     "imagesCount": "{{count}}/6",
     "tapToSelect": "Kattints a képek kiválasztásához",
+    "chooseFromGallery": "Fénykép feltöltése",
+    "takePhoto": "Kamera indítása",
     "imagesHintFirst": "Az első kép lesz a fő kép (PNG, JPG, WEBP)",
     "imagesHintMore": "Válassz további képeket",
     "submit": "Termék feltöltése",

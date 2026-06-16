@@ -79,7 +79,7 @@ function matchesFilter(row: AppNotificationRow, filter: FilterId) {
   return notificationCategory(row) === filter;
 }
 
-export default function AppNotificationsFeed() {
+export default function AppNotificationsFeed({ embedded = false }: { embedded?: boolean }) {
   const { t, i18n } = useTranslation();
   const { refreshUnread } = useNotifications();
   const [items, setItems] = useState<AppNotificationRow[]>([]);
@@ -170,25 +170,23 @@ export default function AppNotificationsFeed() {
   };
 
   if (!userId && !loading) {
-    return (
-      <main className={`min-h-screen bg-white ${MAIN_TOP_PADDING} px-4`}>
-        <p className="text-center text-gray-600 mt-12">
-          <Link href="/auth" className="text-[#007782] font-semibold hover:underline">
-            {t('notifications.login')}
-          </Link>{' '}
-          {t('notifications.loginPrompt')}
-        </p>
-      </main>
+    const loginPrompt = (
+      <p className="text-center text-gray-600 mt-12">
+        <Link href="/auth" className="text-[#007782] font-semibold hover:underline">
+          {t('notifications.login')}
+        </Link>{' '}
+        {t('notifications.loginPrompt')}
+      </p>
     );
+    if (embedded) return <div className="px-4">{loginPrompt}</div>;
+    return <main className={`min-h-screen bg-white ${MAIN_TOP_PADDING} px-4`}>{loginPrompt}</main>;
   }
 
-  return (
-      <main className={`min-h-screen bg-white ${MAIN_TOP_PADDING} px-4`}>
-      <div className="max-w-lg mx-auto">
-        <PageHeader
-          title={t('notifications.title')}
-          action={
-            items.some((n) => isNotificationUnread(n)) ? (
+  const body = (
+    <div className={embedded ? '' : 'max-w-lg mx-auto'}>
+        {embedded ? (
+          items.some((n) => isNotificationUnread(n)) ? (
+            <div className="mb-3 flex justify-end">
               <button
                 type="button"
                 onClick={() => void markAllRead()}
@@ -197,11 +195,27 @@ export default function AppNotificationsFeed() {
                 <CheckCheck size={16} />
                 {t('notifications.markAllRead')}
               </button>
-            ) : (
-              <Bell size={20} className="text-[#007782]" aria-hidden />
-            )
-          }
-        />
+            </div>
+          ) : null
+        ) : (
+          <PageHeader
+            title={t('notifications.title')}
+            action={
+              items.some((n) => isNotificationUnread(n)) ? (
+                <button
+                  type="button"
+                  onClick={() => void markAllRead()}
+                  className="inline-flex items-center gap-1 text-xs font-semibold text-[#007782]"
+                >
+                  <CheckCheck size={16} />
+                  {t('notifications.markAllRead')}
+                </button>
+              ) : (
+                <Bell size={20} className="text-[#007782]" aria-hidden />
+              )
+            }
+          />
+        )}
 
         <div className="mb-4 flex gap-2 overflow-x-auto no-scrollbar">
           {filterTabs.map((tab) => (
@@ -285,7 +299,12 @@ export default function AppNotificationsFeed() {
             })}
           </ul>
         )}
-      </div>
-    </main>
+    </div>
   );
+
+  if (embedded)
+    return (
+      <div className="px-4 pb-[calc(3.75rem+1rem+env(safe-area-inset-bottom,0px))]">{body}</div>
+    );
+  return <main className={`min-h-screen bg-white ${MAIN_TOP_PADDING} px-4`}>{body}</main>;
 }

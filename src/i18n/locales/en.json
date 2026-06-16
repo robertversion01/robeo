@@ -576,6 +576,9 @@
   "messages": {
     "offersTitle": "Incoming offers",
     "conversationsTitle": "Conversations",
+    "inboxTitle": "Inbox",
+    "tabMessages": "Messages",
+    "tabNotifications": "Notifications",
     "emptyConversations": "No conversations yet",
     "emptyConversationsTitle": "No messages yet",
     "emptyConversationsDesc": "Browse listings and message sellers — negotiate and buy here.",
@@ -854,6 +857,8 @@
     "images": "Photos",
     "imagesCount": "{{count}}/6",
     "tapToSelect": "Tap to add photos",
+    "chooseFromGallery": "Upload photo",
+    "takePhoto": "Open camera",
     "imagesHintFirst": "First photo becomes the cover (PNG, JPG, WEBP)",
     "imagesHintMore": "Add more photos",
     "submit": "Publish listing",

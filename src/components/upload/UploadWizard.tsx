@@ -3,7 +3,7 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { supabase } from '@/lib/supabase';
 import { toast } from 'sonner';
-import { X, Plus, ArrowUp, ArrowDown, ChevronLeft, ChevronRight, Check, Sparkles } from 'lucide-react';
+import { X, Plus, ArrowUp, ArrowDown, ChevronLeft, ChevronRight, Check, Sparkles, Image as ImageIcon, Camera } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 import { useRouter, useSearchParams } from 'next/navigation';
 import CustomSelect from '@/components/ui/CustomSelect';
@@ -101,6 +101,7 @@ export default function UploadWizard() {
   const [defectImages, setDefectImages] = useState<UploadedImage[]>([]);
   const [requiresDefectPhoto, setRequiresDefectPhoto] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
+  const cameraInputRef = useRef<HTMLInputElement>(null);
 
   const activeSteps = expressMode && ROBEO_BP_MODE ? EXPRESS_STEPS : STEPS;
   const stepId = activeSteps[stepIndex] as ActiveStepId;
@@ -639,22 +640,44 @@ export default function UploadWizard() {
                 </div>
               )}
               {images.length < 6 && (
-                <button
-                  type="button"
-                  onClick={() => fileInputRef.current?.click()}
-                  className="w-full border-2 border-dashed border-gray-300 rounded-xl p-8 text-center hover:border-[#007782] bg-gray-50 touch-manipulation"
-                >
-                  <Plus size={32} className="mx-auto text-gray-400 mb-2" />
-                  <p className="text-sm font-medium">{t('upload.tapToSelect')}</p>
-                  <p className="text-xs text-gray-500 mt-1">{t('upload.imagesCount', { count: images.length })}</p>
-                </button>
+                <div className="rounded-xl border-2 border-dashed border-gray-300 bg-gray-50 p-4 text-center">
+                  <Plus size={28} className="mx-auto text-gray-400" />
+                  <p className="mt-1 text-xs text-gray-500">
+                    {t('upload.imagesCount', { count: images.length })}
+                  </p>
+                  <div className="mt-3 grid grid-cols-1 gap-2 sm:grid-cols-2">
+                    <button
+                      type="button"
+                      onClick={() => fileInputRef.current?.click()}
+                      className="inline-flex items-center justify-center gap-2 rounded-xl border border-[#007782]/30 bg-white px-4 py-3 text-sm font-semibold text-[#007782] hover:bg-[#007782]/5 touch-manipulation"
+                    >
+                      <ImageIcon size={18} />
+                      {t('upload.chooseFromGallery')}
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => cameraInputRef.current?.click()}
+                      className="inline-flex items-center justify-center gap-2 rounded-xl border border-[#007782]/30 bg-white px-4 py-3 text-sm font-semibold text-[#007782] hover:bg-[#007782]/5 touch-manipulation"
+                    >
+                      <Camera size={18} />
+                      {t('upload.takePhoto')}
+                    </button>
+                  </div>
+                </div>
               )}
               <input
                 ref={fileInputRef}
                 type="file"
                 accept="image/*"
-                capture="environment"
                 multiple
+                className="hidden"
+                onChange={handleImagesChange}
+              />
+              <input
+                ref={cameraInputRef}
+                type="file"
+                accept="image/*"
+                capture="environment"
                 className="hidden"
                 onChange={handleImagesChange}
               />

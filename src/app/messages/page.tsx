@@ -23,6 +23,8 @@ import { MAIN_TOP_PADDING } from '@/lib/layoutTokens';
 import { useTranslation } from 'react-i18next';
 import EmptyState from '@/components/ui/EmptyState';
 import PaymentPresetChips from '@/components/messages/PaymentPresetChips';
+import AppNotificationsFeed from '@/components/notifications/AppNotificationsFeed';
+import { FeedNavBadge, MessagesNavBadge } from '@/context/NotificationContext';
 
 interface Message {
   id: string;
@@ -66,6 +68,7 @@ export default function MessagesPage() {
   const router = useRouter();
   const timeLocale = i18n.language?.startsWith('en') ? 'en-HU' : 'hu-HU';
   const [offersOpen, setOffersOpen] = useState(true);
+  const [inboxTab, setInboxTab] = useState<'messages' | 'notifications'>('messages');
   const [threadBlocked, setThreadBlocked] = useState(false);
   const [productSellerId, setProductSellerId] = useState<string | null>(null);
   const [activeProductStatus, setActiveProductStatus] = useState<string | null>(null);
@@ -302,6 +305,10 @@ export default function MessagesPage() {
     setSelectedConversation(otherUserId);
     setSelectedEmail(email || '');
     setSelectedDisplayName(displayName || email?.split('@')[0] || '');
+    if (typeof window !== 'undefined') {
+      window.history.replaceState(null, '', `/messages?with=${otherUserId}`);
+      window.dispatchEvent(new CustomEvent('messages:thread-changed'));
+    }
     const blockCheck = await checkBlockBetween(supabase, user.id, otherUserId);
     setThreadBlocked(blockCheck.eitherBlocked);
     if (blockCheck.eitherBlocked) {
@@ -321,6 +328,10 @@ export default function MessagesPage() {
     setSelectedConversation(null);
     setMessages([]);
     setThreadBlocked(false);
+    if (typeof window !== 'undefined') {
+      window.history.replaceState(null, '', '/messages');
+      window.dispatchEvent(new CustomEvent('messages:thread-changed'));
+    }
   };
 
   const sendMessage = async (e: React.FormEvent) => {
@@ -533,7 +544,55 @@ export default function MessagesPage() {
       <main
         className={`${MAIN_TOP_PADDING} pb-0 md:pb-8 min-h-[100dvh] md:h-screen max-w-full overflow-x-hidden`}
       >
-        <div className="max-w-6xl mx-auto h-full flex flex-col md:flex-row">
+        {/* Mobil inbox fejléc — Üzenetek / Értesítések fülek (csak lista nézetben) */}
+        {!selectedConversation ? (
+          <div className="md:hidden px-4 pt-1">
+            <h1 className="mb-2 text-lg font-bold text-gray-900">{t('messages.inboxTitle')}</h1>
+            <div className="flex border-b border-gray-200">
+              <button
+                type="button"
+                onClick={() => setInboxTab('messages')}
+                className={`relative flex-1 pb-2 text-center text-sm font-semibold transition-colors ${
+                  inboxTab === 'messages'
+                    ? 'border-b-2 border-[#007782] text-[#007782]'
+                    : 'text-gray-500'
+                }`}
+              >
+                <span className="relative inline-block">
+                  {t('messages.tabMessages')}
+                  <MessagesNavBadge className="-right-3 top-0" />
+                </span>
+              </button>
+              <button
+                type="button"
+                onClick={() => setInboxTab('notifications')}
+                className={`relative flex-1 pb-2 text-center text-sm font-semibold transition-colors ${
+                  inboxTab === 'notifications'
+                    ? 'border-b-2 border-[#007782] text-[#007782]'
+                    : 'text-gray-500'
+                }`}
+              >
+                <span className="relative inline-block">
+                  {t('messages.tabNotifications')}
+                  <FeedNavBadge className="-right-3 top-0" />
+                </span>
+              </button>
+            </div>
+          </div>
+        ) : null}
+
+        {/* Értesítések fül tartalma (mobil) */}
+        {!selectedConversation && inboxTab === 'notifications' ? (
+          <div className="md:hidden pt-2">
+            <AppNotificationsFeed embedded />
+          </div>
+        ) : null}
+
+        <div
+          className={`max-w-6xl mx-auto h-full flex flex-col md:flex-row ${
+            !selectedConversation && inboxTab === 'notifications' ? 'hidden md:flex' : ''
+          }`}
+        >
           
           {/* Offers Section */}
           <div className={`w-full md:w-80 border-b md:border-b-0 md:border-r border-gray-200 overflow-y-auto flex flex-col min-h-0 ${selectedConversation ? 'hidden md:flex' : ''}`}>
@@ -567,7 +626,7 @@ export default function MessagesPage() {
                 actionHref="/browse"
               />
             ) : (
-              <div className="flex-1 min-h-0 overflow-y-auto">
+              <div className="flex-1 min-h-0 overflow-y-auto pb-[calc(3.75rem+env(safe-area-inset-bottom,0px))] md:pb-0">
                 {conversations.map((conv) => (
                   <button
                     key={conv.user_id}
