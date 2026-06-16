@@ -29,7 +29,7 @@ export default function DefectPhotoUpload({ images, onChange, visible }: Props) 
         <div className="flex flex-wrap gap-2">
           {images.map((img) => (
             <div key={img.id} className="relative">
-              <img src={img.preview} alt="" className="h-20 w-20 rounded-lg object-cover" />
+              <img src={img.preview} alt="" loading="lazy" decoding="async" className="h-20 w-20 rounded-lg object-cover" />
               <button
                 type="button"
                 onClick={() => onChange(images.filter((i) => i.id !== img.id))}

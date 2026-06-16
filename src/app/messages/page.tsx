@@ -20,6 +20,7 @@ import { toast } from 'sonner';
 import { isUuid } from '@/lib/validators';
 import { isListedProduct } from '@/lib/listedProducts';
 import { MAIN_TOP_PADDING } from '@/lib/layoutTokens';
+import { getOptimizedImageUrl } from '@/lib/imageUtils';
 import { useTranslation } from 'react-i18next';
 import EmptyState from '@/components/ui/EmptyState';
 import PaymentPresetChips from '@/components/messages/PaymentPresetChips';
@@ -759,7 +760,7 @@ export default function MessagesPage() {
                         }`}
                       >
                         {msg.message_type === 'image' && msg.media_url ? (
-                          <img src={msg.media_url} alt={t('messages.chatImageAlt')} className="max-w-full rounded-lg" />
+                          <img src={getOptimizedImageUrl(msg.media_url, 600, 80)} alt={t('messages.chatImageAlt')} loading="lazy" decoding="async" className="max-w-full rounded-lg" />
                         ) : (
                           msg.content
                         )}

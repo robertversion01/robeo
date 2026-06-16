@@ -154,6 +154,8 @@ export default function AdminReportedItems() {
                     <img
                       src={getOptimizedImageUrl(p.image_url, 112, 112)}
                       alt=""
+                      loading="lazy"
+                      decoding="async"
                       className="w-full h-full object-cover"
                     />
                   ) : (

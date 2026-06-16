@@ -606,7 +606,7 @@ export default function UploadWizard() {
                       key={image.id}
                       className="relative aspect-square rounded-xl overflow-hidden bg-gray-100 border border-gray-200 group"
                     >
-                      <img src={image.preview} alt="" className="w-full h-full object-cover" />
+                      <img src={image.preview} alt="" loading="lazy" decoding="async" className="w-full h-full object-cover" />
                       <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 flex items-center justify-center gap-1 transition-opacity">
                         <button
                           type="button"

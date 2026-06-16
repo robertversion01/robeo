@@ -233,6 +233,8 @@ export default function BuyerOffersList() {
                     <img
                       src={getOptimizedImageUrl(thumb, 160, 85)}
                       alt=""
+                      loading="lazy"
+                      decoding="async"
                       className="w-full h-full object-cover"
                     />
                   ) : (

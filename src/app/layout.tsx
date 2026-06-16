@@ -44,6 +44,17 @@ export const metadata: Metadata = {
 
 const APP_BUILD_ID = getAppBuildId();
 
+/** Supabase Storage origin — preconnect a gyorsabb első képbetöltéshez (DNS+TLS warmup). */
+const SUPABASE_STORAGE_ORIGIN = (() => {
+  const raw = process.env.NEXT_PUBLIC_SUPABASE_URL?.trim();
+  if (!raw) return null;
+  try {
+    return new URL(raw).origin;
+  } catch {
+    return null;
+  }
+})();
+
 /** Régi bundle / cache-elt HTML észlelése — React betöltése előtt fut. */
 const DEPLOY_SYNC_SCRIPT = `(function(){try{var reload=function(){var u=new URL(location.href);u.searchParams.set('_robeo',String(Date.now()));location.replace(u.toString());};fetch('/api/app-version',{cache:'no-store',headers:{'Cache-Control':'no-cache'}}).then(function(r){return r.json();}).then(function(d){var api=d&&d.buildId;if(!api||api==='development')return;var meta=document.querySelector('meta[name="robeo-build"]');var html=meta&&meta.getAttribute('content');if(html&&html!==api){reload();return;}var prev=localStorage.getItem('robeo_server_build');localStorage.setItem('robeo_server_build',api);if(prev&&prev!==api){reload();}}).catch(function(){});}catch(e){}})();`;
 
@@ -59,6 +70,12 @@ export default function RootLayout({
     >
       <head>
         <meta name="robeo-build" content={APP_BUILD_ID} />
+        {SUPABASE_STORAGE_ORIGIN ? (
+          <>
+            <link rel="preconnect" href={SUPABASE_STORAGE_ORIGIN} crossOrigin="anonymous" />
+            <link rel="dns-prefetch" href={SUPABASE_STORAGE_ORIGIN} />
+          </>
+        ) : null}
         <script dangerouslySetInnerHTML={{ __html: DEPLOY_SYNC_SCRIPT }} />
       </head>
       <body className="min-h-full flex flex-col overflow-x-clip max-w-[100vw]">

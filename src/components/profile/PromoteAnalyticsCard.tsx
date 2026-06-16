@@ -97,6 +97,8 @@ export default function PromoteAnalyticsCard({ userId }: Props) {
                       <img
                         src={getOptimizedImageUrl(row.imageUrl, 80, 80)}
                         alt=""
+                        loading="lazy"
+                        decoding="async"
                         className="w-full h-full object-cover"
                       />
                     ) : null}
