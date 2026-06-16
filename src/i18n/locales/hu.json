@@ -742,6 +742,51 @@
     "cannotMessage": "Nem küldhetsz üzenetet — blokkolás van érvényben.",
     "threadClosed": "Ez a beszélgetés nem érhető el (blokkolva)."
   },
+  "disputes": {
+    "openCta": "Probléma jelentése",
+    "formHint": "Írd le röviden, mi a probléma. Az admin felülvizsgálja.",
+    "reasonLabel": "Mi a probléma?",
+    "detailsPlaceholder": "Részletek (legalább 10 karakter)…",
+    "detailsTooShort": "Kérlek írj legalább 10 karaktert.",
+    "loginRequired": "Jelentkezz be a jelentéshez.",
+    "submit": "Jelentés beküldése",
+    "submitted": "A jelentésedet rögzítettük — az admin felülvizsgálja.",
+    "failed": "A beküldés nem sikerült.",
+    "activeHint": "A vita felülvizsgálat alatt — hamarosan értesítünk a döntésről.",
+    "openedAt": "Beküldve: {{date}}",
+    "resolvedAt": "Lezárva: {{date}}",
+    "adminNote": "Admin megjegyzés",
+    "timelineTitle": "Állapot",
+    "status": {
+      "open": "Beküldve",
+      "under_review": "Felülvizsgálat alatt",
+      "resolved_refund": "Lezárva — visszatérítés",
+      "resolved_reject": "Lezárva — elutasítva",
+      "cancelled": "Visszavonva"
+    },
+    "steps": {
+      "submitted": "Beküldve",
+      "review": "Felülvizsgálat",
+      "decision": "Döntés"
+    },
+    "admin": {
+      "title": "Vitatások",
+      "refresh": "Frissítés",
+      "loading": "Betöltés…",
+      "empty": "Nincs nyitott vitatás.",
+      "review": "Felülvizsgálatra",
+      "refund": "Visszatérítés",
+      "reject": "Elutasítás",
+      "reviewDone": "Felülvizsgálatra állítva.",
+      "refundDone": "Visszatérítés jóváhagyva.",
+      "rejectDone": "Vitatás elutasítva.",
+      "statusFilter": "Állapot szűrő",
+      "filterAll": "Összes",
+      "filterOpen": "Nyitott",
+      "filterReview": "Felülvizsgálat",
+      "filterResolved": "Lezárt"
+    }
+  },
   "orderTimeline": {
     "title": "Rendelés állapota",
     "openOrders": "Rendelések",

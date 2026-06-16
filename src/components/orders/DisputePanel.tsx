@@ -99,16 +99,76 @@ export default function DisputePanel({
 
   if (dispute) {
     const active = isDisputeActive(dispute.status);
+    const localeTag = locale === 'en' ? 'en-HU' : 'hu-HU';
+    // 3 lepeses idovonal: bekuldve -> felulvizsgalat -> dontes
+    const stepIndex =
+      dispute.status === 'open'
+        ? 0
+        : dispute.status === 'under_review'
+          ? 1
+          : 2;
+    const resolved = dispute.status === 'resolved_refund' || dispute.status === 'resolved_reject';
+    const steps = [
+      { key: 'submitted', label: t('disputes.steps.submitted') },
+      { key: 'review', label: t('disputes.steps.review') },
+      { key: 'decision', label: t('disputes.steps.decision') },
+    ];
+
     return (
-      <div className="mt-2 rounded-lg border border-amber-200 bg-amber-50/90 px-3 py-2 text-xs">
+      <div className="mt-2 rounded-lg border border-amber-200 bg-amber-50/90 px-3 py-2.5 text-xs">
         <p className="font-semibold text-amber-900 flex items-center gap-1">
           <AlertTriangle size={14} />
           {t(`disputes.status.${dispute.status}`)}
         </p>
-        <p className="text-amber-800 mt-1">
+
+        <div className="mt-2 flex items-center" aria-label={t('disputes.timelineTitle')}>
+          {steps.map((step, i) => {
+            const done = i < stepIndex || (resolved && i <= stepIndex);
+            const current = i === stepIndex && active;
+            return (
+              <div key={step.key} className="flex flex-1 items-center last:flex-none">
+                <div className="flex flex-col items-center">
+                  <span
+                    className={`flex h-5 w-5 items-center justify-center rounded-full text-[10px] font-bold ${
+                      done
+                        ? 'bg-amber-600 text-white'
+                        : current
+                          ? 'bg-amber-200 text-amber-900 ring-2 ring-amber-500'
+                          : 'bg-amber-100 text-amber-400'
+                    }`}
+                  >
+                    {done ? '✓' : i + 1}
+                  </span>
+                  <span className="mt-0.5 text-[9px] text-amber-800">{step.label}</span>
+                </div>
+                {i < steps.length - 1 ? (
+                  <span
+                    className={`mx-1 h-0.5 flex-1 ${i < stepIndex ? 'bg-amber-600' : 'bg-amber-200'}`}
+                  />
+                ) : null}
+              </div>
+            );
+          })}
+        </div>
+
+        <p className="text-amber-800 mt-2">
           {disputeReasonLabel(dispute.reason, locale)}
           {dispute.details ? ` — ${dispute.details}` : ''}
         </p>
+
+        {dispute.admin_note ? (
+          <p className="mt-1.5 rounded border border-amber-200 bg-white/70 px-2 py-1 text-[11px] text-amber-900">
+            <span className="font-semibold">{t('disputes.adminNote')}:</span> {dispute.admin_note}
+          </p>
+        ) : null}
+
+        <div className="mt-1.5 flex flex-wrap gap-x-3 text-[10px] text-amber-700">
+          <span>{t('disputes.openedAt', { date: new Date(dispute.created_at).toLocaleDateString(localeTag) })}</span>
+          {dispute.resolved_at ? (
+            <span>{t('disputes.resolvedAt', { date: new Date(dispute.resolved_at).toLocaleDateString(localeTag) })}</span>
+          ) : null}
+        </div>
+
         {active ? (
           <p className="text-[11px] text-amber-700 mt-1">{t('disputes.activeHint')}</p>
         ) : null}

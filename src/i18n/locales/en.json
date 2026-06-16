@@ -800,6 +800,51 @@
     "cannotMessage": "Can't send messages — a block is in place.",
     "threadClosed": "This conversation is unavailable (blocked)."
   },
+  "disputes": {
+    "openCta": "Report a problem",
+    "formHint": "Describe the issue briefly. An admin will review it.",
+    "reasonLabel": "What's the problem?",
+    "detailsPlaceholder": "Details (at least 10 characters)…",
+    "detailsTooShort": "Please write at least 10 characters.",
+    "loginRequired": "Sign in to report.",
+    "submit": "Submit report",
+    "submitted": "Your report was recorded — an admin will review it.",
+    "failed": "Submission failed.",
+    "activeHint": "The dispute is under review — we'll notify you of the decision.",
+    "openedAt": "Submitted: {{date}}",
+    "resolvedAt": "Resolved: {{date}}",
+    "adminNote": "Admin note",
+    "timelineTitle": "Status",
+    "status": {
+      "open": "Submitted",
+      "under_review": "Under review",
+      "resolved_refund": "Resolved — refund",
+      "resolved_reject": "Resolved — rejected",
+      "cancelled": "Cancelled"
+    },
+    "steps": {
+      "submitted": "Submitted",
+      "review": "Review",
+      "decision": "Decision"
+    },
+    "admin": {
+      "title": "Disputes",
+      "refresh": "Refresh",
+      "loading": "Loading…",
+      "empty": "No open disputes.",
+      "review": "Mark reviewing",
+      "refund": "Refund",
+      "reject": "Reject",
+      "reviewDone": "Set to under review.",
+      "refundDone": "Refund approved.",
+      "rejectDone": "Dispute rejected.",
+      "statusFilter": "Status filter",
+      "filterAll": "All",
+      "filterOpen": "Open",
+      "filterReview": "Under review",
+      "filterResolved": "Resolved"
+    }
+  },
   "orderTimeline": {
     "title": "Order progress",
     "openOrders": "Orders",
