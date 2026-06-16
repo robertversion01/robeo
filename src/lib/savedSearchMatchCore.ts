@@ -2,6 +2,11 @@ import type { Product } from '@/types';
 import type { SavedSearch } from '@/lib/savedSearches';
 import { conditionMatchesFilter } from '@/lib/vintedCatalog';
 import { getBudapestDistrictFilter, productMatchesCategory } from '@/lib/catalogFilters';
+import { productMatchesColor } from '@/lib/vintedCategoryTree';
+import {
+  productMatchesTaxonomySubcategory,
+  productMatchesListingTypeFilter,
+} from '@/lib/marketplaceTaxonomy';
 
 /** Szerver és kliens közös mentett keresés egyezés */
 export function productMatchesSavedSearch(
@@ -14,6 +19,7 @@ export function productMatchesSavedSearch(
     | 'category'
     | 'size'
     | 'condition'
+    | 'color'
     | 'price'
     | 'budapest_district'
   >,
@@ -24,7 +30,23 @@ export function productMatchesSavedSearch(
     const hay = `${product.name} ${product.description || ''} ${product.brand || ''}`.toLowerCase();
     if (!hay.includes(q)) return false;
   }
+  if (
+    filters.listingType &&
+    filters.listingType !== 'all' &&
+    !productMatchesListingTypeFilter(product.category, filters.listingType)
+  ) {
+    return false;
+  }
   if (filters.category !== 'all' && !productMatchesCategory(product.category, filters.category)) {
+    return false;
+  }
+  if (
+    filters.subcategory !== 'all' &&
+    !productMatchesTaxonomySubcategory(product.category, filters.subcategory)
+  ) {
+    return false;
+  }
+  if (filters.color !== 'all' && !productMatchesColor(product.color, filters.color)) {
     return false;
   }
   if (filters.brand !== 'all') {
@@ -63,6 +85,7 @@ export function findNewSavedSearchMatches(
       | 'category'
       | 'size'
       | 'condition'
+      | 'color'
       | 'price'
       | 'budapest_district'
     >

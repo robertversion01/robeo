@@ -8,6 +8,7 @@ import {
   subcategoryFilterDbValues,
 } from '@/lib/catalogFilters';
 import { fetchAllVacationSellerIds } from '@/lib/vacationMode';
+import { colorDbAliases } from '@/lib/vintedCategoryTree';
 
 /** Supabase OR — csak böngészhető / megvásárolható termékek. */
 export const LISTED_PRODUCT_STATUS_FILTER = 'status.eq.active,status.is.null';
@@ -130,7 +131,11 @@ export function applyCatalogFiltersToProductQuery(
   }
 
   if (!isService && filters.color !== 'all') {
-    query = query.ilike('color', `%${filters.color}%`);
+    const colorAliases = colorDbAliases(filters.color);
+    const colorOr = colorAliases
+      .map((alias) => `color.ilike.%${alias}%`)
+      .join(',');
+    if (colorOr) query = query.or(colorOr);
   }
 
   if (!isService && filters.size !== 'all' && options.sizeFilterOnServer) {

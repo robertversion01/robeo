@@ -64,6 +64,7 @@ export default function SavedSearchesStrip({ filters, onApply, hasActiveFilters 
         maxPrice: filters.maxPrice,
         sort: filters.sort,
         search: filters.search,
+        budapest_district: filters.budapest_district ?? 'all',
       };
       await saveSearchEntry(
         supabase,

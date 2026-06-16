@@ -28,7 +28,7 @@ const FALLBACK_SIZES: DiscoveryChipStat[] = [
 ];
 const CONDITION_CHIPS = [
   { id: 'new', labelKey: 'browse.discovery.conditionNew' },
-  { id: 'like_new', labelKey: 'browse.discovery.conditionLikeNew' },
+  { id: 'excellent', labelKey: 'browse.discovery.conditionLikeNew' },
   { id: 'good', labelKey: 'browse.discovery.conditionGood' },
 ] as const;
 

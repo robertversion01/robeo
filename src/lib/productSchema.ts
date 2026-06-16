@@ -14,12 +14,13 @@ export type ProductScanRow = Pick<
   | 'category'
   | 'size'
   | 'condition'
+  | 'color'
   | 'price'
   | 'budapest_district'
 >;
 
 const PRODUCT_SCAN_BASE =
-  'id, name, description, brand, category, condition, price, created_at';
+  'id, name, description, brand, category, condition, color, price, created_at';
 const PRODUCT_SCAN_WITH_SIZE = `${PRODUCT_SCAN_BASE}, size`;
 
 let sizeColumnCache: boolean | null = null;
@@ -98,6 +99,7 @@ export async function fetchProductsForScan(
     brand: row.brand ?? undefined,
     category: String(row.category ?? ''),
     condition: row.condition ?? undefined,
+    color: row.color ?? undefined,
     price: Number(row.price) || 0,
     size: row.size ?? null,
     budapest_district: row.budapest_district ?? null,

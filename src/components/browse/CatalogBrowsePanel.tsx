@@ -477,6 +477,15 @@ function CatalogBrowsePanelInner({
               />
             </div>
           </div>
+          <div className="mb-3 lg:hidden">
+            <ListingTypeToggle
+              value={selectedListingType}
+              onChange={setSelectedListingType}
+              className="mb-2"
+            />
+            <Filters {...filtersProps} />
+            <ActiveFilterBar {...activeFilterBarProps} className="pt-2 pb-1" />
+          </div>
           {productGridBlock}
         </FeedCategorySwipeSurface>
       ) : (
@@ -499,6 +508,11 @@ function CatalogBrowsePanelInner({
             />
           </MobileFeedChrome>
           <div className="mb-3 lg:hidden">
+            <ListingTypeToggle
+              value={selectedListingType}
+              onChange={setSelectedListingType}
+              className="mb-2"
+            />
             <Filters {...filtersProps} />
             <ActiveFilterBar {...activeFilterBarProps} className="pt-2 pb-1" />
           </div>
@@ -516,31 +530,6 @@ function CatalogBrowsePanelInner({
               />
             </>
           ) : null}
-          <div className="hidden space-y-3 pb-2 lg:block">
-            <BrowseDiscoveryRails {...discoveryProps} compact />
-            <CatalogSearchBar
-              value={searchQuery}
-              onChange={setSearchQuery}
-              catalogFilters={catalogFilters}
-              maxPriceLimit={maxPriceLimit}
-              browsePath={browsePath}
-            />
-            <ListingTypeToggle
-              value={selectedListingType}
-              onChange={setSelectedListingType}
-              className="mb-2"
-            />
-            <CategoryQuickChips
-              categories={categories}
-              selectedCategory={selectedCategory}
-              onCategoryChange={setSelectedCategory}
-            />
-            <SavedSearchesStrip
-              filters={catalogFilters}
-              hasActiveFilters={hasActiveFilters}
-              onApply={applySavedSearch}
-            />
-          </div>
         </>
       )}
 
@@ -584,6 +573,11 @@ function CatalogBrowsePanelInner({
                 filters={catalogFilters}
                 hasActiveFilters={hasActiveFilters}
                 onApply={applySavedSearch}
+              />
+              <ListingTypeToggle
+                value={selectedListingType}
+                onChange={setSelectedListingType}
+                className="mb-2"
               />
               <BrowseDiscoveryRails {...discoveryProps} hacooCard />
               <ActiveFilterBar {...activeFilterBarProps} />
