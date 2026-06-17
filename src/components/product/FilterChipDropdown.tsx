@@ -144,7 +144,7 @@ export default function FilterChipDropdown({
         ref={panelRef}
         id={`${instanceId}-panel`}
         role="listbox"
-        className="fixed z-[10050] overflow-y-auto overscroll-contain rounded-xl border border-gray-200 bg-white py-1 shadow-xl pb-[max(0.5rem,env(safe-area-inset-bottom,0px))]"
+        className="fixed z-[10050] overflow-y-auto overscroll-contain rounded-xl border border-[#2a3941] bg-[#1a2328] py-1 shadow-xl pb-[max(0.5rem,env(safe-area-inset-bottom,0px))]"
         style={{
           top: coords.top,
           bottom: coords.bottom,
@@ -165,8 +165,8 @@ export default function FilterChipDropdown({
               onOpenPanelChange(null);
             }}
             className={cn(
-              'block w-full px-3 py-2.5 text-left text-sm hover:bg-gray-50 active:bg-gray-100',
-              value === opt.id && 'font-semibold text-[#007782] bg-[#007782]/5',
+              'block w-full px-3 py-2.5 text-left text-sm text-[#c5d0d6] hover:bg-[#243038] active:bg-[#2a3941]',
+              value === opt.id && 'font-semibold text-[#38c7d0] bg-[#17343a]/80',
             )}
           >
             {opt.label}
@@ -189,8 +189,8 @@ export default function FilterChipDropdown({
           className={cn(
             'inline-flex h-9 max-w-[min(100%,11rem)] items-center gap-1 rounded-full border px-3 text-xs font-medium transition-colors touch-manipulation',
             open || isActive
-              ? 'border-[#007782] bg-[#007782]/10 text-[#007782]'
-              : 'border-gray-300 bg-white text-gray-700 hover:bg-gray-50',
+              ? 'border-[#38c7d0] bg-[#17343a] text-[#9be2e8]'
+              : 'border-[#2a3941] bg-[#1a2328] text-[#b2c0c6] hover:border-[#38c7d0]/35 hover:bg-[#1f2a30]',
           )}
           title={chipLabel}
         >

@@ -49,13 +49,13 @@ export default function ProfileMarketplaceStats({
       {tiles.map((tile) => (
         <div
           key={tile.label}
-          className="rounded-xl border border-gray-200 bg-white p-3 flex flex-col gap-1"
+          className="rounded-xl border border-[#2a3941] bg-[#1a2328] p-3 flex flex-col gap-1"
         >
-          <tile.icon size={16} className="text-[#007782]" />
-          <span className="text-[10px] uppercase tracking-wide text-gray-500">{tile.label}</span>
-          <span className="text-lg font-bold text-gray-900 tabular-nums">{tile.value}</span>
+          <tile.icon size={16} className="text-[#38c7d0]" />
+          <span className="text-[10px] uppercase tracking-wide text-[#8fa3ad]">{tile.label}</span>
+          <span className="text-lg font-bold text-[#e7edf0] tabular-nums">{tile.value}</span>
           {tile.label === t('profile.marketplace.rating') && listingsCount > 0 ? (
-            <span className="text-[10px] text-gray-400">
+            <span className="text-[10px] text-[#6b7d85]">
               {t('profile.marketplace.activeListings', { count: listingsCount })}
             </span>
           ) : null}

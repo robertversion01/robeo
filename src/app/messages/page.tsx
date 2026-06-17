@@ -666,7 +666,7 @@ export default function MessagesPage() {
             className="w-full max-w-md rounded-t-2xl sm:rounded-2xl bg-[#121b20] border border-[#2b3a42] shadow-2xl p-5 sm:p-6"
             onClick={(e) => e.stopPropagation()}
           >
-            <h2 className="text-lg font-bold text-gray-900">{t('messages.offerModalTitle')}</h2>
+            <h2 className="text-lg font-bold text-[#e7edf0]">{t('messages.offerModalTitle')}</h2>
             {offerMeta ? (
               <p className="text-sm text-gray-600 mt-1 line-clamp-2">{offerMeta.title}</p>
             ) : (
@@ -718,7 +718,7 @@ export default function MessagesPage() {
         {/* Mobil inbox fejléc — Üzenetek / Értesítések fülek (csak lista nézetben) */}
         {!selectedConversation ? (
           <div className="md:hidden px-4 pt-1">
-            <h1 className="mb-2 text-lg font-bold text-gray-900">{t('messages.inboxTitle')}</h1>
+            <h1 className="mb-2 text-lg font-bold text-[#e7edf0]">{t('messages.inboxTitle')}</h1>
             <div className="flex border-b border-[#2b3a42]">
               <button
                 type="button"
@@ -771,7 +771,7 @@ export default function MessagesPage() {
               <button
                 type="button"
                 onClick={() => setOffersOpen((o) => !o)}
-                className="md:hidden w-full flex items-center justify-between px-4 py-3 text-left font-bold text-gray-900 touch-manipulation"
+                className="md:hidden w-full flex items-center justify-between px-4 py-3 text-left font-bold text-[#e7edf0] touch-manipulation"
                 aria-expanded={offersOpen}
               >
                 {t('messages.offersCollapsible')}
@@ -803,8 +803,8 @@ export default function MessagesPage() {
                     key={conv.user_id}
                     type="button"
                     onClick={() => loadConversation(conv.user_id, conv.email, conv.display_name)}
-                    className={`w-full text-left p-4 border-b border-gray-100 hover:bg-gray-50 transition-colors touch-manipulation ${
-                      selectedConversation === conv.user_id ? 'bg-[#007782]/5' : ''
+                    className={`w-full text-left p-4 border-b border-[#2a3941] hover:bg-[#1a2328] transition-colors touch-manipulation ${
+                      selectedConversation === conv.user_id ? 'bg-[#17343a]/50' : ''
                     }`}
                   >
                     <div className="flex items-center gap-3">
@@ -813,8 +813,8 @@ export default function MessagesPage() {
                       </div>
                       <div className="flex-1 min-w-0">
                         <div className="flex items-baseline justify-between gap-2">
-                          <span className="font-medium truncate text-sm">{conv.display_name}</span>
-                          <span className="shrink-0 text-[10px] text-gray-400 tabular-nums">
+                          <span className="font-medium truncate text-sm text-[#e7edf0]">{conv.display_name}</span>
+                          <span className="shrink-0 text-[10px] text-[#6b7d85] tabular-nums">
                             {formatConversationTimestamp(conv.last_message_time, timeLocale, t)}
                           </span>
                         </div>
@@ -1028,7 +1028,7 @@ export default function MessagesPage() {
                                   <button
                                     type="button"
                                     onClick={() => rollbackFailedMessage(msg.id)}
-                                    className="rounded-full border border-gray-300 bg-white px-2 py-0.5 text-[10px] font-semibold text-gray-600 hover:bg-gray-50"
+                                    className="rounded-full border border-[#2a3941] bg-[#1a2328] px-2 py-0.5 text-[10px] font-semibold text-[#8fa3ad] hover:bg-[#243038]"
                                   >
                                     {t('messages.rollbackSend')}
                                   </button>
@@ -1096,7 +1096,7 @@ export default function MessagesPage() {
                       type="button"
                       onClick={() => fileInputRef.current?.click()}
                       disabled={threadBlocked || uploadingImage}
-                      className="icon-btn shrink-0 bg-gray-100 border border-gray-300 hover:bg-gray-200 transition-all disabled:cursor-not-allowed disabled:opacity-50"
+                      className="icon-btn shrink-0 bg-[#1a2328] border border-[#2a3941] hover:bg-[#243038] transition-all disabled:cursor-not-allowed disabled:opacity-50"
                       aria-label={t('messages.uploadImage')}
                     >
                       {uploadingImage ? '…' : '📷'}
@@ -1107,7 +1107,7 @@ export default function MessagesPage() {
                       onChange={(e) => setNewMessage(e.target.value)}
                       placeholder={t('messages.placeholder')}
                       disabled={threadBlocked}
-                      className="flex-1 min-w-0 min-h-11 px-4 py-2.5 bg-gray-50 border border-gray-300 rounded-full focus:outline-none focus:border-[#007782] transition-all disabled:opacity-50"
+                      className="flex-1 min-w-0 min-h-11 px-4 py-2.5 bg-[#131b1f] border border-[#2a3941] text-[#e7edf0] rounded-full focus:outline-none focus:border-[#38c7d0] transition-all disabled:opacity-50 placeholder:text-[#6b7d85]"
                     />
                     <button
                       type="submit"

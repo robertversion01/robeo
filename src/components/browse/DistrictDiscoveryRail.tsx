@@ -68,20 +68,20 @@ export default function DistrictDiscoveryRail({
   const activeLabel = hasActiveDistrict ? getDistrictLabel(selectedDistrict) : null;
 
   return (
-    <section className={cn('rounded-xl border border-[#007782]/15 bg-[#007782]/5 p-3', className)}>
+    <section className={cn('rounded-xl border border-[#2a3941] bg-[#141d21] p-3', className)}>
       <div className="mb-2 flex items-start justify-between gap-2">
         <div className="min-w-0">
           <div className="flex items-center gap-2">
-            <MapPin size={16} className="text-[#007782] shrink-0" aria-hidden />
-            <h3 className="text-sm font-bold text-gray-900">{t('bp.discovery.districtTitle')}</h3>
+            <MapPin size={16} className="text-[#38c7d0] shrink-0" aria-hidden />
+            <h3 className="text-sm font-bold text-[#e7edf0]">{t('bp.discovery.districtTitle')}</h3>
           </div>
-          <p className="mt-1 text-xs text-gray-600">{t('bp.discovery.districtHint')}</p>
+          <p className="mt-1 text-xs text-[#8fa3ad]">{t('bp.discovery.districtHint')}</p>
         </div>
         {collapsible ? (
           <button
             type="button"
             onClick={() => setExpanded((v) => !v)}
-            className="inline-flex shrink-0 items-center gap-1 rounded-lg border border-[#007782]/25 bg-white px-2.5 py-1.5 text-[11px] font-semibold text-[#007782] touch-manipulation"
+            className="inline-flex shrink-0 items-center gap-1 rounded-lg border border-[#2a3941] bg-[#1a2328] px-2.5 py-1.5 text-[11px] font-semibold text-[#38c7d0] touch-manipulation"
             aria-expanded={expanded}
           >
             {activeLabel ?? t('browse.filters.district')}

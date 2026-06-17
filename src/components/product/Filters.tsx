@@ -274,10 +274,10 @@ export default function Filters({
       <div
         ref={pricePanelRef}
         id={`${priceInstanceId}-price-panel`}
-        className="fixed z-[10050] w-64 max-w-[calc(100vw-16px)] rounded-xl border border-gray-200 bg-white p-3 shadow-xl"
+        className="fixed z-[10050] w-64 max-w-[calc(100vw-16px)] rounded-xl border border-[#2a3941] bg-[#1a2328] p-3 shadow-xl"
         style={{ top: priceCoords.top, left: priceCoords.left, minWidth: priceCoords.minWidth }}
       >
-        <p className="text-xs font-semibold text-gray-700 mb-2">{t('browse.filters.priceRange')}</p>
+        <p className="text-xs font-semibold text-[#b2c0c6] mb-2">{t('browse.filters.priceRange')}</p>
         <div className="space-y-1 mb-3">
           {pricePresets.map((p) => (
             <button
@@ -287,15 +287,15 @@ export default function Filters({
                 applyPricePreset(p.id);
                 setOpenPanelId(null);
               }}
-              className={`block w-full rounded-lg px-2 py-2 text-left text-xs hover:bg-gray-50 ${
-                pricePresetId === p.id ? 'font-semibold text-[#007782]' : 'text-gray-700'
+              className={`block w-full rounded-lg px-2 py-2 text-left text-xs hover:bg-[#243038] ${
+                pricePresetId === p.id ? 'font-semibold text-[#38c7d0]' : 'text-[#b2c0c6]'
               }`}
             >
               {p.label}
             </button>
           ))}
         </div>
-        <div className="space-y-2 text-xs text-gray-600">
+        <div className="space-y-2 text-xs text-[#8fa3ad]">
           <label className="block">
             {t('browse.filters.min')} ({selectedMinPrice.toLocaleString(locale)} Ft)
             <input
@@ -327,7 +327,7 @@ export default function Filters({
   return (
     <div className="space-y-2 pb-2">
       {!showProductFilters ? (
-        <p className="px-1 text-[11px] text-gray-500">{t('browse.filters.contextService')}</p>
+        <p className="px-1 text-[11px] text-[#8fa3ad]">{t('browse.filters.contextService')}</p>
       ) : null}
       <div className="flex items-center gap-2 overflow-x-auto overflow-y-visible no-scrollbar pb-1 -mx-0.5 px-0.5">
         {ROBEO_BP_MODE && onBudapestDistrictChange ? (
@@ -421,8 +421,8 @@ export default function Filters({
             onClick={(e) => e.preventDefault()}
             className={`inline-flex h-9 items-center gap-1 rounded-full border px-3 text-xs font-medium whitespace-nowrap touch-manipulation ${
               priceOpen || pricePresetId !== 'all'
-                ? 'border-[#007782] bg-[#007782]/10 text-[#007782]'
-                : 'border-gray-300 bg-white text-gray-700 hover:bg-gray-50'
+                ? 'border-[#38c7d0] bg-[#17343a] text-[#9be2e8]'
+                : 'border-[#2a3941] bg-[#1a2328] text-[#b2c0c6] hover:border-[#38c7d0]/35 hover:bg-[#1f2a30]'
             }`}
           >
             {priceLabel}
@@ -430,11 +430,11 @@ export default function Filters({
           </button>
         </div>
 
-        <label className="ml-auto shrink-0 flex items-center gap-1.5 text-xs text-gray-600">
+        <label className="ml-auto shrink-0 flex items-center gap-1.5 text-xs text-[#8fa3ad]">
           <select
             value={selectedSort}
             onChange={(e) => onSortChange(e.target.value)}
-            className="h-9 rounded-full border border-gray-300 bg-white px-3 text-xs text-gray-800 focus:outline-none focus:ring-1 focus:ring-[#007782]"
+            className="h-9 rounded-full border border-[#2a3941] bg-[#1a2328] px-3 text-xs text-[#e7edf0] focus:outline-none focus:ring-1 focus:ring-[#38c7d0]"
           >
             {sortOptions.map((opt) => (
               <option key={opt.id} value={opt.id}>
@@ -448,7 +448,7 @@ export default function Filters({
           <button
             type="button"
             onClick={onClearAll}
-            className="inline-flex h-9 items-center gap-1 rounded-full border border-gray-300 px-3 text-xs text-gray-600 hover:bg-gray-50 shrink-0"
+            className="inline-flex h-9 items-center gap-1 rounded-full border border-[#2a3941] px-3 text-xs text-[#8fa3ad] hover:bg-[#1f2a30] shrink-0"
           >
             <X size={14} />
             {t('browse.filters.clearAll', { count: activeFilterCount })}

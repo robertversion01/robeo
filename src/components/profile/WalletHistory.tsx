@@ -20,9 +20,9 @@ const TYPE_LABELS: Record<string, string> = {
 };
 
 const STATUS_STYLES: Record<string, string> = {
-  pending: 'bg-amber-100 text-amber-800',
-  completed: 'bg-emerald-100 text-emerald-800',
-  failed: 'bg-red-100 text-red-800',
+  pending: 'bg-amber-950/50 text-amber-300 border border-amber-900/40',
+  completed: 'bg-emerald-950/50 text-emerald-300 border border-emerald-900/40',
+  failed: 'bg-red-950/50 text-red-300 border border-red-900/40',
 };
 
 export default function WalletHistory({ userId }: Props) {
@@ -81,30 +81,30 @@ export default function WalletHistory({ userId }: Props) {
   if (!userId) return null;
 
   return (
-    <section className="mt-4 rounded-xl border border-gray-200 bg-white p-4" aria-label="Pénztárca előzmények">
+    <section className="mt-4 rounded-xl border border-[#2a3941] bg-[#1a2328] p-4" aria-label="Pénztárca előzmények">
       <div className="flex items-center gap-2 mb-3">
-        <History size={18} className="text-[#007782]" aria-hidden />
-        <h3 className="text-sm font-bold text-gray-900">Pénztárca előzmények</h3>
+        <History size={18} className="text-[#38c7d0]" aria-hidden />
+        <h3 className="text-sm font-bold text-[#e7edf0]">Pénztárca előzmények</h3>
       </div>
 
       {loading ? (
-        <p className="text-xs text-gray-500">Betöltés…</p>
+        <p className="text-xs text-[#8fa3ad]">Betöltés…</p>
       ) : rows.length === 0 ? (
-        <p className="text-xs text-gray-500">
+        <p className="text-xs text-[#8fa3ad]">
           Még nincs könyvelt mozgás. Az első eladás után itt jelennek meg a tételek.
         </p>
       ) : (
-        <ul className="divide-y divide-gray-100 max-h-72 overflow-y-auto">
+        <ul className="divide-y divide-[#2a3941] max-h-72 overflow-y-auto">
           {rows.map((row) => (
             <li key={row.id} className="py-2.5 flex items-start justify-between gap-3 text-sm">
               <div className="min-w-0">
-                <p className="font-medium text-gray-900">
+                <p className="font-medium text-[#e7edf0]">
                   {TYPE_LABELS[row.entry_type] || row.entry_type}
                 </p>
-                <p className="text-xs text-gray-500 mt-0.5 line-clamp-1">
+                <p className="text-xs text-[#8fa3ad] mt-0.5 line-clamp-1">
                   {row.description || '—'}
                 </p>
-                <p className="text-[10px] text-gray-400 mt-0.5">
+                <p className="text-[10px] text-[#6b7d85] mt-0.5">
                   {new Date(row.created_at).toLocaleString('hu-HU')}
                 </p>
                 {row.product_id ? (
@@ -117,13 +117,13 @@ export default function WalletHistory({ userId }: Props) {
                 ) : null}
               </div>
               <div className="text-right shrink-0">
-                <p className="font-semibold tabular-nums text-gray-900">
+                <p className="font-semibold tabular-nums text-[#e7edf0]">
                   {row.entry_type === 'cashout' || row.entry_type === 'debit' ? '−' : '+'}
                   {formatPrice(row.amount_huf)}
                 </p>
                 <span
                   className={`inline-block mt-1 text-[10px] font-bold uppercase px-1.5 py-0.5 rounded ${
-                    STATUS_STYLES[row.status] || 'bg-gray-100 text-gray-600'
+                    STATUS_STYLES[row.status] || 'bg-[#243038] text-[#8fa3ad] border border-[#2a3941]'
                   }`}
                 >
                   {row.status === 'pending' ? 'Függő' : row.status === 'completed' ? 'Kész' : 'Sikertelen'}

@@ -161,7 +161,7 @@ export default function FavoritesPage() {
 
           {products.length > 0 ? (
             <div className="mb-5 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
-              <p className="text-gray-500 text-sm">{t('favorites.count', { count: products.length })}</p>
+              <p className="text-[#8fa3ad] text-sm">{t('favorites.count', { count: products.length })}</p>
               <FavoritesSortBar value={sort} onChange={setSort} />
             </div>
           ) : null}
@@ -191,8 +191,8 @@ export default function FavoritesPage() {
               <div className="mx-auto mb-4 flex h-16 w-16 items-center justify-center rounded-full bg-[#007782]/10 text-[#007782]">
                 <Heart size={32} strokeWidth={1.5} />
               </div>
-              <p className="text-lg font-semibold text-gray-800 mb-2">{t('favorites.empty')}</p>
-              <p className="text-sm text-gray-500 mb-6 max-w-sm mx-auto">{t('favorites.emptyHint')}</p>
+              <p className="text-lg font-semibold text-[#e7edf0] mb-2">{t('favorites.empty')}</p>
+              <p className="text-sm text-[#8fa3ad] mb-6 max-w-sm mx-auto">{t('favorites.emptyHint')}</p>
               <Link
                 href="/browse"
                 className="inline-flex items-center justify-center rounded-full bg-[#007782] px-6 py-2.5 text-sm font-semibold text-white hover:bg-[#00616b]"

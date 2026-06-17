@@ -121,27 +121,27 @@ export default function ImmersiveFilterSheet({
         aria-label={t('common.close')}
         onClick={closeFilterSheet}
       />
-      <div className="absolute bottom-0 left-0 right-0 max-h-[88dvh] rounded-t-2xl bg-white shadow-2xl flex flex-col pb-[env(safe-area-inset-bottom,0px)]">
+      <div className="absolute bottom-0 left-0 right-0 max-h-[88dvh] rounded-t-2xl bg-[#141d21] text-[#e7edf0] shadow-2xl flex flex-col pb-[env(safe-area-inset-bottom,0px)]">
         <div className="flex justify-center pt-2 pb-1 shrink-0" aria-hidden>
-          <div className="h-1 w-10 rounded-full bg-gray-300" />
+          <div className="h-1 w-10 rounded-full bg-[#3a4a52]" />
         </div>
-        <div className="flex items-center justify-between border-b border-gray-200 px-4 py-2.5 shrink-0">
+        <div className="flex items-center justify-between border-b border-[#2a3941] px-4 py-2.5 shrink-0">
           <div>
-            <h2 className="font-bold text-gray-900">{t('browse.immersive.filterSheetTitle')}</h2>
+            <h2 className="font-bold text-[#e7edf0]">{t('browse.immersive.filterSheetTitle')}</h2>
             {totalActive > 0 ? (
-              <p className="text-[11px] text-gray-500 mt-0.5">
+              <p className="text-[11px] text-[#8fa3ad] mt-0.5">
                 {t('browse.immersive.activeFilters', { count: totalActive })}
               </p>
             ) : null}
           </div>
-          <button type="button" onClick={closeFilterSheet} className="p-2 rounded-full hover:bg-gray-100 min-h-11 min-w-11">
+          <button type="button" onClick={closeFilterSheet} className="p-2 rounded-full hover:bg-[#1f2a30] min-h-11 min-w-11 text-[#b2c0c6]">
             <X size={20} />
           </button>
         </div>
         <div className="flex-1 overflow-y-auto px-4 py-3">
           {ROBEO_BP_MODE ? (
             <div className="mb-4">
-              <h3 className="mb-2 text-xs font-bold uppercase tracking-wide text-gray-700">
+              <h3 className="mb-2 text-xs font-bold uppercase tracking-wide text-[#8fa3ad]">
                 {t('browse.filters.district')}
               </h3>
               <BudapestDistrictGrid
@@ -184,7 +184,7 @@ export default function ImmersiveFilterSheet({
             listingType={draft.listingType ?? 'all'}
           />
         </div>
-        <div className="shrink-0 border-t border-gray-200 p-4">
+        <div className="shrink-0 border-t border-[#2a3941] p-4">
           <button
             type="button"
             disabled={counting}

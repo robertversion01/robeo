@@ -32,7 +32,7 @@ function DistrictCell({
     'relative flex h-9 min-w-0 items-center justify-center rounded-lg border text-xs font-semibold tabular-nums transition-colors touch-manipulation',
     active
       ? 'border-[#007782] bg-[#007782] text-white shadow-sm'
-      : 'border-[#007782]/20 bg-white text-[#007782] hover:border-[#007782]/45 hover:bg-[#007782]/8',
+      : 'border-[#2a3941] bg-[#1a2328] text-[#38c7d0] hover:border-[#38c7d0]/45 hover:bg-[#1f2a30]',
   );
 
   if (href) {
@@ -72,7 +72,7 @@ export default function BudapestDistrictGrid({
             'w-full rounded-lg border px-3 py-2 text-xs font-semibold transition-colors touch-manipulation',
             showAllActive
               ? 'border-[#007782] bg-[#007782] text-white'
-              : 'border-[#007782]/25 bg-white text-[#007782] hover:bg-[#007782]/8',
+              : 'border-[#2a3941] bg-[#1a2328] text-[#38c7d0] hover:bg-[#1f2a30]',
           )}
         >
           {allLabel}
@@ -84,7 +84,7 @@ export default function BudapestDistrictGrid({
             'block w-full rounded-lg border px-3 py-2 text-center text-xs font-semibold transition-colors',
             showAllActive
               ? 'border-[#007782] bg-[#007782] text-white'
-              : 'border-[#007782]/25 bg-white text-[#007782] hover:bg-[#007782]/8',
+              : 'border-[#2a3941] bg-[#1a2328] text-[#38c7d0] hover:bg-[#1f2a30]',
           )}
         >
           {allLabel}

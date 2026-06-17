@@ -52,18 +52,18 @@ export default function HomeDistrictPicker({ className }: Props) {
   return (
     <section
       className={cn(
-        'rounded-xl border border-[#007782]/15 bg-[#007782]/5 px-3 py-2.5',
+        'rounded-xl border border-[#2a3941] bg-[#141d21] px-3 py-2.5',
         className,
       )}
     >
       <div className="flex flex-wrap items-center gap-2">
         <MapPin size={14} className="text-[#007782] shrink-0" aria-hidden />
-        <p className="text-xs font-semibold text-gray-900">{t('bp.homeDistrict.label')}</p>
+        <p className="text-xs font-semibold text-[#e7edf0]">{t('bp.homeDistrict.label')}</p>
         <select
           value={value}
           disabled={saving}
           onChange={(e) => void save(e.target.value)}
-          className="ml-auto h-9 min-w-[140px] rounded-lg border border-[#007782]/25 bg-white px-2 text-xs text-gray-800 focus:outline-none focus:ring-2 focus:ring-[#007782]/30"
+          className="ml-auto h-9 min-w-[140px] rounded-lg border border-[#2a3941] bg-[#1a2328] px-2 text-xs text-[#e7edf0] focus:outline-none focus:ring-2 focus:ring-[#38c7d0]/40"
         >
           <option value="">{t('bp.homeDistrict.none')}</option>
           {BUDAPEST_DISTRICTS.map((d) => (
@@ -73,7 +73,7 @@ export default function HomeDistrictPicker({ className }: Props) {
           ))}
         </select>
       </div>
-      <p className="mt-1.5 text-[11px] text-gray-600">{t('bp.homeDistrict.hint')}</p>
+      <p className="mt-1.5 text-[11px] text-[#8fa3ad]">{t('bp.homeDistrict.hint')}</p>
       {value ? (
         <Link
           href={`/browse?dist=${encodeURIComponent(value)}#catalog`}

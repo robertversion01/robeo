@@ -22,7 +22,7 @@ export default function ListingTypeToggle({ value, onChange, className }: Props)
   return (
     <div
       className={cn(
-        'inline-flex rounded-full border border-gray-200 bg-gray-100 p-0.5',
+        'inline-flex rounded-full border border-[#2a3941] bg-[#121b20] p-0.5',
         className,
       )}
       role="tablist"
@@ -38,8 +38,8 @@ export default function ListingTypeToggle({ value, onChange, className }: Props)
           className={cn(
             'rounded-full px-3 py-1.5 text-xs font-semibold transition touch-manipulation whitespace-nowrap',
             value === opt.id
-              ? 'bg-white text-[#007782] shadow-sm'
-              : 'text-gray-600 hover:text-gray-900',
+              ? 'bg-[#17343a] text-[#9be2e8] shadow-sm'
+              : 'text-[#8fa3ad] hover:text-[#c5d0d6]',
           )}
         >
           {opt.label}

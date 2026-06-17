@@ -203,45 +203,45 @@ export default function WalletBalanceCard({ userId }: Props) {
 
   return (
     <section
-      className="mb-8 rounded-2xl border border-[#007782]/20 bg-gradient-to-br from-[#007782]/8 via-white to-emerald-50/80 p-5 shadow-sm"
+      className="mb-8 rounded-2xl border border-[#2a3941] bg-[#141d21] p-5 shadow-sm"
       aria-label="Belső egyenleg"
     >
       <div className="flex items-center gap-2 mb-4">
-        <div className="flex h-10 w-10 items-center justify-center rounded-full bg-[#007782]/15 text-[#007782]">
+        <div className="flex h-10 w-10 items-center justify-center rounded-full bg-[#17343a] text-[#38c7d0]">
           <Wallet size={20} aria-hidden />
         </div>
         <div>
-          <h2 className="text-lg font-bold text-gray-900">Egyenlegem</h2>
-          <p className="text-xs text-gray-500">Vinted-stílusú belső pénztárca</p>
+          <h2 className="text-lg font-bold text-[#e7edf0]">Egyenlegem</h2>
+          <p className="text-xs text-[#8fa3ad]">Vinted-stílusú belső pénztárca</p>
         </div>
       </div>
 
       <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 mb-4">
-        <div className="rounded-xl border border-amber-200/80 bg-amber-50/90 px-4 py-3">
-          <p className="text-xs font-medium uppercase tracking-wide text-amber-800/90">
+        <div className="rounded-xl border border-amber-900/45 bg-amber-950/35 px-4 py-3">
+          <p className="text-xs font-medium uppercase tracking-wide text-amber-300/90">
             Letétben lévő összeg
           </p>
-          <p className="mt-1 text-xl font-semibold text-amber-900 tabular-nums">
+          <p className="mt-1 text-xl font-semibold text-amber-200 tabular-nums">
             {loading ? '…' : formatPrice(wallet.pending_balance)}
           </p>
-          <p className="text-[11px] text-amber-700/80 mt-0.5">
+          <p className="text-[11px] text-amber-300/70 mt-0.5">
             Amíg a vevő nem erősíti meg az átvételt
           </p>
         </div>
 
-        <div className="rounded-xl border border-emerald-200/80 bg-emerald-50/90 px-4 py-3">
-          <p className="text-xs font-medium uppercase tracking-wide text-emerald-800/90">
+        <div className="rounded-xl border border-emerald-900/45 bg-emerald-950/35 px-4 py-3">
+          <p className="text-xs font-medium uppercase tracking-wide text-emerald-300/90">
             Elérhető egyenleg
           </p>
-          <p className="mt-1 text-2xl font-bold text-emerald-700 tabular-nums">
+          <p className="mt-1 text-2xl font-bold text-emerald-300 tabular-nums">
             {loading ? '…' : formatPrice(wallet.available_balance)}
           </p>
-          <p className="text-[11px] text-emerald-700/80 mt-0.5">Kifizethető összeg</p>
+          <p className="text-[11px] text-emerald-300/70 mt-0.5">Kifizethető összeg</p>
         </div>
       </div>
 
       {!connectOnboarded ? (
-        <p className="text-xs text-amber-700 mb-2">
+        <p className="text-xs text-amber-300/85 mb-2">
           A kifizetéshez egyszeri bankszámla-ellenőrzés szükséges (Stripe Connect).
         </p>
       ) : null}
@@ -256,7 +256,7 @@ export default function WalletBalanceCard({ userId }: Props) {
         Kifizetés bankszámlára
       </button>
 
-      <p className="mt-3 text-[11px] text-gray-500 leading-relaxed">
+      <p className="mt-3 text-[11px] text-[#8fa3ad] leading-relaxed">
         A pénztárca és kifizetés a{' '}
         <Link href="/legal/pay" className="font-semibold text-[#007782] hover:underline" target="_blank">
           ROBEO Pay ÁSZF

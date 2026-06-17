@@ -259,8 +259,8 @@ export default function AppNotificationsFeed({ embedded = false }: { embedded?: 
                   className={cn(
                     'rounded-xl border p-4 transition-colors',
                     unread
-                      ? 'border-[#007782]/30 bg-[#007782]/5'
-                      : 'border-gray-200 bg-white',
+                      ? 'border-[#38c7d0]/35 bg-[#17343a]/60'
+                      : 'border-[#2a3941] bg-[#1a2328]',
                   )}
                 >
                   <div className="flex items-start gap-3">
@@ -273,9 +273,9 @@ export default function AppNotificationsFeed({ embedded = false }: { embedded?: 
                       <Icon size={18} aria-hidden />
                     </span>
                     <div className="flex-1 min-w-0">
-                      <p className="font-semibold text-gray-900 text-sm">{n.title}</p>
-                      {n.body ? <p className="text-sm text-gray-600 mt-1">{n.body}</p> : null}
-                      <p className="text-[10px] text-gray-400 mt-2">
+                      <p className="font-semibold text-[#e7edf0] text-sm">{n.title}</p>
+                      {n.body ? <p className="text-sm text-[#8fa3ad] mt-1">{n.body}</p> : null}
+                      <p className="text-[10px] text-[#6b7d85] mt-2">
                         {formatWhen(n.created_at, locale)}
                       </p>
                     </div>
