@@ -328,10 +328,19 @@ export default function ProductPage({ params }: { params: Promise<{ id: string }
             <div>
               {/* Main Image */}
               <div
-                className="relative aspect-square md:rounded-xl md:overflow-hidden bg-[#0f1a1d]/5 mb-2 border border-gray-200 touch-pan-y"
+                className="relative aspect-square md:rounded-xl md:overflow-hidden bg-[#0f1a1d]/8 mb-2 border border-gray-200 touch-pan-y"
                 onTouchStart={handleImageTouchStart}
                 onTouchEnd={handleImageTouchEnd}
               >
+                <ProductImage
+                  src={pdpMainSrc}
+                  alt=""
+                  aria-hidden
+                  loading="eager"
+                  fetchPriority="high"
+                  decoding="async"
+                  className={`pointer-events-none absolute inset-0 h-full w-full object-cover blur-xl scale-110 opacity-45 ${isSold ? 'grayscale' : ''}`}
+                />
                 <ProductImage
                   src={pdpMainSrc}
                   srcSet={pdpMainSrcSet}
@@ -342,7 +351,7 @@ export default function ProductPage({ params }: { params: Promise<{ id: string }
                   loading="eager"
                   fetchPriority="high"
                   decoding="async"
-                  className={`w-full h-full object-contain transition-transform duration-300 ${isZoomed ? 'scale-125' : 'scale-100'} ${isSold ? 'opacity-70 grayscale' : ''}`}
+                  className={`relative z-[1] w-full h-full object-contain transition-transform duration-300 ${isZoomed ? 'scale-125' : 'scale-100'} ${isSold ? 'opacity-70 grayscale' : ''}`}
                   onError={() => markGalleryUrlFailed(activeImage)}
                 />
                 {isSold ? (
