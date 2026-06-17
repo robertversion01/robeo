@@ -204,7 +204,7 @@ export default function ProductPage({ params }: { params: Promise<{ id: string }
 
   if (loading) {
     return (
-      <div className="min-h-screen bg-white text-gray-900 flex items-center justify-center">
+      <div className="min-h-screen bg-[#11171a] text-[#e7edf0] flex items-center justify-center">
         <div className="animate-spin h-12 w-12 border-4 border-accent border-t-transparent rounded-full"></div>
       </div>
     );
@@ -212,7 +212,7 @@ export default function ProductPage({ params }: { params: Promise<{ id: string }
 
   if (!product) {
     return (
-      <div className="min-h-screen bg-white text-gray-900 flex flex-col items-center justify-center px-4">
+      <div className="min-h-screen bg-[#11171a] text-[#e7edf0] flex flex-col items-center justify-center px-4">
         <h2 className="text-xl mb-4">{t('product.notFound')}</h2>
         <Link href="/browse" className="text-[#007782] hover:underline">{t('product.backToBrowse')}</Link>
       </div>
@@ -221,7 +221,7 @@ export default function ProductPage({ params }: { params: Promise<{ id: string }
 
   if (productImages.length === 0) {
     return (
-      <div className="min-h-screen bg-white text-gray-900 flex flex-col items-center justify-center px-4">
+      <div className="min-h-screen bg-[#11171a] text-[#e7edf0] flex flex-col items-center justify-center px-4">
         <h2 className="text-xl mb-2 text-center">{t('product.noImages')}</h2>
         <p className="text-gray-500 text-sm mb-4 text-center">{t('product.noImagesHint')}</p>
         <Link href="/browse" className="text-[#007782] hover:underline">{t('product.backToBrowse')}</Link>
@@ -267,7 +267,7 @@ export default function ProductPage({ params }: { params: Promise<{ id: string }
   };
 
   return (
-    <div className="min-h-screen bg-white text-gray-900">
+    <div className="min-h-screen bg-[#11171a] text-[#e7edf0]">
 
       {/* Offer Modal */}
       <OfferModal

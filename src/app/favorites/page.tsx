@@ -123,14 +123,14 @@ export default function FavoritesPage() {
 
   if (loading) {
     return (
-      <div className="min-h-screen bg-white text-gray-900 flex items-center justify-center">
+      <div className="min-h-screen bg-[#11171a] text-[#e7edf0] flex items-center justify-center">
         <div className="animate-spin h-10 w-10 border-4 border-[#007782] border-t-transparent rounded-full" />
       </div>
     );
   }
 
   return (
-    <div className="min-h-screen bg-white text-gray-900">
+    <div className="min-h-screen bg-[#11171a] text-[#e7edf0]">
       <main className={`${MAIN_TOP_PADDING} px-3 pb-2 md:px-6 md:pb-12`}>
         <div className="max-w-7xl mx-auto">
           <PageHeader title={t('favorites.title')} subtitle={t('favorites.subtitle')} />
@@ -139,19 +139,19 @@ export default function FavoritesPage() {
           <div className="mb-4 grid grid-cols-1 gap-2 sm:grid-cols-3">
             <Link
               href="/browse#catalog"
-              className="rounded-xl border border-gray-200 bg-white px-3 py-2 text-xs font-semibold text-gray-700 hover:border-[#007782]/40 hover:text-[#007782]"
+              className="rounded-xl border border-[#2a3941] bg-[#1a2328] px-3 py-2 text-xs font-semibold text-[#b2c0c6] hover:border-[#38c7d0]/40 hover:text-[#38c7d0]"
             >
               {t('favorites.returnReasonFresh')}
             </Link>
             <Link
               href="/browse?sort=price_asc#catalog"
-              className="rounded-xl border border-gray-200 bg-white px-3 py-2 text-xs font-semibold text-gray-700 hover:border-[#007782]/40 hover:text-[#007782]"
+              className="rounded-xl border border-[#2a3941] bg-[#1a2328] px-3 py-2 text-xs font-semibold text-[#b2c0c6] hover:border-[#38c7d0]/40 hover:text-[#38c7d0]"
             >
               {t('favorites.returnReasonDeals')}
             </Link>
             <Link
               href="/profile?tab=settings"
-              className="rounded-xl border border-gray-200 bg-white px-3 py-2 text-xs font-semibold text-gray-700 hover:border-[#007782]/40 hover:text-[#007782]"
+              className="rounded-xl border border-[#2a3941] bg-[#1a2328] px-3 py-2 text-xs font-semibold text-[#b2c0c6] hover:border-[#38c7d0]/40 hover:text-[#38c7d0]"
             >
               {t('favorites.returnReasonAlerts')}
             </Link>

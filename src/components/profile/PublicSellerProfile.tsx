@@ -170,7 +170,7 @@ export default function PublicSellerProfile({ sellerId }: Props) {
   }, [products, shopCategory, shopQuery]);
 
   return (
-    <main className={`min-h-screen bg-white ${MAIN_TOP_PADDING} px-4`}>
+    <main className={`min-h-screen bg-[#11171a] text-[#e7edf0] ${MAIN_TOP_PADDING} px-4`}>
       <div className="max-w-4xl mx-auto">
         <div className="rounded-2xl border border-gray-200 bg-gradient-to-br from-[#007782]/5 to-white p-5 mb-6">
           <h1 className="text-2xl font-bold text-gray-900">{displayName || t('publicSeller.defaultName')}</h1>

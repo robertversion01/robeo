@@ -78,7 +78,7 @@ export default function RootLayout({
         ) : null}
         <script dangerouslySetInnerHTML={{ __html: DEPLOY_SYNC_SCRIPT }} />
       </head>
-      <body className="min-h-full flex flex-col overflow-x-clip max-w-[100vw]">
+      <body className="min-h-full flex flex-col overflow-x-clip max-w-[100vw] bg-[#11171a] text-[#e7edf0]">
         <AppChrome>{children}</AppChrome>
         <Toaster 
           position="bottom-center"

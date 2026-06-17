@@ -46,7 +46,7 @@ export default function OrdersPage() {
   // Magyarazo uzenet + chatre vivo gomb. V1 path teljesen erintetlen.
   if (ROBEO_BP_MODE) {
     return (
-      <div className="min-h-screen bg-white text-gray-900">
+      <div className="min-h-screen bg-[#11171a] text-[#e7edf0]">
         <main className={`${MAIN_TOP_PADDING} px-4`}>
           <div className="max-w-lg mx-auto py-8">
             <div className="rounded-2xl border border-emerald-300 bg-emerald-50/80 p-6 text-center">
@@ -73,7 +73,7 @@ export default function OrdersPage() {
   }
 
   return (
-    <div className="min-h-screen bg-white text-gray-900">
+    <div className="min-h-screen bg-[#11171a] text-[#e7edf0]">
       <main className={`${MAIN_TOP_PADDING} px-4`}>
         <div className="max-w-lg mx-auto">
           <PageHeader title={t('orders.title')} subtitle={t('orders.subtitle')} />

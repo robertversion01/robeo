@@ -93,13 +93,13 @@ export default function ProductGrid({
           <div className="-mt-8 mb-4 flex flex-wrap items-center justify-center gap-2">
             <Link
               href="/browse?sort=newest#catalog"
-              className="rounded-full border border-gray-200 bg-white px-3 py-1.5 text-xs font-semibold text-gray-700 hover:border-[#007782]/35 hover:text-[#007782]"
+              className="rounded-full border border-[#2a3941] bg-[#1a2328] px-3 py-1.5 text-xs font-semibold text-[#b2c0c6] hover:border-[#38c7d0]/35 hover:text-[#38c7d0]"
             >
               {t('browse.empty.exploreFresh')}
             </Link>
             <Link
               href="/favorites"
-              className="rounded-full border border-gray-200 bg-white px-3 py-1.5 text-xs font-semibold text-gray-700 hover:border-[#007782]/35 hover:text-[#007782]"
+              className="rounded-full border border-[#2a3941] bg-[#1a2328] px-3 py-1.5 text-xs font-semibold text-[#b2c0c6] hover:border-[#38c7d0]/35 hover:text-[#38c7d0]"
             >
               {t('browse.empty.openWatchlist')}
             </Link>
@@ -137,19 +137,19 @@ export default function ProductGrid({
         <div className="-mt-8 mb-4 flex flex-wrap items-center justify-center gap-2">
           <Link
             href="/browse#catalog"
-            className="rounded-full border border-gray-200 bg-white px-3 py-1.5 text-xs font-semibold text-gray-700 hover:border-[#007782]/35 hover:text-[#007782]"
+            className="rounded-full border border-[#2a3941] bg-[#1a2328] px-3 py-1.5 text-xs font-semibold text-[#b2c0c6] hover:border-[#38c7d0]/35 hover:text-[#38c7d0]"
           >
             {t('browse.empty.tryBroader')}
           </Link>
           <Link
             href="/favorites"
-            className="rounded-full border border-gray-200 bg-white px-3 py-1.5 text-xs font-semibold text-gray-700 hover:border-[#007782]/35 hover:text-[#007782]"
+            className="rounded-full border border-[#2a3941] bg-[#1a2328] px-3 py-1.5 text-xs font-semibold text-[#b2c0c6] hover:border-[#38c7d0]/35 hover:text-[#38c7d0]"
           >
             {t('browse.empty.openWatchlist')}
           </Link>
           <Link
             href="/messages"
-            className="rounded-full border border-gray-200 bg-white px-3 py-1.5 text-xs font-semibold text-gray-700 hover:border-[#007782]/35 hover:text-[#007782]"
+            className="rounded-full border border-[#2a3941] bg-[#1a2328] px-3 py-1.5 text-xs font-semibold text-[#b2c0c6] hover:border-[#38c7d0]/35 hover:text-[#38c7d0]"
           >
             {t('browse.empty.openMessages')}
           </Link>

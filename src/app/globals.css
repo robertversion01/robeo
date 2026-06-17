@@ -431,6 +431,11 @@ input, textarea, select {
   box-shadow: 0 2px 10px rgba(0, 0, 0, 0.22);
 }
 
+.landing-hero-tile img {
+  object-fit: cover;
+  object-position: center top;
+}
+
 .landing-hero-cta {
   background: linear-gradient(
     180deg,

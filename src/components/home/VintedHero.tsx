@@ -5,7 +5,7 @@ import Link from 'next/link';
 import { motion, useReducedMotion } from 'framer-motion';
 import { useTranslation } from 'react-i18next';
 import { formatPrice } from '@/lib/utils';
-import { getOptimizedImageUrl } from '@/lib/imageUtils';
+import { getOptimizedImageUrl, getOptimizedImageSrcSet } from '@/lib/imageUtils';
 import ProductImage from '@/components/product/ProductImage';
 import GuestLandingHeader from '@/components/home/GuestLandingHeader';
 import BudapestBetaBanner from '@/components/home/BudapestBetaBanner';
@@ -39,17 +39,19 @@ type HeroTile = {
   tileKey: string;
 };
 
+const HERO_TILE_IMAGE = { height: 200, resize: 'cover' as const };
+const FEATURED_STRIP_IMAGE = { height: 150, resize: 'cover' as const };
 const TILE_HEIGHTS = [
-  'h-[8.75rem] sm:h-[9.5rem] md:h-[10.5rem] lg:h-[11.5rem] xl:h-[12.5rem]',
-  'h-[10rem] sm:h-[10.75rem] md:h-[11.75rem] lg:h-[12.75rem] xl:h-[13.75rem]',
-  'h-[9.25rem] sm:h-[10rem] md:h-[11rem] lg:h-[12rem] xl:h-[13rem]',
-  'h-[10.5rem] sm:h-[11.25rem] md:h-[12.25rem] lg:h-[13.25rem] xl:h-[14.25rem]',
-  'h-[8.5rem] sm:h-[9.25rem] md:h-[10.25rem] lg:h-[11.25rem] xl:h-[12.25rem]',
-  'h-[9.75rem] sm:h-[10.5rem] md:h-[11.5rem] lg:h-[12.5rem] xl:h-[13.5rem]',
-  'h-[10.25rem] sm:h-[11rem] md:h-[12rem] lg:h-[13rem] xl:h-[14rem]',
-  'h-[9.5rem] sm:h-[10.25rem] md:h-[11.25rem] lg:h-[12.25rem] xl:h-[13.25rem]',
-  'h-[10.75rem] sm:h-[11.5rem] md:h-[12.5rem] lg:h-[13.5rem] xl:h-[14.5rem]',
-  'h-[9rem] sm:h-[9.75rem] md:h-[10.75rem] lg:h-[11.75rem] xl:h-[12.75rem]',
+  'h-[7.25rem] sm:h-[9.5rem] md:h-[10.5rem] lg:h-[11.5rem] xl:h-[12.5rem]',
+  'h-[8.25rem] sm:h-[10.75rem] md:h-[11.75rem] lg:h-[12.75rem] xl:h-[13.75rem]',
+  'h-[7.75rem] sm:h-[10rem] md:h-[11rem] lg:h-[12rem] xl:h-[13rem]',
+  'h-[8.75rem] sm:h-[11.25rem] md:h-[12.25rem] lg:h-[13.25rem] xl:h-[14.25rem]',
+  'h-[7rem] sm:h-[9.25rem] md:h-[10.25rem] lg:h-[11.25rem] xl:h-[12.25rem]',
+  'h-[8rem] sm:h-[10.5rem] md:h-[11.5rem] lg:h-[12.5rem] xl:h-[13.5rem]',
+  'h-[8.5rem] sm:h-[11rem] md:h-[12rem] lg:h-[13rem] xl:h-[14rem]',
+  'h-[7.5rem] sm:h-[10.25rem] md:h-[11.25rem] lg:h-[12.25rem] xl:h-[13.25rem]',
+  'h-[9rem] sm:h-[11.5rem] md:h-[12.5rem] lg:h-[13.5rem] xl:h-[14.5rem]',
+  'h-[7.5rem] sm:h-[9.75rem] md:h-[10.75rem] lg:h-[11.75rem] xl:h-[12.75rem]',
 ];
 
 const FLOAT_SECONDS_BASE = 4.8;
@@ -176,9 +178,13 @@ function HeroImageTile({
       className={`landing-hero-tile block w-full shrink-0 overflow-hidden rounded-lg sm:rounded-xl md:rounded-2xl ${heightClass}`}
     >
       <ProductImage
-        src={getOptimizedImageUrl(tile.imageUrl, 320, 70)}
+        src={getOptimizedImageUrl(tile.imageUrl, 160, 72, HERO_TILE_IMAGE)}
+        srcSet={getOptimizedImageSrcSet(tile.imageUrl, [120, 160, 200], 72, HERO_TILE_IMAGE)}
+        sizes="(max-width: 640px) 33vw, (max-width: 1024px) 20vw, 16vw"
         alt=""
         role="presentation"
+        width={160}
+        height={200}
         className="h-full w-full object-cover"
         loading={priority ? 'eager' : 'lazy'}
         fetchPriority={priority ? 'high' : 'auto'}
@@ -408,24 +414,24 @@ export default function VintedHero({
     <section className={`w-full overflow-hidden ${compact ? 'mb-2 mt-0' : 'mb-3 mt-0'}`}>
       <BudapestBetaBanner variant="inline" />
       <div
-        className={`rounded-xl border border-gray-200 bg-white ${
+        className={`rounded-xl border border-[#27363d] bg-[#1a2328] ${
           compact ? 'p-1.5 shadow-sm' : 'p-2'
         }`}
       >
         {!compact ? (
           <div className="mb-2 px-1">
-            <h2 className="text-sm font-semibold text-gray-900 md:text-base">Kiemelt ajánlatok</h2>
+            <h2 className="text-sm font-semibold text-[#e7edf0] md:text-base">Kiemelt ajánlatok</h2>
           </div>
         ) : (
           <div className="mb-1 flex items-center justify-between gap-2 px-0.5">
-            <h2 className="text-[11px] font-semibold uppercase tracking-wide text-gray-500">
+            <h2 className="text-[11px] font-semibold uppercase tracking-wide text-[#8fa3ad]">
               Kiemelt
             </h2>
           </div>
         )}
         {featuredProducts.length === 0 ? (
           <div
-            className={`rounded-lg border border-dashed border-gray-300 text-center text-gray-500 ${
+            className={`rounded-lg border border-dashed border-[#27363d] text-center text-[#8fa3ad] ${
               compact ? 'px-3 py-4 text-xs' : 'px-4 py-8 text-sm'
             }`}
           >
@@ -444,7 +450,7 @@ export default function VintedHero({
               <Link
                 key={`${item.id}-${idx}`}
                 href={`/products/${item.id}`}
-                className={`shrink-0 rounded-lg border border-gray-200/90 bg-white p-0.5 transition-colors hover:border-[#007782]/45 ${
+                className={`shrink-0 rounded-lg border border-[#27363d] bg-[#1a2328] p-0.5 transition-colors hover:border-[#4baab5]/45 ${
                   compact
                     ? 'w-[30%] min-w-[100px] sm:w-[22%] sm:min-w-[118px]'
                     : 'w-[37%] min-w-[132px] sm:w-[26%] md:w-[20%] lg:w-[14%]'
@@ -452,12 +458,16 @@ export default function VintedHero({
               >
                 <div className="flex h-full flex-col">
                   <div
-                    className={`w-full overflow-hidden rounded-md bg-[#0f1a1d]/5 ${
+                    className={`w-full overflow-hidden rounded-md bg-[#0f1a1d] ${
                       compact ? 'h-[112px] sm:h-[128px]' : 'h-[168px] sm:h-[182px]'
                     }`}
                   >
                     <ProductImage
-                      src={getOptimizedImageUrl(imageSrc, 320, 75)}
+                      src={getOptimizedImageUrl(imageSrc, 120, 75, FEATURED_STRIP_IMAGE)}
+                      srcSet={getOptimizedImageSrcSet(imageSrc, [100, 120, 160], 75, FEATURED_STRIP_IMAGE)}
+                      sizes={compact ? '100px' : '132px'}
+                      width={120}
+                      height={150}
                       alt={item.name}
                       loading={idx < 3 ? 'eager' : 'lazy'}
                       fetchPriority={idx < 3 ? 'high' : 'auto'}
@@ -479,16 +489,16 @@ export default function VintedHero({
                     </p>
                     {!compact && (
                       <>
-                        <p className="truncate text-[11px] text-gray-500">
+                        <p className="truncate text-[11px] text-[#8fa3ad]">
                           Méret: {item.size || '—'}
                         </p>
-                        <p className="truncate text-[11px] text-gray-700">
+                        <p className="truncate text-[11px] text-[#c5d0d6]">
                           {item.brand || item.name}
                         </p>
                       </>
                     )}
                     {compact && (
-                      <p className="truncate text-[10px] leading-tight text-gray-500">
+                      <p className="truncate text-[10px] leading-tight text-[#8fa3ad]">
                         {(item.brand || item.name)?.slice(0, 22)}
                         {(item.brand || item.name)?.length > 22 ? '…' : ''}
                       </p>

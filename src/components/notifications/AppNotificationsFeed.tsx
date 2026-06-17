@@ -316,5 +316,5 @@ export default function AppNotificationsFeed({ embedded = false }: { embedded?: 
     return (
       <div className="px-4 pb-[calc(3.75rem+1rem+env(safe-area-inset-bottom,0px))]">{body}</div>
     );
-  return <main className={`min-h-screen bg-white ${MAIN_TOP_PADDING} px-4`}>{body}</main>;
+  return <main className={`min-h-screen bg-[#11171a] text-[#e7edf0] ${MAIN_TOP_PADDING} px-4`}>{body}</main>;
 }
