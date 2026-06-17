@@ -69,16 +69,16 @@ export default function FreshOffersStrip({
     <section className={className}>
       <div className="mb-2">
         <div className="flex items-center justify-between gap-2">
-          <h2 className="text-sm md:text-base font-semibold text-gray-900">{resolvedTitle}</h2>
+          <h2 className="text-sm md:text-base font-semibold text-[#e7edf0]">{resolvedTitle}</h2>
           <Link href="/browse" className="text-xs text-[#007782] hover:underline shrink-0">
             {t('favorites.discoverMore')}
           </Link>
         </div>
-        <p className="text-xs text-gray-500 mt-0.5">{resolvedHint}</p>
+        <p className="text-xs text-[#8fa3ad] mt-0.5">{resolvedHint}</p>
       </div>
 
       {items.length === 0 ? (
-        <div className="card-base px-4 py-3 text-sm text-gray-500">{t('favorites.discoverEmpty')}</div>
+        <div className="card-base px-4 py-3 text-sm text-[#8fa3ad]">{t('favorites.discoverEmpty')}</div>
       ) : (
         <div className="flex gap-3 overflow-x-auto pb-2">
           {items.map((item) => (
@@ -88,7 +88,7 @@ export default function FreshOffersStrip({
               className="min-w-[220px] max-w-[220px] card-base p-2.5 hover:border-[#007782]/40 transition-colors"
             >
               <div className="flex items-center gap-2.5">
-                <div className="h-14 w-14 bg-gray-100 rounded-lg overflow-hidden shrink-0">
+                <div className="h-14 w-14 bg-[#1a2328] rounded-lg overflow-hidden shrink-0">
                   {item.image_url ? (
                     <img
                       src={getOptimizedImageUrl(item.image_url, 112, 80)}
@@ -98,11 +98,11 @@ export default function FreshOffersStrip({
                       className="h-full w-full object-cover"
                     />
                   ) : (
-                    <div className="h-full w-full flex items-center justify-center text-gray-400">📦</div>
+                    <div className="h-full w-full flex items-center justify-center text-[#6b7d85]">📦</div>
                   )}
                 </div>
                 <div className="min-w-0">
-                  <p className="text-xs text-gray-500 truncate">{item.name || t('product.defaultProduct')}</p>
+                  <p className="text-xs text-[#8fa3ad] truncate">{item.name || t('product.defaultProduct')}</p>
                   <p className="text-sm font-semibold text-[#007782] tabular-nums">
                     {item.price.toLocaleString(locale)} {t('common.currencyHuf')}
                   </p>

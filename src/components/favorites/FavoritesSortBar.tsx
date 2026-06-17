@@ -35,7 +35,7 @@ export default function FavoritesSortBar({ value, onChange, className }: Props) 
             'rounded-full border px-3.5 py-1.5 text-xs font-semibold transition-colors touch-manipulation',
             value === sort.id
               ? 'border-[#007782] bg-[#007782] text-white'
-              : 'border-gray-200 bg-white text-gray-700 hover:border-gray-300',
+              : 'border-[#2a3941] bg-[#1a2328] text-[#b2c0c6] hover:border-[#2a3941]',
           )}
         >
           {t(sort.key)}

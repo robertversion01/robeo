@@ -113,9 +113,9 @@ export default function AdminReportedItems() {
   };
 
   return (
-    <div className="mt-6 border-t border-gray-200 pt-4">
+    <div className="mt-6 border-t border-[#2a3941] pt-4">
       <div className="flex items-center justify-between gap-2 mb-3">
-        <h3 className="text-sm font-bold text-gray-900">
+        <h3 className="text-sm font-bold text-[#e7edf0]">
           🚩 Bejelentett termékek
           {pendingCount > 0 ? (
             <span className="ml-2 inline-flex min-w-[1.25rem] items-center justify-center rounded-full bg-red-600 px-1.5 py-0.5 text-[10px] font-bold text-white">
@@ -127,7 +127,7 @@ export default function AdminReportedItems() {
           type="button"
           onClick={() => void load()}
           disabled={loading}
-          className="inline-flex items-center gap-1 rounded-md border border-gray-300 px-2 py-1 text-xs font-medium text-gray-700 hover:bg-gray-50 disabled:opacity-50"
+          className="inline-flex items-center gap-1 rounded-md border border-[#2a3941] px-2 py-1 text-xs font-medium text-[#b2c0c6] hover:bg-[#1f2a30] disabled:opacity-50"
           aria-label="Frissítés"
         >
           <RefreshCw size={14} className={loading ? 'animate-spin' : ''} />
@@ -136,9 +136,9 @@ export default function AdminReportedItems() {
       </div>
 
       {loading ? (
-        <p className="text-xs text-gray-500">Bejelentések betöltése…</p>
+        <p className="text-xs text-[#8fa3ad]">Bejelentések betöltése…</p>
       ) : reports.length === 0 ? (
-        <p className="text-xs text-gray-500">Nincs függő (pending) bejelentés.</p>
+        <p className="text-xs text-[#8fa3ad]">Nincs függő (pending) bejelentés.</p>
       ) : (
         <ul className="space-y-3 max-h-[28rem] overflow-y-auto pr-1">
           {reports.map((r) => {
@@ -147,9 +147,9 @@ export default function AdminReportedItems() {
             return (
               <li
                 key={r.id}
-                className="rounded-lg border border-red-200/80 bg-white p-3 flex gap-3 shadow-sm"
+                className="rounded-lg border border-red-900/45/80 bg-[#1a2328] p-3 flex gap-3 shadow-sm"
               >
-                <div className="w-14 h-14 rounded-md bg-gray-100 overflow-hidden shrink-0">
+                <div className="w-14 h-14 rounded-md bg-[#1a2328] overflow-hidden shrink-0">
                   {p?.image_url ? (
                     <img
                       src={getOptimizedImageUrl(p.image_url, 112, 112)}
@@ -166,7 +166,7 @@ export default function AdminReportedItems() {
                   <div className="flex flex-wrap items-start justify-between gap-1">
                     <p className="text-sm font-semibold truncate">{p?.name || r.product_id}</p>
                     {productDeleted ? (
-                      <span className="text-[10px] font-bold uppercase text-red-700 bg-red-50 px-1.5 py-0.5 rounded">
+                      <span className="text-[10px] font-bold uppercase text-red-300 bg-red-950/40 px-1.5 py-0.5 rounded">
                         törölve
                       </span>
                     ) : null}
@@ -175,9 +175,9 @@ export default function AdminReportedItems() {
                     {REASON_LABELS[r.reason] || r.reason}
                   </p>
                   {r.details ? (
-                    <p className="text-xs text-gray-600 mt-1 line-clamp-3">{r.details}</p>
+                    <p className="text-xs text-[#8fa3ad] mt-1 line-clamp-3">{r.details}</p>
                   ) : null}
-                  <p className="text-[10px] text-gray-400 mt-1">
+                  <p className="text-[10px] text-[#6b7d85] mt-1">
                     {new Date(r.created_at).toLocaleString('hu-HU')}
                     {r.reporter?.email ? ` · ${r.reporter.email}` : ''}
                   </p>
@@ -204,7 +204,7 @@ export default function AdminReportedItems() {
                       type="button"
                       disabled={busyId === r.id}
                       onClick={() => void act(r, 'dismiss')}
-                      className="text-xs font-semibold rounded-md border border-gray-300 px-2.5 py-1.5 hover:bg-gray-50 disabled:opacity-50"
+                      className="text-xs font-semibold rounded-md border border-[#2a3941] px-2.5 py-1.5 hover:bg-[#1f2a30] disabled:opacity-50"
                     >
                       Elvetés
                     </button>

@@ -101,7 +101,7 @@ export default function ChatSystemMessageBubble({
       body = (
         <>
           <p className="font-medium">{t('chatOffer.sellerAcceptedBody')}</p>
-          <p className="mt-1 text-xs text-gray-600">{t('chatOffer.sellerWaitingBody')}</p>
+          <p className="mt-1 text-xs text-[#8fa3ad]">{t('chatOffer.sellerWaitingBody')}</p>
         </>
       );
     } else {
@@ -156,7 +156,7 @@ export default function ChatSystemMessageBubble({
 
   return (
     <div className="flex justify-center px-2">
-      <div className="max-w-md rounded-xl border border-[#007782]/20 bg-[#007782]/5 px-4 py-2.5 text-center text-sm text-gray-700">
+      <div className="max-w-md rounded-xl border border-[#007782]/20 bg-[#007782]/5 px-4 py-2.5 text-center text-sm text-[#b2c0c6]">
         {role ? (
           <div className="flex justify-center mb-1.5">
             <SystemMessageRoleBadge role={role} />
@@ -168,7 +168,7 @@ export default function ChatSystemMessageBubble({
             <button
               type="button"
               onClick={() => focusOrderPanel()}
-              className="inline-flex items-center justify-center min-h-10 rounded-full border border-[#007782]/30 bg-white px-4 py-2 text-xs font-semibold text-[#007782] touch-manipulation"
+              className="inline-flex items-center justify-center min-h-10 rounded-full border border-[#007782]/30 bg-[#1a2328] px-4 py-2 text-xs font-semibold text-[#007782] touch-manipulation"
             >
               {role === 'seller'
                 ? t('chatTransaction.openShipping')
@@ -189,7 +189,7 @@ export default function ChatSystemMessageBubble({
           productId={msg.product_id}
           viewerRole={audience === 'buyer' ? 'buyer' : audience === 'seller' ? 'seller' : 'other'}
         />
-        <div className="mt-1 text-[10px] text-gray-400">
+        <div className="mt-1 text-[10px] text-[#6b7d85]">
           <ClientFormattedTime iso={msg.created_at} locale={timeLocale} />
         </div>
       </div>

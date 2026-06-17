@@ -13,7 +13,7 @@ export default function ProfileSignOutBar() {
   };
 
   return (
-    <div className="mt-8 border-t border-gray-200 pt-4 pb-2">
+    <div className="mt-8 border-t border-[#2a3941] pt-4 pb-2">
       <button
         type="button"
         onClick={() => void handleSignOut()}

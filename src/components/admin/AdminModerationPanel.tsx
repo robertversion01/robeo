@@ -99,7 +99,7 @@ export default function AdminModerationPanel() {
   return (
     <div className="space-y-4">
       <div className="flex items-center justify-between gap-2">
-        <h3 className="text-sm font-bold text-gray-900">{t('moderation.title')}</h3>
+        <h3 className="text-sm font-bold text-[#e7edf0]">{t('moderation.title')}</h3>
         <button
           type="button"
           onClick={() => void load()}
@@ -112,25 +112,25 @@ export default function AdminModerationPanel() {
 
       {/* Repeat offenders */}
       <div>
-        <h4 className="flex items-center gap-1.5 text-xs font-bold text-gray-700">
+        <h4 className="flex items-center gap-1.5 text-xs font-bold text-[#b2c0c6]">
           <AlertTriangle size={13} className="text-amber-500" />
           {t('moderation.repeatTitle')}
         </h4>
         {offenders.length === 0 ? (
-          <p className="mt-1 text-xs text-gray-500">{t('moderation.repeatEmpty')}</p>
+          <p className="mt-1 text-xs text-[#8fa3ad]">{t('moderation.repeatEmpty')}</p>
         ) : (
           <ul className="mt-2 space-y-1.5">
             {offenders.map((o) => (
               <li
                 key={o.id}
-                className="flex items-center justify-between gap-2 rounded-lg border border-amber-200 bg-amber-50/60 px-3 py-2 text-xs"
+                className="flex items-center justify-between gap-2 rounded-lg border border-amber-900/45 bg-amber-950/35 px-3 py-2 text-xs"
               >
-                <span className="truncate font-semibold text-gray-800">{label(o.profile)}</span>
-                <span className="flex shrink-0 gap-2 text-[10px] text-gray-600">
+                <span className="truncate font-semibold text-[#e7edf0]">{label(o.profile)}</span>
+                <span className="flex shrink-0 gap-2 text-[10px] text-[#8fa3ad]">
                   <span title={t('moderation.listingReports')}>📦 {o.listingReports}</span>
                   <span title={t('moderation.userReports')}>🚩 {o.userReports}</span>
                   <span title={t('moderation.disputes')}>⚖ {o.disputes}</span>
-                  <span className="font-bold text-amber-700">Σ {o.total}</span>
+                  <span className="font-bold text-amber-300">Σ {o.total}</span>
                 </span>
               </li>
             ))}
@@ -141,14 +141,14 @@ export default function AdminModerationPanel() {
       {/* User reports */}
       <div>
         <div className="flex items-center justify-between gap-2">
-          <h4 className="flex items-center gap-1.5 text-xs font-bold text-gray-700">
+          <h4 className="flex items-center gap-1.5 text-xs font-bold text-[#b2c0c6]">
             <Flag size={13} className="text-red-500" />
             {t('moderation.reportsTitle')}
           </h4>
           <select
             value={status}
             onChange={(e) => setStatus(e.target.value as (typeof STATUS_OPTIONS)[number])}
-            className="rounded-md border border-gray-300 px-2 py-1 text-[11px]"
+            className="rounded-md border border-[#2a3941] px-2 py-1 text-[11px]"
           >
             {STATUS_OPTIONS.map((s) => (
               <option key={s} value={s}>
@@ -161,22 +161,22 @@ export default function AdminModerationPanel() {
         {schemaMissing ? (
           <p className="mt-2 text-xs text-amber-600">{t('moderation.schemaMissing')}</p>
         ) : loading ? (
-          <p className="mt-2 text-xs text-gray-500">{t('moderation.loading')}</p>
+          <p className="mt-2 text-xs text-[#8fa3ad]">{t('moderation.loading')}</p>
         ) : reports.length === 0 ? (
-          <p className="mt-2 text-xs text-gray-500">{t('moderation.reportsEmpty')}</p>
+          <p className="mt-2 text-xs text-[#8fa3ad]">{t('moderation.reportsEmpty')}</p>
         ) : (
           <ul className="mt-2 space-y-2">
             {reports.map((r) => (
-              <li key={r.id} className="rounded-lg border border-gray-200 p-2.5 text-xs">
+              <li key={r.id} className="rounded-lg border border-[#2a3941] p-2.5 text-xs">
                 <div className="flex justify-between gap-2">
-                  <span className="font-semibold text-gray-800 truncate">
+                  <span className="font-semibold text-[#e7edf0] truncate">
                     {label(r.reporter)} → {label(r.reported)}
                   </span>
-                  <span className="shrink-0 text-[10px] text-gray-400">
+                  <span className="shrink-0 text-[10px] text-[#6b7d85]">
                     {new Date(r.created_at).toLocaleDateString(localeTag)}
                   </span>
                 </div>
-                <p className="mt-1 text-gray-600">
+                <p className="mt-1 text-[#8fa3ad]">
                   {t(`report.reasons.${r.reason}`)} · {r.context}
                   {r.details ? ` — ${r.details}` : ''}
                 </p>
@@ -200,7 +200,7 @@ export default function AdminModerationPanel() {
                     </button>
                   </div>
                 ) : (
-                  <span className="mt-1 inline-block text-[10px] font-semibold text-gray-400">
+                  <span className="mt-1 inline-block text-[10px] font-semibold text-[#6b7d85]">
                     {t(`moderation.status.${r.status}`)}
                   </span>
                 )}

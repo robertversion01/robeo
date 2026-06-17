@@ -32,7 +32,7 @@ export default function TrustSafetyBlock({ variant = 'compact', className }: Pro
     return (
       <div
         className={cn(
-          'rounded-xl border border-[#007782]/15 bg-[#007782]/5 px-3 py-2.5 text-xs text-gray-700',
+          'rounded-xl border border-[#007782]/15 bg-[#007782]/5 px-3 py-2.5 text-xs text-[#b2c0c6]',
           className,
         )}
       >
@@ -49,12 +49,12 @@ export default function TrustSafetyBlock({ variant = 'compact', className }: Pro
       {items.map((item) => (
         <div
           key={item.title}
-          className="rounded-xl border border-gray-200 bg-white p-3 flex gap-2"
+          className="rounded-xl border border-[#2a3941] bg-[#1a2328] p-3 flex gap-2"
         >
           <item.icon size={18} className="shrink-0 text-[#007782] mt-0.5" />
           <div>
-            <p className="text-xs font-semibold text-gray-900">{item.title}</p>
-            <p className="text-[11px] text-gray-600 mt-0.5 leading-relaxed">{item.body}</p>
+            <p className="text-xs font-semibold text-[#e7edf0]">{item.title}</p>
+            <p className="text-[11px] text-[#8fa3ad] mt-0.5 leading-relaxed">{item.body}</p>
           </div>
         </div>
       ))}

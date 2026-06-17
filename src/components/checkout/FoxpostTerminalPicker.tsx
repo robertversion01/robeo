@@ -44,10 +44,10 @@ export default function FoxpostTerminalPicker({ value, onChange }: Props) {
       <p className="text-xs font-semibold text-orange-900 mb-2">{t('checkout.foxpost.title')}</p>
 
       {value ? (
-        <div className="rounded-lg border border-orange-300/80 bg-white p-3 text-sm">
-          <p className="font-semibold text-gray-900">{foxpostTerminalLabel(value)}</p>
-          <p className="text-gray-600 text-xs mt-1">{foxpostTerminalAddress(value)}</p>
-          <p className="text-[10px] text-gray-400 mt-1 font-mono">
+        <div className="rounded-lg border border-orange-300/80 bg-[#1a2328] p-3 text-sm">
+          <p className="font-semibold text-[#e7edf0]">{foxpostTerminalLabel(value)}</p>
+          <p className="text-[#8fa3ad] text-xs mt-1">{foxpostTerminalAddress(value)}</p>
+          <p className="text-[10px] text-[#6b7d85] mt-1 font-mono">
             {t('checkout.foxpost.terminalId', { id: foxpostTerminalId(value) })}
           </p>
           <button
@@ -76,13 +76,13 @@ export default function FoxpostTerminalPicker({ value, onChange }: Props) {
           aria-modal="true"
           aria-label={t('checkout.foxpost.mapAria')}
         >
-          <div className="relative w-full max-w-5xl h-[85vh] bg-white rounded-2xl shadow-2xl overflow-hidden flex flex-col">
-            <div className="flex items-center justify-between px-4 py-3 border-b border-gray-200 shrink-0">
-              <h3 className="font-bold text-gray-900">{t('checkout.foxpost.mapTitle')}</h3>
+          <div className="relative w-full max-w-5xl h-[85vh] bg-[#1a2328] rounded-2xl shadow-2xl overflow-hidden flex flex-col">
+            <div className="flex items-center justify-between px-4 py-3 border-b border-[#2a3941] shrink-0">
+              <h3 className="font-bold text-[#e7edf0]">{t('checkout.foxpost.mapTitle')}</h3>
               <button
                 type="button"
                 onClick={() => setOpen(false)}
-                className="p-2 rounded-full hover:bg-gray-100"
+                className="p-2 rounded-full hover:bg-[#243038]"
                 aria-label={t('checkout.foxpost.close')}
               >
                 <X size={20} />

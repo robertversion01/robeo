@@ -26,7 +26,7 @@ export default function OrderTimelinePanel({ context, compact = false, onStepCli
 
   if (current === 'disputed') {
     return (
-      <div className="rounded-lg border border-amber-200 bg-amber-50 px-3 py-2 text-xs text-amber-900">
+      <div className="rounded-lg border border-amber-900/45 bg-amber-950/40 px-3 py-2 text-xs text-amber-200">
         {t('orderTimeline.disputed')}
       </div>
     );
@@ -34,7 +34,7 @@ export default function OrderTimelinePanel({ context, compact = false, onStepCli
 
   return (
     <div className={cn('space-y-1', compact ? 'text-[10px]' : 'text-xs')}>
-      <p className="font-semibold text-gray-800 mb-1.5">{t('orderTimeline.title')}</p>
+      <p className="font-semibold text-[#e7edf0] mb-1.5">{t('orderTimeline.title')}</p>
       <ol className="space-y-1">
         {steps.map((step) => {
           const done = isTimelineStepDone(current, step);
@@ -51,8 +51,8 @@ export default function OrderTimelinePanel({ context, compact = false, onStepCli
                   clickable && 'hover:bg-[#007782]/5 cursor-pointer',
                   !clickable && 'cursor-default',
                   active && 'font-semibold text-[#007782]',
-                  done && !active && 'text-gray-600',
-                  !done && !active && 'text-gray-400',
+                  done && !active && 'text-[#8fa3ad]',
+                  !done && !active && 'text-[#6b7d85]',
                 )}
               >
                 <span className="mt-0.5 shrink-0">
@@ -61,7 +61,7 @@ export default function OrderTimelinePanel({ context, compact = false, onStepCli
                   ) : (
                     <Circle
                       size={compact ? 12 : 14}
-                      className={active ? 'text-[#007782] fill-[#007782]/15' : 'text-gray-300'}
+                      className={active ? 'text-[#007782] fill-[#007782]/15' : 'text-[#6b7d85]'}
                     />
                   )}
                 </span>

@@ -35,7 +35,7 @@ export default function SellerBundleHint({ sellerId }: Props) {
   return (
     <div className="mb-3 flex items-start gap-2 rounded-xl border border-[#007782]/15 bg-[#007782]/5 px-3 py-2.5">
       <Package size={16} className="mt-0.5 shrink-0 text-[#007782]" aria-hidden />
-      <p className="text-xs leading-relaxed text-gray-700">
+      <p className="text-xs leading-relaxed text-[#b2c0c6]">
         {t('product.bundleHint', { items: best.items, percent: best.percent })}
       </p>
     </div>

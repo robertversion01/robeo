@@ -73,11 +73,11 @@ export default function ReviewForm({
   };
 
   return (
-    <form onSubmit={handleSubmit} className="bg-white border border-gray-200 rounded-2xl p-6 space-y-4">
+    <form onSubmit={handleSubmit} className="bg-[#1a2328] border border-[#2a3941] rounded-2xl p-6 space-y-4">
       <h3 className="font-bold text-lg">Írj értékelést</h3>
       
       <div className="flex items-center gap-3">
-        <span className="text-sm text-gray-600">Értékelés:</span>
+        <span className="text-sm text-[#8fa3ad]">Értékelés:</span>
         <StarRating rating={rating} size={28} interactive onRate={setRating} />
       </div>
 
@@ -88,9 +88,9 @@ export default function ReviewForm({
           placeholder={t('review.commentPlaceholder')}
           rows={3}
           maxLength={500}
-          className="w-full px-4 py-3 bg-white border border-gray-300 rounded-xl focus:outline-none focus:border-[#007782] focus:ring-1 focus:ring-[#007782] transition-all resize-none text-sm"
+          className="w-full px-4 py-3 bg-[#1a2328] border border-[#2a3941] rounded-xl focus:outline-none focus:border-[#007782] focus:ring-1 focus:ring-[#007782] transition-all resize-none text-sm"
         />
-        <div className="text-right text-[10px] text-gray-400 mt-1">{comment.length}/500</div>
+        <div className="text-right text-[10px] text-[#6b7d85] mt-1">{comment.length}/500</div>
       </div>
 
       <button

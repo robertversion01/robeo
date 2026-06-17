@@ -46,18 +46,18 @@ function QuestionBlock({
   t: (key: string) => string;
 }) {
   return (
-    <li className="rounded-lg bg-gray-50 border border-gray-200 p-2.5">
+    <li className="rounded-lg bg-[#141d21] border border-[#2a3941] p-2.5">
       <div className="flex items-start justify-between gap-2">
-        <p className="text-sm text-gray-800">
-          <span className="font-semibold text-gray-500">Q:</span> {q.question}
+        <p className="text-sm text-[#e7edf0]">
+          <span className="font-semibold text-[#8fa3ad]">Q:</span> {q.question}
         </p>
-        <span className="shrink-0 text-[10px] text-gray-400">
+        <span className="shrink-0 text-[10px] text-[#6b7d85]">
           {new Date(q.created_at).toLocaleDateString(locale)}
         </span>
       </div>
 
       {q.answer ? (
-        <p className="mt-1.5 rounded border-l-2 border-[#007782] bg-white px-2 py-1 text-sm text-gray-700">
+        <p className="mt-1.5 rounded border-l-2 border-[#007782] bg-[#1a2328] px-2 py-1 text-sm text-[#b2c0c6]">
           <span className="font-semibold text-[#007782]">A:</span> {q.answer}
         </p>
       ) : isOwner ? (
@@ -73,7 +73,7 @@ function QuestionBlock({
               onChange={(e) => onDraftChange(e.target.value)}
               maxLength={500}
               placeholder={t('qa.answerPlaceholder')}
-              className="flex-1 rounded-lg border border-gray-300 px-2.5 py-1.5 text-sm focus:border-[#007782] focus:outline-none"
+              className="flex-1 rounded-lg border border-[#2a3941] px-2.5 py-1.5 text-sm focus:border-[#007782] focus:outline-none"
             />
             <button
               type="button"
@@ -86,7 +86,7 @@ function QuestionBlock({
           </div>
         </div>
       ) : (
-        <p className="mt-1 text-[11px] text-gray-400">{t('qa.unanswered')}</p>
+        <p className="mt-1 text-[11px] text-[#6b7d85]">{t('qa.unanswered')}</p>
       )}
     </li>
   );
@@ -196,22 +196,22 @@ export default function ProductQA({ productId, sellerId, viewerId }: Props) {
   if (loaded && !available) return null;
 
   return (
-    <section className="mb-4 rounded-xl border border-gray-200 bg-white p-3">
-      <h3 className="flex items-center gap-1.5 text-sm font-bold text-gray-900">
+    <section className="mb-4 rounded-xl border border-[#2a3941] bg-[#1a2328] p-3">
+      <h3 className="flex items-center gap-1.5 text-sm font-bold text-[#e7edf0]">
         <MessageCircleQuestion size={16} className="text-[#007782]" />
         {t('qa.title')}
         {questions.length > 0 ? (
-          <span className="text-xs font-normal text-gray-400">({questions.length})</span>
+          <span className="text-xs font-normal text-[#6b7d85]">({questions.length})</span>
         ) : null}
       </h3>
-      <p className="mt-0.5 text-[11px] text-gray-500 leading-snug">{t('qa.subtitle')}</p>
+      <p className="mt-0.5 text-[11px] text-[#8fa3ad] leading-snug">{t('qa.subtitle')}</p>
       {questions.length > 0 ? (
         <div className="mt-2 flex flex-wrap gap-1.5">
           <span className="rounded-full border border-[#007782]/25 bg-[#007782]/5 px-2.5 py-1 text-[10px] font-semibold text-[#007782]">
             {t('qa.answeredCount', { count: answered.length })}
           </span>
           {pending.length > 0 ? (
-            <span className="rounded-full border border-amber-300 bg-amber-50 px-2.5 py-1 text-[10px] font-semibold text-amber-700">
+            <span className="rounded-full border border-amber-900/45 bg-amber-950/40 px-2.5 py-1 text-[10px] font-semibold text-amber-300">
               {t('qa.pendingCount', { count: pending.length })}
             </span>
           ) : null}
@@ -229,7 +229,7 @@ export default function ProductQA({ productId, sellerId, viewerId }: Props) {
               onChange={(e) => setDraft(e.target.value)}
               maxLength={500}
               placeholder={t('qa.askPlaceholder')}
-              className="flex-1 rounded-lg border border-gray-300 px-3 py-2 text-sm focus:border-[#007782] focus:outline-none"
+              className="flex-1 rounded-lg border border-[#2a3941] px-3 py-2 text-sm focus:border-[#007782] focus:outline-none"
               onKeyDown={(e) => {
                 if (e.key === 'Enter' && !asking) void ask();
               }}
@@ -252,8 +252,8 @@ export default function ProductQA({ productId, sellerId, viewerId }: Props) {
       ) : null}
 
       {questions.length === 0 ? (
-        <div className="mt-2 rounded-lg border border-dashed border-gray-300 px-3 py-2.5">
-          <p className="text-xs text-gray-600">{t('qa.empty')}</p>
+        <div className="mt-2 rounded-lg border border-dashed border-[#2a3941] px-3 py-2.5">
+          <p className="text-xs text-[#8fa3ad]">{t('qa.empty')}</p>
           {!isOwner && !viewerId ? (
             <Link href="/auth" className="mt-1 inline-block text-xs font-semibold text-[#007782] hover:underline">
               {t('qa.loginToAsk')}
@@ -264,7 +264,7 @@ export default function ProductQA({ productId, sellerId, viewerId }: Props) {
         <div className="mt-3 space-y-3">
           {answered.length > 0 ? (
             <div>
-              <p className="text-[11px] font-semibold uppercase tracking-wide text-gray-500 mb-2">
+              <p className="text-[11px] font-semibold uppercase tracking-wide text-[#8fa3ad] mb-2">
                 {t('qa.faqTitle')}
               </p>
               <ul className="space-y-2">
@@ -289,7 +289,7 @@ export default function ProductQA({ productId, sellerId, viewerId }: Props) {
           {pending.length > 0 ? (
             <div>
               {answered.length > 0 ? (
-                <p className="text-[11px] font-semibold uppercase tracking-wide text-gray-500 mb-2">
+                <p className="text-[11px] font-semibold uppercase tracking-wide text-[#8fa3ad] mb-2">
                   {t('qa.pendingTitle')}
                 </p>
               ) : null}

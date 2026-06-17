@@ -96,7 +96,7 @@ function NavBadgeCount({
   const compact = count <= 9;
   return (
     <span
-      className={`absolute flex items-center justify-center rounded-full bg-red-500 text-white font-bold border-2 border-white ${className} ${
+      className={`absolute flex items-center justify-center rounded-full bg-red-500 text-white font-bold border-2 border-[#11171a] ${className} ${
         compact ? 'min-w-[18px] h-[18px] text-[10px] px-1' : 'min-w-[22px] h-[18px] text-[9px] px-1'
       }`}
       aria-label={String(count)}

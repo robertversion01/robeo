@@ -34,7 +34,7 @@ export default function OfferExpiryCountdown({ expiresAt, createdAt, className =
   if (!effectiveExpiresAt) return null;
   if (!mounted) {
     return (
-      <p className={`inline-flex items-center gap-1 text-xs text-gray-400 ${className}`}>
+      <p className={`inline-flex items-center gap-1 text-xs text-[#6b7d85] ${className}`}>
         <Clock size={12} className="shrink-0" />
         …
       </p>
@@ -43,7 +43,7 @@ export default function OfferExpiryCountdown({ expiresAt, createdAt, className =
 
   if (isOfferPastExpiry(expiresAt, createdAt) || offerRemainingMs(expiresAt, createdAt) <= 0) {
     return (
-      <p className={`inline-flex items-center gap-1 text-xs font-medium text-amber-700 ${className}`}>
+      <p className={`inline-flex items-center gap-1 text-xs font-medium text-amber-300 ${className}`}>
         <Clock size={12} />
         {t('offerExpiry.expired')}
       </p>
@@ -54,7 +54,7 @@ export default function OfferExpiryCountdown({ expiresAt, createdAt, className =
   if (!remaining) return null;
 
   return (
-    <p className={`inline-flex items-center gap-1 text-xs text-gray-500 ${className}`}>
+    <p className={`inline-flex items-center gap-1 text-xs text-[#8fa3ad] ${className}`}>
       <Clock size={12} className="shrink-0" />
       {t('offerExpiry.remaining', { time: remaining })}
     </p>

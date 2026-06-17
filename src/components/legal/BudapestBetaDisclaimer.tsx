@@ -29,15 +29,15 @@ export default function BudapestBetaDisclaimer({
 
   const wrapperClass =
     variant === 'dark'
-      ? 'mt-4 rounded-xl border border-amber-400/30 bg-amber-500/10 px-3 py-2.5 text-xs text-amber-100'
+      ? 'mt-4 rounded-xl border border-amber-700/40 bg-amber-950/400/10 px-3 py-2.5 text-xs text-amber-100'
       : variant === 'inline'
-        ? 'mt-3 rounded-lg border border-amber-300 bg-amber-50 px-3 py-2 text-[11px] text-amber-900'
-        : 'mt-4 rounded-xl border border-amber-300 bg-amber-50 px-3 py-2.5 text-xs text-amber-900';
+        ? 'mt-3 rounded-lg border border-amber-900/45 bg-amber-950/40 px-3 py-2 text-[11px] text-amber-200'
+        : 'mt-4 rounded-xl border border-amber-900/45 bg-amber-950/40 px-3 py-2.5 text-xs text-amber-200';
 
   const titleClass =
     variant === 'dark'
       ? 'font-semibold text-amber-200'
-      : 'font-semibold text-amber-900';
+      : 'font-semibold text-amber-200';
 
   return (
     <div className={`${wrapperClass} ${className}`} role="note">

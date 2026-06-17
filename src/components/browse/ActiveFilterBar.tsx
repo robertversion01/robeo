@@ -147,7 +147,7 @@ export default function ActiveFilterBar({
         <button
           type="button"
           onClick={onClearAll}
-          className="text-xs font-semibold text-gray-500 underline-offset-2 hover:text-[#007782] hover:underline"
+          className="text-xs font-semibold text-[#8fa3ad] underline-offset-2 hover:text-[#007782] hover:underline"
         >
           {t('browse.activeFilters.clearAll')}
         </button>

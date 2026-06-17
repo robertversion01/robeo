@@ -140,7 +140,7 @@ export default function Navbar({ searchQuery, onSearchChange }: NavbarProps) {
       </button>
       {showProfileMenu ? (
         <div className="absolute right-0 top-10 w-48 card-base shadow-md p-1 z-[9999]">
-          <div className="px-2 py-2 border-b border-gray-100">
+          <div className="px-2 py-2 border-b border-[#27363d]">
             <LanguageSwitcher variant="light" className="w-full justify-center" />
           </div>
           {/* RobeoBP: nincs rendeles-nyomonkovetes oldal, a foglalasok a
@@ -148,7 +148,7 @@ export default function Navbar({ searchQuery, onSearchChange }: NavbarProps) {
           {!ROBEO_BP_MODE ? (
             <Link
               href="/orders"
-              className="w-full min-h-9 flex items-center gap-2 px-3 py-2 rounded-lg text-sm text-gray-700 hover:bg-gray-100"
+              className="w-full min-h-9 flex items-center gap-2 px-3 py-2 rounded-lg text-sm text-[#b2c0c6] hover:bg-[#243038]"
               onClick={() => setShowProfileMenu(false)}
             >
               <Package size={15} />
@@ -157,7 +157,7 @@ export default function Navbar({ searchQuery, onSearchChange }: NavbarProps) {
           ) : null}
           <Link
             href="/profile"
-            className="w-full min-h-9 flex items-center gap-2 px-3 py-2 rounded-lg text-sm text-gray-700 hover:bg-gray-100"
+            className="w-full min-h-9 flex items-center gap-2 px-3 py-2 rounded-lg text-sm text-[#b2c0c6] hover:bg-[#243038]"
             onClick={() => setShowProfileMenu(false)}
           >
             <User size={15} />
@@ -165,7 +165,7 @@ export default function Navbar({ searchQuery, onSearchChange }: NavbarProps) {
           </Link>
           <Link
             href="/help"
-            className="w-full min-h-9 flex items-center gap-2 px-3 py-2 rounded-lg text-sm text-gray-700 hover:bg-gray-100"
+            className="w-full min-h-9 flex items-center gap-2 px-3 py-2 rounded-lg text-sm text-[#b2c0c6] hover:bg-[#243038]"
             onClick={() => setShowProfileMenu(false)}
           >
             {t('help.title')}
@@ -176,7 +176,7 @@ export default function Navbar({ searchQuery, onSearchChange }: NavbarProps) {
               setShowProfileMenu(false);
               void handleSignOut();
             }}
-            className="w-full min-h-9 flex items-center gap-2 px-3 py-2 rounded-lg text-sm text-red-600 hover:bg-red-50"
+            className="w-full min-h-9 flex items-center gap-2 px-3 py-2 rounded-lg text-sm text-red-600 hover:bg-red-950/40"
           >
             <LogOut size={15} />
             {t('nav.signOut')}
@@ -209,7 +209,7 @@ export default function Navbar({ searchQuery, onSearchChange }: NavbarProps) {
   ) : null;
 
   const guestDesktopActions = loading ? (
-    <div className="w-20 h-9 animate-pulse bg-gray-100 rounded-full" />
+    <div className="w-20 h-9 animate-pulse bg-[#1a2328] rounded-full" />
   ) : (
     <>
       <LanguageSwitcher variant="light" className="shrink-0" />
@@ -221,7 +221,7 @@ export default function Navbar({ searchQuery, onSearchChange }: NavbarProps) {
       </Link>
       <Link
         href="/auth?view=sign_in"
-        className="h-8 rounded-full border border-gray-300 px-2.5 text-xs font-semibold text-gray-700 inline-flex items-center shrink-0"
+        className="h-8 rounded-full border border-[#2a3941] px-2.5 text-xs font-semibold text-[#b2c0c6] inline-flex items-center shrink-0"
       >
         {t('nav.login')}
       </Link>

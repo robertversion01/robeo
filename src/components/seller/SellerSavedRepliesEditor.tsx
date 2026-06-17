@@ -66,33 +66,33 @@ export default function SellerSavedRepliesEditor({ className = '' }: Props) {
   };
 
   return (
-    <div className={`rounded-lg border border-dashed border-gray-200 bg-gray-50/80 ${className}`}>
+    <div className={`rounded-lg border border-dashed border-[#2a3941] bg-[#141d21]/80 ${className}`}>
       <button
         type="button"
         onClick={() => setOpen((v) => !v)}
-        className="flex w-full items-center justify-between gap-2 px-2.5 py-2 text-left text-[11px] font-semibold text-gray-600 hover:text-[#007782]"
+        className="flex w-full items-center justify-between gap-2 px-2.5 py-2 text-left text-[11px] font-semibold text-[#8fa3ad] hover:text-[#007782]"
       >
         {t('savedReplies.manage')}
         {open ? <ChevronUp size={14} /> : <ChevronDown size={14} />}
       </button>
       {open ? (
-        <div className="border-t border-gray-200 px-2.5 pb-2.5 pt-2 space-y-2">
+        <div className="border-t border-[#2a3941] px-2.5 pb-2.5 pt-2 space-y-2">
           {custom.length > 0 ? (
             <ul className="space-y-1">
               {custom.map((r) => (
                 <li
                   key={r.id}
-                  className="flex items-start justify-between gap-2 rounded-md bg-white border border-gray-200 px-2 py-1.5 text-[11px]"
+                  className="flex items-start justify-between gap-2 rounded-md bg-[#1a2328] border border-[#2a3941] px-2 py-1.5 text-[11px]"
                 >
                   <div className="min-w-0">
-                    <span className="font-semibold text-gray-800">{r.label}</span>
-                    <p className="text-gray-500 truncate">{r.body}</p>
+                    <span className="font-semibold text-[#e7edf0]">{r.label}</span>
+                    <p className="text-[#8fa3ad] truncate">{r.body}</p>
                   </div>
                   <button
                     type="button"
                     disabled={busy}
                     onClick={() => void remove(r.id)}
-                    className="shrink-0 rounded p-1 text-gray-400 hover:text-red-600"
+                    className="shrink-0 rounded p-1 text-[#6b7d85] hover:text-red-600"
                     aria-label={t('savedReplies.remove')}
                   >
                     <Trash2 size={12} />
@@ -101,7 +101,7 @@ export default function SellerSavedRepliesEditor({ className = '' }: Props) {
               ))}
             </ul>
           ) : (
-            <p className="text-[10px] text-gray-500">{t('savedReplies.customEmpty')}</p>
+            <p className="text-[10px] text-[#8fa3ad]">{t('savedReplies.customEmpty')}</p>
           )}
           <div className="flex flex-col gap-1.5">
             <input
@@ -110,7 +110,7 @@ export default function SellerSavedRepliesEditor({ className = '' }: Props) {
               onChange={(e) => setLabel(e.target.value)}
               maxLength={40}
               placeholder={t('savedReplies.labelPlaceholder')}
-              className="rounded-md border border-gray-300 px-2 py-1.5 text-[11px] focus:border-[#007782] focus:outline-none"
+              className="rounded-md border border-[#2a3941] px-2 py-1.5 text-[11px] focus:border-[#007782] focus:outline-none"
             />
             <textarea
               value={body}
@@ -118,7 +118,7 @@ export default function SellerSavedRepliesEditor({ className = '' }: Props) {
               rows={2}
               maxLength={500}
               placeholder={t('savedReplies.bodyPlaceholder')}
-              className="rounded-md border border-gray-300 px-2 py-1.5 text-[11px] resize-none focus:border-[#007782] focus:outline-none"
+              className="rounded-md border border-[#2a3941] px-2 py-1.5 text-[11px] resize-none focus:border-[#007782] focus:outline-none"
             />
             <button
               type="button"

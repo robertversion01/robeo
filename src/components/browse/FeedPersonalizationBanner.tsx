@@ -59,7 +59,7 @@ export default function FeedPersonalizationBanner({
     >
       <Sparkles size={mode === 'search' ? 14 : 16} className="mt-0.5 shrink-0 text-[#007782]" aria-hidden />
       <div className="min-w-0 flex-1">
-        <p className={cn('leading-relaxed text-gray-700', mode === 'search' ? 'text-[11px]' : 'text-xs')}>
+        <p className={cn('leading-relaxed text-[#b2c0c6]', mode === 'search' ? 'text-[11px]' : 'text-xs')}>
           {hint}
         </p>
         {mode === 'feed' ? (

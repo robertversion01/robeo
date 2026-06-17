@@ -24,8 +24,8 @@ export default function HelpSupportHub() {
     <div className="space-y-6">
       <FeedbackModal open={feedbackOpen} onClose={() => setFeedbackOpen(false)} />
       <section className="rounded-2xl border border-[#007782]/20 bg-[#007782]/5 p-5">
-        <h2 className="text-lg font-bold text-gray-900">{t('help.quickTitle')}</h2>
-        <p className="text-sm text-gray-600 mt-1">{t('help.quickSubtitle')}</p>
+        <h2 className="text-lg font-bold text-[#e7edf0]">{t('help.quickTitle')}</h2>
+        <p className="text-sm text-[#8fa3ad] mt-1">{t('help.quickSubtitle')}</p>
         <Link
           href="/browse"
           className="mt-4 inline-flex w-full sm:w-auto items-center justify-center rounded-full bg-[#007782] px-6 py-3 text-sm font-semibold text-white hover:bg-[#00616b] touch-manipulation min-h-11"
@@ -37,14 +37,14 @@ export default function HelpSupportHub() {
       <button
         type="button"
         onClick={() => setFeedbackOpen(true)}
-        className="flex w-full items-start gap-3 rounded-xl border border-gray-200 bg-white p-4 text-left hover:border-[#007782]/30 hover:bg-[#007782]/5 transition-colors touch-manipulation"
+        className="flex w-full items-start gap-3 rounded-xl border border-[#2a3941] bg-[#1a2328] p-4 text-left hover:border-[#007782]/30 hover:bg-[#007782]/5 transition-colors touch-manipulation"
       >
         <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-[#007782]/10 text-[#007782]">
           <MessageSquarePlus size={20} />
         </span>
         <div className="min-w-0 flex-1">
-          <p className="font-semibold text-gray-900 text-sm">{t('feedback.entryTitle')}</p>
-          <p className="text-xs text-gray-500 mt-0.5 leading-relaxed">{t('feedback.entryDesc')}</p>
+          <p className="font-semibold text-[#e7edf0] text-sm">{t('feedback.entryTitle')}</p>
+          <p className="text-xs text-[#8fa3ad] mt-0.5 leading-relaxed">{t('feedback.entryDesc')}</p>
         </div>
       </button>
 
@@ -52,13 +52,13 @@ export default function HelpSupportHub() {
         {entries.map((entry) => {
           const Icon = entry.icon;
           const content = (
-            <div className="flex items-start gap-3 rounded-xl border border-gray-200 bg-white p-4 hover:border-[#007782]/30 hover:bg-[#007782]/5 transition-colors touch-manipulation">
+            <div className="flex items-start gap-3 rounded-xl border border-[#2a3941] bg-[#1a2328] p-4 hover:border-[#007782]/30 hover:bg-[#007782]/5 transition-colors touch-manipulation">
               <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-[#007782]/10 text-[#007782]">
                 <Icon size={20} />
               </span>
               <div className="min-w-0 flex-1">
-                <p className="font-semibold text-gray-900 text-sm">{t(entry.titleKey)}</p>
-                <p className="text-xs text-gray-500 mt-0.5 leading-relaxed">{t(entry.descKey)}</p>
+                <p className="font-semibold text-[#e7edf0] text-sm">{t(entry.titleKey)}</p>
+                <p className="text-xs text-[#8fa3ad] mt-0.5 leading-relaxed">{t(entry.descKey)}</p>
                 {'actionKey' in entry && entry.actionKey ? (
                   <span className="text-xs font-semibold text-[#007782] mt-2 inline-block">{t(entry.actionKey)} →</span>
                 ) : null}
@@ -84,24 +84,24 @@ export default function HelpSupportHub() {
         })}
       </ul>
 
-      <section id="protection" className="scroll-mt-24 rounded-xl border border-gray-200 p-4">
-        <h3 className="font-bold text-gray-900">{t('help.sections.protectionTitle')}</h3>
-        <p className="text-sm text-gray-600 mt-2 leading-relaxed">{t('help.sections.protectionBody')}</p>
+      <section id="protection" className="scroll-mt-24 rounded-xl border border-[#2a3941] p-4">
+        <h3 className="font-bold text-[#e7edf0]">{t('help.sections.protectionTitle')}</h3>
+        <p className="text-sm text-[#8fa3ad] mt-2 leading-relaxed">{t('help.sections.protectionBody')}</p>
       </section>
 
-      <section id="shipping" className="scroll-mt-24 rounded-xl border border-gray-200 p-4">
-        <h3 className="font-bold text-gray-900">{t('help.sections.shippingTitle')}</h3>
-        <p className="text-sm text-gray-600 mt-2 leading-relaxed">{t('help.sections.shippingBody')}</p>
+      <section id="shipping" className="scroll-mt-24 rounded-xl border border-[#2a3941] p-4">
+        <h3 className="font-bold text-[#e7edf0]">{t('help.sections.shippingTitle')}</h3>
+        <p className="text-sm text-[#8fa3ad] mt-2 leading-relaxed">{t('help.sections.shippingBody')}</p>
       </section>
 
       <section id="faq" className="scroll-mt-24 space-y-3">
-        <h3 className="font-bold text-gray-900">{t('help.sections.faqTitle')}</h3>
+        <h3 className="font-bold text-[#e7edf0]">{t('help.sections.faqTitle')}</h3>
         {(['q1', 'q2', 'q3'] as const).map((id) => (
-          <details key={id} className="rounded-xl border border-gray-200 bg-white group">
-            <summary className="cursor-pointer list-none px-4 py-3 text-sm font-semibold text-gray-900 [&::-webkit-details-marker]:hidden">
+          <details key={id} className="rounded-xl border border-[#2a3941] bg-[#1a2328] group">
+            <summary className="cursor-pointer list-none px-4 py-3 text-sm font-semibold text-[#e7edf0] [&::-webkit-details-marker]:hidden">
               {t(`help.faq.${id}.q`)}
             </summary>
-            <p className="px-4 pb-3 text-sm text-gray-600 leading-relaxed">{t(`help.faq.${id}.a`)}</p>
+            <p className="px-4 pb-3 text-sm text-[#8fa3ad] leading-relaxed">{t(`help.faq.${id}.a`)}</p>
           </details>
         ))}
       </section>

@@ -41,7 +41,7 @@ export default function ConditionWizardStep({
 
   return (
     <div className="space-y-4">
-      <p className="text-sm text-gray-600">{t('upload.conditionWizard.intro')}</p>
+      <p className="text-sm text-[#8fa3ad]">{t('upload.conditionWizard.intro')}</p>
       <div className="grid gap-2">
         {options.map((opt) => {
           const selected = value === opt.id;
@@ -57,16 +57,16 @@ export default function ConditionWizardStep({
                 'rounded-xl border p-3 text-left transition-colors',
                 selected
                   ? 'border-[#007782] bg-[#007782]/5 ring-1 ring-[#007782]/30'
-                  : 'border-gray-200 hover:border-[#007782]/40',
+                  : 'border-[#2a3941] hover:border-[#007782]/40',
               )}
             >
               <div className="flex items-center justify-between gap-2">
-                <span className="text-sm font-semibold text-gray-900">
+                <span className="text-sm font-semibold text-[#e7edf0]">
                   {t(conditionI18nKey(opt.id))}
                 </span>
                 {selected ? <Check size={16} className="text-[#007782]" /> : null}
               </div>
-              <p className="mt-1 text-xs text-gray-500">
+              <p className="mt-1 text-xs text-[#8fa3ad]">
                 {t(`upload.conditionWizard.desc.${opt.id}`)}
               </p>
             </button>
@@ -74,13 +74,13 @@ export default function ConditionWizardStep({
         })}
       </div>
       {checklist.length > 0 ? (
-        <div className="rounded-xl border border-gray-100 bg-gray-50 p-3">
-          <p className="text-xs font-semibold text-gray-800 mb-2">
+        <div className="rounded-xl border border-[#27363d] bg-[#141d21] p-3">
+          <p className="text-xs font-semibold text-[#e7edf0] mb-2">
             {t('upload.conditionWizard.checklistTitle')}
           </p>
           <ul className="space-y-1">
             {checklist.map((key) => (
-              <li key={key} className="text-xs text-gray-600 flex items-start gap-1.5">
+              <li key={key} className="text-xs text-[#8fa3ad] flex items-start gap-1.5">
                 <span className="text-[#007782] mt-0.5">•</span>
                 {t(key)}
               </li>
@@ -89,7 +89,7 @@ export default function ConditionWizardStep({
         </div>
       ) : null}
       {needsDefect && requiresDefectPhoto ? (
-        <p className="text-xs font-medium text-amber-800 bg-amber-50 border border-amber-200 rounded-lg px-3 py-2">
+        <p className="text-xs font-medium text-amber-300 bg-amber-950/40 border border-amber-900/45 rounded-lg px-3 py-2">
           {t('upload.conditionWizard.defectPhotoRequired')}
         </p>
       ) : null}

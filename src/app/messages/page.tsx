@@ -668,9 +668,9 @@ export default function MessagesPage() {
           >
             <h2 className="text-lg font-bold text-[#e7edf0]">{t('messages.offerModalTitle')}</h2>
             {offerMeta ? (
-              <p className="text-sm text-gray-600 mt-1 line-clamp-2">{offerMeta.title}</p>
+              <p className="text-sm text-[#8fa3ad] mt-1 line-clamp-2">{offerMeta.title}</p>
             ) : (
-              <p className="text-sm text-amber-700 mt-1">{t('messages.loadingProduct')}</p>
+              <p className="text-sm text-amber-300 mt-1">{t('messages.loadingProduct')}</p>
             )}
             <p className="text-xs text-[#98a9b1] mt-3">
               {offerMeta
@@ -892,7 +892,7 @@ export default function MessagesPage() {
                   <button
                     type="button"
                     onClick={closeConversation}
-                    className="icon-btn text-gray-700"
+                    className="icon-btn text-[#b2c0c6]"
                     aria-label={t('messages.back')}
                   >
                     <ChevronLeft size={22} />
@@ -1021,7 +1021,7 @@ export default function MessagesPage() {
                                   <button
                                     type="button"
                                     onClick={() => void retryFailedMessage(msg.id)}
-                                    className="rounded-full border border-amber-300 bg-amber-50 px-2 py-0.5 text-[10px] font-semibold text-amber-800 hover:bg-amber-100"
+                                    className="rounded-full border border-amber-900/45 bg-amber-950/40 px-2 py-0.5 text-[10px] font-semibold text-amber-300 hover:bg-amber-950/50"
                                   >
                                     {t('messages.retrySend')}
                                   </button>
@@ -1064,7 +1064,7 @@ export default function MessagesPage() {
                         setNewMessage(quickInsertUndo.previous);
                         setQuickInsertUndo(null);
                       }}
-                      className="mb-2 inline-flex items-center gap-1.5 rounded-full border border-amber-300 bg-amber-50 px-2.5 py-1 text-[11px] font-semibold text-amber-800 hover:bg-amber-100"
+                      className="mb-2 inline-flex items-center gap-1.5 rounded-full border border-amber-900/45 bg-amber-950/40 px-2.5 py-1 text-[11px] font-semibold text-amber-300 hover:bg-amber-950/50"
                     >
                       <Undo2 size={12} />
                       {t('messages.quickUndo')}

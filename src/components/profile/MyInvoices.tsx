@@ -87,35 +87,35 @@ export default function MyInvoices({ userId }: Props) {
     <section className="space-y-4" aria-label="Számláim">
       <div className="flex items-center gap-2">
         <FileText size={18} className="text-[#007782]" aria-hidden />
-        <h2 className="text-lg font-bold text-gray-900">Számláim</h2>
-        <span className="text-[10px] font-bold uppercase tracking-wide text-amber-700 bg-amber-50 px-2 py-0.5 rounded">
+        <h2 className="text-lg font-bold text-[#e7edf0]">Számláim</h2>
+        <span className="text-[10px] font-bold uppercase tracking-wide text-amber-300 bg-amber-950/40 px-2 py-0.5 rounded">
           Demo
         </span>
       </div>
-      <p className="text-xs text-gray-500">
+      <p className="text-xs text-[#8fa3ad]">
         Sikeres átvétel után automatikusan készül demó számla. Nem minősül hivatalos NAV bizonylatnak.
       </p>
 
       {loading ? (
-        <p className="text-sm text-gray-500">Betöltés…</p>
+        <p className="text-sm text-[#8fa3ad]">Betöltés…</p>
       ) : rows.length === 0 ? (
-        <p className="text-sm text-gray-500 rounded-xl border border-dashed border-gray-200 p-6 text-center">
+        <p className="text-sm text-[#8fa3ad] rounded-xl border border-dashed border-[#2a3941] p-6 text-center">
           Még nincs számla. A „Minden rendben” megerősítés után itt jelenik meg a bizonylat.
         </p>
       ) : (
-        <ul className="divide-y divide-gray-100 rounded-xl border border-gray-200 bg-white overflow-hidden">
+        <ul className="divide-y divide-[#2a3941] rounded-xl border border-[#2a3941] bg-[#1a2328] overflow-hidden">
           {rows.map((inv) => {
             const meta = inv.meta as { product_name?: string } | undefined;
             return (
               <li
                 key={inv.id}
-                className="flex items-center justify-between gap-3 px-4 py-3 hover:bg-gray-50/80"
+                className="flex items-center justify-between gap-3 px-4 py-3 hover:bg-[#1f2a30]/80"
               >
                 <div className="min-w-0">
-                  <p className="text-sm font-semibold text-gray-900 font-mono">
+                  <p className="text-sm font-semibold text-[#e7edf0] font-mono">
                     {inv.invoice_number}
                   </p>
-                  <p className="text-xs text-gray-500 truncate">
+                  <p className="text-xs text-[#8fa3ad] truncate">
                     {(meta?.product_name as string) || 'Vásárlás'} ·{' '}
                     {new Date(inv.created_at).toLocaleDateString('hu-HU')}
                   </p>

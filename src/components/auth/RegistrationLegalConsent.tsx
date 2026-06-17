@@ -23,7 +23,7 @@ export default function RegistrationLegalConsent({ checked, onChange, id = 'regi
         className="mt-1 h-[18px] w-[18px] shrink-0 accent-[#007782]"
         required
       />
-      <span className="text-sm leading-relaxed text-gray-800">
+      <span className="text-sm leading-relaxed text-[#e7edf0]">
         {t('auth.complete.legalPrefix')}{' '}
         <Link
           href="/legal/terms"

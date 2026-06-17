@@ -79,19 +79,19 @@ export default function FeedbackModal({ open, onClose }: Props) {
       aria-modal="true"
       aria-labelledby="feedback-modal-title"
     >
-      <div className="w-full max-w-md rounded-2xl bg-white shadow-xl overflow-hidden">
-        <div className="flex items-center justify-between border-b border-gray-200 px-4 py-3">
-          <h2 id="feedback-modal-title" className="font-bold text-gray-900 flex items-center gap-2">
+      <div className="w-full max-w-md rounded-2xl bg-[#1a2328] shadow-xl overflow-hidden">
+        <div className="flex items-center justify-between border-b border-[#2a3941] px-4 py-3">
+          <h2 id="feedback-modal-title" className="font-bold text-[#e7edf0] flex items-center gap-2">
             <MessageSquarePlus size={18} className="text-[#007782]" />
             {t('feedback.title')}
           </h2>
-          <button type="button" onClick={onClose} className="p-2 rounded-full hover:bg-gray-100" aria-label={t('feedback.cancel')}>
+          <button type="button" onClick={onClose} className="p-2 rounded-full hover:bg-[#243038]" aria-label={t('feedback.cancel')}>
             <X size={18} />
           </button>
         </div>
 
         <div className="p-4 space-y-4">
-          <p className="text-sm text-gray-600">{t('feedback.subtitle')}</p>
+          <p className="text-sm text-[#8fa3ad]">{t('feedback.subtitle')}</p>
 
           <div className="grid grid-cols-3 gap-2">
             {TYPES.map((opt) => {
@@ -105,7 +105,7 @@ export default function FeedbackModal({ open, onClose }: Props) {
                   className={`flex flex-col items-center gap-1 rounded-xl border px-2 py-3 text-xs font-medium transition-colors ${
                     active
                       ? 'border-[#007782] bg-[#007782]/5 text-[#007782]'
-                      : 'border-gray-200 text-gray-600 hover:border-[#007782]/30'
+                      : 'border-[#2a3941] text-[#8fa3ad] hover:border-[#007782]/30'
                   }`}
                 >
                   <Icon size={18} />
@@ -120,7 +120,7 @@ export default function FeedbackModal({ open, onClose }: Props) {
             onChange={(e) => setMessage(e.target.value)}
             rows={4}
             maxLength={2000}
-            className="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm focus:border-[#007782] focus:outline-none"
+            className="w-full rounded-lg border border-[#2a3941] px-3 py-2 text-sm focus:border-[#007782] focus:outline-none"
             placeholder={t('feedback.placeholder')}
           />
 
@@ -128,7 +128,7 @@ export default function FeedbackModal({ open, onClose }: Props) {
             <button
               type="button"
               onClick={onClose}
-              className="flex-1 rounded-xl border border-gray-300 py-2.5 text-sm font-semibold text-gray-700 hover:bg-gray-50"
+              className="flex-1 rounded-xl border border-[#2a3941] py-2.5 text-sm font-semibold text-[#b2c0c6] hover:bg-[#1f2a30]"
             >
               {t('feedback.cancel')}
             </button>

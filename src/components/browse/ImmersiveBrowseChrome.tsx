@@ -19,7 +19,7 @@ export default function ImmersiveBrowseChrome() {
       aria-hidden={!visible}
       tabIndex={visible ? 0 : -1}
       className={cn(
-        'fixed z-[9975] flex items-center gap-1.5 rounded-full border border-gray-200/90 bg-white/90 px-3 py-2 text-xs font-semibold text-gray-800 shadow-lg backdrop-blur-md',
+        'fixed z-[9975] flex items-center gap-1.5 rounded-full border border-[#2a3941]/90 bg-[#11171a]/90 px-3 py-2 text-xs font-semibold text-[#e7edf0] shadow-lg backdrop-blur-md',
         'bottom-[calc(3.25rem+1rem+env(safe-area-inset-bottom,0px))] right-3',
         'md:bottom-6 md:right-6',
         'transition-[opacity,transform] duration-300 ease-out',

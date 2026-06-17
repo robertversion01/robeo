@@ -179,7 +179,7 @@ export default function FavoritesPage() {
               <button
                 type="button"
                 onClick={() => setSort('newest')}
-                className="text-xs font-semibold text-gray-500 hover:text-[#007782] hover:underline"
+                className="text-xs font-semibold text-[#8fa3ad] hover:text-[#007782] hover:underline"
               >
                 {t('browse.activeFilters.clearAll')}
               </button>

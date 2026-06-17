@@ -44,7 +44,7 @@ export default function SellerMoreListings({ sellerId, excludeProductId }: Props
   return (
     <section className="mb-4">
       <div className="flex items-center justify-between mb-2">
-        <h3 className="text-sm font-semibold text-gray-900">{t('pdp.moreFromSeller')}</h3>
+        <h3 className="text-sm font-semibold text-[#e7edf0]">{t('pdp.moreFromSeller')}</h3>
         <Link
           href={`/profile/${sellerId}/closet`}
           className="text-xs font-semibold text-[#007782] hover:underline"
@@ -62,9 +62,9 @@ export default function SellerMoreListings({ sellerId, excludeProductId }: Props
           <Link
             key={p.id}
             href={`/products/${p.id}`}
-            className="shrink-0 w-[108px] rounded-lg border border-gray-200 bg-white overflow-hidden"
+            className="shrink-0 w-[108px] rounded-lg border border-[#2a3941] bg-[#1a2328] overflow-hidden"
           >
-            <div className="aspect-[4/5] bg-gray-100">
+            <div className="aspect-[4/5] bg-[#1a2328]">
               {imageUrl ? (
                 <ProductImage
                   src={getOptimizedImageUrl(imageUrl, 120, 80)}
@@ -75,7 +75,7 @@ export default function SellerMoreListings({ sellerId, excludeProductId }: Props
               ) : null}
             </div>
             <div className="p-1.5">
-              <p className="text-[10px] truncate text-gray-800">{p.name}</p>
+              <p className="text-[10px] truncate text-[#e7edf0]">{p.name}</p>
               <p className="text-[10px] font-bold text-[#007782]">{formatPrice(p.price)}</p>
             </div>
           </Link>

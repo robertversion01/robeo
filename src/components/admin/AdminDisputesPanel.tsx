@@ -82,12 +82,12 @@ export default function AdminDisputesPanel() {
   return (
     <div className="space-y-3">
       <div className="flex items-center justify-between gap-2">
-        <h3 className="text-sm font-bold text-gray-900">{t('disputes.admin.title')}</h3>
+        <h3 className="text-sm font-bold text-[#e7edf0]">{t('disputes.admin.title')}</h3>
         <div className="flex items-center gap-2">
           <select
             value={statusFilter}
             onChange={(e) => setStatusFilter(e.target.value as typeof statusFilter)}
-            className="rounded-md border border-gray-300 px-2 py-1 text-[11px]"
+            className="rounded-md border border-[#2a3941] px-2 py-1 text-[11px]"
             aria-label={t('disputes.admin.statusFilter')}
           >
             <option value="open">{t('disputes.admin.filterOpen')}</option>
@@ -108,30 +108,30 @@ export default function AdminDisputesPanel() {
       </div>
 
       {loading ? (
-        <p className="text-xs text-gray-500">{t('disputes.admin.loading')}</p>
+        <p className="text-xs text-[#8fa3ad]">{t('disputes.admin.loading')}</p>
       ) : rows.length === 0 ? (
-        <p className="text-xs text-gray-500">{t('disputes.admin.empty')}</p>
+        <p className="text-xs text-[#8fa3ad]">{t('disputes.admin.empty')}</p>
       ) : (
         <ul className="space-y-2">
           {rows.map((row) => {
             const tx = row.transactions;
             const product = tx?.products;
             return (
-              <li key={row.id} className="rounded-xl border border-gray-200 p-3 text-sm">
+              <li key={row.id} className="rounded-xl border border-[#2a3941] p-3 text-sm">
                 <div className="flex justify-between gap-2">
                   <p className="font-semibold truncate">{product?.name || '—'}</p>
                   <span className="text-[#007782] font-bold shrink-0">
                     {tx ? formatPrice(tx.amount) : '—'}
                   </span>
                 </div>
-                <p className="text-xs text-gray-600 mt-1">
+                <p className="text-xs text-[#8fa3ad] mt-1">
                   {disputeReasonLabel(row.reason, locale)}
                   {row.details ? ` — ${row.details}` : ''}
                 </p>
-                <p className="text-[10px] text-gray-400 mt-1">
+                <p className="text-[10px] text-[#6b7d85] mt-1">
                   {new Date(row.created_at).toLocaleString(locale === 'en' ? 'en-HU' : 'hu-HU')}
                   {' · '}
-                  <span className="font-semibold text-gray-500">
+                  <span className="font-semibold text-[#8fa3ad]">
                     {t(`disputes.status.${row.status}`)}
                   </span>
                 </p>
@@ -157,7 +157,7 @@ export default function AdminDisputesPanel() {
                     type="button"
                     disabled={busyId === row.id}
                     onClick={() => void act(row, 'reject')}
-                    className="rounded-md border border-red-200 text-red-700 px-2 py-1 text-[11px] font-semibold"
+                    className="rounded-md border border-red-900/45 text-red-300 px-2 py-1 text-[11px] font-semibold"
                   >
                     {t('disputes.admin.reject')}
                   </button>

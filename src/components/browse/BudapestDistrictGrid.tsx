@@ -102,7 +102,7 @@ export default function BudapestDistrictGrid({
                 <span
                   className={cn(
                     'absolute -right-0.5 -top-0.5 min-w-[14px] rounded-full px-0.5 text-[9px] font-bold leading-tight',
-                    active ? 'bg-white text-[#007782]' : 'bg-[#007782]/15 text-[#007782]',
+                    active ? 'bg-[#1a2328] text-[#007782]' : 'bg-[#007782]/15 text-[#007782]',
                   )}
                 >
                   {count > 99 ? '99+' : count}

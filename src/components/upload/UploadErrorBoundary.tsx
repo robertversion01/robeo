@@ -34,10 +34,10 @@ export default class UploadErrorBoundary extends React.Component<Props, State> {
     if (!this.state.hasError) return this.props.children;
 
     return (
-      <div className="min-h-screen bg-white flex items-center justify-center px-6">
+      <div className="min-h-screen bg-[#1a2328] flex items-center justify-center px-6">
         <div className="max-w-md text-center space-y-4">
-          <h1 className="text-lg font-bold text-gray-900">A feltöltés oldal nem töltődött be</h1>
-          <p className="text-sm text-gray-600">
+          <h1 className="text-lg font-bold text-[#e7edf0]">A feltöltés oldal nem töltődött be</h1>
+          <p className="text-sm text-[#8fa3ad]">
             Gyakran régi mentett piszkozat vagy túl nagy kép okozza mobilon. Töröljük a piszkozatot és
             újrapróbáljuk.
           </p>

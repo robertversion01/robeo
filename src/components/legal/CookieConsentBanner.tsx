@@ -80,9 +80,9 @@ export default function CookieConsentBanner() {
           : undefined
       }
     >
-      <div className="pointer-events-auto mx-auto max-w-3xl rounded-2xl border border-gray-200 bg-white/95 p-4 shadow-xl backdrop-blur-md md:p-5">
-        <p className="mb-1 text-sm font-semibold text-gray-900">Sütik és adatvédelem</p>
-        <p className="mb-3 text-xs leading-relaxed text-gray-600">
+      <div className="pointer-events-auto mx-auto max-w-3xl rounded-2xl border border-[#2a3941] bg-[#11171a]/95 p-4 shadow-xl backdrop-blur-md md:p-5">
+        <p className="mb-1 text-sm font-semibold text-[#e7edf0]">Sütik és adatvédelem</p>
+        <p className="mb-3 text-xs leading-relaxed text-[#8fa3ad]">
           A ROBEO demó módban működik. A szükséges sütik a működéshez kellenek; az analitika és
           marketing sütik opcionálisak. Részletek:{' '}
           <Link href="/legal/cookies" className="font-semibold text-[#007782] hover:underline">
@@ -96,12 +96,12 @@ export default function CookieConsentBanner() {
         </p>
 
         {showDetails ? (
-          <div className="mb-3 space-y-2 rounded-lg border border-gray-100 bg-gray-50/80 p-3 text-xs">
-            <label className="flex items-center justify-between gap-2 text-gray-500">
+          <div className="mb-3 space-y-2 rounded-lg border border-[#27363d] bg-[#141d21]/80 p-3 text-xs">
+            <label className="flex items-center justify-between gap-2 text-[#8fa3ad]">
               <span>Szükséges (mindig aktív)</span>
               <input type="checkbox" checked disabled className="accent-[#007782]" />
             </label>
-            <label className="flex items-center justify-between gap-2 text-gray-800">
+            <label className="flex items-center justify-between gap-2 text-[#e7edf0]">
               <span>Analitika (demó)</span>
               <input
                 type="checkbox"
@@ -110,7 +110,7 @@ export default function CookieConsentBanner() {
                 className="accent-[#007782]"
               />
             </label>
-            <label className="flex items-center justify-between gap-2 text-gray-800">
+            <label className="flex items-center justify-between gap-2 text-[#e7edf0]">
               <span>Marketing (demó)</span>
               <input
                 type="checkbox"
@@ -133,7 +133,7 @@ export default function CookieConsentBanner() {
           <button
             type="button"
             onClick={() => accept({ necessary: true, analytics: false, marketing: false })}
-            className="h-9 rounded-lg border border-gray-300 bg-white px-4 text-xs font-semibold text-gray-800 hover:bg-gray-50"
+            className="h-9 rounded-lg border border-[#2a3941] bg-[#1a2328] px-4 text-xs font-semibold text-[#e7edf0] hover:bg-[#1f2a30]"
           >
             Csak szükséges
           </button>
@@ -147,7 +147,7 @@ export default function CookieConsentBanner() {
           <button
             type="button"
             onClick={() => setShowDetails((v) => !v)}
-            className="h-9 px-2 text-xs text-gray-500 underline hover:text-gray-800"
+            className="h-9 px-2 text-xs text-[#8fa3ad] underline hover:text-[#e7edf0]"
           >
             {showDetails ? 'Bezárás' : 'Testreszabás'}
           </button>

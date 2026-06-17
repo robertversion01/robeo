@@ -66,24 +66,24 @@ export default function ReportProductModal({ productId, productName, open, onClo
       aria-modal="true"
       aria-labelledby="report-modal-title"
     >
-      <div className="w-full max-w-md rounded-2xl bg-white shadow-xl overflow-hidden">
-        <div className="flex items-center justify-between border-b border-gray-200 px-4 py-3">
-          <h2 id="report-modal-title" className="font-bold text-gray-900 flex items-center gap-2">
+      <div className="w-full max-w-md rounded-2xl bg-[#1a2328] shadow-xl overflow-hidden">
+        <div className="flex items-center justify-between border-b border-[#2a3941] px-4 py-3">
+          <h2 id="report-modal-title" className="font-bold text-[#e7edf0] flex items-center gap-2">
             <Flag size={18} className="text-red-500" />
             {t('report.title')}
           </h2>
-          <button type="button" onClick={onClose} className="p-2 rounded-full hover:bg-gray-100">
+          <button type="button" onClick={onClose} className="p-2 rounded-full hover:bg-[#243038]">
             <X size={18} />
           </button>
         </div>
 
         <div className="p-4 space-y-4">
-          <p className="text-sm text-gray-600">
-            <span className="font-medium text-gray-900">{productName}</span>
+          <p className="text-sm text-[#8fa3ad]">
+            <span className="font-medium text-[#e7edf0]">{productName}</span>
           </p>
 
           <fieldset className="space-y-2">
-            <legend className="text-xs font-semibold text-gray-700 uppercase tracking-wide">
+            <legend className="text-xs font-semibold text-[#b2c0c6] uppercase tracking-wide">
               {t('report.reasonLegend')}
             </legend>
             {reasons.map((r) => (
@@ -92,7 +92,7 @@ export default function ReportProductModal({ productId, productName, open, onClo
                 className={`flex items-center gap-2 rounded-lg border px-3 py-2 text-sm cursor-pointer ${
                   reason === r.id
                     ? 'border-[#007782] bg-[#007782]/5 text-[#007782]'
-                    : 'border-gray-200'
+                    : 'border-[#2a3941]'
                 }`}
               >
                 <input
@@ -108,13 +108,13 @@ export default function ReportProductModal({ productId, productName, open, onClo
             ))}
           </fieldset>
 
-          <label className="block text-sm text-gray-700">
+          <label className="block text-sm text-[#b2c0c6]">
             {t('report.details')}
             <textarea
               value={details}
               onChange={(e) => setDetails(e.target.value)}
               rows={3}
-              className="mt-1 w-full rounded-lg border border-gray-300 px-3 py-2 text-sm"
+              className="mt-1 w-full rounded-lg border border-[#2a3941] px-3 py-2 text-sm"
               placeholder={t('report.detailsPlaceholder')}
             />
           </label>
@@ -123,7 +123,7 @@ export default function ReportProductModal({ productId, productName, open, onClo
             <button
               type="button"
               onClick={onClose}
-              className="flex-1 rounded-xl border border-gray-300 py-2.5 text-sm font-semibold text-gray-700"
+              className="flex-1 rounded-xl border border-[#2a3941] py-2.5 text-sm font-semibold text-[#b2c0c6]"
             >
               {t('report.cancel')}
             </button>

@@ -103,8 +103,8 @@ export default function ProductAlertsBar({ product, className = '' }: Props) {
 
   return (
     <div className={`rounded-xl border border-[#007782]/15 bg-[#007782]/5 px-3 py-2.5 ${className}`}>
-      <p className="text-xs font-semibold text-gray-800">{t('pdp.alerts.title')}</p>
-      <p className="mt-0.5 text-[11px] text-gray-600 leading-snug">{t('pdp.alerts.subtitle')}</p>
+      <p className="text-xs font-semibold text-[#e7edf0]">{t('pdp.alerts.title')}</p>
+      <p className="mt-0.5 text-[11px] text-[#8fa3ad] leading-snug">{t('pdp.alerts.subtitle')}</p>
       <div className="mt-2 flex flex-wrap gap-2">
         <button
           type="button"
@@ -113,7 +113,7 @@ export default function ProductAlertsBar({ product, className = '' }: Props) {
           className={`inline-flex items-center gap-1.5 rounded-full border px-3 py-1.5 text-[11px] font-semibold transition-colors ${
             priceWatchOn
               ? 'border-[#007782] bg-[#007782]/10 text-[#007782]'
-              : 'border-gray-200 bg-white text-gray-600 hover:border-[#007782]/30'
+              : 'border-[#2a3941] bg-[#1a2328] text-[#8fa3ad] hover:border-[#007782]/30'
           }`}
         >
           {priceWatchOn ? <Bell size={13} /> : <BellOff size={13} />}
@@ -126,7 +126,7 @@ export default function ProductAlertsBar({ product, className = '' }: Props) {
           className={`inline-flex items-center gap-1.5 rounded-full border px-3 py-1.5 text-[11px] font-semibold transition-colors ${
             savedSearchId && searchAlertOn
               ? 'border-[#007782] bg-[#007782]/10 text-[#007782]'
-              : 'border-gray-200 bg-white text-gray-600 hover:border-[#007782]/30'
+              : 'border-[#2a3941] bg-[#1a2328] text-[#8fa3ad] hover:border-[#007782]/30'
           }`}
         >
           {savedSearchId ? <BookmarkCheck size={13} /> : <Bookmark size={13} />}
@@ -137,7 +137,7 @@ export default function ProductAlertsBar({ product, className = '' }: Props) {
             : t('pdp.alerts.saveSimilarSearch')}
         </button>
       </div>
-      <p className="mt-2 text-[10px] text-gray-500">
+      <p className="mt-2 text-[10px] text-[#8fa3ad]">
         {t('pdp.alerts.digestHint')}{' '}
         <Link href="/profile?tab=settings" className="font-semibold text-[#007782] hover:underline">
           {t('pdp.alerts.digestLink')}

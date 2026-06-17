@@ -46,7 +46,7 @@ export default function ProductShareReportBar({ productId, productName, classNam
         <button
           type="button"
           onClick={() => void share()}
-          className="inline-flex h-10 w-10 items-center justify-center rounded-full border border-gray-200 bg-white/95 text-gray-700 shadow-sm hover:border-[#007782]/30 hover:text-[#007782]"
+          className="inline-flex h-10 w-10 items-center justify-center rounded-full border border-[#2a3941] bg-[#11171a]/95 text-[#b2c0c6] shadow-sm hover:border-[#007782]/30 hover:text-[#007782]"
           aria-label={t('product.share')}
         >
           <Share2 size={18} />
@@ -54,7 +54,7 @@ export default function ProductShareReportBar({ productId, productName, classNam
         <button
           type="button"
           onClick={() => setReportOpen(true)}
-          className="inline-flex h-10 w-10 items-center justify-center rounded-full border border-gray-200 bg-white/95 text-gray-700 shadow-sm hover:border-red-200 hover:text-red-600"
+          className="inline-flex h-10 w-10 items-center justify-center rounded-full border border-[#2a3941] bg-[#11171a]/95 text-[#b2c0c6] shadow-sm hover:border-red-900/45 hover:text-red-600"
           aria-label={t('product.report')}
         >
           <Flag size={18} />

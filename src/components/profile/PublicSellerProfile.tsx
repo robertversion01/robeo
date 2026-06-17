@@ -172,10 +172,10 @@ export default function PublicSellerProfile({ sellerId }: Props) {
   return (
     <main className={`min-h-screen bg-[#11171a] text-[#e7edf0] ${MAIN_TOP_PADDING} px-4`}>
       <div className="max-w-4xl mx-auto">
-        <div className="rounded-2xl border border-gray-200 bg-gradient-to-br from-[#007782]/5 to-white p-5 mb-6">
-          <h1 className="text-2xl font-bold text-gray-900">{displayName || t('publicSeller.defaultName')}</h1>
+        <div className="rounded-2xl border border-[#2a3941] bg-gradient-to-br from-[#007782]/5 to-[#141d21] p-5 mb-6">
+          <h1 className="text-2xl font-bold text-[#e7edf0]">{displayName || t('publicSeller.defaultName')}</h1>
           {bio ? (
-            <p className="mt-2 text-sm text-gray-600 leading-relaxed whitespace-pre-wrap">{bio}</p>
+            <p className="mt-2 text-sm text-[#8fa3ad] leading-relaxed whitespace-pre-wrap">{bio}</p>
           ) : null}
 
           <SellerTrustBadges
@@ -188,16 +188,16 @@ export default function PublicSellerProfile({ sellerId }: Props) {
 
           <div className="flex gap-6 mt-4 text-sm">
             <div>
-              <p className="font-bold text-gray-900">{followers}</p>
-              <p className="text-gray-500">{t('publicSeller.followers')}</p>
+              <p className="font-bold text-[#e7edf0]">{followers}</p>
+              <p className="text-[#8fa3ad]">{t('publicSeller.followers')}</p>
             </div>
             <div>
-              <p className="font-bold text-gray-900">{following}</p>
-              <p className="text-gray-500">{t('publicSeller.following')}</p>
+              <p className="font-bold text-[#e7edf0]">{following}</p>
+              <p className="text-[#8fa3ad]">{t('publicSeller.following')}</p>
             </div>
             <div>
-              <p className="font-bold text-gray-900">{products.length}</p>
-              <p className="text-gray-500">{t('publicSeller.products')}</p>
+              <p className="font-bold text-[#e7edf0]">{products.length}</p>
+              <p className="text-[#8fa3ad]">{t('publicSeller.products')}</p>
             </div>
           </div>
 
@@ -213,7 +213,7 @@ export default function PublicSellerProfile({ sellerId }: Props) {
             <button
               type="button"
               onClick={refreshCounts}
-              className="text-xs text-gray-500 underline"
+              className="text-xs text-[#8fa3ad] underline"
             >
               {t('publicSeller.refresh')}
             </button>
@@ -238,7 +238,7 @@ export default function PublicSellerProfile({ sellerId }: Props) {
             </Link>
             <Link
               href="/browse#catalog"
-              className="rounded-full border border-gray-200 bg-white px-3 py-1.5 text-xs font-semibold text-gray-700 hover:border-[#007782]/35 hover:text-[#007782]"
+              className="rounded-full border border-[#2a3941] bg-[#1a2328] px-3 py-1.5 text-xs font-semibold text-[#b2c0c6] hover:border-[#007782]/35 hover:text-[#007782]"
             >
               {t('publicSeller.openBrowse')}
             </Link>
@@ -247,7 +247,7 @@ export default function PublicSellerProfile({ sellerId }: Props) {
 
         {reviews.length > 0 ? (
           <section className="mb-6">
-            <h2 className="text-lg font-bold text-gray-900 mb-3">
+            <h2 className="text-lg font-bold text-[#e7edf0] mb-3">
               {t('publicSeller.reviewsTitle')}
             </h2>
             <div className="space-y-3">
@@ -258,20 +258,20 @@ export default function PublicSellerProfile({ sellerId }: Props) {
           </section>
         ) : null}
 
-        <h2 className="text-lg font-bold text-gray-900 mb-3">{t('publicSeller.listingsTitle')}</h2>
-        <div className="mb-3 rounded-xl border border-gray-200 bg-gray-50/70 p-2.5">
+        <h2 className="text-lg font-bold text-[#e7edf0] mb-3">{t('publicSeller.listingsTitle')}</h2>
+        <div className="mb-3 rounded-xl border border-[#2a3941] bg-[#141d21]/70 p-2.5">
           <div className="flex flex-col gap-2 sm:flex-row">
             <input
               type="search"
               value={shopQuery}
               onChange={(e) => setShopQuery(e.target.value)}
               placeholder={t('publicSeller.shopSearchPlaceholder')}
-              className="h-9 flex-1 rounded-lg border border-gray-200 bg-white px-3 text-sm"
+              className="h-9 flex-1 rounded-lg border border-[#2a3941] bg-[#1a2328] px-3 text-sm"
             />
             <select
               value={shopCategory}
               onChange={(e) => setShopCategory(e.target.value)}
-              className="h-9 rounded-lg border border-gray-200 bg-white px-3 text-sm"
+              className="h-9 rounded-lg border border-[#2a3941] bg-[#1a2328] px-3 text-sm"
             >
               <option value="all">{t('publicSeller.allCategories')}</option>
               {shopCategories
@@ -309,7 +309,7 @@ export default function PublicSellerProfile({ sellerId }: Props) {
                   setShopQuery('');
                   setShopCategory('all');
                 }}
-                className="text-xs font-semibold text-gray-500 hover:text-[#007782] hover:underline"
+                className="text-xs font-semibold text-[#8fa3ad] hover:text-[#007782] hover:underline"
               >
                 {t('browse.activeFilters.clearAll')}
               </button>
@@ -317,9 +317,9 @@ export default function PublicSellerProfile({ sellerId }: Props) {
           )}
         </div>
         {filteredProducts.length === 0 && products.length > 0 ? (
-          <div className="mb-4 rounded-xl border border-dashed border-gray-300 px-4 py-6 text-center">
-            <p className="text-sm font-semibold text-gray-800">{t('publicSeller.noMatchesTitle')}</p>
-            <p className="mt-1 text-xs text-gray-500">{t('publicSeller.noMatchesHint')}</p>
+          <div className="mb-4 rounded-xl border border-dashed border-[#2a3941] px-4 py-6 text-center">
+            <p className="text-sm font-semibold text-[#e7edf0]">{t('publicSeller.noMatchesTitle')}</p>
+            <p className="mt-1 text-xs text-[#8fa3ad]">{t('publicSeller.noMatchesHint')}</p>
             <button
               type="button"
               onClick={() => {

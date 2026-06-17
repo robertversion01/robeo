@@ -29,16 +29,16 @@ export default function DiscoveryChip({
         : 'border-[#007782]/30 bg-[#007782]/5 text-[#007782] hover:border-[#007782]/50'),
     variant === 'price' &&
       (active
-        ? 'border-amber-500 bg-amber-500 text-white shadow-sm'
-        : 'border-amber-200/90 bg-amber-50 text-amber-900 hover:border-amber-400'),
+        ? 'border-amber-600 bg-amber-700 text-white shadow-sm'
+        : 'border-amber-900/45 bg-amber-950/40 text-amber-200 hover:border-amber-600/60'),
     variant === 'accent' &&
       (active
         ? 'border-[#007782] bg-[#007782] text-white shadow-sm'
-        : 'border-[#007782]/25 bg-[#007782]/5 text-[#007782] hover:border-[#007782]/45'),
+        : 'border-[#007782]/25 bg-[#17343a]/60 text-[#38c7d0] hover:border-[#007782]/45'),
     variant === 'default' &&
       (active
-        ? 'border-gray-800 bg-gray-900 text-white shadow-sm'
-        : 'border-gray-200 bg-white text-gray-700 hover:border-[#007782]/40 hover:text-[#007782]'),
+        ? 'border-[#38c7d0] bg-[#17343a] text-[#9be2e8] shadow-sm'
+        : 'border-[#2a3941] bg-[#1a2328] text-[#b2c0c6] hover:border-[#38c7d0]/40 hover:text-[#9be2e8]'),
   );
 
   const content = (
@@ -48,7 +48,7 @@ export default function DiscoveryChip({
         <span
           className={cn(
             'rounded-full px-1.5 py-0.5 text-[10px] font-bold tabular-nums',
-            active ? 'bg-white/20 text-inherit' : 'bg-gray-100 text-gray-500',
+            active ? 'bg-[#e7edf0]/20 text-inherit' : 'bg-[#1a2328] text-[#8fa3ad]',
           )}
         >
           {count}

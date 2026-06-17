@@ -16,7 +16,7 @@ export default function SavedReplyChips({ replies, onPick, className = '' }: Pro
 
   return (
     <div className={className}>
-      <p className="mb-1.5 flex items-center gap-1 text-[10px] font-semibold uppercase tracking-wide text-gray-500">
+      <p className="mb-1.5 flex items-center gap-1 text-[10px] font-semibold uppercase tracking-wide text-[#8fa3ad]">
         <Zap size={11} className="text-[#007782]" />
         {t('savedReplies.quickInsert')}
       </p>

@@ -87,7 +87,7 @@ function RailRow({
       <p
         className={cn(
           'mb-1.5 flex items-center gap-1 text-[11px] font-bold uppercase tracking-wide',
-          accent ? 'text-[#007782]' : 'text-gray-500',
+          accent ? 'text-[#007782]' : 'text-[#8fa3ad]',
         )}
       >
         {accent ? <Sparkles size={12} className="shrink-0" aria-hidden /> : null}
@@ -313,7 +313,7 @@ export default function BrowseDiscoveryRails({
       {conditionRow}
 
       {!compact ? (
-        <p className="text-[11px] text-gray-400 leading-relaxed">{t('browse.discovery.tip')}</p>
+        <p className="text-[11px] text-[#6b7d85] leading-relaxed">{t('browse.discovery.tip')}</p>
       ) : null}
     </>
   );
@@ -323,16 +323,16 @@ export default function BrowseDiscoveryRails({
       className={cn(
         compact ? 'mb-2' : 'mb-3',
         hacooCard &&
-          'rounded-2xl border border-gray-200/90 bg-gradient-to-br from-white via-[#007782]/[0.03] to-amber-50/40 p-3.5 shadow-sm',
+          'rounded-2xl border border-[#2a3941]/90 bg-gradient-to-br from-[#141d21] via-[#007782]/[0.03] to-amber-950/20 p-3.5 shadow-sm',
         !hacooCard && 'space-y-2.5',
         hacooCard && 'space-y-3',
         className,
       )}
     >
       {hacooCard ? (
-        <div className="flex items-center gap-2 border-b border-gray-100 pb-2">
+        <div className="flex items-center gap-2 border-b border-[#27363d] pb-2">
           <Sparkles size={16} className="text-[#007782]" aria-hidden />
-          <p className="text-sm font-bold text-gray-900">{t('browse.discovery.explore')}</p>
+          <p className="text-sm font-bold text-[#e7edf0]">{t('browse.discovery.explore')}</p>
         </div>
       ) : null}
       {inner}

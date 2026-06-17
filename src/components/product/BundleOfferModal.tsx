@@ -88,7 +88,7 @@ export default function BundleOfferModal({ isOpen, onClose, sellerId, buyerId }:
       <div
         role="dialog"
         aria-labelledby={titleId}
-        className="w-full max-w-md rounded-t-2xl sm:rounded-2xl bg-white p-4 shadow-xl max-h-[85vh] overflow-y-auto"
+        className="w-full max-w-md rounded-t-2xl sm:rounded-2xl bg-[#1a2328] p-4 shadow-xl max-h-[85vh] overflow-y-auto"
       >
         <div className="flex items-center justify-between mb-3">
           <h2 id={titleId} className="text-lg font-bold">
@@ -98,7 +98,7 @@ export default function BundleOfferModal({ isOpen, onClose, sellerId, buyerId }:
             <X size={20} />
           </button>
         </div>
-        <ul className="text-sm text-gray-700 space-y-1 mb-3 max-h-40 overflow-y-auto">
+        <ul className="text-sm text-[#b2c0c6] space-y-1 mb-3 max-h-40 overflow-y-auto">
           {items.map((i) => (
             <li key={i.productId} className="flex justify-between gap-2">
               <span className="truncate">{i.name}</span>
@@ -113,7 +113,7 @@ export default function BundleOfferModal({ isOpen, onClose, sellerId, buyerId }:
           value={message}
           onChange={(e) => setMessage(e.target.value)}
           placeholder={t('bundle.offer.placeholder')}
-          className="w-full rounded-lg border border-gray-200 px-3 py-2 text-sm min-h-[80px] mb-3"
+          className="w-full rounded-lg border border-[#2a3941] px-3 py-2 text-sm min-h-[80px] mb-3"
         />
         <button
           type="button"

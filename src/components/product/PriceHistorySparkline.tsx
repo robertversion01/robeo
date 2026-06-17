@@ -48,8 +48,8 @@ export default function PriceHistorySparkline({ productId, currentPrice }: Props
   const trendDown = last < first;
 
   return (
-    <div className="mt-2 rounded-lg border border-gray-100 bg-gray-50/80 px-3 py-2">
-      <p className="text-[10px] font-semibold uppercase tracking-wide text-gray-500 mb-1">
+    <div className="mt-2 rounded-lg border border-[#27363d] bg-[#141d21]/80 px-3 py-2">
+      <p className="text-[10px] font-semibold uppercase tracking-wide text-[#8fa3ad] mb-1">
         {t('pdp.priceHistory')}
       </p>
       <div className="flex items-end justify-between gap-3">
@@ -62,12 +62,12 @@ export default function PriceHistorySparkline({ productId, currentPrice }: Props
             points={points}
           />
         </svg>
-        <div className="text-[10px] text-gray-600 text-right tabular-nums">
+        <div className="text-[10px] text-[#8fa3ad] text-right tabular-nums">
           <div>
             {formatPrice(first)} → {formatPrice(last)}
           </div>
           {trendDown ? (
-            <span className="text-emerald-700 font-semibold">{t('pdp.priceTrendDown')}</span>
+            <span className="text-emerald-300 font-semibold">{t('pdp.priceTrendDown')}</span>
           ) : null}
         </div>
       </div>

@@ -57,14 +57,14 @@ export default function AdminDac7Report() {
   };
 
   return (
-    <div className="mt-6 rounded-xl border border-amber-200 bg-amber-50/50 p-4">
+    <div className="mt-6 rounded-xl border border-amber-900/45 bg-amber-950/30 p-4">
       <div className="flex flex-wrap items-start justify-between gap-3 mb-3">
         <div>
-          <h3 className="text-sm font-bold text-gray-900 flex items-center gap-2">
+          <h3 className="text-sm font-bold text-[#e7edf0] flex items-center gap-2">
             <AlertTriangle size={16} className="text-amber-600" aria-hidden />
             NAV / DAC7 Riport
           </h3>
-          <p className="text-xs text-gray-600 mt-1 max-w-xl">
+          <p className="text-xs text-[#8fa3ad] mt-1 max-w-xl">
             Demo küszöb: több mint {DAC7_MIN_SALES} sikeres eladás vagy nettó bevétel ≥{' '}
             {DAC7_MIN_EARNINGS_HUF.toLocaleString('hu-HU')} Ft. Teszt admin riport — nem adóbevallás.
           </p>
@@ -82,7 +82,7 @@ export default function AdminDac7Report() {
             <button
               type="button"
               onClick={() => void exportCsv()}
-              className="h-9 inline-flex items-center gap-1 rounded-md border border-gray-300 bg-white px-3 text-xs font-semibold text-gray-800 hover:bg-gray-50"
+              className="h-9 inline-flex items-center gap-1 rounded-md border border-[#2a3941] bg-[#1a2328] px-3 text-xs font-semibold text-[#e7edf0] hover:bg-[#1f2a30]"
             >
               <Download size={14} aria-hidden />
               CSV export
@@ -94,18 +94,18 @@ export default function AdminDac7Report() {
       {error ? <p className="text-xs text-red-600 mb-2">{error}</p> : null}
 
       {!loaded && !loading ? (
-        <p className="text-xs text-gray-500">Kattints a „Riport futtatása” gombra a figyelmeztetett eladók listázásához.</p>
+        <p className="text-xs text-[#8fa3ad]">Kattints a „Riport futtatása” gombra a figyelmeztetett eladók listázásához.</p>
       ) : null}
 
       {loaded && rows.length === 0 && !loading ? (
-        <p className="text-xs text-emerald-700 font-medium">Nincs DAC7 küszöböt elérő teszt eladó.</p>
+        <p className="text-xs text-emerald-300 font-medium">Nincs DAC7 küszöböt elérő teszt eladó.</p>
       ) : null}
 
       {rows.length > 0 ? (
-        <div className="overflow-x-auto rounded-lg border border-amber-100 bg-white">
+        <div className="overflow-x-auto rounded-lg border border-amber-100 bg-[#1a2328]">
           <table className="w-full text-xs">
             <thead>
-              <tr className="bg-gray-50 text-left text-gray-600">
+              <tr className="bg-[#141d21] text-left text-[#8fa3ad]">
                 <th className="px-2 py-2">Eladó</th>
                 <th className="px-2 py-2">E-mail</th>
                 <th className="px-2 py-2 text-right">Eladások</th>
@@ -115,14 +115,14 @@ export default function AdminDac7Report() {
             </thead>
             <tbody>
               {rows.map((r) => (
-                <tr key={r.userId} className="border-t border-gray-100">
+                <tr key={r.userId} className="border-t border-[#27363d]">
                   <td className="px-2 py-2 font-medium">{r.displayName || r.userId.slice(0, 8)}</td>
-                  <td className="px-2 py-2 text-gray-600">{r.email || '—'}</td>
+                  <td className="px-2 py-2 text-[#8fa3ad]">{r.email || '—'}</td>
                   <td className="px-2 py-2 text-right tabular-nums">{r.completedSales}</td>
                   <td className="px-2 py-2 text-right tabular-nums">
                     {r.cumulativeEarningsHuf.toLocaleString('hu-HU')}
                   </td>
-                  <td className="px-2 py-2 text-amber-800">{r.flaggedReasons.join(' · ')}</td>
+                  <td className="px-2 py-2 text-amber-300">{r.flaggedReasons.join(' · ')}</td>
                 </tr>
               ))}
             </tbody>

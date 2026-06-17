@@ -37,7 +37,7 @@ export default function ProfileMobileOrdersHeader() {
           <Link
             key={href}
             href={href}
-            className="flex flex-col items-center gap-1.5 rounded-xl bg-white/10 px-2 py-3 text-center active:bg-white/15"
+            className="flex flex-col items-center gap-1.5 rounded-xl bg-[#e7edf0]/10 px-2 py-3 text-center active:bg-[#e7edf0]/15"
           >
             <Icon size={20} className="text-[#5ec4c9]" strokeWidth={1.75} />
             <span className="text-[10px] font-semibold leading-tight text-white/90">{label}</span>

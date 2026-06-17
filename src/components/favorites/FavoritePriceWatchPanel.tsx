@@ -58,8 +58,8 @@ export default function FavoritePriceWatchPanel({ products }: Props) {
       <div className="flex items-start gap-2 rounded-xl border border-[#007782]/15 bg-[#007782]/5 px-3 py-2.5">
         <Bell size={16} className="mt-0.5 shrink-0 text-[#007782]" />
         <div className="min-w-0">
-          <p className="text-sm font-semibold text-gray-900">{t('priceWatch.title')}</p>
-          <p className="text-xs text-gray-600 mt-0.5">{t('priceWatch.hint', { count: watchedCount })}</p>
+          <p className="text-sm font-semibold text-[#e7edf0]">{t('priceWatch.title')}</p>
+          <p className="text-xs text-[#8fa3ad] mt-0.5">{t('priceWatch.hint', { count: watchedCount })}</p>
         </div>
       </div>
 
@@ -68,13 +68,13 @@ export default function FavoritePriceWatchPanel({ products }: Props) {
           {drops.map((d) => (
             <li
               key={d.productId}
-              className="flex items-center justify-between gap-3 rounded-xl border border-emerald-200 bg-emerald-50/80 px-3 py-2.5"
+              className="flex items-center justify-between gap-3 rounded-xl border border-emerald-900/45 bg-emerald-950/35 px-3 py-2.5"
             >
               <div className="flex items-start gap-2 min-w-0">
-                <TrendingDown size={18} className="shrink-0 text-emerald-700 mt-0.5" />
+                <TrendingDown size={18} className="shrink-0 text-emerald-300 mt-0.5" />
                 <div className="min-w-0">
-                  <p className="text-sm font-semibold text-gray-900 truncate">{d.productName}</p>
-                  <p className="text-xs text-emerald-800">
+                  <p className="text-sm font-semibold text-[#e7edf0] truncate">{d.productName}</p>
+                  <p className="text-xs text-emerald-300">
                     {formatPrice(d.oldPrice)} → {formatPrice(d.newPrice)}
                   </p>
                 </div>
@@ -89,7 +89,7 @@ export default function FavoritePriceWatchPanel({ products }: Props) {
           ))}
         </ul>
       ) : (
-        <p className="text-xs text-gray-500 px-1">{t('priceWatch.noDrops')}</p>
+        <p className="text-xs text-[#8fa3ad] px-1">{t('priceWatch.noDrops')}</p>
       )}
 
       <div className="flex flex-wrap gap-2">
@@ -123,7 +123,7 @@ export default function FavoritePriceWatchPanel({ products }: Props) {
               className={`rounded-full px-2.5 py-1 text-[11px] font-medium border ${
                 on
                   ? 'border-[#007782] bg-[#007782]/10 text-[#007782]'
-                  : 'border-gray-200 text-gray-500'
+                  : 'border-[#2a3941] text-[#8fa3ad]'
               }`}
             >
               {on ? t('priceWatch.watching') : t('priceWatch.paused')} {p.name.slice(0, 18)}

@@ -21,7 +21,7 @@ export default function CheckoutPageRouter() {
   return (
     <Suspense
       fallback={
-        <div className="min-h-screen bg-white flex items-center justify-center">
+        <div className="min-h-screen bg-[#1a2328] flex items-center justify-center">
           <div className="animate-spin h-10 w-10 border-4 border-[#007782] border-t-transparent rounded-full" />
         </div>
       }

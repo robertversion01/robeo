@@ -158,18 +158,18 @@ export default function SaleSystemMessageCard({
   };
 
   return (
-    <div className="max-w-md rounded-xl border border-emerald-500/30 bg-emerald-50/80 px-4 py-3 text-sm text-gray-800">
+    <div className="max-w-md rounded-xl border border-emerald-700/45 bg-emerald-950/35 px-4 py-3 text-sm text-[#e7edf0]">
       {role ? (
         <div className="flex justify-center mb-1">
           <SystemMessageRoleBadge role={role} />
         </div>
       ) : null}
-      <p className="text-center font-semibold text-emerald-900">{title}</p>
-      <p className="text-center text-xs text-gray-700 mt-1 leading-snug">{body}</p>
+      <p className="text-center font-semibold text-emerald-200">{title}</p>
+      <p className="text-center text-xs text-[#b2c0c6] mt-1 leading-snug">{body}</p>
       {product && (
         <Link
           href={`/products/${product.id}`}
-          className="mt-3 flex items-center justify-between gap-2 rounded-lg border border-[#007782]/25 bg-white px-3 py-2 hover:bg-[#007782]/5"
+          className="mt-3 flex items-center justify-between gap-2 rounded-lg border border-[#007782]/25 bg-[#1a2328] px-3 py-2 hover:bg-[#007782]/5"
         >
           <span className="font-semibold text-[#007782] truncate">{product.name}</span>
           <span className="shrink-0 font-bold tabular-nums">{formatPrice(product.price)}</span>
@@ -190,15 +190,15 @@ export default function SaleSystemMessageCard({
         <button
           type="button"
           onClick={handleBuyerAction}
-          className="mt-3 inline-flex w-full items-center justify-center rounded-full border border-[#007782]/40 bg-white px-4 min-h-11 py-2 text-sm font-semibold text-[#007782] touch-manipulation"
+          className="mt-3 inline-flex w-full items-center justify-center rounded-full border border-[#007782]/40 bg-[#1a2328] px-4 min-h-11 py-2 text-sm font-semibold text-[#007782] touch-manipulation"
         >
           {t('chatTransaction.viewOrderThread')}
         </button>
       ) : null}
       {role === 'seller' && !txPaid ? (
-        <p className="mt-2 text-[10px] text-center text-amber-800">{t('saleMessage.awaitingPaymentSync')}</p>
+        <p className="mt-2 text-[10px] text-center text-amber-300">{t('saleMessage.awaitingPaymentSync')}</p>
       ) : null}
-      <div className="mt-2 text-center text-[10px] text-gray-400">
+      <div className="mt-2 text-center text-[10px] text-[#6b7d85]">
         <ClientFormattedTime iso={createdAt} locale={timeLocale} />
       </div>
     </div>

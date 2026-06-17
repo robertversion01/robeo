@@ -88,16 +88,16 @@ export default function PushDeliveryPanel({ pushEnabled, onPushEnabledChange }: 
 
   return (
     <div className="rounded-lg border border-[#007782]/15 bg-[#007782]/5 p-3 space-y-2">
-      <div className="flex items-center gap-2 text-sm font-semibold text-gray-900">
+      <div className="flex items-center gap-2 text-sm font-semibold text-[#e7edf0]">
         <BellRing size={16} className="text-[#007782]" />
         Web Push (E2E)
       </div>
-      <p className="text-[11px] text-gray-600">
+      <p className="text-[11px] text-[#8fa3ad]">
         {vapidOk === false
           ? t('settings.delivery.vapidMissing')
           : t('settings.delivery.pushE2eHint')}
       </p>
-      <label className="flex items-center justify-between gap-3 rounded-lg border border-gray-100 bg-white px-3 py-2">
+      <label className="flex items-center justify-between gap-3 rounded-lg border border-[#27363d] bg-[#1a2328] px-3 py-2">
         <span className="text-sm">{t('settings.delivery.push')}</span>
         <input
           type="checkbox"
@@ -108,7 +108,7 @@ export default function PushDeliveryPanel({ pushEnabled, onPushEnabledChange }: 
           className="h-4 w-4 accent-[#007782]"
         />
       </label>
-      {status ? <p className="text-[11px] text-gray-600">{status}</p> : null}
+      {status ? <p className="text-[11px] text-[#8fa3ad]">{status}</p> : null}
       {pushEnabled && vapidOk ? (
         <button
           type="button"

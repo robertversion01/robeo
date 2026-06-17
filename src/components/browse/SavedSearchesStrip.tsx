@@ -98,7 +98,7 @@ export default function SavedSearchesStrip({ filters, onApply, hasActiveFilters 
   return (
     <div className="space-y-2">
       <div className="flex items-center justify-between gap-2">
-        <p className="text-xs font-semibold uppercase tracking-wide text-gray-500">
+        <p className="text-xs font-semibold uppercase tracking-wide text-[#8fa3ad]">
           {t('browse.saved.title')}
         </p>
         {hasActiveFilters ? (
@@ -114,7 +114,7 @@ export default function SavedSearchesStrip({ filters, onApply, hasActiveFilters 
         ) : null}
       </div>
       {items.length > 0 ? (
-        <p className="text-[11px] text-gray-500">
+        <p className="text-[11px] text-[#8fa3ad]">
           {t('browse.saved.summary', { total: items.length, alerts: enabledAlertCount })}
         </p>
       ) : null}
@@ -123,7 +123,7 @@ export default function SavedSearchesStrip({ filters, onApply, hasActiveFilters 
           {items.map((item) => (
             <div
               key={`${item.id}-${alertRevision}`}
-              className="group inline-flex shrink-0 items-center gap-1 rounded-full border border-gray-200 bg-white pl-3 pr-1 py-1"
+              className="group inline-flex shrink-0 items-center gap-1 rounded-full border border-[#2a3941] bg-[#1a2328] pl-3 pr-1 py-1"
             >
               <button
                 type="button"
@@ -132,7 +132,7 @@ export default function SavedSearchesStrip({ filters, onApply, hasActiveFilters 
                   setAlertRevision((n) => n + 1);
                   onApply(item.filters);
                 }}
-                className="relative max-w-[10rem] truncate text-xs font-medium text-gray-800 hover:text-[#007782] pr-1"
+                className="relative max-w-[10rem] truncate text-xs font-medium text-[#e7edf0] hover:text-[#007782] pr-1"
                 title={item.label}
               >
                 {item.label}
@@ -162,13 +162,13 @@ export default function SavedSearchesStrip({ filters, onApply, hasActiveFilters 
                 {isSavedSearchAlertEnabled(item.id) ? (
                   <Bell size={12} />
                 ) : (
-                  <BellOff size={12} className="text-gray-400" />
+                  <BellOff size={12} className="text-[#6b7d85]" />
                 )}
               </button>
               <button
                 type="button"
                 onClick={() => void handleRemove(item)}
-                className="rounded-full p-1.5 text-gray-400 hover:bg-red-50 hover:text-red-600"
+                className="rounded-full p-1.5 text-[#6b7d85] hover:bg-red-950/40 hover:text-red-600"
                 aria-label={t('browse.saved.remove')}
                 title={t('browse.saved.remove')}
               >
@@ -179,7 +179,7 @@ export default function SavedSearchesStrip({ filters, onApply, hasActiveFilters 
         </div>
       ) : (
         <div className="space-y-1.5">
-          <p className="text-xs text-gray-500">{t('browse.saved.emptyHint')}</p>
+          <p className="text-xs text-[#8fa3ad]">{t('browse.saved.emptyHint')}</p>
           <div className="flex flex-wrap items-center gap-3 text-[11px]">
             <Link href="/favorites" className="font-semibold text-[#007782] hover:underline">
               {t('browse.saved.openWatchlist')}

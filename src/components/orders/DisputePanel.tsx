@@ -115,8 +115,8 @@ export default function DisputePanel({
     ];
 
     return (
-      <div className="mt-2 rounded-lg border border-amber-200 bg-amber-50/90 px-3 py-2.5 text-xs">
-        <p className="font-semibold text-amber-900 flex items-center gap-1">
+      <div className="mt-2 rounded-lg border border-amber-900/45 bg-amber-950/35 px-3 py-2.5 text-xs">
+        <p className="font-semibold text-amber-200 flex items-center gap-1">
           <AlertTriangle size={14} />
           {t(`disputes.status.${dispute.status}`)}
         </p>
@@ -133,13 +133,13 @@ export default function DisputePanel({
                       done
                         ? 'bg-amber-600 text-white'
                         : current
-                          ? 'bg-amber-200 text-amber-900 ring-2 ring-amber-500'
+                          ? 'bg-amber-200 text-amber-200 ring-2 ring-amber-500'
                           : 'bg-amber-100 text-amber-400'
                     }`}
                   >
                     {done ? '✓' : i + 1}
                   </span>
-                  <span className="mt-0.5 text-[9px] text-amber-800">{step.label}</span>
+                  <span className="mt-0.5 text-[9px] text-amber-300">{step.label}</span>
                 </div>
                 {i < steps.length - 1 ? (
                   <span
@@ -151,18 +151,18 @@ export default function DisputePanel({
           })}
         </div>
 
-        <p className="text-amber-800 mt-2">
+        <p className="text-amber-300 mt-2">
           {disputeReasonLabel(dispute.reason, locale)}
           {dispute.details ? ` — ${dispute.details}` : ''}
         </p>
 
         {dispute.admin_note ? (
-          <p className="mt-1.5 rounded border border-amber-200 bg-white/70 px-2 py-1 text-[11px] text-amber-900">
+          <p className="mt-1.5 rounded border border-amber-900/45 bg-[#1a2328]/70 px-2 py-1 text-[11px] text-amber-200">
             <span className="font-semibold">{t('disputes.adminNote')}:</span> {dispute.admin_note}
           </p>
         ) : null}
 
-        <div className="mt-1.5 flex flex-wrap gap-x-3 text-[10px] text-amber-700">
+        <div className="mt-1.5 flex flex-wrap gap-x-3 text-[10px] text-amber-300">
           <span>{t('disputes.openedAt', { date: new Date(dispute.created_at).toLocaleDateString(localeTag) })}</span>
           {dispute.resolved_at ? (
             <span>{t('disputes.resolvedAt', { date: new Date(dispute.resolved_at).toLocaleDateString(localeTag) })}</span>
@@ -170,7 +170,7 @@ export default function DisputePanel({
         </div>
 
         {active ? (
-          <p className="text-[11px] text-amber-700 mt-1">{t('disputes.activeHint')}</p>
+          <p className="text-[11px] text-amber-300 mt-1">{t('disputes.activeHint')}</p>
         ) : null}
       </div>
     );
@@ -181,24 +181,24 @@ export default function DisputePanel({
       <button
         type="button"
         onClick={() => setOpen((v) => !v)}
-        className="text-xs font-semibold text-amber-800 hover:underline inline-flex items-center gap-1"
+        className="text-xs font-semibold text-amber-300 hover:underline inline-flex items-center gap-1"
       >
         <AlertTriangle size={14} />
         {t('disputes.openCta')}
       </button>
       {open ? (
-        <div className="mt-2 rounded-lg border border-amber-200 bg-amber-50/90 p-3 text-sm">
-          <p className="text-xs text-amber-900 mb-2">
+        <div className="mt-2 rounded-lg border border-amber-900/45 bg-amber-950/35 p-3 text-sm">
+          <p className="text-xs text-amber-200 mb-2">
             {productName ? `${productName} — ` : ''}
             {t('disputes.formHint')}
           </p>
-          <label className="block text-[11px] font-semibold text-amber-900 mb-1">
+          <label className="block text-[11px] font-semibold text-amber-200 mb-1">
             {t('disputes.reasonLabel')}
           </label>
           <select
             value={reason}
             onChange={(e) => setReason(e.target.value as (typeof REASONS)[number])}
-            className="w-full rounded border border-amber-200 px-2 py-1.5 text-xs mb-2 bg-white"
+            className="w-full rounded border border-amber-900/45 px-2 py-1.5 text-xs mb-2 bg-[#1a2328]"
           >
             {REASONS.map((r) => (
               <option key={r} value={r}>
@@ -210,7 +210,7 @@ export default function DisputePanel({
             value={details}
             onChange={(e) => setDetails(e.target.value)}
             placeholder={t('disputes.detailsPlaceholder')}
-            className="w-full rounded border border-amber-200 px-2 py-1.5 text-xs min-h-[60px]"
+            className="w-full rounded border border-amber-900/45 px-2 py-1.5 text-xs min-h-[60px]"
           />
           <button
             type="button"

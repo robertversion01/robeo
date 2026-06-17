@@ -56,8 +56,8 @@ function TagInput({
 
   return (
     <div className="space-y-1.5">
-      <label className="text-xs font-semibold text-gray-700">{label}</label>
-      <p className="text-[11px] text-gray-500">{hint}</p>
+      <label className="text-xs font-semibold text-[#b2c0c6]">{label}</label>
+      <p className="text-[11px] text-[#8fa3ad]">{hint}</p>
       <div className="flex flex-wrap gap-1.5">
         {values.map((v) => (
           <button
@@ -81,7 +81,7 @@ function TagInput({
             }
           }}
           placeholder={placeholder}
-          className="flex-1 rounded-lg border border-gray-200 px-3 py-2 text-sm"
+          className="flex-1 rounded-lg border border-[#2a3941] px-3 py-2 text-sm"
         />
         <button type="button" onClick={add} className="btn-base btn-secondary shrink-0 text-xs">
           +
@@ -101,8 +101,8 @@ function ChannelToggle({
   onChange: (v: boolean) => void;
 }) {
   return (
-    <label className="flex items-center justify-between gap-3 rounded-lg border border-gray-100 bg-gray-50/80 px-3 py-2.5">
-      <span className="text-sm text-gray-800">{label}</span>
+    <label className="flex items-center justify-between gap-3 rounded-lg border border-[#27363d] bg-[#141d21]/80 px-3 py-2.5">
+      <span className="text-sm text-[#e7edf0]">{label}</span>
       <input
         type="checkbox"
         checked={checked}
@@ -163,7 +163,7 @@ export default function ProfileSettingsHub({ userId }: Props) {
   };
 
   if (!loaded) {
-    return <p className="text-sm text-gray-500 py-4">{t('common.loading')}</p>;
+    return <p className="text-sm text-[#8fa3ad] py-4">{t('common.loading')}</p>;
   }
 
   const toggleVacationMode = async (next: boolean) => {
@@ -195,16 +195,16 @@ export default function ProfileSettingsHub({ userId }: Props) {
   return (
     <div className="space-y-6">
       <ProfileSection title={t('settings.vacation.title')}>
-        <div className="rounded-xl border border-amber-200/80 bg-amber-50/60 p-4">
+        <div className="rounded-xl border border-amber-900/40 bg-amber-950/35 p-4">
           <div className="flex items-start gap-3">
             <div className="rounded-full bg-amber-100 p-2 shrink-0">
-              <Palmtree size={18} className="text-amber-800" />
+              <Palmtree size={18} className="text-amber-300" />
             </div>
             <div className="min-w-0 flex-1">
-              <p className="text-sm font-semibold text-gray-900">{t('settings.vacation.heading')}</p>
-              <p className="text-xs text-gray-600 mt-1 leading-relaxed">{t('settings.vacation.hint')}</p>
-              <label className="mt-3 flex items-center justify-between gap-3 rounded-lg border border-amber-200/60 bg-white/80 px-3 py-2.5 cursor-pointer">
-                <span className="text-sm font-medium text-gray-800">
+              <p className="text-sm font-semibold text-[#e7edf0]">{t('settings.vacation.heading')}</p>
+              <p className="text-xs text-[#8fa3ad] mt-1 leading-relaxed">{t('settings.vacation.hint')}</p>
+              <label className="mt-3 flex items-center justify-between gap-3 rounded-lg border border-amber-900/45/60 bg-[#141d21]/90 px-3 py-2.5 cursor-pointer">
+                <span className="text-sm font-medium text-[#e7edf0]">
                   {vacationMode ? t('settings.vacation.onLabel') : t('settings.vacation.offLabel')}
                 </span>
                 <input
@@ -222,17 +222,17 @@ export default function ProfileSettingsHub({ userId }: Props) {
       </ProfileSection>
 
       <ProfileSection title={t('settings.bio.title')}>
-        <p className="text-xs text-gray-500 mb-3">{t('settings.bio.hint')}</p>
+        <p className="text-xs text-[#8fa3ad] mb-3">{t('settings.bio.hint')}</p>
         <textarea
           value={bio}
           onChange={(e) => setBio(e.target.value)}
           maxLength={280}
           rows={4}
           placeholder={t('settings.bio.placeholder')}
-          className="w-full rounded-xl border border-gray-200 px-3 py-2.5 text-sm text-gray-900 resize-y min-h-[96px]"
+          className="w-full rounded-xl border border-[#2a3941] px-3 py-2.5 text-sm text-[#e7edf0] resize-y min-h-[96px]"
         />
         <div className="mt-2 flex items-center justify-between gap-2">
-          <span className="text-[11px] text-gray-400 tabular-nums">{bio.length}/280</span>
+          <span className="text-[11px] text-[#6b7d85] tabular-nums">{bio.length}/280</span>
           <button
             type="button"
             disabled={bioBusy || !userId}
@@ -267,7 +267,7 @@ export default function ProfileSettingsHub({ userId }: Props) {
       ) : null}
 
       <ProfileSection title={t('settings.personalisation.title')}>
-        <p className="text-xs text-gray-500 mb-4">{t('settings.personalisation.hint')}</p>
+        <p className="text-xs text-[#8fa3ad] mb-4">{t('settings.personalisation.hint')}</p>
         <div className="space-y-4">
           <TagInput
             label={t('settings.personalisation.brands')}
@@ -302,7 +302,7 @@ export default function ProfileSettingsHub({ userId }: Props) {
                     feed: { ...prefs.feed, styles: [...prefs.feed.styles, tag].slice(0, 8) },
                   });
                 }}
-                className="rounded-full border border-gray-200 px-2 py-0.5 text-[10px] font-semibold text-gray-600 hover:border-[#007782]/40"
+                className="rounded-full border border-[#2a3941] px-2 py-0.5 text-[10px] font-semibold text-[#8fa3ad] hover:border-[#007782]/40"
               >
                 + {t(`styleTags.${tag}`)}
               </button>
@@ -317,7 +317,7 @@ export default function ProfileSettingsHub({ userId }: Props) {
           />
         </div>
         {saving ? (
-          <p className="mt-2 text-[11px] text-gray-400">{t('settings.saving')}</p>
+          <p className="mt-2 text-[11px] text-[#6b7d85]">{t('settings.saving')}</p>
         ) : null}
       </ProfileSection>
 
@@ -357,7 +357,7 @@ export default function ProfileSettingsHub({ userId }: Props) {
       </ProfileSection>
 
       <ProfileSection title={t('settings.delivery.title')}>
-        <p className="text-xs text-gray-500 mb-3">{t('settings.delivery.hint')}</p>
+        <p className="text-xs text-[#8fa3ad] mb-3">{t('settings.delivery.hint')}</p>
         <div className="space-y-2">
           <PushDeliveryPanel
             pushEnabled={delivery.pushEnabled}
@@ -386,7 +386,7 @@ export default function ProfileSettingsHub({ userId }: Props) {
             }}
           />
         </div>
-        <p className="text-[11px] text-gray-500 mt-2">{t('settings.delivery.hintEnv')}</p>
+        <p className="text-[11px] text-[#8fa3ad] mt-2">{t('settings.delivery.hintEnv')}</p>
       </ProfileSection>
 
       <ProfileSection title={t('settings.language.title')}>
@@ -394,7 +394,7 @@ export default function ProfileSettingsHub({ userId }: Props) {
       </ProfileSection>
 
       <ProfileSection title={t('settings.privacy.title')}>
-        <p className="text-sm text-gray-600 leading-relaxed mb-4">{t('settings.privacy.body')}</p>
+        <p className="text-sm text-[#8fa3ad] leading-relaxed mb-4">{t('settings.privacy.body')}</p>
         <div className="flex flex-wrap gap-2">
           <button
             type="button"
@@ -445,8 +445,8 @@ export default function ProfileSettingsHub({ userId }: Props) {
           </button>
         </div>
         {deleteConfirmOpen ? (
-          <div className="mt-4 rounded-xl border border-red-200 bg-red-50/80 p-4 text-sm">
-            <p className="text-gray-800 mb-3">{t('settings.privacy.deleteConfirm')}</p>
+          <div className="mt-4 rounded-xl border border-red-900/45 bg-red-950/35 p-4 text-sm">
+            <p className="text-[#e7edf0] mb-3">{t('settings.privacy.deleteConfirm')}</p>
             <div className="flex gap-2">
               <button
                 type="button"

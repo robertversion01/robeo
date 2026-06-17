@@ -81,11 +81,11 @@ export default function SellerClosetBundle({ sellerId, currentProductId, onBundl
   if (closet.length === 0) return null;
 
   return (
-    <section className="mb-4 rounded-xl border border-gray-200 bg-gray-50/80 p-3">
+    <section className="mb-4 rounded-xl border border-[#2a3941] bg-[#141d21]/80 p-3">
       <div className="mb-2 flex items-center justify-between gap-2">
         <div className="flex items-center gap-2 min-w-0">
           <Package size={18} className="shrink-0 text-[#007782]" />
-          <h3 className="text-sm font-semibold text-gray-900">{t('bundle.closet.title')}</h3>
+          <h3 className="text-sm font-semibold text-[#e7edf0]">{t('bundle.closet.title')}</h3>
         </div>
         <Link
           href={`/profile/${sellerId}/closet`}
@@ -94,7 +94,7 @@ export default function SellerClosetBundle({ sellerId, currentProductId, onBundl
           {t('pdp.viewCloset')} →
         </Link>
       </div>
-      <p className="text-xs text-gray-600 mb-3">{t('bundle.closet.hint')}</p>
+      <p className="text-xs text-[#8fa3ad] mb-3">{t('bundle.closet.hint')}</p>
 
       <div className="flex gap-2 overflow-x-auto no-scrollbar pb-1">
         {closet.map((p) => {
@@ -102,9 +102,9 @@ export default function SellerClosetBundle({ sellerId, currentProductId, onBundl
           return (
             <div
               key={p.id}
-              className="shrink-0 w-[100px] rounded-lg border border-gray-200 bg-white overflow-hidden"
+              className="shrink-0 w-[100px] rounded-lg border border-[#2a3941] bg-[#1a2328] overflow-hidden"
             >
-              <Link href={`/products/${p.id}`} className="block aspect-[4/5] bg-gray-100">
+              <Link href={`/products/${p.id}`} className="block aspect-[4/5] bg-[#1a2328]">
                 {p.image_url ? (
                   <img
                     src={getOptimizedImageUrl(p.image_url, 120, 80)}
@@ -116,7 +116,7 @@ export default function SellerClosetBundle({ sellerId, currentProductId, onBundl
                 ) : null}
               </Link>
               <div className="p-1.5">
-                <p className="text-[10px] truncate text-gray-800">{p.name}</p>
+                <p className="text-[10px] truncate text-[#e7edf0]">{p.name}</p>
                 <p className="text-[10px] font-bold text-[#007782]">{formatPrice(p.price)}</p>
                 <button
                   type="button"
@@ -137,8 +137,8 @@ export default function SellerClosetBundle({ sellerId, currentProductId, onBundl
       </div>
 
       {totals && cartItems.length >= 2 ? (
-        <div className="mt-3 rounded-lg border border-[#007782]/20 bg-white px-3 py-2 text-xs">
-          <p className="text-gray-700">
+        <div className="mt-3 rounded-lg border border-[#007782]/20 bg-[#1a2328] px-3 py-2 text-xs">
+          <p className="text-[#b2c0c6]">
             {t('bundle.closet.summary', {
               count: cartItems.length,
               percent: totals.discountPercent,

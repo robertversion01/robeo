@@ -18,29 +18,29 @@ export default function OrdersQuickHub({ className }: { className?: string }) {
         href="/orders"
         className="flex items-start gap-3 rounded-xl border border-[#007782]/25 bg-[#007782]/5 p-4 hover:border-[#007782]/40 transition-colors"
       >
-        <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-white text-[#007782]">
+        <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-[#1a2328] text-[#007782]">
           <ShoppingBag size={20} />
         </span>
         <span>
-          <span className="block text-sm font-bold text-gray-900">{t('orders.purchases')}</span>
-          <span className="mt-0.5 block text-xs text-gray-600 leading-snug">{t('ordersHub.purchasesHint')}</span>
+          <span className="block text-sm font-bold text-[#e7edf0]">{t('orders.purchases')}</span>
+          <span className="mt-0.5 block text-xs text-[#8fa3ad] leading-snug">{t('ordersHub.purchasesHint')}</span>
         </span>
       </Link>
       <Link
         href="/orders"
-        className="flex items-start gap-3 rounded-xl border border-emerald-200 bg-emerald-50/80 p-4 hover:border-emerald-300 transition-colors"
+        className="flex items-start gap-3 rounded-xl border border-emerald-900/45 bg-emerald-950/35 p-4 hover:border-emerald-900/45 transition-colors"
       >
-        <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-white text-emerald-700">
+        <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-[#1a2328] text-emerald-300">
           <Truck size={20} />
         </span>
         <span>
-          <span className="block text-sm font-bold text-gray-900">{t('orders.sales')}</span>
-          <span className="mt-0.5 block text-xs text-gray-600 leading-snug">{t('ordersHub.salesHint')}</span>
+          <span className="block text-sm font-bold text-[#e7edf0]">{t('orders.sales')}</span>
+          <span className="mt-0.5 block text-xs text-[#8fa3ad] leading-snug">{t('ordersHub.salesHint')}</span>
         </span>
       </Link>
       <Link
         href="/orders"
-        className="sm:col-span-2 flex items-center justify-center gap-2 rounded-xl border border-gray-200 bg-white px-4 py-3 text-sm font-semibold text-[#007782] hover:bg-gray-50"
+        className="sm:col-span-2 flex items-center justify-center gap-2 rounded-xl border border-[#2a3941] bg-[#1a2328] px-4 py-3 text-sm font-semibold text-[#007782] hover:bg-[#1f2a30]"
       >
         <Package size={16} />
         {t('orders.viewAll')} →

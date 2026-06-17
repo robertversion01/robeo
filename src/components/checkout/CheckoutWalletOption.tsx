@@ -59,9 +59,9 @@ export default function CheckoutWalletOption({
         onChange={(e) => onUseWalletChange(e.target.checked)}
         className="mt-0.5 h-4 w-4 accent-[#007782]"
       />
-      <span className="text-sm text-gray-800">
+      <span className="text-sm text-[#e7edf0]">
         <span className="font-semibold block">{t('checkout.wallet.useBalance')}</span>
-        <span className="text-xs text-gray-600">
+        <span className="text-xs text-[#8fa3ad]">
           {t('checkout.wallet.available', { amount: formatPrice(balance) })}
           {useWallet ? ` · ${t('checkout.wallet.willApply', { amount: formatPrice(applied) })}` : ''}
         </span>

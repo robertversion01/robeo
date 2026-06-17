@@ -79,7 +79,7 @@ export default function BottomNav() {
 
   return (
     <nav
-      className="md:hidden fixed bottom-0 left-0 right-0 z-[9980] border-t border-gray-200/90 bg-white/95 backdrop-blur-lg pb-[env(safe-area-inset-bottom,0px)] shadow-[0_-4px_24px_rgba(0,0,0,0.06)]"
+      className="md:hidden fixed bottom-0 left-0 right-0 z-[9980] border-t border-[#2a3941]/90 bg-[#11171a]/95 backdrop-blur-lg pb-[env(safe-area-inset-bottom,0px)] shadow-[0_-4px_24px_rgba(0,0,0,0.06)]"
       aria-label={t('nav.home')}
     >
       <div className="mx-auto flex h-[3.75rem] max-w-lg items-stretch justify-around px-1">
@@ -108,7 +108,7 @@ export default function BottomNav() {
               href={href}
               className={cn(
                 'relative flex min-w-0 flex-1 flex-col items-center justify-center gap-0.5 py-1 transition-colors',
-                active ? 'text-[#007782]' : 'text-gray-500 hover:text-gray-800',
+                active ? 'text-[#007782]' : 'text-[#8fa3ad] hover:text-[#e7edf0]',
               )}
             >
               <Icon size={22} strokeWidth={active ? 2.25 : 1.85} className="shrink-0" />

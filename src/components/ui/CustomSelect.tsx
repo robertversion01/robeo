@@ -136,7 +136,7 @@ export default function CustomSelect({
         id={`${instanceId}-listbox`}
         role="listbox"
         className={cn(
-          'fixed z-[10050] overflow-y-auto overscroll-contain rounded-xl border border-gray-200 bg-white shadow-xl',
+          'fixed z-[10050] overflow-y-auto overscroll-contain rounded-xl border border-[#2a3941] bg-[#1a2328] shadow-xl',
           'pb-[max(0.5rem,env(safe-area-inset-bottom,0px))]',
           'animate-in fade-in duration-200',
           coords.openUp ? 'slide-in-from-bottom-2' : 'slide-in-from-top-2',
@@ -164,7 +164,7 @@ export default function CustomSelect({
               'hover:bg-[#007782]/10 active:bg-[#007782]/15',
               value === option.value
                 ? 'bg-[#007782]/10 text-[#007782] font-medium'
-                : 'text-gray-700',
+                : 'text-[#b2c0c6]',
             )}
           >
             {option.label}
@@ -184,10 +184,10 @@ export default function CustomSelect({
         onClick={() => setIsOpen((open) => !open)}
         className={cn(
           'w-full px-4 py-3 border rounded-xl focus:outline-none focus:border-[#007782] focus:ring-1 focus:ring-[#007782] transition-all flex items-center justify-between touch-manipulation',
-          value ? 'bg-[#007782]/10 border-[#007782]/40 text-gray-900' : 'bg-white border-gray-300 text-gray-900',
+          value ? 'bg-[#007782]/10 border-[#007782]/40 text-[#e7edf0]' : 'bg-[#1a2328] border-[#2a3941] text-[#e7edf0]',
         )}
       >
-        <span className={value ? 'font-medium' : 'text-gray-500'}>
+        <span className={value ? 'font-medium' : 'text-[#8fa3ad]'}>
           {selectedOption?.label || placeholder}
         </span>
         <ChevronDown

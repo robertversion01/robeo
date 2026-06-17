@@ -68,7 +68,7 @@ export default function ChatOfferActions({
 
   if (!resolvedOfferId && !isCounter) return null;
   if (isRejected && !isAccepted) {
-    return <p className="mt-2 text-xs text-gray-500">{t('chatOffer.closed')}</p>;
+    return <p className="mt-2 text-xs text-[#8fa3ad]">{t('chatOffer.closed')}</p>;
   }
   if (viewerRole === 'seller' && isAccepted) {
     return null;
@@ -162,7 +162,7 @@ export default function ChatOfferActions({
             type="button"
             disabled={busy || !resolvedOfferId}
             onClick={() => void rejectCounter()}
-            className="rounded-full border border-gray-300 bg-white px-4 py-2 text-xs font-semibold text-gray-700 disabled:opacity-50"
+            className="rounded-full border border-[#2a3941] bg-[#1a2328] px-4 py-2 text-xs font-semibold text-[#b2c0c6] disabled:opacity-50"
           >
             {t('chatOffer.reject')}
           </button>

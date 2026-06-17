@@ -12,9 +12,9 @@ export default function CheckoutBuyerProtectionBanner() {
       <div className="flex items-start gap-3">
         <ShieldCheck size={20} className="text-[#007782] flex-shrink-0 mt-0.5" />
         <div className="min-w-0 flex-1">
-          <p className="text-sm font-semibold text-gray-900">{t('checkout.buyerProtection')}</p>
-          <p className="text-xs text-gray-600 mt-1 leading-relaxed">{t('checkout.buyerProtectionHint')}</p>
-          <p className="text-[11px] text-gray-500 mt-2 flex items-start gap-1.5">
+          <p className="text-sm font-semibold text-[#e7edf0]">{t('checkout.buyerProtection')}</p>
+          <p className="text-xs text-[#8fa3ad] mt-1 leading-relaxed">{t('checkout.buyerProtectionHint')}</p>
+          <p className="text-[11px] text-[#8fa3ad] mt-2 flex items-start gap-1.5">
             <Info size={14} className="shrink-0 mt-0.5 text-[#007782]" aria-hidden />
             <span>{t('checkout.protectionFeeTooltip')}</span>
           </p>

@@ -95,7 +95,7 @@ export default function FollowSellerButton({
 
   if (!followsAvailable) {
     return (
-      <p className="text-xs text-gray-400">Követés hamarosan (adatbázis patch szükséges).</p>
+      <p className="text-xs text-[#6b7d85]">Követés hamarosan (adatbázis patch szükséges).</p>
     );
   }
 
@@ -107,7 +107,7 @@ export default function FollowSellerButton({
       className={`inline-flex items-center gap-2 rounded-full px-4 py-2 text-sm font-semibold border transition-colors ${
         following
           ? 'border-[#007782] bg-[#007782]/10 text-[#007782]'
-          : 'border-gray-300 bg-white text-gray-800 hover:border-[#007782]'
+          : 'border-[#2a3941] bg-[#1a2328] text-[#e7edf0] hover:border-[#007782]'
       }`}
     >
       {following ? <UserCheck size={16} /> : <UserPlus size={16} />}

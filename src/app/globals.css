@@ -1,50 +1,60 @@
 @import "tailwindcss";
 
 :root {
+  /* Vinted dark — egyetlen vizuális rendszer */
   --background: #11171a;
   --foreground: #e7edf0;
   --card: #141d21;
   --card-foreground: #e7edf0;
-  --popover: #141d21;
+  --popover: #1a2328;
   --popover-foreground: #e7edf0;
   --primary: #007782;
+  --primary-hover: #00616b;
   --primary-foreground: #ffffff;
-  --secondary: #1b252a;
-  --secondary-foreground: #d8e1e5;
-  --muted: #1b252a;
-  --muted-foreground: #94a4ab;
-  --accent: #007782;
-  --accent-foreground: #ffffff;
+  --secondary: #1a2328;
+  --secondary-foreground: #b2c0c6;
+  --muted: #121b20;
+  --muted-foreground: #8fa3ad;
+  --accent: #38c7d0;
+  --accent-soft: #17343a;
+  --accent-foreground: #9be2e8;
   --destructive: #ff5e5e;
   --destructive-foreground: #ffffff;
-  --border: #24333a;
+  --border: #2a3941;
+  --border-subtle: #27363d;
   --input: #131b1f;
-  --ring: #007782;
-  --radius: 0.5rem;
+  --ring: #38c7d0;
+  --radius: 0.75rem;
   --space-section: 1rem;
   --space-chip-gap: 0.375rem;
+  --shadow-soft: 0 2px 12px rgba(0, 0, 0, 0.28);
+  --shadow-elevated: 0 8px 28px rgba(0, 0, 0, 0.38);
 }
 
 .dark {
-  --background: #0f0a1f;
-  --foreground: #f8fafc;
-  --card: #1e1b4b;
-  --card-foreground: #f8fafc;
-  --popover: #1e1b4b;
-  --popover-foreground: #f8fafc;
-  --primary: #09b1ba;
-  --primary-foreground: #f8fafc;
-  --secondary: #312e81;
-  --secondary-foreground: #f8fafc;
-  --muted: #312e81;
-  --muted-foreground: #94a3b8;
-  --accent: #09b1ba;
-  --accent-foreground: #0f172a;
-  --destructive: #ef4444;
-  --destructive-foreground: #f8fafc;
-  --border: #312e81;
-  --input: #312e81;
-  --ring: #09b1ba;
+  /* Ugyanaz mint :root — ne legyen lila „másik téma”. */
+  --background: #11171a;
+  --foreground: #e7edf0;
+  --card: #141d21;
+  --card-foreground: #e7edf0;
+  --popover: #1a2328;
+  --popover-foreground: #e7edf0;
+  --primary: #007782;
+  --primary-hover: #00616b;
+  --primary-foreground: #ffffff;
+  --secondary: #1a2328;
+  --secondary-foreground: #b2c0c6;
+  --muted: #121b20;
+  --muted-foreground: #8fa3ad;
+  --accent: #38c7d0;
+  --accent-soft: #17343a;
+  --accent-foreground: #9be2e8;
+  --destructive: #ff5e5e;
+  --destructive-foreground: #ffffff;
+  --border: #2a3941;
+  --border-subtle: #27363d;
+  --input: #131b1f;
+  --ring: #38c7d0;
 }
 
 @theme inline {
@@ -135,48 +145,85 @@ input, textarea, select {
   border: 1px solid var(--border);
 }
 
-/* Vinted dark — egységes felületek (ne keverjünk bg-white-t sötét shellben) */
+/* Vinted dark — egységes felületek */
 .surface-card {
-  background: #141d21;
-  border: 1px solid #2a3941;
-  color: #e7edf0;
+  background: var(--card);
+  border: 1px solid var(--border);
+  color: var(--foreground);
+  border-radius: var(--radius);
 }
 
 .surface-elevated {
-  background: #1a2328;
-  border: 1px solid #2a3941;
-  color: #e7edf0;
+  background: var(--secondary);
+  border: 1px solid var(--border);
+  color: var(--foreground);
+  border-radius: var(--radius);
 }
 
 .surface-subtle {
-  background: #121b20;
-  border: 1px solid #27363d;
+  background: var(--muted);
+  border: 1px solid var(--border-subtle);
+  border-radius: var(--radius);
+}
+
+.surface-inset {
+  background: var(--input);
+  border: 1px solid var(--border);
+  border-radius: calc(var(--radius) - 2px);
 }
 
 .chip-idle {
-  border: 1px solid #2a3941;
-  background: #1a2328;
-  color: #b2c0c6;
+  border: 1px solid var(--border);
+  background: var(--secondary);
+  color: var(--secondary-foreground);
+  border-radius: 9999px;
 }
 
 .chip-active {
-  border: 1px solid #38c7d0;
-  background: #17343a;
-  color: #9be2e8;
+  border: 1px solid var(--accent);
+  background: var(--accent-soft);
+  color: var(--accent-foreground);
+  border-radius: 9999px;
 }
 
 .text-muted-v {
-  color: #8fa3ad;
+  color: var(--muted-foreground);
 }
 
 .text-secondary-v {
-  color: #b2c0c6;
+  color: var(--secondary-foreground);
+}
+
+.app-page {
+  min-height: 100dvh;
+  background: var(--background);
+  color: var(--foreground);
+}
+
+.app-divider {
+  border-color: var(--border-subtle);
+}
+
+.app-link {
+  color: var(--accent);
+  font-weight: 600;
+}
+
+.app-link:hover {
+  color: var(--accent-foreground);
+}
+
+.app-panel {
+  background: var(--card);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  box-shadow: var(--shadow-soft);
 }
 
 .card-base {
-  background: #141d21;
-  border: 1px solid #24333a;
-  border-radius: 0.75rem;
+  background: var(--card);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
 }
 
 .icon-btn {
@@ -209,8 +256,8 @@ input, textarea, select {
 }
 
 .btn-primary:hover {
-  background: #00616b;
-  border-color: #00616b;
+  background: var(--primary-hover);
+  border-color: var(--primary-hover);
 }
 
 .btn-secondary {
@@ -260,7 +307,20 @@ input, textarea, select {
 }
 
 .input-base:focus {
-  border-color: #007782;
+  border-color: var(--ring);
+  outline: none;
+  box-shadow: 0 0 0 1px var(--ring);
+}
+
+.textarea-base:focus {
+  border-color: var(--ring);
+  outline: none;
+  box-shadow: 0 0 0 1px var(--ring);
+}
+
+select option {
+  background: var(--popover);
+  color: var(--foreground);
 }
 
 .textarea-base {
@@ -279,7 +339,9 @@ input, textarea, select {
 }
 
 .textarea-base:focus {
-  border-color: #007782;
+  border-color: var(--ring);
+  outline: none;
+  box-shadow: 0 0 0 1px var(--ring);
 }
 
 /* Scrollbar styling */
@@ -293,12 +355,12 @@ input, textarea, select {
 }
 
 ::-webkit-scrollbar-thumb {
-  background: #d1d1d1;
+  background: #3a4a52;
   border-radius: 3px;
 }
 
 ::-webkit-scrollbar-thumb:hover {
-  background: #b3b3b3;
+  background: #4d5f68;
 }
 
 /* Hide scrollbar but keep functionality */
@@ -354,7 +416,7 @@ input, textarea, select {
   border-radius: 0.9rem;
   overflow: hidden;
   flex-shrink: 0;
-  background: #f3f4f6;
+  background: #141d21;
 }
 
 @media (min-width: 768px) {

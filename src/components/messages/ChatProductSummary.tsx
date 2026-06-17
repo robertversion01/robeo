@@ -61,7 +61,7 @@ export default function ChatProductSummary({ productId }: Props) {
 
   if (!productId) {
     return (
-      <p className="mx-4 mt-2 rounded-xl border border-dashed border-gray-200 bg-gray-50 px-4 py-3 text-center text-xs text-gray-500">
+      <p className="mx-4 mt-2 rounded-xl border border-dashed border-[#2a3941] bg-[#141d21] px-4 py-3 text-center text-xs text-[#8fa3ad]">
         {t('messages.noProductContext')}
       </p>
     );
@@ -69,12 +69,12 @@ export default function ChatProductSummary({ productId }: Props) {
 
   if (loading) {
     return (
-      <div className="mx-4 mt-2 flex items-center gap-3 rounded-xl border border-gray-200 bg-white p-3 animate-pulse">
-        <div className="h-14 w-14 shrink-0 rounded-lg bg-gray-100" />
+      <div className="mx-4 mt-2 flex items-center gap-3 rounded-xl border border-[#2a3941] bg-[#1a2328] p-3 animate-pulse">
+        <div className="h-14 w-14 shrink-0 rounded-lg bg-[#1a2328]" />
         <div className="flex-1 space-y-2">
-          <div className="h-2 w-24 rounded bg-gray-100" />
-          <div className="h-3 w-full rounded bg-gray-100" />
-          <div className="h-3 w-16 rounded bg-gray-100" />
+          <div className="h-2 w-24 rounded bg-[#1a2328]" />
+          <div className="h-3 w-full rounded bg-[#1a2328]" />
+          <div className="h-3 w-16 rounded bg-[#1a2328]" />
         </div>
       </div>
     );
@@ -92,9 +92,9 @@ export default function ChatProductSummary({ productId }: Props) {
   return (
     <Link
       href={`/products/${product.id}`}
-      className="mx-3 md:mx-4 mt-2 flex items-center gap-3 rounded-xl border border-gray-200 bg-white p-3 shadow-sm hover:border-[#007782]/40 hover:bg-[#007782]/5 transition-colors touch-manipulation"
+      className="mx-3 md:mx-4 mt-2 flex items-center gap-3 rounded-xl border border-[#2a3941] bg-[#1a2328] p-3 shadow-sm hover:border-[#007782]/40 hover:bg-[#007782]/5 transition-colors touch-manipulation"
     >
-      <div className="h-14 w-14 shrink-0 overflow-hidden rounded-lg bg-gray-100">
+      <div className="h-14 w-14 shrink-0 overflow-hidden rounded-lg bg-[#1a2328]">
         {product.image_url ? (
           <img
             src={getOptimizedImageUrl(product.image_url, 112, 80)}
@@ -104,18 +104,18 @@ export default function ChatProductSummary({ productId }: Props) {
             className="h-full w-full object-cover"
           />
         ) : (
-          <div className="flex h-full w-full items-center justify-center text-gray-400 text-xl">📷</div>
+          <div className="flex h-full w-full items-center justify-center text-[#6b7d85] text-xl">📷</div>
         )}
       </div>
       <div className="min-w-0 flex-1 text-left">
         <p className="text-[10px] font-semibold uppercase tracking-wide text-[#007782]">
           {t('messages.productContextLabel')}
         </p>
-        <p className="truncate font-semibold text-gray-900">{product.name}</p>
+        <p className="truncate font-semibold text-[#e7edf0]">{product.name}</p>
         <div className="flex items-center gap-2 mt-0.5">
           <p className="text-sm font-bold text-[#007782] tabular-nums">{formatPrice(product.price)}</p>
           {statusLabel ? (
-            <span className="rounded-full bg-gray-100 px-2 py-0.5 text-[10px] font-medium text-gray-600">
+            <span className="rounded-full bg-[#1a2328] px-2 py-0.5 text-[10px] font-medium text-[#8fa3ad]">
               {statusLabel}
             </span>
           ) : null}

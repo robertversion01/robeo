@@ -109,10 +109,10 @@ export default function ProductFavoriteButton({
       aria-pressed={isFavorite}
       aria-label={isFavorite ? t('product.favoriteRemove') : t('product.favoriteAdd')}
       className={cn(
-        'inline-flex h-10 w-10 items-center justify-center rounded-full border bg-white/95 shadow-sm backdrop-blur-sm transition-colors',
+        'inline-flex h-10 w-10 items-center justify-center rounded-full border bg-[#11171a]/95 shadow-sm backdrop-blur-sm transition-colors',
         isFavorite
-          ? 'border-red-200 text-red-500 hover:bg-red-50'
-          : 'border-gray-200 text-gray-600 hover:border-[#007782]/30 hover:text-[#007782]',
+          ? 'border-red-900/45 text-red-500 hover:bg-red-950/40'
+          : 'border-[#2a3941] text-[#8fa3ad] hover:border-[#007782]/30 hover:text-[#007782]',
         className,
       )}
     >

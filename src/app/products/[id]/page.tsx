@@ -223,7 +223,7 @@ export default function ProductPage({ params }: { params: Promise<{ id: string }
     return (
       <div className="min-h-screen bg-[#11171a] text-[#e7edf0] flex flex-col items-center justify-center px-4">
         <h2 className="text-xl mb-2 text-center">{t('product.noImages')}</h2>
-        <p className="text-gray-500 text-sm mb-4 text-center">{t('product.noImagesHint')}</p>
+        <p className="text-[#8fa3ad] text-sm mb-4 text-center">{t('product.noImagesHint')}</p>
         <Link href="/browse" className="text-[#007782] hover:underline">{t('product.backToBrowse')}</Link>
       </div>
     );
@@ -291,8 +291,8 @@ export default function ProductPage({ params }: { params: Promise<{ id: string }
       {showMessageModal && (
         <div className="fixed inset-0 bg-black/50 backdrop-blur-sm z-[100] flex items-center justify-center p-4">
           <div className="card-base p-5 max-w-md w-full shadow-lg">
-            <h2 className="text-xl font-bold mb-3 text-gray-900">{t('product.messageModalTitle')}</h2>
-            <p className="text-gray-600 text-sm mb-4">{t('product.messageModalHint')}</p>
+            <h2 className="text-xl font-bold mb-3 text-[#e7edf0]">{t('product.messageModalTitle')}</h2>
+            <p className="text-[#8fa3ad] text-sm mb-4">{t('product.messageModalHint')}</p>
             
             <textarea
               value={messageText}
@@ -322,7 +322,7 @@ export default function ProductPage({ params }: { params: Promise<{ id: string }
       )}
 
       <main className={`${MAIN_TOP_PADDING} px-0 md:px-6 ${MOBILE_PRODUCT_STICKY_CTA_PAD}`}>
-        <Link href="/browse" className="inline-flex items-center gap-2 text-gray-500 hover:text-gray-900 mb-3 transition-colors px-3 md:px-0 md:mb-6">
+        <Link href="/browse" className="inline-flex items-center gap-2 text-[#8fa3ad] hover:text-[#e7edf0] mb-3 transition-colors px-3 md:px-0 md:mb-6">
           ← {t('product.backToBrowse')}
         </Link>
 
@@ -332,7 +332,7 @@ export default function ProductPage({ params }: { params: Promise<{ id: string }
             <div>
               {/* Main Image */}
               <div
-                className="relative aspect-[4/5] md:aspect-square md:rounded-xl md:overflow-hidden bg-[#0f1a1d]/10 mb-2 border border-gray-200 touch-pan-y"
+                className="relative aspect-[4/5] md:aspect-square md:rounded-xl md:overflow-hidden bg-[#0f1a1d]/10 mb-2 border border-[#2a3941] touch-pan-y"
               >
                 <div
                   ref={mainCarouselRef}
@@ -413,7 +413,7 @@ export default function ProductPage({ params }: { params: Promise<{ id: string }
                       className={`w-14 h-14 rounded-md overflow-hidden flex-shrink-0 border transition-all ${
                         safeSelectedIndex === index
                           ? 'border-accent opacity-100 shadow-sm'
-                          : 'border-gray-200 opacity-70 hover:opacity-100'
+                          : 'border-[#2a3941] opacity-70 hover:opacity-100'
                       }`}
                     >
                       <ProductImage
@@ -441,9 +441,9 @@ export default function ProductPage({ params }: { params: Promise<{ id: string }
               <h1 className="text-xl md:text-2xl font-bold mb-2">{product.name}</h1>
 
               {isSold ? (
-                <div className="mb-3 rounded-xl border border-gray-200 bg-gray-50 p-3">
-                  <p className="text-sm font-semibold text-gray-900">{t('product.soldOwnerTitle')}</p>
-                  <p className="text-xs text-gray-600 mt-1">{t('product.soldOwnerHint')}</p>
+                <div className="mb-3 rounded-xl border border-[#2a3941] bg-[#141d21] p-3">
+                  <p className="text-sm font-semibold text-[#e7edf0]">{t('product.soldOwnerTitle')}</p>
+                  <p className="text-xs text-[#8fa3ad] mt-1">{t('product.soldOwnerHint')}</p>
                   {viewerId === product.user_id ? (
                     <Link
                       href="/profile?tab=shop"
@@ -477,18 +477,18 @@ export default function ProductPage({ params }: { params: Promise<{ id: string }
               
               <div className="flex flex-wrap gap-2 mb-3">
                 {product.brand && (
-                  <div className="bg-gray-100 px-2 py-1 rounded-md text-xs">
-                    <span className="text-gray-500">{t('product.brand')}:</span> {product.brand}
+                  <div className="bg-[#1a2328] px-2 py-1 rounded-md text-xs">
+                    <span className="text-[#8fa3ad]">{t('product.brand')}:</span> {product.brand}
                   </div>
                 )}
                 {product.size && (
-                  <div className="bg-gray-100 px-2 py-1 rounded-md text-xs">
-                    <span className="text-gray-500">{t('product.size')}:</span> {product.size}
+                  <div className="bg-[#1a2328] px-2 py-1 rounded-md text-xs">
+                    <span className="text-[#8fa3ad]">{t('product.size')}:</span> {product.size}
                   </div>
                 )}
                 {product.condition && (
-                  <div className="bg-gray-100 px-2 py-1 rounded-md text-xs">
-                    <span className="text-gray-500">{t('product.condition')}:</span>{' '}
+                  <div className="bg-[#1a2328] px-2 py-1 rounded-md text-xs">
+                    <span className="text-[#8fa3ad]">{t('product.condition')}:</span>{' '}
                     {formatConditionLabel(t, product.condition)}
                   </div>
                 )}
@@ -500,28 +500,28 @@ export default function ProductPage({ params }: { params: Promise<{ id: string }
                 )}
               </div>
               
-              <div className="text-gray-700 text-sm leading-relaxed mb-4 whitespace-pre-line">
+              <div className="text-[#b2c0c6] text-sm leading-relaxed mb-4 whitespace-pre-line">
                 {product.description}
               </div>
 
               <div className="mb-4 grid grid-cols-1 gap-2 sm:grid-cols-3">
-                <div className="rounded-lg border border-gray-200 bg-gray-50 px-3 py-2">
-                  <p className="text-[11px] font-semibold uppercase tracking-wide text-gray-500">
+                <div className="rounded-lg border border-[#2a3941] bg-[#141d21] px-3 py-2">
+                  <p className="text-[11px] font-semibold uppercase tracking-wide text-[#8fa3ad]">
                     {t('product.decision.safetyTitle')}
                   </p>
-                  <p className="mt-1 text-xs text-gray-700">{t('product.decision.safetyHint')}</p>
+                  <p className="mt-1 text-xs text-[#b2c0c6]">{t('product.decision.safetyHint')}</p>
                 </div>
-                <div className="rounded-lg border border-gray-200 bg-gray-50 px-3 py-2">
-                  <p className="text-[11px] font-semibold uppercase tracking-wide text-gray-500">
+                <div className="rounded-lg border border-[#2a3941] bg-[#141d21] px-3 py-2">
+                  <p className="text-[11px] font-semibold uppercase tracking-wide text-[#8fa3ad]">
                     {t('product.decision.qaTitle')}
                   </p>
-                  <p className="mt-1 text-xs text-gray-700">{t('product.decision.qaHint')}</p>
+                  <p className="mt-1 text-xs text-[#b2c0c6]">{t('product.decision.qaHint')}</p>
                 </div>
-                <div className="rounded-lg border border-gray-200 bg-gray-50 px-3 py-2">
-                  <p className="text-[11px] font-semibold uppercase tracking-wide text-gray-500">
+                <div className="rounded-lg border border-[#2a3941] bg-[#141d21] px-3 py-2">
+                  <p className="text-[11px] font-semibold uppercase tracking-wide text-[#8fa3ad]">
                     {t('product.decision.nextTitle')}
                   </p>
-                  <p className="mt-1 text-xs text-gray-700">{t('product.decision.nextHint')}</p>
+                  <p className="mt-1 text-xs text-[#b2c0c6]">{t('product.decision.nextHint')}</p>
                 </div>
               </div>
 
@@ -539,7 +539,7 @@ export default function ProductPage({ params }: { params: Promise<{ id: string }
                 }
               />
 
-              <div className="mb-4 rounded-xl border border-gray-200 bg-gray-50 p-3">
+              <div className="mb-4 rounded-xl border border-[#2a3941] bg-[#141d21] p-3">
                 <div className="flex items-center gap-3 mb-3">
                   <Link
                     href={`/profile/${product.user_id}`}
@@ -549,7 +549,7 @@ export default function ProductPage({ params }: { params: Promise<{ id: string }
                       {sellerInitial}
                     </div>
                     <div className="min-w-0">
-                      <p className="text-sm font-semibold text-gray-900 truncate">{sellerDisplayName}</p>
+                      <p className="text-sm font-semibold text-[#e7edf0] truncate">{sellerDisplayName}</p>
                       <p className="text-xs text-[#007782] font-medium">{t('product.viewSeller')}</p>
                     </div>
                   </Link>

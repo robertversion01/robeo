@@ -42,15 +42,15 @@ function MaterialField({
         value={value}
         onChange={(e) => onChange(e.target.value)}
         autoComplete={id === 'fullName' ? 'name' : 'username'}
-        className={`w-full border-0 border-b bg-transparent py-2.5 text-base text-gray-900 placeholder:text-gray-400 focus:outline-none focus:ring-0 ${
-          error ? 'border-red-500 focus:border-red-500' : 'border-gray-300 focus:border-[#007782]'
+        className={`w-full border-0 border-b bg-transparent py-2.5 text-base text-[#e7edf0] placeholder:text-[#6b7d85] focus:outline-none focus:ring-0 ${
+          error ? 'border-red-500 focus:border-red-500' : 'border-[#2a3941] focus:border-[#007782]'
         }`}
         placeholder={label}
       />
       {error ? (
         <p className="mt-1.5 text-xs text-red-600">{error}</p>
       ) : hint ? (
-        <p className="mt-1.5 text-xs text-gray-500">{hint}</p>
+        <p className="mt-1.5 text-xs text-[#8fa3ad]">{hint}</p>
       ) : null}
     </div>
   );
@@ -223,20 +223,20 @@ export default function AuthCompletePage() {
 
   if (loading) {
     return (
-      <div className="flex min-h-screen items-center justify-center bg-white text-gray-500">
+      <div className="flex min-h-screen items-center justify-center bg-[#1a2328] text-[#8fa3ad]">
         {t('auth.processing')}
       </div>
     );
   }
 
   return (
-    <div className="min-h-screen bg-white px-4 py-10 text-gray-900">
+    <div className="min-h-screen bg-[#1a2328] px-4 py-10 text-[#e7edf0]">
       <div className="mx-auto w-full max-w-md">
-        <h1 className="text-center text-2xl font-bold tracking-tight text-gray-900 sm:text-[28px]">
+        <h1 className="text-center text-2xl font-bold tracking-tight text-[#e7edf0] sm:text-[28px]">
           {t('auth.complete.title')}
         </h1>
 
-        <p className="mt-2 text-center text-sm text-gray-500">{t('auth.complete.progressHint')}</p>
+        <p className="mt-2 text-center text-sm text-[#8fa3ad]">{t('auth.complete.progressHint')}</p>
 
         <form onSubmit={handleSubmit} className="mt-8 space-y-8">
           <MaterialField
@@ -257,7 +257,7 @@ export default function AuthCompletePage() {
             />
             {usernameSuggestion ? (
               <div className="mt-3">
-                <p className="text-xs text-gray-600">{t('auth.complete.usernameSuggested')}</p>
+                <p className="text-xs text-[#8fa3ad]">{t('auth.complete.usernameSuggested')}</p>
                 <button
                   type="button"
                   onClick={() => {
@@ -265,14 +265,14 @@ export default function AuthCompletePage() {
                     setUsernameSuggestion(null);
                     setUsernameError(null);
                   }}
-                  className="mt-2 rounded-full border border-gray-300 px-4 py-1.5 text-sm font-medium text-gray-800 hover:border-[#007782] hover:text-[#007782]"
+                  className="mt-2 rounded-full border border-[#2a3941] px-4 py-1.5 text-sm font-medium text-[#e7edf0] hover:border-[#007782] hover:text-[#007782]"
                 >
                   {usernameSuggestion}
                 </button>
               </div>
             ) : null}
             {checkingUsername ? (
-              <p className="mt-1 text-xs text-gray-400">{t('auth.complete.usernameChecking')}</p>
+              <p className="mt-1 text-xs text-[#6b7d85]">{t('auth.complete.usernameChecking')}</p>
             ) : null}
           </div>
 
@@ -284,7 +284,7 @@ export default function AuthCompletePage() {
                 onChange={(e) => setMarketingOptIn(e.target.checked)}
                 className="mt-1 h-[18px] w-[18px] shrink-0 accent-[#007782]"
               />
-              <span className="text-sm leading-relaxed text-gray-800">{t('auth.marketingOptIn')}</span>
+              <span className="text-sm leading-relaxed text-[#e7edf0]">{t('auth.marketingOptIn')}</span>
             </label>
 
             <RegistrationLegalConsent checked={acceptedLegal} onChange={setAcceptedLegal} />

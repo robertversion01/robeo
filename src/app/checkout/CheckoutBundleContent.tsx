@@ -207,7 +207,7 @@ export default function CheckoutBundleContent() {
 
   if (loading) {
     return (
-      <div className="min-h-screen bg-white flex items-center justify-center">
+      <div className="min-h-screen bg-[#1a2328] flex items-center justify-center">
         <div className="animate-spin h-10 w-10 border-4 border-[#007782] border-t-transparent rounded-full" />
       </div>
     );
@@ -218,7 +218,7 @@ export default function CheckoutBundleContent() {
       <h3 className="font-bold text-base mb-4">{t('checkout.bundle.summaryTitle')}</h3>
       <div className="space-y-3 text-sm">
         <div className="flex justify-between">
-          <span className="text-gray-600">{t('checkout.bundle.subtotal', { count: items.length })}</span>
+          <span className="text-[#8fa3ad]">{t('checkout.bundle.subtotal', { count: items.length })}</span>
           <span className="font-medium tabular-nums">{formatMoney(subtotal)}</span>
         </div>
         {discountPercent > 0 ? (
@@ -228,14 +228,14 @@ export default function CheckoutBundleContent() {
           </div>
         ) : null}
         <div className="flex justify-between">
-          <span className="text-gray-600">{t('checkout.protectionFee')}</span>
+          <span className="text-[#8fa3ad]">{t('checkout.protectionFee')}</span>
           <span className="font-medium tabular-nums">{formatMoney(buyerProtectionFee)}</span>
         </div>
         <div className="flex justify-between">
-          <span className="text-gray-600">{t('checkout.shippingFee')}</span>
+          <span className="text-[#8fa3ad]">{t('checkout.shippingFee')}</span>
           <span className="font-medium tabular-nums">{formatMoney(shippingCost)}</span>
         </div>
-        <div className="border-t border-gray-200" />
+        <div className="border-t border-[#2a3941]" />
         <div className="flex justify-between font-bold">
           <span>{t('checkout.total')}</span>
           <span className="text-[#007782] text-lg tabular-nums">{formatMoney(total)}</span>
@@ -252,10 +252,10 @@ export default function CheckoutBundleContent() {
   const payButton = (
     <div className="space-y-3">
       {!shippingMethod && !processingPayment ? (
-        <p className="text-xs text-amber-700 text-center">{t('checkout.selectShipping')}</p>
+        <p className="text-xs text-amber-300 text-center">{t('checkout.selectShipping')}</p>
       ) : null}
       {!termsAccepted && shippingMethod && !processingPayment ? (
-        <p className="text-xs text-amber-700 text-center">{t('checkout.terms.required')}</p>
+        <p className="text-xs text-amber-300 text-center">{t('checkout.terms.required')}</p>
       ) : null}
       {userId ? (
         <CheckoutWalletOption
@@ -278,14 +278,14 @@ export default function CheckoutBundleContent() {
   );
 
   return (
-    <div className="min-h-screen bg-white text-gray-900">
+    <div className="min-h-screen bg-[#1a2328] text-[#e7edf0]">
       <main className={`min-h-screen ${MAIN_TOP_PADDING} pb-44 lg:pb-16`}>
         <div className="max-w-4xl mx-auto px-4">
           <div className="flex items-center gap-3 mb-4 pt-3">
             <button
               type="button"
               onClick={() => router.back()}
-              className="p-2 rounded-full hover:bg-gray-100"
+              className="p-2 rounded-full hover:bg-[#243038]"
               aria-label={t('checkout.back')}
             >
               <ArrowLeft size={18} />
@@ -298,10 +298,10 @@ export default function CheckoutBundleContent() {
 
           <div className="grid grid-cols-1 lg:grid-cols-5 gap-8">
             <div className="lg:col-span-3 space-y-6">
-              <div className="bg-white border border-gray-200 rounded-xl p-4 space-y-3">
+              <div className="bg-[#1a2328] border border-[#2a3941] rounded-xl p-4 space-y-3">
                 {items.map((item) => (
                   <div key={item.productId} className="flex gap-3">
-                    <div className="w-16 h-16 rounded-lg overflow-hidden bg-gray-100 shrink-0">
+                    <div className="w-16 h-16 rounded-lg overflow-hidden bg-[#1a2328] shrink-0">
                       {item.imageUrl ? (
                         <img
                           src={getOptimizedImageUrl(item.imageUrl, 80, 80)}
@@ -318,7 +318,7 @@ export default function CheckoutBundleContent() {
                 ))}
               </div>
 
-              <div className="bg-white border border-gray-200 rounded-xl p-4">
+              <div className="bg-[#1a2328] border border-[#2a3941] rounded-xl p-4">
                 <ShippingSelector
                   value={shippingMethod}
                   onChange={setShippingMethod}
@@ -337,7 +337,7 @@ export default function CheckoutBundleContent() {
               <TrustSafetyBlock variant="full" />
 
               {sellerId ? (
-                <p className="text-xs text-gray-500">
+                <p className="text-xs text-[#8fa3ad]">
                   <button
                     type="button"
                     className="text-[#007782] font-semibold hover:underline"
@@ -348,13 +348,13 @@ export default function CheckoutBundleContent() {
                 </p>
               ) : null}
 
-              <div className="lg:hidden bg-white border border-gray-200 rounded-xl p-4">
+              <div className="lg:hidden bg-[#1a2328] border border-[#2a3941] rounded-xl p-4">
                 {summaryBlock}
               </div>
             </div>
 
             <div className="lg:col-span-2 hidden lg:block">
-              <div className="bg-white border border-gray-200 rounded-xl p-4 lg:sticky lg:top-20">
+              <div className="bg-[#1a2328] border border-[#2a3941] rounded-xl p-4 lg:sticky lg:top-20">
                 {summaryBlock}
                 <div className="mt-5">{payButton}</div>
               </div>
@@ -363,7 +363,7 @@ export default function CheckoutBundleContent() {
         </div>
       </main>
 
-      <div className="lg:hidden fixed bottom-0 left-0 right-0 z-[9990] border-t bg-white/95 backdrop-blur-lg px-4 py-3 pb-[calc(0.75rem+env(safe-area-inset-bottom,0px))] shadow-[0_-8px_32px_rgba(0,0,0,0.08)]">
+      <div className="lg:hidden fixed bottom-0 left-0 right-0 z-[9990] border-t bg-[#11171a]/95 backdrop-blur-lg px-4 py-3 pb-[calc(0.75rem+env(safe-area-inset-bottom,0px))] shadow-[0_-8px_32px_rgba(0,0,0,0.08)]">
         <div className="flex justify-between mb-2">
           <span className="text-sm font-semibold">{t('checkout.total')}</span>
           <span className="text-lg font-bold text-[#007782] tabular-nums">{formatMoney(total)}</span>

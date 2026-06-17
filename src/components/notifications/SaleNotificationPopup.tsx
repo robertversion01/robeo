@@ -25,12 +25,12 @@ export default function SaleNotificationPopup({ alert, onDismiss }: Props) {
       role="alertdialog"
       aria-live="assertive"
       aria-labelledby="sale-alert-title"
-      className="fixed left-3 right-3 z-[12001] mx-auto max-w-md rounded-2xl border border-emerald-500/40 bg-white p-4 shadow-2xl top-[calc(3rem+env(safe-area-inset-top,0px))] md:left-auto md:right-4 md:top-16"
+      className="fixed left-3 right-3 z-[12001] mx-auto max-w-md rounded-2xl border border-emerald-500/40 bg-[#1a2328] p-4 shadow-2xl top-[calc(3rem+env(safe-area-inset-top,0px))] md:left-auto md:right-4 md:top-16"
     >
       <button
         type="button"
         onClick={onDismiss}
-        className="absolute right-2 top-2 rounded-full p-1.5 text-gray-400 hover:bg-gray-100 hover:text-gray-700"
+        className="absolute right-2 top-2 rounded-full p-1.5 text-[#6b7d85] hover:bg-[#243038] hover:text-[#b2c0c6]"
         aria-label="Bezárás"
       >
         <X size={18} />
@@ -40,7 +40,7 @@ export default function SaleNotificationPopup({ alert, onDismiss }: Props) {
         <PartyPopper size={14} />
         Sikeres eladás
       </p>
-      <h2 id="sale-alert-title" className="mt-1 pr-8 text-base font-bold text-gray-900 leading-snug">
+      <h2 id="sale-alert-title" className="mt-1 pr-8 text-base font-bold text-[#e7edf0] leading-snug">
         Gratulálunk! Eladtad a következőt:{' '}
         {productHref ? (
           <Link
@@ -56,7 +56,7 @@ export default function SaleNotificationPopup({ alert, onDismiss }: Props) {
         !
       </h2>
 
-      <ul className="mt-3 space-y-2 text-sm text-gray-700">
+      <ul className="mt-3 space-y-2 text-sm text-[#b2c0c6]">
         <li>
           <Link
             href={messagesHref}
@@ -90,7 +90,7 @@ export default function SaleNotificationPopup({ alert, onDismiss }: Props) {
         <Link
           href={profileHref}
           onClick={onDismiss}
-          className="flex-1 inline-flex items-center justify-center gap-2 rounded-xl border-2 border-[#007782] bg-white px-3 py-2.5 text-sm font-semibold text-[#007782] hover:bg-[#007782]/5 min-w-[8rem]"
+          className="flex-1 inline-flex items-center justify-center gap-2 rounded-xl border-2 border-[#007782] bg-[#1a2328] px-3 py-2.5 text-sm font-semibold text-[#007782] hover:bg-[#007782]/5 min-w-[8rem]"
         >
           <Truck size={16} />
           Csomag feladva
@@ -99,7 +99,7 @@ export default function SaleNotificationPopup({ alert, onDismiss }: Props) {
           <Link
             href={productHref}
             onClick={onDismiss}
-            className="flex-1 inline-flex items-center justify-center gap-2 rounded-xl border border-gray-200 px-3 py-2.5 text-sm font-medium text-gray-700 hover:bg-gray-50 min-w-[8rem]"
+            className="flex-1 inline-flex items-center justify-center gap-2 rounded-xl border border-[#2a3941] px-3 py-2.5 text-sm font-medium text-[#b2c0c6] hover:bg-[#1f2a30] min-w-[8rem]"
           >
             <ExternalLink size={16} />
             Termék
@@ -108,7 +108,7 @@ export default function SaleNotificationPopup({ alert, onDismiss }: Props) {
         <button
           type="button"
           onClick={onDismiss}
-          className="rounded-xl border border-gray-200 px-3 py-2.5 text-sm font-medium text-gray-700 hover:bg-gray-50 sm:flex-none"
+          className="rounded-xl border border-[#2a3941] px-3 py-2.5 text-sm font-medium text-[#b2c0c6] hover:bg-[#1f2a30] sm:flex-none"
         >
           Később
         </button>

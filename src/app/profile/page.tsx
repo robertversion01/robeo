@@ -627,7 +627,7 @@ export default function ProfilePage() {
                         e.stopPropagation();
                         setDeleteTarget({ id: product.id, name: product.name });
                       }}
-                      className="absolute top-1.5 right-1.5 z-20 bg-red-500/90 hover:bg-red-500 text-white px-2 py-0.5 rounded text-[10px] transition-colors touch-manipulation"
+                      className="absolute top-1.5 right-1.5 z-20 bg-red-950/400/90 hover:bg-red-950/400 text-white px-2 py-0.5 rounded text-[10px] transition-colors touch-manipulation"
                     >
                       {t('profile.deleteListing')}
                     </button>
@@ -645,7 +645,7 @@ export default function ProfilePage() {
                           onClick={() => promoteProductToHero(product.id)}
                           className={`w-full mt-1 rounded-md px-2 py-1 text-[10px] font-semibold transition-colors ${
                             isProductFeatured(product)
-                              ? 'bg-emerald-50 text-emerald-700 border border-emerald-200 cursor-not-allowed'
+                              ? 'bg-emerald-950/40 text-emerald-300 border border-emerald-900/45 cursor-not-allowed'
                               : promotingProductIds.has(product.id)
                                 ? 'bg-[#19252b] text-[#8ea0a8] border border-[#2a3941] cursor-wait'
                                 : 'bg-[#007782] text-white hover:bg-[#00616b]'

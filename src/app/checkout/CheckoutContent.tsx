@@ -340,7 +340,7 @@ export default function CheckoutContent() {
 
   if (loading) {
     return (
-      <div className="min-h-screen bg-white text-gray-900 flex items-center justify-center">
+      <div className="min-h-screen bg-[#1a2328] text-[#e7edf0] flex items-center justify-center">
         <div className="animate-spin h-10 w-10 border-4 border-[#007782] border-t-transparent rounded-full" />
       </div>
     );
@@ -354,45 +354,45 @@ export default function CheckoutContent() {
       <h3 className="font-bold text-base mb-4">{t('checkout.summary')}</h3>
       <div className="space-y-3 text-sm">
         <div className="flex justify-between">
-          <span className="text-gray-600">{t('checkout.itemPrice')}</span>
-          <span className="font-medium text-gray-900 tabular-nums">{formatMoney(amount)}</span>
+          <span className="text-[#8fa3ad]">{t('checkout.itemPrice')}</span>
+          <span className="font-medium text-[#e7edf0] tabular-nums">{formatMoney(amount)}</span>
         </div>
         <div className="flex justify-between gap-2">
           {ROBEO_BP_MODE ? (
             <>
-              <span className="text-emerald-700 font-medium">
+              <span className="text-emerald-300 font-medium">
                 {t('checkout.localPickup.feeLabel')}
               </span>
-              <span className="text-emerald-700 font-bold tabular-nums text-right">
+              <span className="text-emerald-300 font-bold tabular-nums text-right">
                 {t('checkout.localPickup.feeValue')}
               </span>
             </>
           ) : (
             <>
-              <span className="text-gray-600">{t('checkout.protectionFee')}</span>
-              <span className="font-medium text-gray-900 tabular-nums text-right">
+              <span className="text-[#8fa3ad]">{t('checkout.protectionFee')}</span>
+              <span className="font-medium text-[#e7edf0] tabular-nums text-right">
                 {formatMoney(buyerProtectionFee)}
               </span>
             </>
           )}
         </div>
         <div className="flex justify-between">
-          <span className="text-gray-600">{t('checkout.shippingFee')}</span>
+          <span className="text-[#8fa3ad]">{t('checkout.shippingFee')}</span>
           {ROBEO_BP_MODE ? (
-            <span className="font-bold text-emerald-700 tabular-nums">
+            <span className="font-bold text-emerald-300 tabular-nums">
               {t('checkout.localPickup.feeValue')}
             </span>
           ) : (
-            <span className="font-medium text-gray-900 tabular-nums">
+            <span className="font-medium text-[#e7edf0] tabular-nums">
               {formatMoney(shippingCost)}
             </span>
           )}
         </div>
-        <div className="border-t border-gray-200" />
+        <div className="border-t border-[#2a3941]" />
         <div className="flex justify-between font-bold">
-          <span className="text-gray-900">{t('checkout.total')}</span>
+          <span className="text-[#e7edf0]">{t('checkout.total')}</span>
           {ROBEO_BP_MODE ? (
-            <span className="text-emerald-700 text-lg tabular-nums">
+            <span className="text-emerald-300 text-lg tabular-nums">
               {t('checkout.localPickup.feeValue')}
             </span>
           ) : (
@@ -409,10 +409,10 @@ export default function CheckoutContent() {
   const payButton = (
     <div className="space-y-3">
       {!shippingMethod && !processingPayment ? (
-        <p className="text-xs text-amber-700 text-center">{t('checkout.selectShipping')}</p>
+        <p className="text-xs text-amber-300 text-center">{t('checkout.selectShipping')}</p>
       ) : null}
       {!termsAccepted && shippingMethod && !processingPayment ? (
-        <p className="text-xs text-amber-700 text-center">{t('checkout.terms.required')}</p>
+        <p className="text-xs text-amber-300 text-center">{t('checkout.terms.required')}</p>
       ) : null}
       <CheckoutTermsCheckbox checked={termsAccepted} onChange={setTermsAccepted} />
       <button
@@ -436,14 +436,14 @@ export default function CheckoutContent() {
   );
 
   return (
-    <div className="min-h-screen bg-white text-gray-900">
+    <div className="min-h-screen bg-[#1a2328] text-[#e7edf0]">
       <main className={`min-h-screen ${MAIN_TOP_PADDING} pb-44 lg:pb-16`}>
         <div className="max-w-4xl mx-auto px-4">
           <div className="flex items-center gap-3 mb-4 pt-3">
             <button
               type="button"
               onClick={() => router.push(backUrl)}
-              className="p-2 rounded-full hover:bg-gray-100 transition-colors text-gray-700"
+              className="p-2 rounded-full hover:bg-[#243038] transition-colors text-[#b2c0c6]"
               aria-label={t('checkout.back')}
             >
               <ArrowLeft size={18} />
@@ -453,9 +453,9 @@ export default function CheckoutContent() {
 
           <div className="grid grid-cols-1 lg:grid-cols-5 gap-8">
             <div className="lg:col-span-3 space-y-6">
-              <div className="bg-white border border-gray-200 rounded-xl p-4">
+              <div className="bg-[#1a2328] border border-[#2a3941] rounded-xl p-4">
                 <div className="flex gap-3">
-                  <div className="w-20 h-20 rounded-lg overflow-hidden bg-gray-100 flex-shrink-0">
+                  <div className="w-20 h-20 rounded-lg overflow-hidden bg-[#1a2328] flex-shrink-0">
                     {product?.image_url ? (
                       <img
                         src={product.image_url}
@@ -465,21 +465,21 @@ export default function CheckoutContent() {
                     ) : null}
                   </div>
                   <div className="flex-1 min-w-0">
-                    <h3 className="font-semibold text-base truncate text-gray-900">{product?.name}</h3>
+                    <h3 className="font-semibold text-base truncate text-[#e7edf0]">{product?.name}</h3>
                     {categoryLabel ? (
-                      <div className="text-gray-500 text-xs mt-1">{categoryLabel}</div>
+                      <div className="text-[#8fa3ad] text-xs mt-1">{categoryLabel}</div>
                     ) : null}
                     <div className="text-[#007782] font-bold text-lg mt-1 tabular-nums">
                       {formatMoney(amount)}
                     </div>
                     {isDirectPurchase ? (
-                      <div className="text-[10px] text-gray-400 mt-0.5">{t('checkout.directPurchase')}</div>
+                      <div className="text-[10px] text-[#6b7d85] mt-0.5">{t('checkout.directPurchase')}</div>
                     ) : null}
                   </div>
                 </div>
               </div>
 
-              <div className="bg-white border border-gray-200 rounded-xl p-4">
+              <div className="bg-[#1a2328] border border-[#2a3941] rounded-xl p-4">
                 <ShippingSelector
                   value={shippingMethod}
                   onChange={setShippingMethod}
@@ -507,9 +507,9 @@ export default function CheckoutContent() {
                 />
               ) : null}
               {ROBEO_BP_MODE ? (
-                <div className="rounded-xl border border-emerald-500/30 bg-emerald-50/80 px-4 py-3 text-sm text-emerald-900">
+                <div className="rounded-xl border border-emerald-700/45 bg-emerald-950/35 px-4 py-3 text-sm text-emerald-200">
                   <p className="font-semibold">{t('checkout.localPickup.title')}</p>
-                  <p className="mt-1 text-xs leading-snug text-emerald-900/80">
+                  <p className="mt-1 text-xs leading-snug text-emerald-200/80">
                     {t('checkout.localPickup.body')}
                   </p>
                 </div>
@@ -522,13 +522,13 @@ export default function CheckoutContent() {
                 />
               ) : null}
 
-              <div className="lg:hidden bg-white border border-gray-200 rounded-xl p-4">
+              <div className="lg:hidden bg-[#1a2328] border border-[#2a3941] rounded-xl p-4">
                 {summaryBlock}
               </div>
             </div>
 
             <div className="lg:col-span-2 min-w-0 hidden lg:block">
-              <div className="bg-white border border-gray-200 rounded-xl p-4 lg:sticky lg:top-20 w-full">
+              <div className="bg-[#1a2328] border border-[#2a3941] rounded-xl p-4 lg:sticky lg:top-20 w-full">
                 {summaryBlock}
                 <div className="mt-5">{payButton}</div>
               </div>
@@ -537,11 +537,11 @@ export default function CheckoutContent() {
         </div>
       </main>
 
-      <div className="lg:hidden fixed bottom-0 left-0 right-0 z-[9990] border-t border-gray-200 bg-white/95 backdrop-blur-lg px-4 py-3 pb-[calc(0.75rem+env(safe-area-inset-bottom,0px))] shadow-[0_-8px_32px_rgba(0,0,0,0.08)]">
+      <div className="lg:hidden fixed bottom-0 left-0 right-0 z-[9990] border-t border-[#2a3941] bg-[#11171a]/95 backdrop-blur-lg px-4 py-3 pb-[calc(0.75rem+env(safe-area-inset-bottom,0px))] shadow-[0_-8px_32px_rgba(0,0,0,0.08)]">
         <div className="flex items-center justify-between gap-3 mb-2">
-          <span className="text-sm font-semibold text-gray-900">{t('checkout.total')}</span>
+          <span className="text-sm font-semibold text-[#e7edf0]">{t('checkout.total')}</span>
           {ROBEO_BP_MODE ? (
-            <span className="text-lg font-bold text-emerald-700 tabular-nums">
+            <span className="text-lg font-bold text-emerald-300 tabular-nums">
               {t('checkout.localPickup.feeValue')}
             </span>
           ) : (

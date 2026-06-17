@@ -85,9 +85,9 @@ export default function ChatSellerOfferStatusPanel({ viewerId, otherUserId, prod
   if (loading || !show) return null;
 
   return (
-    <div className="mx-4 mb-2 rounded-xl border border-amber-200 bg-amber-50 px-3 py-2.5 text-sm">
-      <p className="font-semibold text-amber-950">{t('chatOffer.sellerWaitingTitle')}</p>
-      <p className="text-xs text-amber-900/80 mt-0.5">{t('chatOffer.sellerWaitingBody')}</p>
+    <div className="mx-4 mb-2 rounded-xl border border-amber-900/45 bg-amber-950/40 px-3 py-2.5 text-sm">
+      <p className="font-semibold text-amber-200">{t('chatOffer.sellerWaitingTitle')}</p>
+      <p className="text-xs text-amber-200/80 mt-0.5">{t('chatOffer.sellerWaitingBody')}</p>
     </div>
   );
 }

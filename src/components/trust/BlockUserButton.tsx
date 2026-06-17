@@ -88,7 +88,7 @@ export default function BlockUserButton({ otherUserId, className = '', onBlocked
       type="button"
       disabled={busy}
       onClick={() => void toggle()}
-      className={`inline-flex items-center gap-1.5 text-xs font-medium text-gray-500 hover:text-red-600 disabled:opacity-50 ${className}`}
+      className={`inline-flex items-center gap-1.5 text-xs font-medium text-[#8fa3ad] hover:text-red-600 disabled:opacity-50 ${className}`}
       title={blockedByMe ? t('block.unblockAction') : t('block.blockAction')}
     >
       <Ban size={14} />

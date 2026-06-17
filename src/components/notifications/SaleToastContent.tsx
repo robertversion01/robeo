@@ -17,7 +17,7 @@ export default function SaleToastContent({ alert }: Props) {
   const profileHref = '/profile?tab=selling';
 
   return (
-    <span className="text-sm text-gray-700 leading-snug block space-y-1">
+    <span className="text-sm text-[#b2c0c6] leading-snug block space-y-1">
       <span className="block">
         Becsomagolandó:{' '}
         {productHref ? (

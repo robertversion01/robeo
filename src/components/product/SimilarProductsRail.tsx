@@ -124,9 +124,9 @@ export default function SimilarProductsRail({
 
   return (
     <section className="mb-4">
-      <h3 className="text-sm font-semibold text-gray-900 mb-1">{t('pdp.similar')}</h3>
+      <h3 className="text-sm font-semibold text-[#e7edf0] mb-1">{t('pdp.similar')}</h3>
       {items.length > 0 && items.length < 3 ? (
-        <p className="text-[11px] text-gray-500 mb-2">{t('pdp.similarFew')}</p>
+        <p className="text-[11px] text-[#8fa3ad] mb-2">{t('pdp.similarFew')}</p>
       ) : null}
 
       {items.length > 0 ? (
@@ -140,9 +140,9 @@ export default function SimilarProductsRail({
               <Link
                 key={p.id}
                 href={`/products/${p.id}`}
-                className="shrink-0 w-[108px] rounded-lg border border-gray-200 bg-white overflow-hidden hover:border-[#007782]/40"
+                className="shrink-0 w-[108px] rounded-lg border border-[#2a3941] bg-[#1a2328] overflow-hidden hover:border-[#007782]/40"
               >
-                <div className="aspect-[4/5] bg-gray-100">
+                <div className="aspect-[4/5] bg-[#1a2328]">
                   {imageUrl ? (
                     <ProductImage
                       src={getOptimizedImageUrl(imageUrl, 120, 74, { height: 150, resize: 'contain' })}
@@ -160,7 +160,7 @@ export default function SimilarProductsRail({
                   ) : null}
                 </div>
                 <div className="p-1.5">
-                  <p className="text-[10px] truncate text-gray-800">{p.name}</p>
+                  <p className="text-[10px] truncate text-[#e7edf0]">{p.name}</p>
                   <p className="text-[10px] font-bold text-[#007782]">{formatPrice(p.price)}</p>
                 </div>
               </Link>
@@ -171,7 +171,7 @@ export default function SimilarProductsRail({
 
       {showFallback && alertProduct ? (
         <div className="mt-2">
-          <p className="text-xs text-gray-600 mb-2">{t('pdp.similarEmpty')}</p>
+          <p className="text-xs text-[#8fa3ad] mb-2">{t('pdp.similarEmpty')}</p>
           <ProductAlertsBar product={alertProduct} />
         </div>
       ) : null}

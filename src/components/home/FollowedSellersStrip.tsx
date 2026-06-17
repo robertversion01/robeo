@@ -126,8 +126,8 @@ export default function FollowedSellersStrip({ className = 'mb-4' }: Props) {
     <section className={className}>
       <div className="mb-2 flex items-center justify-between gap-2">
         <div>
-          <h2 className="text-sm font-bold text-gray-900">{t('feed.followed.title')}</h2>
-          <p className="text-[11px] text-gray-500">{t('feed.followed.hint')}</p>
+          <h2 className="text-sm font-bold text-[#e7edf0]">{t('feed.followed.title')}</h2>
+          <p className="text-[11px] text-[#8fa3ad]">{t('feed.followed.hint')}</p>
         </div>
         <Link href="/browse" className="text-xs font-medium text-[#007782] hover:underline shrink-0">
           {t('feed.followed.more')}

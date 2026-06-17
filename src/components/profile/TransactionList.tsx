@@ -311,7 +311,7 @@ export default function TransactionList() {
       case 'refunded':
         return <Undo2 className="text-orange-500" size={18} />;
       default:
-        return <Clock className="text-gray-500" size={18} />;
+        return <Clock className="text-[#8fa3ad]" size={18} />;
     }
   };
 
@@ -334,11 +334,11 @@ export default function TransactionList() {
         return 'bg-purple-100 text-purple-800';
       case 'sikeresen_atveve':
       case 'completed':
-        return 'bg-emerald-100 text-emerald-800';
+        return 'bg-emerald-100 text-emerald-300';
       case 'refunded':
         return 'bg-orange-100 text-orange-800';
       default:
-        return 'bg-gray-100 text-gray-800';
+        return 'bg-[#1a2328] text-[#e7edf0]';
     }
   };
 
@@ -381,7 +381,7 @@ export default function TransactionList() {
 
     if (sellerShowsWaitingHint(status) || simulating) {
       return (
-        <p className="text-xs text-gray-500 text-right max-w-[200px] leading-snug">
+        <p className="text-xs text-[#8fa3ad] text-right max-w-[200px] leading-snug">
           {simulating || status === TX_STATUS.FELADVA || status === TX_STATUS.UTON
             ? 'Futár szimuláció folyamatban…'
             : 'Várakozás a vevő megerősítésére — a pénz ezután érkezik.'}
@@ -394,14 +394,14 @@ export default function TransactionList() {
 
   return (
     <div className="space-y-4">
-      <div className="flex border-b border-gray-200 mb-4">
+      <div className="flex border-b border-[#2a3941] mb-4">
         <button
           type="button"
           onClick={() => setActiveTab('buying')}
           className={`px-4 py-2 text-sm font-medium ${
             activeTab === 'buying'
               ? 'text-accent border-b-2 border-accent'
-              : 'text-gray-500 hover:text-gray-700'
+              : 'text-[#8fa3ad] hover:text-[#b2c0c6]'
           }`}
         >
           Vásárlásaim
@@ -412,7 +412,7 @@ export default function TransactionList() {
           className={`px-4 py-2 text-sm font-medium ${
             activeTab === 'selling'
               ? 'text-accent border-b-2 border-accent'
-              : 'text-gray-500 hover:text-gray-700'
+              : 'text-[#8fa3ad] hover:text-[#b2c0c6]'
           }`}
         >
           Eladásaim
@@ -420,7 +420,7 @@ export default function TransactionList() {
       </div>
 
       {activeTab === 'selling' && (
-        <p className="text-xs text-gray-600 mb-3 px-1 leading-snug">
+        <p className="text-xs text-[#8fa3ad] mb-3 px-1 leading-snug">
           Fizetés után: üzenetekben vagy itt töltsd le a Foxpost címkét, majd kattints a{' '}
           <strong>Csomag feladva</strong> gombra.
         </p>
@@ -431,7 +431,7 @@ export default function TransactionList() {
           <div className="animate-spin h-8 w-8 border-4 border-accent border-t-transparent rounded-full" />
         </div>
       ) : transactions.length === 0 ? (
-        <div className="text-center py-8 text-gray-500">
+        <div className="text-center py-8 text-[#8fa3ad]">
           <p>Nincs még {activeTab === 'buying' ? 'vásárlásod' : 'eladásod'}.</p>
           {activeTab === 'buying' && (
             <Link href="/" className="text-accent hover:underline mt-2 inline-block">
@@ -442,9 +442,9 @@ export default function TransactionList() {
       ) : (
         <div className="space-y-3">
           {transactions.map((transaction) => (
-            <div key={transaction.id} className="bg-white border border-gray-200 rounded-lg p-3">
+            <div key={transaction.id} className="bg-[#1a2328] border border-[#2a3941] rounded-lg p-3">
               <div className="flex items-start gap-3">
-                <div className="w-16 h-16 rounded-md overflow-hidden bg-gray-100 flex-shrink-0">
+                <div className="w-16 h-16 rounded-md overflow-hidden bg-[#1a2328] flex-shrink-0">
                   {transaction.product?.image_url ? (
                     <img
                       src={getOptimizedImageUrl(transaction.product.image_url, 100, 80)}
@@ -454,19 +454,19 @@ export default function TransactionList() {
                       className="w-full h-full object-cover"
                     />
                   ) : (
-                    <div className="w-full h-full flex items-center justify-center text-gray-400">📷</div>
+                    <div className="w-full h-full flex items-center justify-center text-[#6b7d85]">📷</div>
                   )}
                 </div>
 
                 <div className="flex-1 min-w-0">
                   <div className="flex items-center justify-between mb-1">
-                    <h3 className="font-medium text-sm truncate text-gray-900">
+                    <h3 className="font-medium text-sm truncate text-[#e7edf0]">
                       {transaction.product?.name}
                     </h3>
                     <span className="text-accent font-bold text-sm">{formatPrice(transaction.amount)}</span>
                   </div>
 
-                  <div className="flex items-center gap-1 text-xs text-gray-500 mb-2">
+                  <div className="flex items-center gap-1 text-xs text-[#8fa3ad] mb-2">
                     <span>{new Date(transaction.created_at).toLocaleDateString('hu-HU')}</span>
                     <span>•</span>
                     <span>

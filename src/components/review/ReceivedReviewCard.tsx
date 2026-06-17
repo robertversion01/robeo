@@ -72,19 +72,19 @@ export default function ReceivedReviewCard({ review, editable = false, onUpdated
   };
 
   return (
-    <div className="bg-gray-50 border border-gray-200 rounded-lg p-3">
+    <div className="bg-[#141d21] border border-[#2a3941] rounded-lg p-3">
       <div className="flex items-center justify-between">
         <StarRating rating={review.rating} size={16} />
-        <span className="text-xs text-gray-500">
+        <span className="text-xs text-[#8fa3ad]">
           {new Date(review.created_at).toLocaleDateString(locale)}
         </span>
       </div>
-      {review.comment ? <p className="text-sm mt-2 text-gray-700">{review.comment}</p> : null}
+      {review.comment ? <p className="text-sm mt-2 text-[#b2c0c6]">{review.comment}</p> : null}
 
       {review.seller_response && !editing ? (
-        <div className="mt-2 rounded-lg border-l-2 border-[#007782] bg-white px-3 py-2">
+        <div className="mt-2 rounded-lg border-l-2 border-[#007782] bg-[#1a2328] px-3 py-2">
           <p className="text-[11px] font-semibold text-[#007782]">{t('review.sellerResponseLabel')}</p>
-          <p className="text-sm text-gray-700 mt-0.5 whitespace-pre-line">{review.seller_response}</p>
+          <p className="text-sm text-[#b2c0c6] mt-0.5 whitespace-pre-line">{review.seller_response}</p>
         </div>
       ) : null}
 
@@ -102,7 +102,7 @@ export default function ReceivedReviewCard({ review, editable = false, onUpdated
               rows={2}
               maxLength={500}
               placeholder={t('review.responsePlaceholder')}
-              className="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm focus:border-[#007782] focus:outline-none"
+              className="w-full rounded-lg border border-[#2a3941] px-3 py-2 text-sm focus:border-[#007782] focus:outline-none"
             />
             <div className="mt-1.5 flex gap-2">
               <button
@@ -119,7 +119,7 @@ export default function ReceivedReviewCard({ review, editable = false, onUpdated
                   setEditing(false);
                   setDraft(review.seller_response ?? '');
                 }}
-                className="rounded-lg border border-gray-300 px-3 py-1.5 text-xs font-semibold text-gray-700 hover:bg-gray-50"
+                className="rounded-lg border border-[#2a3941] px-3 py-1.5 text-xs font-semibold text-[#b2c0c6] hover:bg-[#1f2a30]"
               >
                 {t('review.cancel')}
               </button>

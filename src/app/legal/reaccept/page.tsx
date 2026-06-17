@@ -84,19 +84,19 @@ export default function LegalReacceptPage() {
 
   if (loading) {
     return (
-      <div className="flex min-h-screen items-center justify-center bg-white text-gray-500">
+      <div className="flex min-h-screen items-center justify-center bg-[#1a2328] text-[#8fa3ad]">
         {t('auth.processing')}
       </div>
     );
   }
 
   return (
-    <div className="min-h-screen bg-white px-4 py-10 text-gray-900">
+    <div className="min-h-screen bg-[#1a2328] px-4 py-10 text-[#e7edf0]">
       <div className="mx-auto w-full max-w-md">
-        <h1 className="text-center text-2xl font-bold tracking-tight text-gray-900">
+        <h1 className="text-center text-2xl font-bold tracking-tight text-[#e7edf0]">
           {t('legalReaccept.title')}
         </h1>
-        <p className="mt-3 text-center text-sm leading-relaxed text-gray-600">
+        <p className="mt-3 text-center text-sm leading-relaxed text-[#8fa3ad]">
           {t('legalReaccept.body')}
         </p>
 

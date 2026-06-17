@@ -26,8 +26,8 @@ export default function BudapestBetaBanner({ variant }: { variant: Variant }) {
         role="status"
         aria-live="polite"
       >
-        <div className="pointer-events-auto w-full max-w-2xl rounded-xl border border-amber-300/40 bg-gradient-to-r from-amber-400 via-amber-300 to-amber-400 px-4 py-2 text-center shadow-lg ring-1 ring-amber-500/30 backdrop-blur-sm">
-          <p className="text-[13px] font-bold leading-snug text-amber-950 sm:text-sm">
+        <div className="pointer-events-auto w-full max-w-2xl rounded-xl border border-amber-900/45/40 bg-gradient-to-r from-amber-400 via-amber-300 to-amber-400 px-4 py-2 text-center shadow-lg ring-1 ring-amber-500/30 backdrop-blur-sm">
+          <p className="text-[13px] font-bold leading-snug text-amber-200 sm:text-sm">
             {HUNGARIAN_TEXT}
           </p>
         </div>
@@ -37,11 +37,11 @@ export default function BudapestBetaBanner({ variant }: { variant: Variant }) {
 
   return (
     <div
-      className="mb-2 rounded-xl border border-amber-300 bg-gradient-to-r from-amber-400 via-amber-300 to-amber-400 px-4 py-2.5 text-center shadow-sm"
+      className="mb-2 rounded-xl border border-amber-900/45 bg-gradient-to-r from-amber-400 via-amber-300 to-amber-400 px-4 py-2.5 text-center shadow-sm"
       role="status"
       aria-live="polite"
     >
-      <p className="text-[13px] font-bold leading-snug text-amber-950 sm:text-sm">
+      <p className="text-[13px] font-bold leading-snug text-amber-200 sm:text-sm">
         {HUNGARIAN_TEXT}
       </p>
     </div>

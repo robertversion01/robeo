@@ -148,13 +148,13 @@ export default function LocalPickupSystemMessageCard({
     : [];
 
   return (
-    <div className="max-w-md rounded-xl border border-emerald-500/30 bg-emerald-50/80 px-4 py-3 text-sm text-gray-800">
+    <div className="max-w-md rounded-xl border border-emerald-700/45 bg-emerald-950/35 px-4 py-3 text-sm text-[#e7edf0]">
       {role ? (
         <div className="flex justify-center mb-1">
           <SystemMessageRoleBadge role={role} />
         </div>
       ) : null}
-      <p className="text-center font-semibold text-emerald-900">{title}</p>
+      <p className="text-center font-semibold text-emerald-200">{title}</p>
       <div className="flex justify-center mt-1.5">
         <span className="inline-flex items-center gap-1 rounded-full bg-emerald-600 px-2.5 py-0.5 text-[10px] font-bold uppercase tracking-wide text-white">
           Ingyenes budapesti cserebere — nulla jutalék!
@@ -163,7 +163,7 @@ export default function LocalPickupSystemMessageCard({
       {product ? (
         <Link
           href={`/products/${product.id}`}
-          className="mt-3 flex items-center gap-3 rounded-lg border border-[#007782]/25 bg-white px-2.5 py-2 hover:bg-[#007782]/5"
+          className="mt-3 flex items-center gap-3 rounded-lg border border-[#007782]/25 bg-[#1a2328] px-2.5 py-2 hover:bg-[#007782]/5"
         >
           {product.thumbnail ? (
             <img
@@ -174,19 +174,19 @@ export default function LocalPickupSystemMessageCard({
               className="h-12 w-12 shrink-0 rounded-md object-cover"
             />
           ) : (
-            <div className="h-12 w-12 shrink-0 rounded-md bg-gray-100" aria-hidden />
+            <div className="h-12 w-12 shrink-0 rounded-md bg-[#1a2328]" aria-hidden />
           )}
           <div className="min-w-0 flex-1">
             <p className="truncate text-sm font-semibold text-[#007782]">{product.name}</p>
-            <p className="text-xs font-bold tabular-nums text-gray-700">
+            <p className="text-xs font-bold tabular-nums text-[#b2c0c6]">
               {formatPrice(product.price)}
             </p>
           </div>
         </Link>
       ) : null}
       {ROBEO_BP_MODE && meetingPoints.length > 0 ? (
-        <div className="mt-3 rounded-lg border border-emerald-200/80 bg-white/90 px-3 py-2.5 text-left">
-          <p className="flex items-center gap-1 text-xs font-semibold text-emerald-900">
+        <div className="mt-3 rounded-lg border border-emerald-900/40 bg-[#11171a]/90 px-3 py-2.5 text-left">
+          <p className="flex items-center gap-1 text-xs font-semibold text-emerald-200">
             <MapPin size={12} aria-hidden />
             {districtLabel
               ? t('bp.meeting.titleDistrict', { district: districtLabel })
@@ -194,37 +194,37 @@ export default function LocalPickupSystemMessageCard({
           </p>
           <ul className="mt-2 space-y-1">
             {meetingPoints.slice(0, 3).map((point) => (
-              <li key={point.id} className="text-[11px] text-gray-700 leading-snug">
+              <li key={point.id} className="text-[11px] text-[#b2c0c6] leading-snug">
                 <span className="font-medium">{point.label}</span>
                 {point.hint ? (
-                  <span className="block text-[10px] text-gray-500">{t(point.hint)}</span>
+                  <span className="block text-[10px] text-[#8fa3ad]">{t(point.hint)}</span>
                 ) : null}
               </li>
             ))}
           </ul>
           <ul className="mt-2 space-y-0.5 border-t border-emerald-100 pt-2">
             {MEETING_POINT_SAFETY_TIPS.map((tipKey) => (
-              <li key={tipKey} className="text-[10px] text-emerald-800/90">
+              <li key={tipKey} className="text-[10px] text-emerald-300/90">
                 · {t(tipKey)}
               </li>
             ))}
           </ul>
         </div>
       ) : null}
-      <p className="text-center text-xs text-gray-700 mt-3 leading-snug">{BODY_TEXT}</p>
+      <p className="text-center text-xs text-[#b2c0c6] mt-3 leading-snug">{BODY_TEXT}</p>
       {otherPartyId && !noShowDone ? (
         <div className="mt-2 text-center">
           <button
             type="button"
             disabled={noShowBusy}
             onClick={() => void reportNoShow()}
-            className="text-[10px] font-medium text-gray-400 underline hover:text-red-600 disabled:opacity-50"
+            className="text-[10px] font-medium text-[#6b7d85] underline hover:text-red-600 disabled:opacity-50"
           >
             {t('report.noShowAction')}
           </button>
         </div>
       ) : null}
-      <div className="mt-2 text-center text-[10px] text-gray-400">
+      <div className="mt-2 text-center text-[10px] text-[#6b7d85]">
         <ClientFormattedTime iso={createdAt} locale={timeLocale} />
       </div>
     </div>

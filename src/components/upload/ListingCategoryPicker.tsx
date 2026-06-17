@@ -73,7 +73,7 @@ export default function ListingCategoryPicker({
                 'rounded-xl border-2 px-3 py-3 text-sm font-semibold transition touch-manipulation',
                 listingType === type
                   ? 'border-[#007782] bg-[#007782]/10 text-[#007782]'
-                  : 'border-gray-200 bg-white text-gray-600 hover:border-[#007782]/30',
+                  : 'border-[#2a3941] bg-[#1a2328] text-[#8fa3ad] hover:border-[#007782]/30',
               )}
             >
               {t(`upload.listingType.${type}`)}
@@ -95,7 +95,7 @@ export default function ListingCategoryPicker({
                 'rounded-xl border px-2.5 py-2.5 text-xs font-semibold text-left transition touch-manipulation leading-tight',
                 departmentId === dept.id
                   ? 'border-[#007782] bg-[#007782] text-white'
-                  : 'border-gray-200 bg-gray-50 text-gray-700 hover:border-[#007782]/40',
+                  : 'border-[#2a3941] bg-[#141d21] text-[#b2c0c6] hover:border-[#007782]/40',
               )}
             >
               {t(dept.labelKey)}
@@ -121,7 +121,7 @@ export default function ListingCategoryPicker({
                   'rounded-full border px-3 py-1.5 text-xs font-semibold transition touch-manipulation',
                   subcategoryId === sub.id
                     ? 'border-[#007782] bg-[#007782] text-white'
-                    : 'border-gray-200 bg-white text-gray-700 hover:border-[#007782]/30',
+                    : 'border-[#2a3941] bg-[#1a2328] text-[#b2c0c6] hover:border-[#007782]/30',
                 )}
               >
                 {t(sub.labelKey)}

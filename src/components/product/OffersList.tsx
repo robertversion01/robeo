@@ -260,9 +260,9 @@ export default function OffersList() {
 
   if (offers.length === 0) {
     return (
-      <div className="text-center py-12 text-gray-500">
+      <div className="text-center py-12 text-[#8fa3ad]">
         <p>{t('offersList.emptyTitle')}</p>
-        <p className="text-sm mt-2 text-gray-400">{t('offersList.emptyHint')}</p>
+        <p className="text-sm mt-2 text-[#6b7d85]">{t('offersList.emptyHint')}</p>
       </div>
     );
   }
@@ -277,12 +277,12 @@ export default function OffersList() {
         return (
           <div
             key={offer.id}
-            className="card-base overflow-hidden border border-gray-200/80 shadow-sm"
+            className="card-base overflow-hidden border border-[#2a3941]/80 shadow-sm"
           >
             <div className="flex flex-col sm:flex-row gap-4 p-4">
               <Link
                 href={`/products/${offer.product.id}`}
-                className="shrink-0 w-20 h-20 sm:w-16 sm:h-16 rounded-xl bg-gray-100 overflow-hidden ring-1 ring-gray-100 hover:ring-[#007782]/30 transition-all"
+                className="shrink-0 w-20 h-20 sm:w-16 sm:h-16 rounded-xl bg-[#1a2328] overflow-hidden ring-1 ring-gray-100 hover:ring-[#007782]/30 transition-all"
               >
                 {thumb ? (
                   <img
@@ -300,7 +300,7 @@ export default function OffersList() {
               <div className="flex-1 min-w-0 space-y-1">
                 <Link
                   href={`/products/${offer.product.id}`}
-                  className="font-semibold text-gray-900 hover:text-[#007782] line-clamp-2"
+                  className="font-semibold text-[#e7edf0] hover:text-[#007782] line-clamp-2"
                 >
                   {offer.product.name}
                 </Link>
@@ -308,12 +308,12 @@ export default function OffersList() {
                   <span className="text-[#007782] font-bold tabular-nums">
                     {offer.offered_price.toLocaleString(priceLocale)} {t('common.currencyHuf')}
                   </span>
-                  <span className="text-gray-500 text-sm tabular-nums">
+                  <span className="text-[#8fa3ad] text-sm tabular-nums">
                     {t('offersList.listPrice')} {offer.product.price.toLocaleString(priceLocale)} {t('common.currencyHuf')}
                   </span>
                 </div>
                 {offer.message ? (
-                  <p className="text-gray-600 text-sm border-l-2 border-gray-200 pl-2 mt-2">
+                  <p className="text-[#8fa3ad] text-sm border-l-2 border-[#2a3941] pl-2 mt-2">
                     „{offer.message}”
                   </p>
                 ) : null}
@@ -351,7 +351,7 @@ export default function OffersList() {
                             }))
                           }
                           placeholder={t('offersList.counterPlaceholder')}
-                          className="min-w-0 flex-1 input-base min-h-10 px-3 text-sm rounded-xl border-gray-300 focus:ring-[#007782] focus:border-[#007782]"
+                          className="min-w-0 flex-1 input-base min-h-10 px-3 text-sm rounded-xl border-[#2a3941] focus:ring-[#007782] focus:border-[#007782]"
                         />
                         <button
                           type="button"
@@ -383,7 +383,7 @@ export default function OffersList() {
                           type="button"
                           disabled={busy(offer.id)}
                           onClick={() => updateOfferStatus(offer.id, 'rejected')}
-                          className="btn-base border border-red-200 bg-red-50 text-red-700 hover:bg-red-100 min-h-10 px-4 flex-1 sm:flex-none rounded-xl inline-flex items-center justify-center gap-1.5 text-sm"
+                          className="btn-base border border-red-900/45 bg-red-950/40 text-red-300 hover:bg-red-950/50 min-h-10 px-4 flex-1 sm:flex-none rounded-xl inline-flex items-center justify-center gap-1.5 text-sm"
                         >
                           <X size={16} />
                           {t('offersList.reject')}
@@ -394,13 +394,13 @@ export default function OffersList() {
                 )}
 
                 {offer.status === 'countered' && (
-                  <p className="text-xs text-gray-600 text-right max-w-xs">
+                  <p className="text-xs text-[#8fa3ad] text-right max-w-xs">
                     {t('offersList.counteredHint')}
                   </p>
                 )}
 
                 {offer.status === 'accepted' && (
-                  <span className="text-xs text-emerald-800 font-medium inline-flex items-center gap-1.5 text-right">
+                  <span className="text-xs text-emerald-300 font-medium inline-flex items-center gap-1.5 text-right">
                     <ExternalLink size={14} className="shrink-0" />
                     {t('offersList.acceptedHint')}
                   </span>

@@ -60,37 +60,37 @@ export default function BundleDiscountSettings({ userId }: Props) {
   if (!userId) return null;
 
   return (
-    <section className="mb-8 rounded-xl border border-gray-200 bg-gray-50 p-4">
-      <h2 className="text-base font-bold text-gray-900 mb-1">📦 Csomagkedvezmények</h2>
-      <p className="text-xs text-gray-500 mb-3">
+    <section className="mb-8 rounded-xl border border-[#2a3941] bg-[#141d21] p-4">
+      <h2 className="text-base font-bold text-[#e7edf0] mb-1">📦 Csomagkedvezmények</h2>
+      <p className="text-xs text-[#8fa3ad] mb-3">
         Vinted-stílus: a vevő több termékedet vásárolva kedvezményt kap (checkoutnál).
       </p>
-      <label className="flex items-center gap-2 text-sm font-medium text-gray-800 mb-3">
+      <label className="flex items-center gap-2 text-sm font-medium text-[#e7edf0] mb-3">
         <input
           type="checkbox"
           checked={enabled}
           onChange={(e) => setEnabled(e.target.checked)}
-          className="rounded border-gray-300 text-[#007782]"
+          className="rounded border-[#2a3941] text-[#007782]"
         />
         Csomagkedvezmény bekapcsolása
       </label>
-      <ul className="space-y-2 text-sm text-gray-700 mb-3">
+      <ul className="space-y-2 text-sm text-[#b2c0c6] mb-3">
         {tiers.map((t, index) => (
           <li
             key={`${t.items}-${index}`}
-            className="flex flex-wrap items-center gap-2 rounded-lg bg-white border border-gray-200 px-3 py-2"
+            className="flex flex-wrap items-center gap-2 rounded-lg bg-[#1a2328] border border-[#2a3941] px-3 py-2"
           >
             <label className="flex items-center gap-1 text-xs">
-              <span className="text-gray-500">Min.</span>
+              <span className="text-[#8fa3ad]">Min.</span>
               <input
                 type="number"
                 min={2}
                 max={20}
                 value={t.items}
                 onChange={(e) => updateTier(index, 'items', Number(e.target.value))}
-                className="w-14 h-8 rounded border border-gray-300 px-2 text-center"
+                className="w-14 h-8 rounded border border-[#2a3941] px-2 text-center"
               />
-              <span className="text-gray-500">termék →</span>
+              <span className="text-[#8fa3ad]">termék →</span>
             </label>
             <label className="flex items-center gap-1 text-xs">
               <input
@@ -99,7 +99,7 @@ export default function BundleDiscountSettings({ userId }: Props) {
                 max={50}
                 value={t.percent}
                 onChange={(e) => updateTier(index, 'percent', Number(e.target.value))}
-                className="w-14 h-8 rounded border border-gray-300 px-2 text-center"
+                className="w-14 h-8 rounded border border-[#2a3941] px-2 text-center"
               />
               <span className="font-semibold text-[#007782]">% kedvezmény</span>
             </label>

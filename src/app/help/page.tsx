@@ -9,7 +9,7 @@ export default function HelpPage() {
   const { t } = useTranslation();
 
   return (
-    <div className="min-h-screen bg-white text-gray-900">
+    <div className="min-h-screen bg-[#1a2328] text-[#e7edf0]">
       <main className={`${MAIN_TOP_PADDING} px-4`}>
         <div className="max-w-lg mx-auto">
           <PageHeader title={t('help.title')} subtitle={t('help.subtitle')} />

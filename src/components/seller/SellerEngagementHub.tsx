@@ -67,16 +67,16 @@ export default function SellerEngagementHub({ products }: Props) {
 
   if (loading) {
     return (
-      <p className="text-sm text-gray-500 py-2">{t('common.loading')}</p>
+      <p className="text-sm text-[#8fa3ad] py-2">{t('common.loading')}</p>
     );
   }
 
   if (rows.length === 0) {
     return (
-      <div className="rounded-xl border border-dashed border-gray-200 bg-gray-50/80 px-4 py-6 text-center">
+      <div className="rounded-xl border border-dashed border-[#2a3941] bg-[#141d21]/80 px-4 py-6 text-center">
         <Heart size={28} className="mx-auto mb-2 text-[#007782]/50" />
-        <p className="text-sm font-medium text-gray-700">{t('sellerEngagement.empty')}</p>
-        <p className="text-xs text-gray-500 mt-1 max-w-xs mx-auto">{t('sellerEngagement.emptyHint')}</p>
+        <p className="text-sm font-medium text-[#b2c0c6]">{t('sellerEngagement.empty')}</p>
+        <p className="text-xs text-[#8fa3ad] mt-1 max-w-xs mx-auto">{t('sellerEngagement.emptyHint')}</p>
       </div>
     );
   }
@@ -90,18 +90,18 @@ export default function SellerEngagementHub({ products }: Props) {
         {rows.map((row) => (
           <li
             key={row.productId}
-            className="flex flex-col gap-2 rounded-xl border border-gray-200 bg-white p-3 sm:flex-row sm:items-center sm:justify-between"
+            className="flex flex-col gap-2 rounded-xl border border-[#2a3941] bg-[#1a2328] p-3 sm:flex-row sm:items-center sm:justify-between"
           >
             <div className="min-w-0">
-              <p className="text-sm font-semibold text-gray-900 truncate">{row.productName}</p>
-              <p className="text-xs text-gray-500 mt-0.5">
+              <p className="text-sm font-semibold text-[#e7edf0] truncate">{row.productName}</p>
+              <p className="text-xs text-[#8fa3ad] mt-0.5">
                 {t('sellerEngagement.favorites', { count: row.favoriteCount })}
               </p>
             </div>
             <div className="flex flex-wrap gap-2 shrink-0">
               <Link
                 href={`/products/${row.productId}`}
-                className="inline-flex items-center gap-1 rounded-full border border-gray-200 px-3 py-1.5 text-xs font-semibold text-gray-700 hover:bg-gray-50"
+                className="inline-flex items-center gap-1 rounded-full border border-[#2a3941] px-3 py-1.5 text-xs font-semibold text-[#b2c0c6] hover:bg-[#1f2a30]"
               >
                 <Tag size={14} />
                 {t('sellerEngagement.viewListing')}

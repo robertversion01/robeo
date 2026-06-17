@@ -49,7 +49,7 @@ export default function ProfileTabNav({ active, onChange, counts, showAdmin = fa
               isActive
                 ? 'border-[#38c7d0] text-[#38c7d0]'
                 : 'border-transparent text-[#97a9b0]',
-              id === 'admin' && !isActive && 'text-amber-800',
+              id === 'admin' && !isActive && 'text-amber-300',
             )}
           >
             {t(`profile.tabs.${id}`)}

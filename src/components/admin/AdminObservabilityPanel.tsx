@@ -86,14 +86,14 @@ export default function AdminObservabilityPanel() {
   return (
     <div className="space-y-4">
       <div className="flex items-center justify-between">
-        <p className="text-xs text-gray-500">
+        <p className="text-xs text-[#8fa3ad]">
           Lokális mérés — saját Supabase. Anonim funnel, hibanapló, visszajelzések.
         </p>
         <button
           type="button"
           onClick={() => void load()}
           disabled={loading}
-          className="inline-flex h-8 items-center gap-1 rounded-lg border border-gray-200 px-2.5 text-xs font-semibold text-gray-700 hover:bg-gray-50 disabled:opacity-60"
+          className="inline-flex h-8 items-center gap-1 rounded-lg border border-[#2a3941] px-2.5 text-xs font-semibold text-[#b2c0c6] hover:bg-[#1f2a30] disabled:opacity-60"
         >
           <RefreshCw size={13} className={loading ? 'animate-spin' : ''} />
           Frissítés
@@ -101,44 +101,44 @@ export default function AdminObservabilityPanel() {
       </div>
 
       {schemaMissing ? (
-        <p className="rounded-lg border border-amber-200 bg-amber-50 px-3 py-2 text-xs text-amber-900">
+        <p className="rounded-lg border border-amber-900/45 bg-amber-950/40 px-3 py-2 text-xs text-amber-200">
           A táblák még nincsenek létrehozva. Futtasd: <code>supabase/patch-observability.sql</code>
         </p>
       ) : null}
 
       <div className="grid grid-cols-2 gap-2 sm:grid-cols-4">
-        <div className="rounded-xl border border-gray-200 bg-white p-3">
-          <p className="text-[11px] text-gray-500">Funnel események</p>
-          <p className="mt-1 text-lg font-bold tabular-nums text-gray-900">
+        <div className="rounded-xl border border-[#2a3941] bg-[#1a2328] p-3">
+          <p className="text-[11px] text-[#8fa3ad]">Funnel események</p>
+          <p className="mt-1 text-lg font-bold tabular-nums text-[#e7edf0]">
             {funnel.reduce((sum, row) => sum + row.total, 0)}
           </p>
         </div>
-        <div className="rounded-xl border border-gray-200 bg-white p-3">
-          <p className="text-[11px] text-gray-500">Visszajelzés</p>
-          <p className="mt-1 text-lg font-bold tabular-nums text-gray-900">{feedback.length}</p>
+        <div className="rounded-xl border border-[#2a3941] bg-[#1a2328] p-3">
+          <p className="text-[11px] text-[#8fa3ad]">Visszajelzés</p>
+          <p className="mt-1 text-lg font-bold tabular-nums text-[#e7edf0]">{feedback.length}</p>
         </div>
-        <div className="rounded-xl border border-gray-200 bg-white p-3">
-          <p className="text-[11px] text-gray-500">Nyitott feedback</p>
-          <p className="mt-1 text-lg font-bold tabular-nums text-amber-700">
+        <div className="rounded-xl border border-[#2a3941] bg-[#1a2328] p-3">
+          <p className="text-[11px] text-[#8fa3ad]">Nyitott feedback</p>
+          <p className="mt-1 text-lg font-bold tabular-nums text-amber-300">
             {openFeedbackCount}
           </p>
         </div>
-        <div className="rounded-xl border border-gray-200 bg-white p-3">
-          <p className="text-[11px] text-gray-500">Hibanapló</p>
-          <p className="mt-1 text-lg font-bold tabular-nums text-red-700">{errors.length}</p>
+        <div className="rounded-xl border border-[#2a3941] bg-[#1a2328] p-3">
+          <p className="text-[11px] text-[#8fa3ad]">Hibanapló</p>
+          <p className="mt-1 text-lg font-bold tabular-nums text-red-300">{errors.length}</p>
         </div>
       </div>
 
-      <div className="rounded-xl border border-gray-200 bg-white p-3">
-        <p className="text-xs font-semibold text-gray-800">Minőség jelzés</p>
+      <div className="rounded-xl border border-[#2a3941] bg-[#1a2328] p-3">
+        <p className="text-xs font-semibold text-[#e7edf0]">Minőség jelzés</p>
         {issues.length === 0 ? (
-          <p className="mt-1 text-xs text-emerald-700">Stabil: nincs kiugró minőségromlási jel.</p>
+          <p className="mt-1 text-xs text-emerald-300">Stabil: nincs kiugró minőségromlási jel.</p>
         ) : (
           <ul className="mt-1 flex flex-wrap gap-2">
             {issues.map((issue) => (
               <li
                 key={issue}
-                className="rounded-full border border-amber-300 bg-amber-50 px-2 py-0.5 text-[10px] font-semibold text-amber-800"
+                className="rounded-full border border-amber-900/45 bg-amber-950/40 px-2 py-0.5 text-[10px] font-semibold text-amber-300"
               >
                 {issue}
               </li>
@@ -150,11 +150,11 @@ export default function AdminObservabilityPanel() {
       {/* Funnel */}
       <div className="grid grid-cols-2 gap-2 sm:grid-cols-3">
         {funnel.map((row) => (
-          <div key={row.name} className="rounded-xl border border-gray-200 bg-white p-3">
-            <p className="text-[11px] font-medium text-gray-500">
+          <div key={row.name} className="rounded-xl border border-[#2a3941] bg-[#1a2328] p-3">
+            <p className="text-[11px] font-medium text-[#8fa3ad]">
               {FUNNEL_LABELS[row.name] || row.name}
             </p>
-            <p className="mt-1 text-lg font-bold text-gray-900 tabular-nums">{row.total}</p>
+            <p className="mt-1 text-lg font-bold text-[#e7edf0] tabular-nums">{row.total}</p>
             <p className="text-[10px] text-[#007782]">+{row.last7d} (7 nap)</p>
           </div>
         ))}
@@ -162,24 +162,24 @@ export default function AdminObservabilityPanel() {
 
       {/* Feedback */}
       <div>
-        <p className="mb-2 flex items-center gap-1.5 text-sm font-semibold text-gray-900">
+        <p className="mb-2 flex items-center gap-1.5 text-sm font-semibold text-[#e7edf0]">
           <MessageSquare size={15} className="text-[#007782]" />
           Visszajelzések ({feedback.length})
         </p>
         {feedback.length === 0 ? (
-          <p className="text-xs text-gray-500">Nincs visszajelzés.</p>
+          <p className="text-xs text-[#8fa3ad]">Nincs visszajelzés.</p>
         ) : (
-          <ul className="max-h-64 space-y-2 overflow-y-auto rounded-xl border border-gray-100 bg-gray-50/50 p-2">
+          <ul className="max-h-64 space-y-2 overflow-y-auto rounded-xl border border-[#27363d] bg-[#141d21]/50 p-2">
             {feedback.map((f) => (
-              <li key={f.id} className="rounded-lg border border-gray-200 bg-white p-2.5">
+              <li key={f.id} className="rounded-lg border border-[#2a3941] bg-[#1a2328] p-2.5">
                 <div className="flex items-center justify-between gap-2">
                   <span className="rounded-full bg-[#007782]/10 px-2 py-0.5 text-[10px] font-semibold text-[#007782]">
                     {f.type}
                   </span>
-                  <span className="text-[10px] text-gray-400">{formatWhen(f.created_at)}</span>
+                  <span className="text-[10px] text-[#6b7d85]">{formatWhen(f.created_at)}</span>
                 </div>
-                <p className="mt-1 text-sm text-gray-800 whitespace-pre-line break-words">{f.message}</p>
-                {f.path ? <p className="mt-0.5 text-[10px] text-gray-400">{f.path}</p> : null}
+                <p className="mt-1 text-sm text-[#e7edf0] whitespace-pre-line break-words">{f.message}</p>
+                {f.path ? <p className="mt-0.5 text-[10px] text-[#6b7d85]">{f.path}</p> : null}
               </li>
             ))}
           </ul>
@@ -188,24 +188,24 @@ export default function AdminObservabilityPanel() {
 
       {/* Errors */}
       <div>
-        <p className="mb-2 flex items-center gap-1.5 text-sm font-semibold text-gray-900">
+        <p className="mb-2 flex items-center gap-1.5 text-sm font-semibold text-[#e7edf0]">
           <AlertTriangle size={15} className="text-amber-600" />
           Hibanapló ({errors.length})
         </p>
         {errors.length === 0 ? (
-          <p className="text-xs text-gray-500">Nincs naplózott hiba.</p>
+          <p className="text-xs text-[#8fa3ad]">Nincs naplózott hiba.</p>
         ) : (
-          <ul className="max-h-64 space-y-2 overflow-y-auto rounded-xl border border-gray-100 bg-gray-50/50 p-2">
+          <ul className="max-h-64 space-y-2 overflow-y-auto rounded-xl border border-[#27363d] bg-[#141d21]/50 p-2">
             {errors.map((e) => (
-              <li key={e.id} className="rounded-lg border border-gray-200 bg-white p-2.5">
+              <li key={e.id} className="rounded-lg border border-[#2a3941] bg-[#1a2328] p-2.5">
                 <div className="flex items-center justify-between gap-2">
-                  <span className="rounded-full bg-amber-100 px-2 py-0.5 text-[10px] font-semibold text-amber-800">
+                  <span className="rounded-full bg-amber-100 px-2 py-0.5 text-[10px] font-semibold text-amber-300">
                     {e.source || 'js'}
                   </span>
-                  <span className="text-[10px] text-gray-400">{formatWhen(e.created_at)}</span>
+                  <span className="text-[10px] text-[#6b7d85]">{formatWhen(e.created_at)}</span>
                 </div>
-                <p className="mt-1 text-xs font-mono text-gray-800 break-words">{e.message}</p>
-                {e.path ? <p className="mt-0.5 text-[10px] text-gray-400">{e.path}</p> : null}
+                <p className="mt-1 text-xs font-mono text-[#e7edf0] break-words">{e.message}</p>
+                {e.path ? <p className="mt-0.5 text-[10px] text-[#6b7d85]">{e.path}</p> : null}
               </li>
             ))}
           </ul>

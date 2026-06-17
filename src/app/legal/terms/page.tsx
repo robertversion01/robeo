@@ -12,7 +12,7 @@ export default function TermsPage() {
   return (
     <>
       <div className="mx-auto max-w-3xl px-4 pt-10">
-        <div className="rounded-xl border border-[#007782]/25 bg-[#007782]/5 px-4 py-3 text-sm leading-relaxed text-gray-800">
+        <div className="rounded-xl border border-[#007782]/25 bg-[#007782]/5 px-4 py-3 text-sm leading-relaxed text-[#e7edf0]">
           <p className="font-semibold text-[#007782]">ROBEO Pay</p>
           <p className="mt-1">
             {TERMS_META.payNotice}{' '}

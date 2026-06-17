@@ -17,7 +17,7 @@ export default function CheckoutTermsCheckbox({ checked, onChange, className }: 
   return (
     <label
       className={cn(
-        'flex cursor-pointer items-start gap-2.5 rounded-lg border border-gray-200 bg-gray-50/80 px-3 py-2.5 text-left',
+        'flex cursor-pointer items-start gap-2.5 rounded-lg border border-[#2a3941] bg-[#141d21]/80 px-3 py-2.5 text-left',
         checked && 'border-[#007782]/30 bg-[#007782]/5',
         className,
       )}
@@ -29,7 +29,7 @@ export default function CheckoutTermsCheckbox({ checked, onChange, className }: 
         className="mt-0.5 h-4 w-4 shrink-0 accent-[#007782]"
         aria-describedby="checkout-terms-desc"
       />
-      <span id="checkout-terms-desc" className="text-xs leading-relaxed text-gray-700">
+      <span id="checkout-terms-desc" className="text-xs leading-relaxed text-[#b2c0c6]">
         {t('checkout.terms.prefix')}{' '}
         <Link
           href="/legal/terms"

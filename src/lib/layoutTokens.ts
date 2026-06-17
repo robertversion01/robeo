@@ -33,7 +33,7 @@ export const MOBILE_BOTTOM_NAV_RESERVE_PX = 68;
 
 /** Sticky alsó action sáv (checkout, upload wizard) */
 export const STICKY_ACTION_BAR_CLASS =
-  'fixed bottom-0 left-0 right-0 z-[9990] border-t border-gray-200 bg-white/95 backdrop-blur-lg px-4 py-3 pb-[calc(0.75rem+env(safe-area-inset-bottom,0px))] shadow-[0_-8px_32px_rgba(0,0,0,0.08)]';
+  'fixed bottom-0 left-0 right-0 z-[9990] border-t border-[#2a3941] bg-[#11171a]/95 backdrop-blur-lg px-4 py-3 pb-[calc(0.75rem+env(safe-area-inset-bottom,0px))] shadow-[0_-8px_32px_rgba(0,0,0,0.35)]';
 
 /** Dropdown / portal reserve: sticky action bar + kis buffer (px) */
 export const STICKY_ACTION_BAR_RESERVE_PX = 96;

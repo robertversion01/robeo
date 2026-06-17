@@ -25,12 +25,12 @@ export default function Error({
 
   return (
     <div
-      className={`min-h-screen bg-white text-gray-900 ${MAIN_TOP_PADDING} flex items-center justify-center px-4`}
+      className={`min-h-screen bg-[#1a2328] text-[#e7edf0] ${MAIN_TOP_PADDING} flex items-center justify-center px-4`}
     >
       <div className="text-center max-w-md">
         <div className="text-5xl font-bold text-[#007782] mb-3">Hoppá</div>
         <h1 className="text-2xl font-bold mb-3">Valami félrement</h1>
-        <p className="text-gray-500 mb-8">
+        <p className="text-[#8fa3ad] mb-8">
           Átmeneti hiba történt. Próbáld újra, vagy térj vissza a főoldalra.
         </p>
         <div className="flex flex-col sm:flex-row items-center justify-center gap-3">
@@ -43,7 +43,7 @@ export default function Error({
           </button>
           <Link
             href="/"
-            className="inline-flex h-10 items-center rounded-full border border-gray-300 px-5 text-sm font-semibold text-gray-700 hover:bg-gray-50"
+            className="inline-flex h-10 items-center rounded-full border border-[#2a3941] px-5 text-sm font-semibold text-[#b2c0c6] hover:bg-[#1f2a30]"
           >
             ← Vissza a főoldalra
           </Link>

@@ -66,7 +66,7 @@ export default function RootLayout({
   return (
     <html
       lang="hu"
-      className={`${interSans.variable} ${geistMono.variable} h-full antialiased overflow-x-clip max-w-[100vw]`}
+      className={`${interSans.variable} ${geistMono.variable} h-full antialiased overflow-x-clip max-w-[100vw] [color-scheme:dark]`}
     >
       <head>
         <meta name="robeo-build" content={APP_BUILD_ID} />

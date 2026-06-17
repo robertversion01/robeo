@@ -9,10 +9,10 @@ type Props = {
 };
 
 const variantClass: Record<BadgeVariant, string> = {
-  default: 'border-gray-200 bg-white text-gray-700',
-  verified: 'border-[#007782]/30 bg-[#007782]/10 text-[#007782] font-semibold',
+  default: 'border-[#2a3941] bg-[#1a2328] text-[#b2c0c6]',
+  verified: 'border-[#38c7d0]/35 bg-[#17343a] text-[#9be2e8] font-semibold',
   featured: 'border-[#007782]/40 bg-[#007782] text-white font-bold uppercase tracking-wide',
-  accent: 'border-amber-200/80 bg-amber-50 text-amber-900 font-medium',
+  accent: 'border-amber-900/45 bg-amber-950/50 text-amber-300 font-medium',
 };
 
 export default function Badge({ children, variant = 'default', className }: Props) {

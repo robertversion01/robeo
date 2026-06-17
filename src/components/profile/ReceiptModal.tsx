@@ -26,7 +26,7 @@ export default function ReceiptModal({ isOpen, onClose, receipt }: ReceiptModalP
         className="max-w-md w-full card-base p-6 shadow-2xl relative"
         onClick={e => e.stopPropagation()}
       >
-        <button onClick={onClose} className="icon-btn absolute top-3 right-3 text-muted-foreground hover:text-gray-900">
+        <button onClick={onClose} className="icon-btn absolute top-3 right-3 text-muted-foreground hover:text-[#e7edf0]">
           <X size={20} />
         </button>
 

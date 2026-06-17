@@ -184,20 +184,20 @@ export default function OfferModal({
         role="dialog"
         aria-modal="true"
         aria-labelledby={titleId}
-        className="w-full max-w-md rounded-t-2xl sm:rounded-2xl bg-white border border-gray-200 shadow-2xl max-h-[90vh] overflow-y-auto"
+        className="w-full max-w-md rounded-t-2xl sm:rounded-2xl bg-[#1a2328] border border-[#2a3941] shadow-2xl max-h-[90vh] overflow-y-auto"
         onClick={(e) => e.stopPropagation()}
       >
-        <div className="sticky top-0 z-10 flex items-center justify-between gap-3 border-b border-gray-100 bg-white px-4 py-3 rounded-t-2xl">
+        <div className="sticky top-0 z-10 flex items-center justify-between gap-3 border-b border-[#27363d] bg-[#1a2328] px-4 py-3 rounded-t-2xl">
           <div className="min-w-0">
-            <h3 id={titleId} className="text-lg font-bold text-gray-900 truncate">
+            <h3 id={titleId} className="text-lg font-bold text-[#e7edf0] truncate">
               Ajánlat küldése
             </h3>
-            <p className="text-xs text-gray-500 truncate">{productTitle}</p>
+            <p className="text-xs text-[#8fa3ad] truncate">{productTitle}</p>
           </div>
           <button
             type="button"
             onClick={() => onCloseRef.current()}
-            className="shrink-0 p-2 rounded-full hover:bg-gray-100 transition-colors text-gray-500"
+            className="shrink-0 p-2 rounded-full hover:bg-[#243038] transition-colors text-[#8fa3ad]"
             aria-label="Bezárás"
           >
             <X size={20} />
@@ -205,8 +205,8 @@ export default function OfferModal({
         </div>
 
         <div className="p-4 space-y-4">
-          <div className="rounded-xl bg-gray-50 border border-gray-200 p-3">
-            <p className="text-gray-500 text-xs">{t('offerModal.listPrice')}</p>
+          <div className="rounded-xl bg-[#141d21] border border-[#2a3941] p-3">
+            <p className="text-[#8fa3ad] text-xs">{t('offerModal.listPrice')}</p>
             <p className="text-[#007782] font-bold text-lg tabular-nums">
               {originalPrice.toLocaleString(priceLocale)} {t('common.currencyHuf')}
             </p>
@@ -214,7 +214,7 @@ export default function OfferModal({
 
           <form onSubmit={handleSubmit} className="space-y-4">
             <div>
-              <label htmlFor="offer-price" className="block text-sm font-medium text-gray-700 mb-1.5">
+              <label htmlFor="offer-price" className="block text-sm font-medium text-[#b2c0c6] mb-1.5">
                 Ajánlott ár (Ft)
               </label>
               <input
@@ -223,12 +223,12 @@ export default function OfferModal({
                 inputMode="numeric"
                 value={price || ''}
                 onChange={(e) => setPrice(Number(e.target.value))}
-                className="w-full px-3 py-2.5 rounded-xl bg-white border border-gray-300 focus:border-[#007782] focus:ring-1 focus:ring-[#007782] focus:outline-none transition-colors text-gray-900 tabular-nums"
+                className="w-full px-3 py-2.5 rounded-xl bg-[#1a2328] border border-[#2a3941] focus:border-[#007782] focus:ring-1 focus:ring-[#007782] focus:outline-none transition-colors text-[#e7edf0] tabular-nums"
                 min={minimumOffer}
                 required
                 disabled={loading}
               />
-              <p className="mt-1.5 text-xs text-gray-500">
+              <p className="mt-1.5 text-xs text-[#8fa3ad]">
                 {t('offerModal.minHint', { min: minimumOffer.toLocaleString(priceLocale) })}
               </p>
 
@@ -239,7 +239,7 @@ export default function OfferModal({
                     type="button"
                     disabled={loading}
                     onClick={() => setPrice(Math.round(originalPrice * percent))}
-                    className="flex-1 py-2 text-xs font-medium rounded-lg bg-gray-100 border border-gray-200 hover:bg-gray-200 transition-colors text-gray-800 disabled:opacity-50"
+                    className="flex-1 py-2 text-xs font-medium rounded-lg bg-[#1a2328] border border-[#2a3941] hover:bg-gray-200 transition-colors text-[#e7edf0] disabled:opacity-50"
                   >
                     {Math.round(percent * 100)}%
                   </button>
@@ -248,14 +248,14 @@ export default function OfferModal({
             </div>
 
             {price > 0 && (
-              <div className="rounded-xl border border-gray-200 bg-gray-50/80 p-3">
-                <p className="text-xs font-medium text-gray-600 mb-2">{t('offerModal.estimateTitle')}</p>
+              <div className="rounded-xl border border-[#2a3941] bg-[#141d21]/80 p-3">
+                <p className="text-xs font-medium text-[#8fa3ad] mb-2">{t('offerModal.estimateTitle')}</p>
                 <PriceBreakdown price={price} />
               </div>
             )}
 
             <div>
-              <label htmlFor="offer-msg" className="block text-sm font-medium text-gray-700 mb-1.5">
+              <label htmlFor="offer-msg" className="block text-sm font-medium text-[#b2c0c6] mb-1.5">
                 {t('offerModal.messageLabel')}
               </label>
               <textarea
@@ -265,7 +265,7 @@ export default function OfferModal({
                 placeholder={t('offerModal.messagePlaceholder')}
                 rows={3}
                 disabled={loading}
-                className="w-full px-3 py-2.5 rounded-xl bg-white border border-gray-300 focus:border-[#007782] focus:ring-1 focus:ring-[#007782] focus:outline-none transition-colors resize-none text-gray-900 text-sm"
+                className="w-full px-3 py-2.5 rounded-xl bg-[#1a2328] border border-[#2a3941] focus:border-[#007782] focus:ring-1 focus:ring-[#007782] focus:outline-none transition-colors resize-none text-[#e7edf0] text-sm"
               />
             </div>
 

@@ -98,43 +98,43 @@ export default function AuthPage() {
             {isLogin ? t('auth.loginTitle') : t('auth.registerTitle')}
           </h1>
           {!isLogin ? (
-            <p className="text-center text-sm text-gray-400 mb-6">{t('auth.registerSubtitle')}</p>
+            <p className="text-center text-sm text-[#6b7d85] mb-6">{t('auth.registerSubtitle')}</p>
           ) : (
             <div className="mb-6" />
           )}
 
           {error && (
-            <div className="bg-red-50 border border-red-200 text-red-600 rounded-xl p-3 mb-6 text-center text-sm">
+            <div className="bg-red-950/40 border border-red-900/45 text-red-600 rounded-xl p-3 mb-6 text-center text-sm">
               {error}
             </div>
           )}
 
-          <div className="mb-5 rounded-xl border border-[#2a3f44] bg-[#102024] px-3 py-2 text-center text-xs uppercase tracking-wide text-gray-300">
+          <div className="mb-5 rounded-xl border border-[#2a3f44] bg-[#102024] px-3 py-2 text-center text-xs uppercase tracking-wide text-[#6b7d85]">
             {t('auth.emailHint')}
           </div>
 
           <form onSubmit={handleSubmit} className="space-y-4">
             <div>
-              <label className="block mb-2 font-medium text-gray-200">{t('auth.email')}</label>
+              <label className="block mb-2 font-medium text-[#b2c0c6]">{t('auth.email')}</label>
               <input
                 type="email"
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
                 required
-                className="w-full min-h-11 px-4 rounded-xl border border-[#2f4a50] bg-[#0f1d21] text-white placeholder:text-gray-400 focus:outline-none focus:ring-1 focus:ring-[#4baab5]"
+                className="w-full min-h-11 px-4 rounded-xl border border-[#2f4a50] bg-[#0f1d21] text-white placeholder:text-[#6b7d85] focus:outline-none focus:ring-1 focus:ring-[#4baab5]"
                 placeholder={t('auth.emailPlaceholder')}
               />
             </div>
 
             <div>
-              <label className="block mb-2 font-medium text-gray-200">{t('auth.password')}</label>
+              <label className="block mb-2 font-medium text-[#b2c0c6]">{t('auth.password')}</label>
               <input
                 type="password"
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
                 required
                 minLength={6}
-                className="w-full min-h-11 px-4 rounded-xl border border-[#2f4a50] bg-[#0f1d21] text-white placeholder:text-gray-400 focus:outline-none focus:ring-1 focus:ring-[#4baab5]"
+                className="w-full min-h-11 px-4 rounded-xl border border-[#2f4a50] bg-[#0f1d21] text-white placeholder:text-[#6b7d85] focus:outline-none focus:ring-1 focus:ring-[#4baab5]"
                 placeholder={t('auth.passwordPlaceholder')}
               />
             </div>
@@ -152,7 +152,7 @@ export default function AuthPage() {
             </button>
           </form>
 
-          <div className="mt-6 text-center text-gray-300">
+          <div className="mt-6 text-center text-[#6b7d85]">
             {isLogin ? t('auth.noAccount') : t('auth.hasAccount')}
             <button
               onClick={switchMode}

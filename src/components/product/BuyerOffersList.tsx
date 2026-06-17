@@ -200,9 +200,9 @@ export default function BuyerOffersList() {
 
   if (offers.length === 0) {
     return (
-      <div className="text-center py-12 text-gray-500">
+      <div className="text-center py-12 text-[#8fa3ad]">
         <p>Még nem küldtél ajánlatot egy termékre sem.</p>
-        <p className="text-sm mt-2 text-gray-400">
+        <p className="text-sm mt-2 text-[#6b7d85]">
           A termék oldalán az „Ajánlat” gombbal kezdhetsz alkudni.
         </p>
       </div>
@@ -221,13 +221,13 @@ export default function BuyerOffersList() {
         return (
           <div
             key={offer.id}
-            className="card-base overflow-hidden border border-gray-200/80 shadow-sm"
+            className="card-base overflow-hidden border border-[#2a3941]/80 shadow-sm"
           >
             <div className="flex flex-col sm:flex-row gap-4 p-4">
               {product ? (
                 <Link
                   href={`/products/${product.id}`}
-                  className="shrink-0 w-20 h-20 sm:w-16 sm:h-16 rounded-xl bg-gray-100 overflow-hidden ring-1 ring-gray-100 hover:ring-[#007782]/30 transition-all"
+                  className="shrink-0 w-20 h-20 sm:w-16 sm:h-16 rounded-xl bg-[#1a2328] overflow-hidden ring-1 ring-gray-100 hover:ring-[#007782]/30 transition-all"
                 >
                   {thumb ? (
                     <img
@@ -242,7 +242,7 @@ export default function BuyerOffersList() {
                   )}
                 </Link>
               ) : (
-                <div className="shrink-0 w-20 h-20 rounded-xl bg-gray-100 overflow-hidden flex items-center justify-center text-2xl">
+                <div className="shrink-0 w-20 h-20 rounded-xl bg-[#1a2328] overflow-hidden flex items-center justify-center text-2xl">
                   📷
                 </div>
               )}
@@ -251,25 +251,25 @@ export default function BuyerOffersList() {
                 {product ? (
                   <Link
                     href={`/products/${product.id}`}
-                    className="font-semibold text-gray-900 hover:text-[#007782] line-clamp-2"
+                    className="font-semibold text-[#e7edf0] hover:text-[#007782] line-clamp-2"
                   >
                     {product.name}
                   </Link>
                 ) : (
-                  <span className="font-semibold text-gray-900">Termék</span>
+                  <span className="font-semibold text-[#e7edf0]">Termék</span>
                 )}
                 <div className="flex flex-wrap items-baseline gap-x-3 gap-y-1">
                   <span className="text-[#007782] font-bold tabular-nums">
                     {offer.offered_price.toLocaleString('hu-HU')} Ft
                   </span>
                   {product && (
-                    <span className="text-gray-500 text-sm tabular-nums">
+                    <span className="text-[#8fa3ad] text-sm tabular-nums">
                       listaár: {product.price.toLocaleString('hu-HU')} Ft
                     </span>
                   )}
                 </div>
                 {offer.message ? (
-                  <p className="text-gray-600 text-sm mt-2 line-clamp-2 border-l-2 border-gray-200 pl-2">
+                  <p className="text-[#8fa3ad] text-sm mt-2 line-clamp-2 border-l-2 border-[#2a3941] pl-2">
                     „{offer.message}”
                   </p>
                 ) : null}

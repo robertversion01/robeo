@@ -40,7 +40,7 @@ export default function CheckoutBundleNudge({ sellerId, currentProductId }: Prop
     <div className="rounded-xl border border-[#007782]/20 bg-[#007782]/5 p-3 flex gap-2 items-start">
       <Package size={18} className="shrink-0 text-[#007782] mt-0.5" />
       <div className="min-w-0 text-xs">
-        <p className="text-gray-800">{label}</p>
+        <p className="text-[#e7edf0]">{label}</p>
         <Link href={`/profile/${sellerId}`} className="font-semibold text-[#007782] hover:underline mt-1 inline-block">
           {t('bundle.checkoutNudgeLink')} →
         </Link>

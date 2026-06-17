@@ -39,8 +39,8 @@ function SidebarSection({
   className?: string;
 }) {
   return (
-    <section className={cn('border-t border-gray-200/80 pt-4 first:border-t-0 first:pt-0', className)}>
-      <h3 className="mb-2.5 text-xs font-bold uppercase tracking-wide text-gray-700">{title}</h3>
+    <section className={cn('border-t border-[#2a3941]/80 pt-4 first:border-t-0 first:pt-0', className)}>
+      <h3 className="mb-2.5 text-xs font-bold uppercase tracking-wide text-[#b2c0c6]">{title}</h3>
       {children}
     </section>
   );
@@ -65,13 +65,13 @@ function SidebarRadio({
         'flex w-full items-center gap-2.5 rounded-lg px-2 py-1.5 text-left text-sm transition-colors',
         active
           ? 'bg-[#007782]/10 font-semibold text-[#007782]'
-          : 'text-gray-700 hover:bg-gray-100',
+          : 'text-[#b2c0c6] hover:bg-[#243038]',
       )}
     >
       <span
         className={cn(
           'flex h-4 w-4 shrink-0 items-center justify-center rounded-full border-2',
-          active ? 'border-[#007782]' : 'border-gray-300',
+          active ? 'border-[#007782]' : 'border-[#2a3941]',
         )}
         aria-hidden
       >
@@ -79,7 +79,7 @@ function SidebarRadio({
       </span>
       <span className="min-w-0 flex-1 truncate">{label}</span>
       {typeof count === 'number' ? (
-        <span className="shrink-0 text-[11px] tabular-nums text-gray-400">{count}</span>
+        <span className="shrink-0 text-[11px] tabular-nums text-[#6b7d85]">{count}</span>
       ) : null}
     </button>
   );
@@ -219,12 +219,12 @@ export default function CatalogFilterSidebar({
   return (
     <div
       className={cn(
-        'rounded-xl border border-gray-200 bg-white shadow-sm',
+        'rounded-xl border border-[#2a3941] bg-[#1a2328] shadow-sm',
         className,
       )}
     >
-      <div className="flex items-center justify-between border-b border-gray-100 px-4 py-3">
-        <h2 className="text-sm font-bold text-gray-900">{t('browse.sidebar.title')}</h2>
+      <div className="flex items-center justify-between border-b border-[#27363d] px-4 py-3">
+        <h2 className="text-sm font-bold text-[#e7edf0]">{t('browse.sidebar.title')}</h2>
         {activeFilterCount > 0 && onClearAll ? (
           <button
             type="button"
@@ -272,13 +272,13 @@ export default function CatalogFilterSidebar({
           <>
         <SidebarSection title={t('browse.filters.brand')}>
           <div className="relative mb-2">
-            <Search size={14} className="absolute left-2.5 top-1/2 -translate-y-1/2 text-gray-400" />
+            <Search size={14} className="absolute left-2.5 top-1/2 -translate-y-1/2 text-[#6b7d85]" />
             <input
               type="search"
               value={brandQuery}
               onChange={(e) => setBrandQuery(e.target.value)}
               placeholder={t('browse.sidebar.searchBrand')}
-              className="h-9 w-full rounded-lg border border-gray-200 pl-8 pr-2 text-xs"
+              className="h-9 w-full rounded-lg border border-[#2a3941] pl-8 pr-2 text-xs"
             />
           </div>
           <div className="max-h-44 space-y-0.5 overflow-y-auto">
@@ -308,7 +308,7 @@ export default function CatalogFilterSidebar({
                 'rounded-lg border px-2.5 py-1.5 text-xs font-medium transition-colors',
                 selectedSize === 'all'
                   ? 'border-[#007782] bg-[#007782] text-white'
-                  : 'border-gray-200 bg-gray-50 text-gray-700 hover:border-[#007782]/40',
+                  : 'border-[#2a3941] bg-[#141d21] text-[#b2c0c6] hover:border-[#007782]/40',
               )}
             >
               {t('browse.filters.allSizes')}
@@ -322,7 +322,7 @@ export default function CatalogFilterSidebar({
                   'min-w-[2.25rem] rounded-lg border px-2.5 py-1.5 text-xs font-medium transition-colors',
                   selectedSize === size
                     ? 'border-[#007782] bg-[#007782] text-white'
-                    : 'border-gray-200 bg-gray-50 text-gray-700 hover:border-[#007782]/40',
+                    : 'border-[#2a3941] bg-[#141d21] text-[#b2c0c6] hover:border-[#007782]/40',
                 )}
               >
                 {size}
@@ -353,7 +353,7 @@ export default function CatalogFilterSidebar({
                 'rounded-lg border px-2.5 py-1.5 text-xs font-medium transition-colors',
                 selectedColor === 'all'
                   ? 'border-[#007782] bg-[#007782] text-white'
-                  : 'border-gray-200 bg-gray-50 text-gray-700 hover:border-[#007782]/40',
+                  : 'border-[#2a3941] bg-[#141d21] text-[#b2c0c6] hover:border-[#007782]/40',
               )}
             >
               {t('browse.filters.allColors')}
@@ -367,7 +367,7 @@ export default function CatalogFilterSidebar({
                   'rounded-lg border px-2.5 py-1.5 text-xs font-medium transition-colors',
                   selectedColor === c.id
                     ? 'border-[#007782] bg-[#007782] text-white'
-                    : 'border-gray-200 bg-gray-50 text-gray-700 hover:border-[#007782]/40',
+                    : 'border-[#2a3941] bg-[#141d21] text-[#b2c0c6] hover:border-[#007782]/40',
                 )}
               >
                 {t(c.labelKey)}
@@ -389,14 +389,14 @@ export default function CatalogFilterSidebar({
                   'rounded-full border px-2.5 py-1 text-[11px] font-medium transition-colors',
                   pricePresetId === p.id
                     ? 'border-[#007782] bg-[#007782]/10 text-[#007782]'
-                    : 'border-gray-200 text-gray-600 hover:border-[#007782]/30',
+                    : 'border-[#2a3941] text-[#8fa3ad] hover:border-[#007782]/30',
                 )}
               >
                 {p.label}
               </button>
             ))}
           </div>
-          <div className="space-y-2 text-xs text-gray-600">
+          <div className="space-y-2 text-xs text-[#8fa3ad]">
             <label className="block">
               {t('browse.filters.min')} ({selectedMinPrice.toLocaleString(locale)} Ft)
               <input
@@ -428,7 +428,7 @@ export default function CatalogFilterSidebar({
           <select
             value={selectedSort}
             onChange={(e) => onSortChange(e.target.value)}
-            className="h-10 w-full rounded-lg border border-gray-200 bg-gray-50 px-3 text-sm text-gray-800 focus:outline-none focus:ring-2 focus:ring-[#007782]/30"
+            className="h-10 w-full rounded-lg border border-[#2a3941] bg-[#141d21] px-3 text-sm text-[#e7edf0] focus:outline-none focus:ring-2 focus:ring-[#007782]/30"
           >
             {sortOptions.map((opt) => (
               <option key={opt.id} value={opt.id}>

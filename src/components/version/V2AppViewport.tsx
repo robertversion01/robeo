@@ -24,23 +24,23 @@ export default function V2AppViewport() {
 
   if (!iframeSrc) {
     return (
-      <div className="flex flex-1 items-center justify-center p-4 text-sm text-gray-600">
+      <div className="flex flex-1 items-center justify-center p-4 text-sm text-[#8fa3ad]">
         v2 előnézet betöltése…
       </div>
     );
   }
 
   return (
-    <div className="flex min-h-0 flex-1 flex-col bg-gray-50">
+    <div className="flex min-h-0 flex-1 flex-col bg-[#141d21]">
       <iframe
         title="ROBEO v2 (Vite)"
         src={iframeSrc}
         className="min-h-0 w-full flex-1 border-0"
         referrerPolicy="same-origin"
       />
-      <p className="shrink-0 border-t border-gray-200 bg-white px-3 py-2 text-xs text-gray-500">
-        v2: ha üres az ablak, indítsd a <code className="rounded bg-gray-100 px-1">frontend</code> mappában a{' '}
-        <code className="rounded bg-gray-100 px-1">npm run dev</code> parancsot (port 5173), és hogy a backend fusson
+      <p className="shrink-0 border-t border-[#2a3941] bg-[#1a2328] px-3 py-2 text-xs text-[#8fa3ad]">
+        v2: ha üres az ablak, indítsd a <code className="rounded bg-[#1a2328] px-1">frontend</code> mappában a{' '}
+        <code className="rounded bg-[#1a2328] px-1">npm run dev</code> parancsot (port 5173), és hogy a backend fusson
         a 5055-ön (proxy).
       </p>
     </div>

@@ -148,7 +148,7 @@ function CheckoutSuccessContentComponent() {
 
   if (loading) {
     return (
-      <div className="min-h-screen bg-white text-gray-900 flex items-center justify-center">
+      <div className="min-h-screen bg-[#1a2328] text-[#e7edf0] flex items-center justify-center">
         <div className="animate-spin h-10 w-10 border-4 border-accent border-t-transparent rounded-full" />
       </div>
     );
@@ -156,10 +156,10 @@ function CheckoutSuccessContentComponent() {
 
   if (error) {
     return (
-      <div className="min-h-screen bg-white text-gray-900 flex flex-col items-center justify-center p-4">
-        <div className="max-w-md w-full bg-white rounded-lg p-6 shadow-lg border border-gray-200 text-center">
+      <div className="min-h-screen bg-[#1a2328] text-[#e7edf0] flex flex-col items-center justify-center p-4">
+        <div className="max-w-md w-full bg-[#1a2328] rounded-lg p-6 shadow-lg border border-[#2a3941] text-center">
           <h1 className="text-xl font-bold mb-4">{t('checkoutSuccess.errorTitle')}</h1>
-          <p className="text-gray-600 mb-6">{error}</p>
+          <p className="text-[#8fa3ad] mb-6">{error}</p>
           <button
             type="button"
             onClick={goToHome}
@@ -173,17 +173,17 @@ function CheckoutSuccessContentComponent() {
   }
 
   return (
-    <div className="min-h-screen bg-white text-gray-900">
+    <div className="min-h-screen bg-[#1a2328] text-[#e7edf0]">
       <main className={`${MAIN_TOP_PADDING} pb-10 px-4 md:px-6`}>
         <div className="max-w-3xl mx-auto">
-          <div className="bg-white rounded-lg p-6 shadow-lg border border-gray-200">
+          <div className="bg-[#1a2328] rounded-lg p-6 shadow-lg border border-[#2a3941]">
             <div className="flex items-center justify-center mb-6">
               <CheckCircle className="text-green-500 mr-2" size={28} />
               <h1 className="text-xl font-bold">{t('checkoutSuccess.title')}</h1>
             </div>
 
-            <div className="mb-6 p-4 bg-gray-50 rounded-lg border border-gray-200">
-              <p className="text-sm text-gray-600 mb-1">{t('checkoutSuccess.purchasedItem')}</p>
+            <div className="mb-6 p-4 bg-[#141d21] rounded-lg border border-[#2a3941]">
+              <p className="text-sm text-[#8fa3ad] mb-1">{t('checkoutSuccess.purchasedItem')}</p>
               {bundleItems.length >= 2 ? (
                 <div>
                   <p className="text-sm font-semibold text-[#007782] mb-2">
@@ -192,7 +192,7 @@ function CheckoutSuccessContentComponent() {
                   <ul className="space-y-2">
                     {bundleItems.map((item) => (
                       <li key={item.id} className="flex items-center gap-3">
-                        <div className="w-12 h-12 rounded-md overflow-hidden bg-gray-100 shrink-0">
+                        <div className="w-12 h-12 rounded-md overflow-hidden bg-[#1a2328] shrink-0">
                           {item.image_url ? (
                             <img
                               src={getOptimizedImageUrl(item.image_url, 96, 96)}
@@ -200,27 +200,27 @@ function CheckoutSuccessContentComponent() {
                               className="w-full h-full object-cover"
                             />
                           ) : (
-                            <div className="w-full h-full flex items-center justify-center text-gray-400 text-xs">
+                            <div className="w-full h-full flex items-center justify-center text-[#6b7d85] text-xs">
                               📷
                             </div>
                           )}
                         </div>
                         <div className="min-w-0 flex-1">
-                          <h3 className="font-medium text-sm text-gray-900 truncate">{item.name}</h3>
+                          <h3 className="font-medium text-sm text-[#e7edf0] truncate">{item.name}</h3>
                           <p className="text-accent font-bold text-sm">{formatPrice(item.price)}</p>
                         </div>
                       </li>
                     ))}
                   </ul>
                   {transaction?.amount ? (
-                    <p className="text-xs text-gray-500 mt-2 text-right">
+                    <p className="text-xs text-[#8fa3ad] mt-2 text-right">
                       {t('checkout.total')}: {formatPrice(transaction.amount)}
                     </p>
                   ) : null}
                 </div>
               ) : product ? (
                 <div className="flex items-center">
-                  <div className="w-16 h-16 rounded-md overflow-hidden mr-3 bg-gray-100 flex-shrink-0">
+                  <div className="w-16 h-16 rounded-md overflow-hidden mr-3 bg-[#1a2328] flex-shrink-0">
                     {product.image_url ? (
                       <img
                         src={product.image_url}
@@ -228,13 +228,13 @@ function CheckoutSuccessContentComponent() {
                         className="w-full h-full object-cover"
                       />
                     ) : (
-                      <div className="w-full h-full flex items-center justify-center text-gray-400">
+                      <div className="w-full h-full flex items-center justify-center text-[#6b7d85]">
                         📷
                       </div>
                     )}
                   </div>
                   <div>
-                    <h3 className="font-medium text-gray-900">{product.name}</h3>
+                    <h3 className="font-medium text-[#e7edf0]">{product.name}</h3>
                     <p className="text-accent font-bold">{formatPrice(product.price)}</p>
                   </div>
                 </div>
@@ -249,35 +249,35 @@ function CheckoutSuccessContentComponent() {
                     <CreditCard className="text-green-600" size={18} />
                   </div>
                   <div>
-                    <h3 className="font-medium text-gray-900">{t('checkoutSuccess.stepPaid')}</h3>
-                    <p className="text-sm text-gray-600">{t('checkoutSuccess.stepPaidHint')}</p>
+                    <h3 className="font-medium text-[#e7edf0]">{t('checkoutSuccess.stepPaid')}</h3>
+                    <p className="text-sm text-[#8fa3ad]">{t('checkoutSuccess.stepPaidHint')}</p>
                   </div>
                 </div>
 
                 <div className="flex items-start">
-                  <div className="bg-gray-100 p-2 rounded-full mr-3">
-                    <Package className="text-gray-500" size={18} />
+                  <div className="bg-[#1a2328] p-2 rounded-full mr-3">
+                    <Package className="text-[#8fa3ad]" size={18} />
                   </div>
                   <div>
-                    <h3 className="font-medium text-gray-900">{t('checkoutSuccess.stepShip')}</h3>
-                    <p className="text-sm text-gray-600">{t('checkoutSuccess.stepShipHint')}</p>
+                    <h3 className="font-medium text-[#e7edf0]">{t('checkoutSuccess.stepShip')}</h3>
+                    <p className="text-sm text-[#8fa3ad]">{t('checkoutSuccess.stepShipHint')}</p>
                   </div>
                 </div>
 
                 <div className="flex items-start">
-                  <div className="bg-gray-100 p-2 rounded-full mr-3">
-                    <Truck className="text-gray-500" size={18} />
+                  <div className="bg-[#1a2328] p-2 rounded-full mr-3">
+                    <Truck className="text-[#8fa3ad]" size={18} />
                   </div>
                   <div>
-                    <h3 className="font-medium text-gray-900">{t('checkoutSuccess.stepDelivery')}</h3>
-                    <p className="text-sm text-gray-600">{t('checkoutSuccess.stepDeliveryHint')}</p>
+                    <h3 className="font-medium text-[#e7edf0]">{t('checkoutSuccess.stepDelivery')}</h3>
+                    <p className="text-sm text-[#8fa3ad]">{t('checkoutSuccess.stepDeliveryHint')}</p>
                   </div>
                 </div>
               </div>
             </div>
 
             <div className="text-center space-y-3">
-              <p className="text-sm text-gray-600">{t('checkoutSuccess.trackHint')}</p>
+              <p className="text-sm text-[#8fa3ad]">{t('checkoutSuccess.trackHint')}</p>
               {transaction && product && !reviewCompleted ? (
                 <div className="text-left">
                   <ReviewForm

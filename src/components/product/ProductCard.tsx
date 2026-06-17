@@ -115,7 +115,7 @@ export default function ProductCard({
                 key={idx}
                 className={cn(
                   'h-1 w-1 rounded-full',
-                  idx === imageIndex ? 'bg-white' : 'bg-white/50',
+                  idx === imageIndex ? 'bg-[#e7edf0]' : 'bg-[#e7edf0]/50',
                 )}
               />
             ))}

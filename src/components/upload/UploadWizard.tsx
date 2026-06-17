@@ -519,18 +519,18 @@ export default function UploadWizard() {
 
   if (!authChecked) {
     return (
-      <div className="flex min-h-screen items-center justify-center bg-white text-gray-500">
+      <div className="flex min-h-screen items-center justify-center bg-[#1a2328] text-[#8fa3ad]">
         {t('auth.processing')}
       </div>
     );
   }
 
   return (
-    <div className="min-h-screen bg-white text-gray-900">
+    <div className="min-h-screen bg-[#1a2328] text-[#e7edf0]">
       <main className={`${MAIN_TOP_PADDING} pb-36 max-w-lg mx-auto px-4`}>
         <div className="pt-3 mb-4">
           <h1 className="text-xl font-bold">{t('uploadWizard.title')}</h1>
-          <p className="text-sm text-gray-500 mt-0.5">{t('uploadWizard.subtitleFast')}</p>
+          <p className="text-sm text-[#8fa3ad] mt-0.5">{t('uploadWizard.subtitleFast')}</p>
           {ROBEO_BP_MODE ? (
             <div className="mt-3 flex gap-2">
               <button
@@ -543,7 +543,7 @@ export default function UploadWizard() {
                   'flex-1 rounded-full border px-3 py-2 text-xs font-semibold transition-colors',
                   expressMode
                     ? 'border-[#007782] bg-[#007782] text-white'
-                    : 'border-gray-200 bg-white text-gray-600',
+                    : 'border-[#2a3941] bg-[#1a2328] text-[#8fa3ad]',
                 )}
               >
                 {t('upload.express.modeQuick')}
@@ -558,7 +558,7 @@ export default function UploadWizard() {
                   'flex-1 rounded-full border px-3 py-2 text-xs font-semibold transition-colors',
                   !expressMode
                     ? 'border-[#007782] bg-[#007782] text-white'
-                    : 'border-gray-200 bg-white text-gray-600',
+                    : 'border-[#2a3941] bg-[#1a2328] text-[#8fa3ad]',
                 )}
               >
                 {t('upload.express.modeDetailed')}
@@ -568,13 +568,13 @@ export default function UploadWizard() {
         </div>
 
         <div className="mb-4">
-          <div className="flex justify-between text-xs font-semibold text-gray-500 mb-2">
+          <div className="flex justify-between text-xs font-semibold text-[#8fa3ad] mb-2">
             <span>
               {t('uploadWizard.stepOf', { current: stepIndex + 1, total: activeSteps.length })}
             </span>
             <span>{Math.round(progress)}%</span>
           </div>
-          <div className="h-2 rounded-full bg-gray-100 overflow-hidden">
+          <div className="h-2 rounded-full bg-[#1a2328] overflow-hidden">
             <div
               className="h-full bg-[#007782] transition-all duration-300"
               style={{ width: `${progress}%` }}
@@ -590,7 +590,7 @@ export default function UploadWizard() {
                     ? 'bg-[#007782] text-white'
                     : i < stepIndex
                       ? 'bg-[#007782]/15 text-[#007782]'
-                      : 'bg-gray-100 text-gray-400',
+                      : 'bg-[#1a2328] text-[#6b7d85]',
                 )}
               >
                 {i < stepIndex ? <Check size={10} className="inline" /> : null} {s.label}
@@ -599,16 +599,16 @@ export default function UploadWizard() {
           </div>
         </div>
 
-        <div className="rounded-2xl border border-gray-200 bg-white p-4 md:p-5 shadow-sm min-h-[280px]">
+        <div className="rounded-2xl border border-[#2a3941] bg-[#1a2328] p-4 md:p-5 shadow-sm min-h-[280px]">
           {stepId === 'photos' && (
             <div className="space-y-4">
-              <p className="text-sm text-gray-600">{t('uploadWizard.photosHint')}</p>
+              <p className="text-sm text-[#8fa3ad]">{t('uploadWizard.photosHint')}</p>
               {images.length > 0 && (
                 <div className="grid grid-cols-3 gap-2">
                   {images.map((image, index) => (
                     <div
                       key={image.id}
-                      className="relative aspect-square rounded-xl overflow-hidden bg-gray-100 border border-gray-200 group"
+                      className="relative aspect-square rounded-xl overflow-hidden bg-[#1a2328] border border-[#2a3941] group"
                     >
                       <img src={image.preview} alt="" loading="lazy" decoding="async" className="w-full h-full object-cover" />
                       <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 flex items-center justify-center gap-1 transition-opacity">
@@ -616,7 +616,7 @@ export default function UploadWizard() {
                           type="button"
                           onClick={() => moveImage(index, 'up')}
                           disabled={index === 0}
-                          className="p-1 rounded-full bg-white/30 text-white disabled:opacity-30"
+                          className="p-1 rounded-full bg-[#1a2328]/30 text-white disabled:opacity-30"
                         >
                           <ArrowUp size={14} />
                         </button>
@@ -624,7 +624,7 @@ export default function UploadWizard() {
                           type="button"
                           onClick={() => moveImage(index, 'down')}
                           disabled={index === images.length - 1}
-                          className="p-1 rounded-full bg-white/30 text-white disabled:opacity-30"
+                          className="p-1 rounded-full bg-[#1a2328]/30 text-white disabled:opacity-30"
                         >
                           <ArrowDown size={14} />
                         </button>
@@ -644,16 +644,16 @@ export default function UploadWizard() {
                 </div>
               )}
               {images.length < 6 && (
-                <div className="rounded-xl border-2 border-dashed border-gray-300 bg-gray-50 p-4 text-center">
-                  <Plus size={28} className="mx-auto text-gray-400" />
-                  <p className="mt-1 text-xs text-gray-500">
+                <div className="rounded-xl border-2 border-dashed border-[#2a3941] bg-[#141d21] p-4 text-center">
+                  <Plus size={28} className="mx-auto text-[#6b7d85]" />
+                  <p className="mt-1 text-xs text-[#8fa3ad]">
                     {t('upload.imagesCount', { count: images.length })}
                   </p>
                   <div className="mt-3 grid grid-cols-1 gap-2 sm:grid-cols-2">
                     <button
                       type="button"
                       onClick={() => fileInputRef.current?.click()}
-                      className="inline-flex items-center justify-center gap-2 rounded-xl border border-[#007782]/30 bg-white px-4 py-3 text-sm font-semibold text-[#007782] hover:bg-[#007782]/5 touch-manipulation"
+                      className="inline-flex items-center justify-center gap-2 rounded-xl border border-[#007782]/30 bg-[#1a2328] px-4 py-3 text-sm font-semibold text-[#007782] hover:bg-[#007782]/5 touch-manipulation"
                     >
                       <ImageIcon size={18} />
                       {t('upload.chooseFromGallery')}
@@ -661,7 +661,7 @@ export default function UploadWizard() {
                     <button
                       type="button"
                       onClick={() => cameraInputRef.current?.click()}
-                      className="inline-flex items-center justify-center gap-2 rounded-xl border border-[#007782]/30 bg-white px-4 py-3 text-sm font-semibold text-[#007782] hover:bg-[#007782]/5 touch-manipulation"
+                      className="inline-flex items-center justify-center gap-2 rounded-xl border border-[#007782]/30 bg-[#1a2328] px-4 py-3 text-sm font-semibold text-[#007782] hover:bg-[#007782]/5 touch-manipulation"
                     >
                       <Camera size={18} />
                       {t('upload.takePhoto')}
@@ -745,7 +745,7 @@ export default function UploadWizard() {
                   </div>
                 </>
               ) : (
-                <p className="text-sm text-gray-600 rounded-xl bg-gray-50 border border-gray-200 p-3">
+                <p className="text-sm text-[#8fa3ad] rounded-xl bg-[#141d21] border border-[#2a3941] p-3">
                   {t('upload.servicePricingHint')}
                 </p>
               )}
@@ -766,7 +766,7 @@ export default function UploadWizard() {
 
           {stepId === 'express' && (
             <div className="space-y-5">
-              <p className="text-sm text-gray-600">{t('upload.express.hint')}</p>
+              <p className="text-sm text-[#8fa3ad]">{t('upload.express.hint')}</p>
               <ListingCategoryPicker
                 listingType={formData.listingType}
                 onListingTypeChange={(type) =>
@@ -818,7 +818,7 @@ export default function UploadWizard() {
                     />
                   </div>
                   <div>
-                    <p className="text-xs font-medium text-gray-700 mb-2">{t('upload.styleTags.label')}</p>
+                    <p className="text-xs font-medium text-[#b2c0c6] mb-2">{t('upload.styleTags.label')}</p>
                     <div className="flex flex-wrap gap-1.5">
                       {STYLE_TAG_OPTIONS.map((tag) => {
                         const active = styleTags.includes(tag);
@@ -835,7 +835,7 @@ export default function UploadWizard() {
                               'rounded-full border px-2.5 py-1 text-[11px] font-semibold',
                               active
                                 ? 'border-[#007782] bg-[#007782]/10 text-[#007782]'
-                                : 'border-gray-200 text-gray-600',
+                                : 'border-[#2a3941] text-[#8fa3ad]',
                             )}
                           >
                             {t(`styleTags.${tag}`)}
@@ -903,13 +903,13 @@ export default function UploadWizard() {
           {(stepId === 'confirm' || stepId === 'publish') && (
             <div className="space-y-4">
               {expressMode && stepId === 'confirm' ? (
-                <p className="text-sm text-gray-600 rounded-xl bg-[#007782]/5 border border-[#007782]/15 p-3">
+                <p className="text-sm text-[#8fa3ad] rounded-xl bg-[#007782]/5 border border-[#007782]/15 p-3">
                   {t('upload.express.confirmHint')}
                 </p>
               ) : null}
               {!expressMode && stepId === 'publish' ? (
                 <div className="rounded-xl border border-[#007782]/20 bg-[#007782]/5 p-3">
-                  <p className="text-xs text-gray-600 mb-2">{t('upload.ai.hint')}</p>
+                  <p className="text-xs text-[#8fa3ad] mb-2">{t('upload.ai.hint')}</p>
                   <button
                     type="button"
                     disabled={aiLoading || ollamaOk === false}
@@ -920,7 +920,7 @@ export default function UploadWizard() {
                     {aiLoading ? t('upload.ai.loading') : t('upload.ai.cta')}
                   </button>
                   {ollamaOk === false ? (
-                    <p className="text-[11px] text-amber-700 mt-2">{t('upload.ai.offline')}</p>
+                    <p className="text-[11px] text-amber-300 mt-2">{t('upload.ai.offline')}</p>
                   ) : null}
                 </div>
               ) : null}
@@ -956,7 +956,7 @@ export default function UploadWizard() {
                     onChange={(val) => setFormData((p) => ({ ...p, budapestDistrict: val }))}
                     placeholder={t('upload.budapestDistrictPlaceholder')}
                   />
-                  <p className="mt-1.5 text-[11px] text-gray-500">{t('upload.budapestDistrictHint')}</p>
+                  <p className="mt-1.5 text-[11px] text-[#8fa3ad]">{t('upload.budapestDistrictHint')}</p>
                 </div>
               ) : null}
             </div>
@@ -972,7 +972,7 @@ export default function UploadWizard() {
             setStepIndex(0);
             toast.message(t('uploadWizard.draftCleared'));
           }}
-          className="mt-3 text-xs text-gray-500 hover:text-[#007782] underline"
+          className="mt-3 text-xs text-[#8fa3ad] hover:text-[#007782] underline"
         >
           {t('uploadWizard.clearDraft')}
         </button>

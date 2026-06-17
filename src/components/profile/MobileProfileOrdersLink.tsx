@@ -14,7 +14,7 @@ export default function MobileProfileOrdersLink() {
   return (
     <Link
       href="/orders"
-      className="mb-4 flex md:hidden items-center gap-2 rounded-xl border border-gray-200 bg-gray-50 px-4 py-3 text-sm font-semibold text-gray-800 touch-manipulation active:bg-gray-100"
+      className="mb-4 flex md:hidden items-center gap-2 rounded-xl border border-[#2a3941] bg-[#141d21] px-4 py-3 text-sm font-semibold text-[#e7edf0] touch-manipulation active:bg-[#243038]"
     >
       <Package size={18} className="text-[#007782]" />
       {t('nav.orders')}

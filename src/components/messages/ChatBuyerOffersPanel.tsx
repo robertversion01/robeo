@@ -75,10 +75,10 @@ export default function ChatBuyerOffersPanel({ buyerId, productId, sellerId }: P
     if (offer?.status === 'accepted') {
       return (
         <div className="mx-4 mb-2 rounded-xl border border-[#007782]/25 bg-[#007782]/5 px-3 py-2.5 text-sm">
-          <p className="font-semibold text-gray-900">
+          <p className="font-semibold text-[#e7edf0]">
             {t('chatOffer.panelTitle', { price: offer.offered_price.toLocaleString('hu-HU') })}
           </p>
-          <p className="text-xs text-gray-600 mt-0.5">{t('chatOffer.status.accepted')}</p>
+          <p className="text-xs text-[#8fa3ad] mt-0.5">{t('chatOffer.status.accepted')}</p>
           <Link
             href={`/checkout?offer=${offer.id}`}
             className="mt-2 inline-flex rounded-full bg-[#007782] px-3 py-1.5 text-xs font-semibold text-white"
@@ -167,10 +167,10 @@ export default function ChatBuyerOffersPanel({ buyerId, productId, sellerId }: P
 
   return (
     <div className="mx-4 mb-2 rounded-xl border border-[#007782]/25 bg-[#007782]/5 px-3 py-2.5 text-sm">
-      <p className="font-semibold text-gray-900">
+      <p className="font-semibold text-[#e7edf0]">
         {t('chatOffer.panelTitle', { price: offer.offered_price.toLocaleString('hu-HU') })}
       </p>
-      <p className="text-xs text-gray-600 mt-0.5">{t(`chatOffer.status.${offer.status}`)}</p>
+      <p className="text-xs text-[#8fa3ad] mt-0.5">{t(`chatOffer.status.${offer.status}`)}</p>
       <OfferExpiryCountdown expiresAt={offer.expires_at} createdAt={offer.created_at} className="mt-1" />
       <div className="mt-2 flex flex-wrap gap-2">
         {offer.status === 'countered' ? (
@@ -187,7 +187,7 @@ export default function ChatBuyerOffersPanel({ buyerId, productId, sellerId }: P
               type="button"
               disabled={busy}
               onClick={() => void reject()}
-              className="rounded-full border border-gray-300 px-3 py-1.5 text-xs font-semibold"
+              className="rounded-full border border-[#2a3941] px-3 py-1.5 text-xs font-semibold"
             >
               {t('chatOffer.reject')}
             </button>
@@ -204,7 +204,7 @@ export default function ChatBuyerOffersPanel({ buyerId, productId, sellerId }: P
           </>
         ) : null}
         {offer.status === 'pending' ? (
-          <p className="text-[11px] text-gray-500">{t('chatOffer.pendingHint')}</p>
+          <p className="text-[11px] text-[#8fa3ad]">{t('chatOffer.pendingHint')}</p>
         ) : null}
       </div>
       {showCounter && offer.status === 'countered' ? (
@@ -215,9 +215,9 @@ export default function ChatBuyerOffersPanel({ buyerId, productId, sellerId }: P
             value={counterPrice}
             onChange={(e) => setCounterPrice(e.target.value)}
             placeholder={t('chatOffer.counterPlaceholder')}
-            className="w-28 rounded-lg border border-gray-200 px-2 py-1.5 text-xs"
+            className="w-28 rounded-lg border border-[#2a3941] px-2 py-1.5 text-xs"
           />
-          <span className="text-xs text-gray-500">Ft</span>
+          <span className="text-xs text-[#8fa3ad]">Ft</span>
           <button
             type="button"
             disabled={busy}
@@ -233,7 +233,7 @@ export default function ChatBuyerOffersPanel({ buyerId, productId, sellerId }: P
               setShowCounter(false);
               setCounterPrice('');
             }}
-            className="text-xs text-gray-500 underline"
+            className="text-xs text-[#8fa3ad] underline"
           >
             {t('chatOffer.cancelCounter')}
           </button>

@@ -23,8 +23,8 @@ export default function DefectPhotoUpload({ images, onChange, visible }: Props) 
   if (!visible) return null;
 
   return (
-    <div className="mt-3 space-y-2 rounded-xl border border-amber-200 bg-amber-50/80 p-3">
-      <p className="text-xs font-medium text-amber-900">{t('upload.defectPhotos.hint')}</p>
+    <div className="mt-3 space-y-2 rounded-xl border border-amber-900/45 bg-amber-950/35 p-3">
+      <p className="text-xs font-medium text-amber-200">{t('upload.defectPhotos.hint')}</p>
       {images.length > 0 ? (
         <div className="flex flex-wrap gap-2">
           {images.map((img) => (
@@ -46,7 +46,7 @@ export default function DefectPhotoUpload({ images, onChange, visible }: Props) 
         <button
           type="button"
           onClick={() => inputRef.current?.click()}
-          className="rounded-lg border border-dashed border-amber-300 bg-white px-3 py-2 text-xs font-medium text-amber-900"
+          className="rounded-lg border border-dashed border-amber-900/45 bg-[#1a2328] px-3 py-2 text-xs font-medium text-amber-200"
         >
           {t('upload.defectPhotos.add')}
         </button>

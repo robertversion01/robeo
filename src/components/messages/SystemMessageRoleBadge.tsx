@@ -17,7 +17,7 @@ export default function SystemMessageRoleBadge({ role, className }: Props) {
     <span
       className={cn(
         'inline-flex items-center rounded-full px-2 py-0.5 text-[10px] font-semibold uppercase tracking-wide',
-        isSeller ? 'bg-amber-100 text-amber-900' : 'bg-sky-100 text-sky-900',
+        isSeller ? 'bg-amber-100 text-amber-200' : 'bg-sky-100 text-sky-900',
         className,
       )}
     >

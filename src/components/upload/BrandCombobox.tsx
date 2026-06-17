@@ -231,7 +231,7 @@ export default function BrandCombobox({
         id={`${instanceId}-listbox`}
         role="listbox"
         className={cn(
-          'fixed z-[10050] overflow-y-auto overscroll-contain rounded-xl border border-gray-200 bg-white shadow-xl',
+          'fixed z-[10050] overflow-y-auto overscroll-contain rounded-xl border border-[#2a3941] bg-[#1a2328] shadow-xl',
           'pb-[max(0.5rem,env(safe-area-inset-bottom,0px))]',
           'animate-in fade-in duration-200',
           coords.openUp ? 'slide-in-from-bottom-2' : 'slide-in-from-top-2',
@@ -252,7 +252,7 @@ export default function BrandCombobox({
             onMouseDown={(e) => e.preventDefault()}
             onClick={() => commit(trimmedQuery)}
             className={cn(
-              'block w-full border-b border-gray-100 px-4 py-3 text-left transition-colors touch-manipulation',
+              'block w-full border-b border-[#27363d] px-4 py-3 text-left transition-colors touch-manipulation',
               'hover:bg-[#007782]/10 active:bg-[#007782]/15',
               activeIndex === 0 ? 'bg-[#007782]/10' : '',
             )}
@@ -260,14 +260,14 @@ export default function BrandCombobox({
             <span className="block text-sm font-semibold text-[#007782]">
               {t('upload.brandUseCustom', { brand: trimmedQuery })}
             </span>
-            <span className="mt-0.5 block text-[11px] text-gray-500">
+            <span className="mt-0.5 block text-[11px] text-[#8fa3ad]">
               {t('upload.brandCustomHint')}
             </span>
           </button>
         ) : null}
 
         {filteredBrands.length === 0 && !showCustomOption ? (
-          <p className="px-4 py-3 text-sm text-gray-500">{t('upload.brandNoResults')}</p>
+          <p className="px-4 py-3 text-sm text-[#8fa3ad]">{t('upload.brandNoResults')}</p>
         ) : (
           filteredBrands.map((brand, index) => {
             const optionIndex = showCustomOption ? index + 1 : index;
@@ -283,7 +283,7 @@ export default function BrandCombobox({
                 className={cn(
                   'block w-full px-4 py-3 text-left text-sm transition-colors touch-manipulation',
                   'hover:bg-[#007782]/10 active:bg-[#007782]/15',
-                  selected ? 'bg-[#007782]/10 font-medium text-[#007782]' : 'text-gray-700',
+                  selected ? 'bg-[#007782]/10 font-medium text-[#007782]' : 'text-[#b2c0c6]',
                   activeIndex === optionIndex ? 'bg-[#007782]/10' : '',
                 )}
               >
@@ -300,7 +300,7 @@ export default function BrandCombobox({
       <div className="relative">
         <Search
           size={16}
-          className="pointer-events-none absolute left-3.5 top-1/2 -translate-y-1/2 text-gray-400"
+          className="pointer-events-none absolute left-3.5 top-1/2 -translate-y-1/2 text-[#6b7d85]"
           aria-hidden
         />
         <input
@@ -330,7 +330,7 @@ export default function BrandCombobox({
           )}
         />
       </div>
-      <p className="text-[11px] leading-snug text-gray-500">{t('upload.brandTypeaheadHint')}</p>
+      <p className="text-[11px] leading-snug text-[#8fa3ad]">{t('upload.brandTypeaheadHint')}</p>
       {panel ? createPortal(panel, document.body) : null}
     </div>
   );

@@ -55,14 +55,14 @@ export default function BundleOrderLineItems({
       <ul className="space-y-1.5">
         {items.map((item) => (
           <li key={item.id} className="flex justify-between gap-2 text-xs">
-            <Link href={`/products/${item.id}`} className="truncate text-gray-800 hover:text-[#007782] font-medium">
+            <Link href={`/products/${item.id}`} className="truncate text-[#e7edf0] hover:text-[#007782] font-medium">
               {item.name}
             </Link>
-            <span className="shrink-0 tabular-nums text-gray-600">{formatPrice(item.price)}</span>
+            <span className="shrink-0 tabular-nums text-[#8fa3ad]">{formatPrice(item.price)}</span>
           </li>
         ))}
       </ul>
-      <p className="text-[10px] text-gray-500 mt-1.5 text-right tabular-nums">
+      <p className="text-[10px] text-[#8fa3ad] mt-1.5 text-right tabular-nums">
         Részösszeg: {formatPrice(subtotal)}
       </p>
     </div>

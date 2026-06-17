@@ -37,7 +37,7 @@ export default function PriceHistoryBadge({ productId, currentPrice }: Props) {
   if (!dropped) return null;
 
   return (
-    <span className="inline-flex items-center gap-1 rounded-full border border-emerald-200 bg-emerald-50 px-2 py-0.5 text-[10px] font-semibold text-emerald-800">
+    <span className="inline-flex items-center gap-1 rounded-full border border-emerald-900/45 bg-emerald-950/40 px-2 py-0.5 text-[10px] font-semibold text-emerald-300">
       <TrendingDown size={12} />
       {prevPrice != null
         ? t('pdp.priceDropped', { from: prevPrice, to: Math.round(currentPrice) })

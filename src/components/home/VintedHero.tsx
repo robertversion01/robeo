@@ -344,7 +344,7 @@ export default function VintedHero({
         <BudapestBetaBanner variant="overlay" />
 
         {renderableTileCount === 0 ? (
-          <div className="flex h-full items-center justify-center px-4 py-10 text-center text-sm text-gray-300">
+          <div className="flex h-full items-center justify-center px-4 py-10 text-center text-sm text-[#6b7d85]">
             {t('landing.hero.empty')}
           </div>
         ) : (

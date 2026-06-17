@@ -374,7 +374,7 @@ export default function ChatTransactionPanel({
       }`}
     >
       <div className="flex items-center justify-between gap-2">
-        <div className="flex items-center gap-2 text-sm text-gray-800">
+        <div className="flex items-center gap-2 text-sm text-[#e7edf0]">
           <Package size={16} className="text-[#007782]" />
           <span>
             {t('chatTransaction.orderLabel')} <strong>{statusLabel}</strong>
@@ -396,11 +396,11 @@ export default function ChatTransactionPanel({
       />
 
       {loading && !transaction ? (
-        <p className="text-xs text-gray-500 animate-pulse">{t('common.loading')}</p>
+        <p className="text-xs text-[#8fa3ad] animate-pulse">{t('common.loading')}</p>
       ) : null}
 
       {!loading && hasDispute && isSeller ? (
-        <p className="text-xs text-amber-800 bg-amber-50 border border-amber-200 rounded-lg px-2 py-1.5">
+        <p className="text-xs text-amber-300 bg-amber-950/40 border border-amber-900/45 rounded-lg px-2 py-1.5">
           {t('chatTransaction.disputeOpen')}
         </p>
       ) : null}
@@ -421,7 +421,7 @@ export default function ChatTransactionPanel({
               type="button"
               disabled={acting}
               onClick={() => void handleLabelDownload()}
-              className="flex-1 inline-flex items-center justify-center gap-1.5 rounded-lg border border-[#007782] bg-white px-3 min-h-11 py-2 text-sm font-semibold text-[#007782] hover:bg-[#007782]/5 touch-manipulation"
+              className="flex-1 inline-flex items-center justify-center gap-1.5 rounded-lg border border-[#007782] bg-[#1a2328] px-3 min-h-11 py-2 text-sm font-semibold text-[#007782] hover:bg-[#007782]/5 touch-manipulation"
             >
               {acting ? <Loader2 size={16} className="animate-spin" /> : <Download size={16} />}
               {t('chatTransaction.printLabel')}
@@ -439,7 +439,7 @@ export default function ChatTransactionPanel({
             ) : null}
           </div>
           {canMarkShipped && !labelDownloaded ? (
-            <p className="text-[11px] text-amber-800 bg-amber-50 border border-amber-200 rounded-lg px-2 py-1.5">
+            <p className="text-[11px] text-amber-300 bg-amber-950/40 border border-amber-900/45 rounded-lg px-2 py-1.5">
               {t('chatTransaction.stepHint')}
             </p>
           ) : null}
@@ -459,23 +459,23 @@ export default function ChatTransactionPanel({
       ) : null}
 
       {!loading && isBuyer && transaction && isPaidStatus(transaction.status) && !canConfirmReceipt ? (
-        <p className="text-[11px] text-gray-600">{t('orderTimeline.buyerWaitingShip')}</p>
+        <p className="text-[11px] text-[#8fa3ad]">{t('orderTimeline.buyerWaitingShip')}</p>
       ) : null}
 
       {!loading && isSeller && transaction && !canDownloadLabel && offerStatus === 'accepted' ? (
-        <p className="text-[11px] text-amber-900 bg-amber-50 border border-amber-200 rounded-lg px-2 py-1.5">
+        <p className="text-[11px] text-amber-200 bg-amber-950/40 border border-amber-900/45 rounded-lg px-2 py-1.5">
           {t('chatOffer.sellerWaitingBody')}
         </p>
       ) : null}
 
       {transaction?.tracking_number ? (
-        <p className="text-[11px] font-mono text-[#007782] bg-white/80 rounded px-2 py-1">
+        <p className="text-[11px] font-mono text-[#007782] bg-[#141d21]/90 rounded px-2 py-1">
           {t('chatTransaction.foxpostTracking', { tracking: transaction.tracking_number })}
         </p>
       ) : null}
 
       {transaction && (sellerShowsWaitingHint(transaction.status) || simulating) ? (
-        <p className="text-[11px] text-gray-600">{t('chatTransaction.simulating')}</p>
+        <p className="text-[11px] text-[#8fa3ad]">{t('chatTransaction.simulating')}</p>
       ) : null}
     </div>
   );

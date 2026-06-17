@@ -74,7 +74,7 @@ export default function SellerClosetPage() {
 
   return (
     <main
-      className={`min-h-screen bg-white ${MAIN_TOP_PADDING} px-4`}
+      className={`min-h-screen bg-[#1a2328] ${MAIN_TOP_PADDING} px-4`}
     >
       <div className="max-w-lg mx-auto">
         <PageHeader
@@ -83,7 +83,7 @@ export default function SellerClosetPage() {
             <button
               type="button"
               onClick={() => router.back()}
-              className="p-2 rounded-full hover:bg-gray-100"
+              className="p-2 rounded-full hover:bg-[#243038]"
               aria-label={t('checkout.back')}
             >
               <ArrowLeft size={18} />
@@ -91,7 +91,7 @@ export default function SellerClosetPage() {
           }
         />
 
-        <p className="text-sm text-gray-600 mb-4">{t('closet.hint')}</p>
+        <p className="text-sm text-[#8fa3ad] mb-4">{t('closet.hint')}</p>
         <SellerTrustPanel sellerId={sellerId} className="mb-4" />
 
         <div className="grid grid-cols-2 gap-3 sm:grid-cols-3">
@@ -100,9 +100,9 @@ export default function SellerClosetPage() {
             return (
               <div
                 key={p.id}
-                className="rounded-xl border border-gray-200 bg-white overflow-hidden"
+                className="rounded-xl border border-[#2a3941] bg-[#1a2328] overflow-hidden"
               >
-                <Link href={`/products/${p.id}`} className="block aspect-[4/5] bg-gray-100">
+                <Link href={`/products/${p.id}`} className="block aspect-[4/5] bg-[#1a2328]">
                   {p.image_url ? (
                     <img
                       src={getOptimizedImageUrl(p.image_url, 300, 80)}
@@ -133,11 +133,11 @@ export default function SellerClosetPage() {
         </div>
 
         {totals && cartItems.length >= 2 ? (
-          <div className="fixed bottom-0 left-0 right-0 z-[9990] border-t bg-white/95 backdrop-blur-lg px-4 py-3 pb-[calc(0.75rem+env(safe-area-inset-bottom,0px))]">
+          <div className="fixed bottom-0 left-0 right-0 z-[9990] border-t bg-[#11171a]/95 backdrop-blur-lg px-4 py-3 pb-[calc(0.75rem+env(safe-area-inset-bottom,0px))]">
             <div className="max-w-lg mx-auto flex items-center gap-3">
               <Package size={20} className="text-[#007782] shrink-0" />
               <div className="flex-1 min-w-0 text-xs">
-                <p className="font-semibold text-gray-900">
+                <p className="font-semibold text-[#e7edf0]">
                   {t('bundle.closet.summary', {
                     count: cartItems.length,
                     percent: totals.discountPercent,

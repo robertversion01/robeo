@@ -40,10 +40,10 @@ export default function HowItWorksModal({ isOpen, onClose }: HowItWorksModalProp
         onClick={e => e.stopPropagation()}
       >
         <div className="flex items-center justify-between mb-8">
-          <h3 className="text-2xl font-bold text-gray-900">🤔 Hogyan működik a ROBEO?</h3>
+          <h3 className="text-2xl font-bold text-[#e7edf0]">🤔 Hogyan működik a ROBEO?</h3>
           <button 
             onClick={onClose}
-            className="icon-btn text-gray-600"
+            className="icon-btn text-[#8fa3ad]"
           >
             <X size={20} />
           </button>
@@ -51,20 +51,20 @@ export default function HowItWorksModal({ isOpen, onClose }: HowItWorksModalProp
 
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
           {steps.map((step, index) => (
-            <div key={index} className="p-5 rounded-xl bg-gray-50 border border-gray-200">
+            <div key={index} className="p-5 rounded-xl bg-[#141d21] border border-[#2a3941]">
               <div className="flex items-center gap-4 mb-3">
                 <div className="p-3 rounded-xl bg-accent/15 text-accent">
                   {step.icon}
                 </div>
-                <div className="font-semibold text-lg text-gray-900">{step.title}</div>
+                <div className="font-semibold text-lg text-[#e7edf0]">{step.title}</div>
               </div>
-              <p className="text-gray-600">{step.description}</p>
+              <p className="text-[#8fa3ad]">{step.description}</p>
             </div>
           ))}
         </div>
 
         <div className="mt-8 p-5 rounded-xl bg-gradient-to-r from-accent/10 to-accent/5 border border-accent/20">
-          <p className="text-center text-gray-700">
+          <p className="text-center text-[#b2c0c6]">
             Ez egy <span className="font-semibold text-accent">100% magyar, közösség alapú</span> platform. 
             Nincs közvetítő díj, nincs rejtett költség. Csak ti és a stílus.
           </p>

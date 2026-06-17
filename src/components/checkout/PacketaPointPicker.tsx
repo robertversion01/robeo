@@ -78,14 +78,14 @@ export default function PacketaPointPicker({ value, onChange }: Props) {
   }, [open]);
 
   return (
-    <div className="mt-3 rounded-xl border border-red-200 bg-red-50/60 p-3">
+    <div className="mt-3 rounded-xl border border-red-900/45 bg-red-950/35 p-3">
       <p className="text-xs font-semibold text-red-900 mb-2">{t('checkout.packeta.title')}</p>
 
       {value ? (
-        <div className="rounded-lg border border-red-300/80 bg-white p-3 text-sm">
-          <p className="font-semibold text-gray-900">{packetaPointLabel(value)}</p>
-          <p className="text-gray-600 text-xs mt-1">{packetaPointAddress(value)}</p>
-          <p className="text-[10px] text-gray-400 mt-1 font-mono">
+        <div className="rounded-lg border border-red-300/80 bg-[#1a2328] p-3 text-sm">
+          <p className="font-semibold text-[#e7edf0]">{packetaPointLabel(value)}</p>
+          <p className="text-[#8fa3ad] text-xs mt-1">{packetaPointAddress(value)}</p>
+          <p className="text-[10px] text-[#6b7d85] mt-1 font-mono">
             {t('checkout.packeta.pointId', { id: packetaPointId(value) })}
           </p>
           <button
@@ -114,37 +114,37 @@ export default function PacketaPointPicker({ value, onChange }: Props) {
           aria-modal="true"
           aria-label={t('checkout.packeta.pickerAria')}
         >
-          <div className="relative w-full max-w-lg max-h-[85vh] bg-white rounded-2xl shadow-2xl overflow-hidden flex flex-col">
-            <div className="flex items-center justify-between px-4 py-3 border-b border-gray-200 shrink-0">
-              <h3 className="font-bold text-gray-900">{t('checkout.packeta.pickerTitle')}</h3>
+          <div className="relative w-full max-w-lg max-h-[85vh] bg-[#1a2328] rounded-2xl shadow-2xl overflow-hidden flex flex-col">
+            <div className="flex items-center justify-between px-4 py-3 border-b border-[#2a3941] shrink-0">
+              <h3 className="font-bold text-[#e7edf0]">{t('checkout.packeta.pickerTitle')}</h3>
               <button
                 type="button"
                 onClick={() => setOpen(false)}
-                className="p-2 rounded-full hover:bg-gray-100"
+                className="p-2 rounded-full hover:bg-[#243038]"
                 aria-label={t('checkout.packeta.close')}
               >
                 <X size={20} />
               </button>
             </div>
-            <div className="px-4 py-3 border-b border-gray-100 shrink-0">
+            <div className="px-4 py-3 border-b border-[#27363d] shrink-0">
               <div className="relative">
-                <Search size={16} className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" />
+                <Search size={16} className="absolute left-3 top-1/2 -translate-y-1/2 text-[#6b7d85]" />
                 <input
                   type="search"
                   value={query}
                   onChange={(e) => setQuery(e.target.value)}
                   placeholder={t('checkout.packeta.searchPlaceholder')}
-                  className="w-full rounded-xl border border-gray-200 pl-9 pr-3 py-2.5 text-sm"
+                  className="w-full rounded-xl border border-[#2a3941] pl-9 pr-3 py-2.5 text-sm"
                   autoFocus
                 />
               </div>
               {!apiKey ? (
-                <p className="text-[11px] text-gray-500 mt-2">{t('checkout.packeta.listHint')}</p>
+                <p className="text-[11px] text-[#8fa3ad] mt-2">{t('checkout.packeta.listHint')}</p>
               ) : null}
             </div>
-            <ul className="flex-1 overflow-y-auto divide-y divide-gray-100">
+            <ul className="flex-1 overflow-y-auto divide-y divide-[#2a3941]">
               {results.length === 0 ? (
-                <li className="px-4 py-8 text-center text-sm text-gray-500">
+                <li className="px-4 py-8 text-center text-sm text-[#8fa3ad]">
                   {t('checkout.packeta.noResults')}
                 </li>
               ) : (
@@ -156,10 +156,10 @@ export default function PacketaPointPicker({ value, onChange }: Props) {
                         onChange(point);
                         setOpen(false);
                       }}
-                      className="w-full text-left px-4 py-3 hover:bg-gray-50 transition-colors"
+                      className="w-full text-left px-4 py-3 hover:bg-[#1f2a30] transition-colors"
                     >
-                      <p className="font-semibold text-sm text-gray-900">{packetaPointLabel(point)}</p>
-                      <p className="text-xs text-gray-500 mt-0.5">{packetaPointAddress(point)}</p>
+                      <p className="font-semibold text-sm text-[#e7edf0]">{packetaPointLabel(point)}</p>
+                      <p className="text-xs text-[#8fa3ad] mt-0.5">{packetaPointAddress(point)}</p>
                     </button>
                   </li>
                 ))

@@ -137,13 +137,13 @@ export default function OrderHistoryPanel({ initialTab = 'purchases' }: Props) {
 
   return (
     <div>
-      <div className="flex rounded-xl border border-gray-200 p-1 mb-6 bg-gray-50">
+      <div className="flex rounded-xl border border-[#2a3941] p-1 mb-6 bg-[#141d21]">
         <button
           type="button"
           onClick={() => setTabAndUrl('purchases')}
           className={cn(
             'flex-1 rounded-lg py-2.5 text-sm font-semibold transition-colors touch-manipulation',
-            tab === 'purchases' ? 'bg-white text-[#007782] shadow-sm' : 'text-gray-600',
+            tab === 'purchases' ? 'bg-[#1a2328] text-[#007782] shadow-sm' : 'text-[#8fa3ad]',
           )}
         >
           {t('orders.purchases')}
@@ -153,7 +153,7 @@ export default function OrderHistoryPanel({ initialTab = 'purchases' }: Props) {
           onClick={() => setTabAndUrl('sales')}
           className={cn(
             'flex-1 rounded-lg py-2.5 text-sm font-semibold transition-colors touch-manipulation',
-            tab === 'sales' ? 'bg-white text-[#007782] shadow-sm' : 'text-gray-600',
+            tab === 'sales' ? 'bg-[#1a2328] text-[#007782] shadow-sm' : 'text-[#8fa3ad]',
           )}
         >
           {t('orders.sales')}
@@ -161,7 +161,7 @@ export default function OrderHistoryPanel({ initialTab = 'purchases' }: Props) {
       </div>
 
       {tab === 'sales' ? (
-        <p className="text-xs text-gray-500 mb-4 leading-relaxed">{t('orders.salesHint')}</p>
+        <p className="text-xs text-[#8fa3ad] mb-4 leading-relaxed">{t('orders.salesHint')}</p>
       ) : null}
 
       {loading ? (
@@ -170,8 +170,8 @@ export default function OrderHistoryPanel({ initialTab = 'purchases' }: Props) {
         </div>
       ) : rows.length === 0 ? (
         <div className="text-center py-16 px-4">
-          <Package size={40} className="mx-auto text-gray-300 mb-3" />
-          <p className="text-gray-600 font-medium">
+          <Package size={40} className="mx-auto text-[#6b7d85] mb-3" />
+          <p className="text-[#8fa3ad] font-medium">
             {tab === 'purchases' ? t('orders.emptyPurchases') : t('orders.emptySales')}
           </p>
           <Link href="/browse" className="inline-block mt-4 text-sm font-semibold text-[#007782] hover:underline">
@@ -184,12 +184,12 @@ export default function OrderHistoryPanel({ initialTab = 'purchases' }: Props) {
             const actionHint = getActionHint(tx);
             return (
             <li key={tx.id}>
-              <div className="rounded-xl border border-gray-200 bg-white overflow-hidden">
+              <div className="rounded-xl border border-[#2a3941] bg-[#1a2328] overflow-hidden">
                 <Link
                   href={detailHref(tx)}
                   className="flex gap-3 p-3 hover:bg-[#007782]/5 transition-colors touch-manipulation"
                 >
-                  <div className="h-16 w-16 shrink-0 rounded-lg overflow-hidden bg-gray-100">
+                  <div className="h-16 w-16 shrink-0 rounded-lg overflow-hidden bg-[#1a2328]">
                     {tx.product?.image_url ? (
                       <img
                         src={getOptimizedImageUrl(tx.product.image_url, 128, 85)}
@@ -199,17 +199,17 @@ export default function OrderHistoryPanel({ initialTab = 'purchases' }: Props) {
                         className="h-full w-full object-cover"
                       />
                     ) : (
-                      <div className="flex h-full w-full items-center justify-center text-gray-300">📷</div>
+                      <div className="flex h-full w-full items-center justify-center text-[#6b7d85]">📷</div>
                     )}
                   </div>
                   <div className="min-w-0 flex-1">
                     <div className="flex justify-between gap-2 items-start">
-                      <h3 className="font-semibold text-sm text-gray-900 truncate">{tx.product?.name || '—'}</h3>
+                      <h3 className="font-semibold text-sm text-[#e7edf0] truncate">{tx.product?.name || '—'}</h3>
                       <span className="text-sm font-bold text-[#007782] tabular-nums shrink-0">
                         {formatPrice(tx.amount)}
                       </span>
                     </div>
-                    <p className="text-xs text-gray-500 mt-0.5">
+                    <p className="text-xs text-[#8fa3ad] mt-0.5">
                       {new Date(tx.created_at).toLocaleDateString(locale, {
                         year: 'numeric',
                         month: 'short',
@@ -217,13 +217,13 @@ export default function OrderHistoryPanel({ initialTab = 'purchases' }: Props) {
                       })}
                       {tx.counterparty_email ? ` · ${tx.counterparty_email}` : ''}
                     </p>
-                    <span className="inline-block mt-2 rounded-full bg-gray-100 px-2.5 py-0.5 text-[10px] font-semibold text-gray-700">
+                    <span className="inline-block mt-2 rounded-full bg-[#1a2328] px-2.5 py-0.5 text-[10px] font-semibold text-[#b2c0c6]">
                       {getStatusLabel(tx.status)}
                     </span>
                   </div>
-                  <ChevronRight size={18} className="shrink-0 text-gray-400 self-center" />
+                  <ChevronRight size={18} className="shrink-0 text-[#6b7d85] self-center" />
                 </Link>
-                <div className="border-t border-gray-100 px-3 py-2.5 bg-gray-50/80">
+                <div className="border-t border-[#27363d] px-3 py-2.5 bg-[#141d21]/80">
                   <OrderTimelinePanel context={{ txStatus: tx.status }} compact />
                   {actionHint ? (
                     <Link
@@ -243,7 +243,7 @@ export default function OrderHistoryPanel({ initialTab = 'purchases' }: Props) {
       )}
 
       {tab === 'purchases' && rows.some((r) => r.status === TX_STATUS.ATVETELRE_VAR) ? (
-        <p className="text-xs text-amber-800 bg-amber-50 border border-amber-200 rounded-lg p-3 mt-4">
+        <p className="text-xs text-amber-300 bg-amber-950/40 border border-amber-900/45 rounded-lg p-3 mt-4">
           {t('orders.confirmHint')}
         </p>
       ) : null}

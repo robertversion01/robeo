@@ -191,27 +191,27 @@ export default function AdminHub({ userId }: Props) {
     <div className="space-y-6">
       <div className="rounded-2xl border border-[#007782]/20 bg-[#007782]/5 px-4 py-3">
         <p className="text-sm font-semibold text-[#007782]">Admin mód</p>
-        <p className="text-xs text-gray-600 mt-1">
+        <p className="text-xs text-[#8fa3ad] mt-1">
           Piactér moderálás és kiemelés kezelése. Aktív listázások: {activeCount}.
         </p>
       </div>
 
-      <div className="rounded-2xl border border-amber-200/80 bg-amber-50 px-4 py-3 text-sm text-amber-950">
+      <div className="rounded-2xl border border-amber-900/40 bg-amber-950/40 px-4 py-3 text-sm text-amber-200">
         <p className="font-semibold">Admin fiók — moderálás</p>
-        <p className="mt-1 text-xs text-amber-900/90">
+        <p className="mt-1 text-xs text-amber-200/90">
           Termékfeltöltéshez és vásárláshoz a teszt seller / buyer fiókot használd (
-          <code className="rounded bg-white/80 px-1">docs/TEST_ACCOUNTS.md</code>
+          <code className="rounded bg-[#141d21]/90 px-1">docs/TEST_ACCOUNTS.md</code>
           ). Itt csak kiemelés, audit és jelentések.
         </p>
       </div>
       <div className="flex flex-wrap gap-2">
-        <Link href="#admin-observability" className="rounded-full border border-gray-200 bg-white px-3 py-1.5 text-xs font-semibold text-gray-700 hover:text-[#007782]">
+        <Link href="#admin-observability" className="rounded-full border border-[#2a3941] bg-[#1a2328] px-3 py-1.5 text-xs font-semibold text-[#b2c0c6] hover:text-[#007782]">
           Minőség
         </Link>
-        <Link href="#admin-moderation" className="rounded-full border border-gray-200 bg-white px-3 py-1.5 text-xs font-semibold text-gray-700 hover:text-[#007782]">
+        <Link href="#admin-moderation" className="rounded-full border border-[#2a3941] bg-[#1a2328] px-3 py-1.5 text-xs font-semibold text-[#b2c0c6] hover:text-[#007782]">
           Moderálás
         </Link>
-        <Link href="#admin-reports" className="rounded-full border border-gray-200 bg-white px-3 py-1.5 text-xs font-semibold text-gray-700 hover:text-[#007782]">
+        <Link href="#admin-reports" className="rounded-full border border-[#2a3941] bg-[#1a2328] px-3 py-1.5 text-xs font-semibold text-[#b2c0c6] hover:text-[#007782]">
           Jelentések
         </Link>
       </div>
@@ -224,26 +224,26 @@ export default function AdminHub({ userId }: Props) {
             type="button"
             onClick={runImageAudit}
             disabled={runningImageAudit}
-            className="h-9 rounded-lg border border-[#007782] bg-white px-3 text-xs font-semibold text-[#007782] hover:bg-[#007782]/5 disabled:opacity-60"
+            className="h-9 rounded-lg border border-[#007782] bg-[#1a2328] px-3 text-xs font-semibold text-[#007782] hover:bg-[#007782]/5 disabled:opacity-60"
           >
             {runningImageAudit ? 'Audit…' : 'Képek audit'}
           </button>
         }
       >
         {loading ? (
-          <p className="text-sm text-gray-500">Betöltés…</p>
+          <p className="text-sm text-[#8fa3ad]">Betöltés…</p>
         ) : adminProducts.length === 0 ? (
-          <p className="text-sm text-gray-500">Nincs termék.</p>
+          <p className="text-sm text-[#8fa3ad]">Nincs termék.</p>
         ) : (
-          <div className="max-h-80 space-y-2 overflow-y-auto rounded-xl border border-gray-100 bg-gray-50/50 p-2">
+          <div className="max-h-80 space-y-2 overflow-y-auto rounded-xl border border-[#27363d] bg-[#141d21]/50 p-2">
             {adminProducts.slice(0, 40).map((item) => (
               <div
                 key={item.id}
-                className="flex flex-col gap-2 rounded-lg border border-gray-200 bg-white p-2.5 md:flex-row md:items-center md:justify-between"
+                className="flex flex-col gap-2 rounded-lg border border-[#2a3941] bg-[#1a2328] p-2.5 md:flex-row md:items-center md:justify-between"
               >
                 <div className="min-w-0">
-                  <p className="truncate text-sm font-medium text-gray-900">{item.name}</p>
-                  <p className="truncate text-xs text-gray-500">
+                  <p className="truncate text-sm font-medium text-[#e7edf0]">{item.name}</p>
+                  <p className="truncate text-xs text-[#8fa3ad]">
                     {item.status || 'active'} · {item.category}
                   </p>
                 </div>
@@ -254,7 +254,7 @@ export default function AdminHub({ userId }: Props) {
                     onChange={(e) =>
                       setFeaturedDrafts((prev) => ({ ...prev, [item.id]: e.target.value }))
                     }
-                    className="h-9 rounded-md border border-gray-300 px-2 text-xs"
+                    className="h-9 rounded-md border border-[#2a3941] px-2 text-xs"
                   />
                   <button
                     type="button"
@@ -277,7 +277,7 @@ export default function AdminHub({ userId }: Props) {
       >
         <div className="mb-3 flex flex-col gap-2 sm:flex-row sm:items-center">
           <div className="relative flex-1">
-            <Search size={16} className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" />
+            <Search size={16} className="absolute left-3 top-1/2 -translate-y-1/2 text-[#6b7d85]" />
             <input
               type="search"
               value={sellerSearch}
@@ -286,7 +286,7 @@ export default function AdminHub({ userId }: Props) {
                 if (e.key === 'Enter') void loadSellerProfiles(sellerSearch);
               }}
               placeholder="Keresés e-mail vagy név alapján…"
-              className="h-10 w-full rounded-lg border border-gray-200 pl-9 pr-3 text-sm"
+              className="h-10 w-full rounded-lg border border-[#2a3941] pl-9 pr-3 text-sm"
             />
           </div>
           <button
@@ -300,31 +300,31 @@ export default function AdminHub({ userId }: Props) {
         </div>
 
         {sellerLoading && sellerRows.length === 0 ? (
-          <p className="text-sm text-gray-500">Betöltés…</p>
+          <p className="text-sm text-[#8fa3ad]">Betöltés…</p>
         ) : sellerRows.length === 0 ? (
-          <p className="text-sm text-gray-500">Nincs találat. Próbálj keresést vagy ellenőrizd a profiles táblát.</p>
+          <p className="text-sm text-[#8fa3ad]">Nincs találat. Próbálj keresést vagy ellenőrizd a profiles táblát.</p>
         ) : (
-          <ul className="max-h-72 space-y-2 overflow-y-auto rounded-xl border border-gray-100 bg-gray-50/50 p-2">
+          <ul className="max-h-72 space-y-2 overflow-y-auto rounded-xl border border-[#27363d] bg-[#141d21]/50 p-2">
             {sellerRows.map((row) => (
               <li
                 key={row.id}
-                className="flex flex-col gap-2 rounded-lg border border-gray-200 bg-white p-2.5 sm:flex-row sm:items-center sm:justify-between"
+                className="flex flex-col gap-2 rounded-lg border border-[#2a3941] bg-[#1a2328] p-2.5 sm:flex-row sm:items-center sm:justify-between"
               >
                 <div className="min-w-0">
-                  <p className="truncate text-sm font-medium text-gray-900">
+                  <p className="truncate text-sm font-medium text-[#e7edf0]">
                     {row.full_name || '—'}
                     {row.seller_verified ? (
                       <BadgeCheck size={14} className="ml-1 inline text-[#007782]" aria-hidden />
                     ) : null}
                   </p>
-                  <p className="truncate text-xs text-gray-500">{row.email || row.id}</p>
+                  <p className="truncate text-xs text-[#8fa3ad]">{row.email || row.id}</p>
                 </div>
                 <label
                   className={cn(
                     'inline-flex shrink-0 cursor-pointer items-center gap-2 rounded-lg border px-3 py-2 text-xs font-semibold',
                     row.seller_verified
                       ? 'border-[#007782]/30 bg-[#007782]/10 text-[#007782]'
-                      : 'border-gray-200 bg-gray-50 text-gray-600',
+                      : 'border-[#2a3941] bg-[#141d21] text-[#8fa3ad]',
                   )}
                 >
                   <input
