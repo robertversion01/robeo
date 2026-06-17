@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useRef, useState } from 'react';
+import { useEffect, useMemo, useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { motion, AnimatePresence } from 'framer-motion';
 import Link from 'next/link';
@@ -39,6 +39,8 @@ export default function ProductGrid({
   const { t } = useTranslation();
   const [visible, setVisible] = useState(true);
   const skipNextFadeRef = useRef(true);
+  const loadMoreRef = useRef<HTMLDivElement | null>(null);
+  const [renderLimit, setRenderLimit] = useState(24);
 
   useEffect(() => {
     if (skipNextFadeRef.current) {
@@ -50,11 +52,32 @@ export default function ProductGrid({
     return () => window.cancelAnimationFrame(frame);
   }, [transitionKey]);
 
+  const displayProducts = products;
+  const windowedProducts = useMemo(
+    () => displayProducts.slice(0, Math.min(renderLimit, displayProducts.length)),
+    [displayProducts, renderLimit],
+  );
+
+  useEffect(() => {
+    if (loading) return;
+    const target = loadMoreRef.current;
+    if (!target) return;
+    if (windowedProducts.length >= displayProducts.length) return;
+    const observer = new IntersectionObserver(
+      (entries) => {
+        const first = entries[0];
+        if (!first?.isIntersecting) return;
+        setRenderLimit((prev) => Math.min(prev + 24, displayProducts.length));
+      },
+      { rootMargin: '500px 0px' },
+    );
+    observer.observe(target);
+    return () => observer.disconnect();
+  }, [displayProducts.length, loading, windowedProducts.length]);
+
   if (loading) {
     return <ProductGridSkeleton />;
   }
-
-  const displayProducts = products;
 
   if (displayProducts.length === 0) {
     if (districtLabel) {
@@ -145,7 +168,7 @@ export default function ProductGrid({
         transition={{ duration: 0.28, ease: 'easeOut' }}
         className="grid grid-cols-2 gap-1.5 sm:grid-cols-3 sm:gap-2 lg:grid-cols-5 xl:grid-cols-6 lg:gap-3"
       >
-        {displayProducts.map((product, index) => (
+        {windowedProducts.map((product, index) => (
           <ProductCard
             key={product.id}
             product={product}
@@ -155,6 +178,9 @@ export default function ProductGrid({
           />
         ))}
       </motion.div>
+      {windowedProducts.length < displayProducts.length ? (
+        <div ref={loadMoreRef} className="h-2 w-full" />
+      ) : null}
     </AnimatePresence>
   );
 }
