@@ -3,6 +3,7 @@
 import { useEffect, useState } from 'react';
 import Link from 'next/link';
 import { useTranslation } from 'react-i18next';
+import { toast } from 'sonner';
 import { supabase } from '@/lib/supabase';
 import { enrichProductsWithFavoriteCounts } from '@/lib/favoriteCounts';
 import { filterProductsWithValidImages } from '@/lib/productImageValidation';
@@ -22,6 +23,7 @@ export default function FollowedSellersStrip({ className = 'mb-4' }: Props) {
   const [favorites, setFavorites] = useState<Set<string>>(new Set());
   const [loading, setLoading] = useState(true);
   const [viewerId, setViewerId] = useState<string | null>(null);
+  const [favoritePending, setFavoritePending] = useState<Set<string>>(new Set());
 
   useEffect(() => {
     let cancelled = false;
@@ -82,16 +84,39 @@ export default function FollowedSellersStrip({ className = 'mb-4' }: Props) {
 
   const toggleFavorite = async (productId: string) => {
     if (!viewerId) return;
+    if (favoritePending.has(productId)) return;
+    setFavoritePending((prev) => new Set(prev).add(productId));
     const isFav = favorites.has(productId);
     setFavorites((prev) => {
       const next = new Set(prev);
       isFav ? next.delete(productId) : next.add(productId);
       return next;
     });
-    if (isFav) {
-      await supabase.from('favorites').delete().eq('user_id', viewerId).eq('product_id', productId);
-    } else {
-      await supabase.from('favorites').insert({ user_id: viewerId, product_id: productId });
+    try {
+      if (isFav) {
+        const { error } = await supabase
+          .from('favorites')
+          .delete()
+          .eq('user_id', viewerId)
+          .eq('product_id', productId);
+        if (error) throw error;
+      } else {
+        const { error } = await supabase.from('favorites').insert({ user_id: viewerId, product_id: productId });
+        if (error) throw error;
+      }
+    } catch {
+      setFavorites((prev) => {
+        const next = new Set(prev);
+        isFav ? next.add(productId) : next.delete(productId);
+        return next;
+      });
+      toast.error(t('favorites.updateFailed'));
+    } finally {
+      setFavoritePending((prev) => {
+        const next = new Set(prev);
+        next.delete(productId);
+        return next;
+      });
     }
   };
 

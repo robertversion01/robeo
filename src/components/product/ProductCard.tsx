@@ -69,7 +69,7 @@ export default function ProductCard({
 
   return (
     <div
-      className="group card-base overflow-hidden rounded-lg sm:rounded-xl transition-all duration-200 relative border-0 sm:border sm:border-gray-100 hover:border-[#007782]/40 hover:shadow-md active:scale-[0.98] touch-manipulation"
+      className="group card-base overflow-hidden rounded-lg sm:rounded-xl transition-all duration-200 relative border-0 sm:border sm:border-[#233138] hover:border-[#38c7d0]/40 hover:shadow-md active:scale-[0.98] touch-manipulation"
       style={{ contentVisibility: 'auto', containIntrinsicSize: '420px 560px' }}
     >
       <Link
@@ -155,7 +155,7 @@ export default function ProductCard({
           onToggleFavorite();
         }}
         className={cn(
-          'absolute top-0.5 right-0.5 z-50 flex items-center gap-0.5 rounded-full bg-white/95 backdrop-blur-sm hover:bg-white active:scale-90 transition-transform shadow-sm border border-gray-200/80',
+          'absolute top-0.5 right-0.5 z-50 flex items-center gap-0.5 rounded-full bg-[#10181c]/95 backdrop-blur-sm hover:bg-[#162228] active:scale-90 transition-transform shadow-sm border border-[#2a3941]/80',
           favoriteCount > 0 ? 'h-7 min-w-[1.75rem] px-1.5' : 'h-7 w-7 justify-center',
         )}
         aria-label={
@@ -171,11 +171,11 @@ export default function ProductCard({
           className={cn(
           'shrink-0 transition-all duration-200',
           heartBump && 'scale-125',
-          isFavorite ? 'fill-rose-500 text-rose-500 scale-110' : 'fill-transparent text-gray-500',
+          isFavorite ? 'fill-rose-500 text-rose-500 scale-110' : 'fill-transparent text-[#98aab1]',
         )}
         />
         {favoriteCount > 0 ? (
-          <span className="text-[10px] font-semibold tabular-nums leading-none text-gray-600">
+          <span className="text-[10px] font-semibold tabular-nums leading-none text-[#b1c0c6]">
             {favoriteCount}
           </span>
         ) : null}
@@ -185,16 +185,16 @@ export default function ProductCard({
         <div className="text-[15px] sm:text-base font-extrabold text-[#007782] tabular-nums leading-tight tracking-tight">
           {formatPrice(product.price)}
         </div>
-        <p className="text-[11px] sm:text-xs text-gray-600 leading-snug truncate">
-          <span className="font-medium text-gray-800">{brandOrName}</span>
-          <span className="text-gray-400 mx-0.5">·</span>
-          <span className="text-gray-500">{sizePart}</span>
+        <p className="text-[11px] sm:text-xs text-[#9db0b8] leading-snug truncate">
+          <span className="font-medium text-[#e6edf0]">{brandOrName}</span>
+          <span className="text-[#5f747c] mx-0.5">·</span>
+          <span className="text-[#a0b1b8]">{sizePart}</span>
         </p>
         {sellerName ? (
           <Link
             href={`/profile/${product.user_id}`}
             onClick={(e) => e.stopPropagation()}
-            className="flex items-center gap-1 text-[10px] text-gray-600 hover:text-[#007782] truncate"
+            className="flex items-center gap-1 text-[10px] text-[#9eb0b7] hover:text-[#38c7d0] truncate"
           >
             {product.sellerAvatarUrl ? (
               <img
@@ -225,7 +225,7 @@ export default function ProductCard({
             {districtLabel}
           </p>
         ) : categoryShort ? (
-          <p className="text-[10px] uppercase tracking-wide text-gray-400 truncate leading-none">
+          <p className="text-[10px] uppercase tracking-wide text-[#83979f] truncate leading-none">
             {categoryShort}
           </p>
         ) : null}

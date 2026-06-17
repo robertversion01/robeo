@@ -4,6 +4,7 @@ import { useEffect, useState } from 'react';
 import { Heart } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 import { useRouter } from 'next/navigation';
+import { toast } from 'sonner';
 import { supabase } from '@/lib/supabase';
 import { cn } from '@/lib/utils';
 
@@ -27,6 +28,7 @@ export default function ProductFavoriteButton({
   const router = useRouter();
   const [isFavorite, setIsFavorite] = useState(false);
   const [loading, setLoading] = useState(true);
+  const [pending, setPending] = useState(false);
 
   useEffect(() => {
     let cancelled = false;
@@ -63,12 +65,15 @@ export default function ProductFavoriteButton({
       return;
     }
 
+    if (pending) return;
+    setPending(true);
     const next = !isFavorite;
     setIsFavorite(next);
 
     try {
       if (next) {
-        await supabase.from('favorites').insert({ user_id: user.id, product_id: productId });
+        const { error } = await supabase.from('favorites').insert({ user_id: user.id, product_id: productId });
+        if (error) throw error;
         if (productName != null && productPrice != null) {
           upsertPriceWatch({
             productId,
@@ -79,16 +84,20 @@ export default function ProductFavoriteButton({
           void syncPriceWatchesToServer(listPriceWatches());
         }
       } else {
-        await supabase
+        const { error } = await supabase
           .from('favorites')
           .delete()
           .eq('user_id', user.id)
           .eq('product_id', productId);
+        if (error) throw error;
         removePriceWatch(productId);
         void syncPriceWatchesToServer(listPriceWatches());
       }
     } catch {
       setIsFavorite(!next);
+      toast.error(t('favorites.updateFailed'));
+    } finally {
+      setPending(false);
     }
   };
 
@@ -96,7 +105,7 @@ export default function ProductFavoriteButton({
     <button
       type="button"
       onClick={() => void toggle()}
-      disabled={loading}
+      disabled={loading || pending}
       aria-pressed={isFavorite}
       aria-label={isFavorite ? t('product.favoriteRemove') : t('product.favoriteAdd')}
       className={cn(

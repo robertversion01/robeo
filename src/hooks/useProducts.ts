@@ -9,6 +9,7 @@ import {
   type Dispatch,
   type SetStateAction,
 } from 'react';
+import { toast } from 'sonner';
 import { supabase } from '@/lib/supabase';
 import { useBrowseSearch } from '@/context/BrowseContext';
 import type { Product } from '@/types';
@@ -95,6 +96,7 @@ export function useProducts() {
     loadedAt: number;
   } | null>(null);
   const refreshTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const favoritePendingRef = useRef<Set<string>>(new Set());
 
   const categories = useMemo(() => {
     if (selectedListingType === 'all') return CATEGORIES_ALL;
@@ -424,6 +426,8 @@ export function useProducts() {
 
   const toggleFavorite = async (productId: string) => {
     if (!user) return;
+    if (favoritePendingRef.current.has(productId)) return;
+    favoritePendingRef.current.add(productId);
 
     const isFav = favorites.has(productId);
 
@@ -436,16 +440,18 @@ export function useProducts() {
 
     try {
       if (isFav) {
-        await supabase
+        const { error } = await supabase
           .from('favorites')
           .delete()
           .eq('user_id', user.id)
           .eq('product_id', productId);
+        if (error) throw error;
       } else {
-        await supabase.from('favorites').insert({
+        const { error } = await supabase.from('favorites').insert({
           user_id: user.id,
           product_id: productId,
         });
+        if (error) throw error;
         const favorited = products.find((p) => p.id === productId);
         const sellerId = favorited?.user_id;
         if (sellerId && sellerId !== user.id) {
@@ -465,6 +471,9 @@ export function useProducts() {
         return next;
       });
       setProducts((prev) => adjustProductFavoriteCount(prev, productId, isFav ? 1 : -1));
+      toast.error('Kedvenc frissítése nem sikerült.');
+    } finally {
+      favoritePendingRef.current.delete(productId);
     }
   };
 

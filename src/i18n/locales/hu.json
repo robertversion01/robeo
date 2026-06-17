@@ -470,7 +470,8 @@
     "emptyHint": "Ments el termékeket a szív ikonnal a böngészés során.",
     "returnReasonFresh": "Friss hirdetések böngészése",
     "returnReasonDeals": "Jó árú ajánlatok keresése",
-    "returnReasonAlerts": "Értesítések finomhangolása"
+    "returnReasonAlerts": "Értesítések finomhangolása",
+    "updateFailed": "A kedvencek frissítése nem sikerült."
   },
   "notifications": {
     "title": "Értesítések",
@@ -702,6 +703,13 @@
     "send": "Küldés",
     "sending": "Küldés…",
     "sendFailed": "Üzenetküldés sikertelen.",
+    "sendRetryFailed": "Az újraküldés nem sikerült.",
+    "sendRetryOk": "Üzenet újraküldve.",
+    "deliverySending": "küldés",
+    "deliverySent": "elküldve",
+    "deliveryFailed": "sikertelen",
+    "retrySend": "Újraküldés",
+    "rollbackSend": "Visszavonás",
     "loadingProduct": "Termék betöltése…",
     "offerMinHint": "Legalább {{min}} Ft (listaár ~60%-a).",
     "offerMinDefault": "A minimum az aktuális listaárhoz igazodik.",

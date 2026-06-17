@@ -189,7 +189,7 @@ export default function Navbar({ searchQuery, onSearchChange }: NavbarProps) {
   const notificationsLink = loggedIn ? (
     <Link
       href="/notifications"
-      className="icon-btn text-gray-700 relative shrink-0"
+      className="icon-btn text-[#a7b8bf] relative shrink-0"
       aria-label={t('nav.notifications')}
     >
       <Bell size={18} />
@@ -200,7 +200,7 @@ export default function Navbar({ searchQuery, onSearchChange }: NavbarProps) {
   const messagesLink = loggedIn ? (
     <Link
       href="/messages"
-      className="icon-btn text-gray-700 relative shrink-0"
+      className="icon-btn text-[#a7b8bf] relative shrink-0"
       aria-label={t('nav.messages')}
     >
       <MessageCircle size={18} />
@@ -230,25 +230,25 @@ export default function Navbar({ searchQuery, onSearchChange }: NavbarProps) {
 
   const loggedInDesktopActions = (
     <>
-      <Link href="/upload" className="icon-btn text-gray-700 shrink-0" aria-label={t('nav.upload')}>
+      <Link href="/upload" className="icon-btn text-[#a7b8bf] shrink-0" aria-label={t('nav.upload')}>
         <Plus size={18} />
       </Link>
       {notificationsLink}
       {messagesLink}
       {/* RobeoBP: a top-nav ikon /orders shortcut is rejtve. */}
       {!ROBEO_BP_MODE ? (
-        <Link href="/orders" className="icon-btn text-gray-700 shrink-0" aria-label={t('nav.orders')} title={t('nav.orders')}>
+        <Link href="/orders" className="icon-btn text-[#a7b8bf] shrink-0" aria-label={t('nav.orders')} title={t('nav.orders')}>
           <Package size={18} />
         </Link>
       ) : null}
-      <Link href="/favorites" className="icon-btn text-gray-700 shrink-0" aria-label={t('nav.favorites')}>
+      <Link href="/favorites" className="icon-btn text-[#a7b8bf] shrink-0" aria-label={t('nav.favorites')}>
         <Heart size={18} />
       </Link>
       {profileMenu}
       <button
         type="button"
         onClick={() => void handleSignOut()}
-        className="icon-btn text-gray-600 hover:text-red-600 shrink-0"
+        className="icon-btn text-[#9aaab1] hover:text-red-400 shrink-0"
         aria-label={t('nav.signOut')}
         title={t('nav.signOut')}
       >
@@ -260,9 +260,9 @@ export default function Navbar({ searchQuery, onSearchChange }: NavbarProps) {
   return (
     <nav
       className={cn(
-        'fixed top-0 left-0 right-0 z-[9999] bg-white border-b border-gray-200 transition-transform duration-300 ease-out will-change-transform',
+        'fixed top-0 left-0 right-0 z-[9999] bg-[#0f161a] border-b border-[#26343c] transition-transform duration-300 ease-out will-change-transform',
         'pt-[env(safe-area-inset-top,0px)]',
-        browsePath && loggedIn ? 'border-gray-100' : 'shadow-sm',
+        browsePath && loggedIn ? 'border-[#26343c]' : 'shadow-sm',
         hideNavbarOnMobileTabs && 'max-md:hidden',
         shellChromeHidden && 'max-md:-translate-y-full max-md:pointer-events-none',
       )}
@@ -285,14 +285,14 @@ export default function Navbar({ searchQuery, onSearchChange }: NavbarProps) {
         {!(browsePath && loggedIn) ? (
           <Link
             href="/"
-            className="shrink-0 text-sm font-semibold tracking-wide text-[#007782] hover:text-[#006670]"
+            className="shrink-0 text-sm font-semibold tracking-wide text-[#38c7d0] hover:text-[#66d3da]"
           >
             ROBEO
           </Link>
         ) : (
           <Link
             href="/"
-            className="shrink-0 text-xs font-semibold text-gray-400 hover:text-[#007782] md:text-sm md:text-[#007782]"
+            className="shrink-0 text-xs font-semibold text-[#93a4ab] hover:text-[#38c7d0] md:text-sm md:text-[#38c7d0]"
             aria-label="ROBEO"
           >
             ← {t('nav.home')}

@@ -26,7 +26,7 @@ export default function ProfileTabNav({ active, onChange, counts, showAdmin = fa
       aria-label={t('profile.title')}
       bleed={false}
       innerClassName="gap-0"
-      className="mb-5 border-b border-gray-200"
+      className="mb-5 border-b border-[#2a3941]"
     >
       {tabs.map((id) => {
         const count = counts?.[id];
@@ -47,14 +47,14 @@ export default function ProfileTabNav({ active, onChange, counts, showAdmin = fa
             className={cn(
               'shrink-0 cursor-pointer select-none border-b-2 px-4 py-2.5 text-sm font-semibold transition-colors',
               isActive
-                ? 'border-[#007782] text-[#007782]'
-                : 'border-transparent text-gray-500',
+                ? 'border-[#38c7d0] text-[#38c7d0]'
+                : 'border-transparent text-[#97a9b0]',
               id === 'admin' && !isActive && 'text-amber-800',
             )}
           >
             {t(`profile.tabs.${id}`)}
             {count != null && count > 0 ? (
-              <span className="ml-1.5 rounded-full bg-[#007782]/10 px-1.5 py-0.5 text-[10px] tabular-nums">
+              <span className="ml-1.5 rounded-full bg-[#17343a] px-1.5 py-0.5 text-[10px] tabular-nums">
                 {count}
               </span>
             ) : null}

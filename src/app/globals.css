@@ -1,24 +1,24 @@
 @import "tailwindcss";
 
 :root {
-  --background: #ffffff;
-  --foreground: #1a1a1a;
-  --card: #ffffff;
-  --card-foreground: #1a1a1a;
-  --popover: #ffffff;
-  --popover-foreground: #1a1a1a;
+  --background: #11171a;
+  --foreground: #e7edf0;
+  --card: #141d21;
+  --card-foreground: #e7edf0;
+  --popover: #141d21;
+  --popover-foreground: #e7edf0;
   --primary: #007782;
   --primary-foreground: #ffffff;
-  --secondary: #f5f5f5;
-  --secondary-foreground: #1a1a1a;
-  --muted: #f5f5f5;
-  --muted-foreground: #737373;
+  --secondary: #1b252a;
+  --secondary-foreground: #d8e1e5;
+  --muted: #1b252a;
+  --muted-foreground: #94a4ab;
   --accent: #007782;
   --accent-foreground: #ffffff;
   --destructive: #ff5e5e;
   --destructive-foreground: #ffffff;
-  --border: #e5e5e5;
-  --input: #f5f5f5;
+  --border: #24333a;
+  --input: #131b1f;
   --ring: #007782;
   --radius: 0.5rem;
   --space-section: 1rem;
@@ -136,8 +136,8 @@ input, textarea, select {
 }
 
 .card-base {
-  background: #ffffff;
-  border: 1px solid #e5e7eb;
+  background: #141d21;
+  border: 1px solid #24333a;
   border-radius: 0.75rem;
 }
 
@@ -152,7 +152,7 @@ input, textarea, select {
 }
 
 .icon-btn:hover {
-  background: #f3f4f6;
+  background: #1c272c;
 }
 
 .btn-base {
@@ -176,13 +176,13 @@ input, textarea, select {
 }
 
 .btn-secondary {
-  background: #ffffff;
-  color: #1f2937;
-  border: 1px solid #d1d5db;
+  background: #141d21;
+  color: #dce5e9;
+  border: 1px solid #2b3a41;
 }
 
 .btn-secondary:hover {
-  background: #f9fafb;
+  background: #1a262b;
 }
 
 .btn-ghost {
@@ -197,28 +197,28 @@ input, textarea, select {
 }
 
 .btn-danger {
-  background: #ffffff;
+  background: #141d21;
   color: #dc2626;
-  border: 1px solid #fecaca;
+  border: 1px solid #7f1d1d;
 }
 
 .btn-danger:hover {
-  background: #fef2f2;
+  background: #2a1616;
 }
 
 .input-base {
   width: 100%;
   min-height: 2.75rem;
   padding: 0.625rem 1rem;
-  border: 1px solid #d1d5db;
+  border: 1px solid #2b3a41;
   border-radius: 0.75rem;
-  background: #ffffff;
-  color: #111827;
+  background: #131b1f;
+  color: #e7edf0;
   transition: border-color 0.2s ease, background-color 0.2s ease;
 }
 
 .input-base::placeholder {
-  color: #9ca3af;
+  color: #8ea0a8;
 }
 
 .input-base:focus {
@@ -228,16 +228,16 @@ input, textarea, select {
 .textarea-base {
   width: 100%;
   padding: 0.625rem 1rem;
-  border: 1px solid #d1d5db;
+  border: 1px solid #2b3a41;
   border-radius: 0.75rem;
-  background: #ffffff;
-  color: #111827;
+  background: #131b1f;
+  color: #e7edf0;
   resize: vertical;
   transition: border-color 0.2s ease, background-color 0.2s ease;
 }
 
 .textarea-base::placeholder {
-  color: #9ca3af;
+  color: #8ea0a8;
 }
 
 .textarea-base:focus {
@@ -356,7 +356,7 @@ input, textarea, select {
 
 /* Guest landing — full viewport hero, no header gap */
 .landing-page-root {
-  background: #ffffff;
+  background: #11171a;
 }
 
 .landing-hero-shell {
@@ -443,7 +443,7 @@ input, textarea, select {
 .landing-catalog {
   position: relative;
   z-index: 1;
-  background: #ffffff;
+  background: #11171a;
 }
 
 @media (prefers-reduced-motion: reduce) {

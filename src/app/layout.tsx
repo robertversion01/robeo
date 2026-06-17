@@ -84,12 +84,12 @@ export default function RootLayout({
           position="bottom-center"
           toastOptions={{
             style: {
-              background: 'rgba(255, 255, 255, 0.95)',
+              background: 'rgba(20, 29, 33, 0.96)',
               backdropFilter: 'blur(12px)',
-              border: '1px solid rgba(9, 177, 186, 0.2)',
-              color: '#1a1a1a',
+              border: '1px solid rgba(56, 199, 208, 0.3)',
+              color: '#e7edf0',
               borderRadius: '8px',
-              boxShadow: '0 4px 12px rgba(0, 0, 0, 0.08)',
+              boxShadow: '0 6px 16px rgba(0, 0, 0, 0.28)',
               fontSize: '14px',
               fontWeight: '500',
             },

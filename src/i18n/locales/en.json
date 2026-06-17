@@ -463,7 +463,8 @@
     "emptyHint": "Tap the heart icon while browsing to save items here.",
     "returnReasonFresh": "Browse fresh listings",
     "returnReasonDeals": "Find good deals",
-    "returnReasonAlerts": "Tune alert settings"
+    "returnReasonAlerts": "Tune alert settings",
+    "updateFailed": "Could not update favorites."
   },
   "notifications": {
     "title": "Notifications",
@@ -695,6 +696,13 @@
     "send": "Send",
     "sending": "Sending…",
     "sendFailed": "Message sending failed.",
+    "sendRetryFailed": "Retry failed.",
+    "sendRetryOk": "Message sent.",
+    "deliverySending": "sending",
+    "deliverySent": "sent",
+    "deliveryFailed": "failed",
+    "retrySend": "Retry",
+    "rollbackSend": "Rollback",
     "loadingProduct": "Loading product…",
     "offerMinHint": "At least {{min}} Ft (~60% of list price).",
     "offerMinDefault": "Minimum follows the current list price.",

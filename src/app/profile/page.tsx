@@ -407,7 +407,7 @@ export default function ProfilePage() {
 
   if (loading) {
     return (
-      <div className="min-h-screen bg-white text-gray-900 flex items-center justify-center">
+      <div className="min-h-screen bg-[#11171a] text-[#e7edf0] flex items-center justify-center">
         <div className="animate-spin h-10 w-10 border-4 border-accent border-t-transparent rounded-full"></div>
       </div>
     );
@@ -418,7 +418,7 @@ export default function ProfilePage() {
     new Date(product.featured_until).getTime() > Date.now();
 
   return (
-    <div className="min-h-screen bg-[#0f1a1d] md:bg-white text-gray-900">
+    <div className="min-h-screen bg-[#11171a] text-[#e7edf0]">
       {deleteTarget ? (
         <div
           className="fixed inset-0 z-[300] flex items-center justify-center p-4 bg-black/50 backdrop-blur-[2px]"
@@ -431,18 +431,18 @@ export default function ProfilePage() {
             role="dialog"
             aria-modal="true"
             aria-labelledby="delete-product-title"
-            className="bg-white rounded-2xl shadow-xl max-w-sm w-full p-5 border border-gray-200"
+            className="bg-[#121b20] rounded-2xl shadow-xl max-w-sm w-full p-5 border border-[#2a3941]"
             onClick={(e) => e.stopPropagation()}
           >
-            <h3 id="delete-product-title" className="text-lg font-bold text-gray-900">
+            <h3 id="delete-product-title" className="text-lg font-bold text-[#e7edf0]">
               Hirdetés törlése?
             </h3>
-            <p className="text-sm text-gray-600 mt-2">
+            <p className="text-sm text-[#9dafb6] mt-2">
               Biztosan törlöd ezt a hirdetést? Ez a művelet nem visszavonható — a termék eltűnik a
               piactérről (technikai értelemben megjelölés törlésként). Csak a saját hirdetéseidet
               törölheted; ezt az adatbázis RLS szabályai is kényszerítik.
             </p>
-            <p className="text-xs text-gray-500 mt-2 font-medium">„{deleteTarget.name}”</p>
+            <p className="text-xs text-[#8fa2aa] mt-2 font-medium">„{deleteTarget.name}”</p>
             <div className="flex gap-2 mt-5">
               <button
                 type="button"
@@ -477,17 +477,17 @@ export default function ProfilePage() {
             role="dialog"
             aria-modal="true"
             aria-labelledby="bulk-delete-title"
-            className="bg-white rounded-2xl shadow-xl max-w-sm w-full p-5 border border-red-100"
+            className="bg-[#121b20] rounded-2xl shadow-xl max-w-sm w-full p-5 border border-red-900/40"
             onClick={(e) => e.stopPropagation()}
           >
             <h3 id="bulk-delete-title" className="text-lg font-bold text-red-800">
               Összes hirdetés törlése?
             </h3>
-            <p className="text-sm text-gray-700 mt-3">
+            <p className="text-sm text-[#b9c6cb] mt-3">
               Ez <strong>minden aktív</strong> hirdetésedet eltávolítja a piactérről egyszerre. Nem
               vonható vissza; csak új feltöltéssel jelenhetsz meg újra.
             </p>
-            <p className="text-xs text-gray-500 mt-2">
+            <p className="text-xs text-[#93a6ae] mt-2">
               Érintett hirdetések száma: <strong>{products.length}</strong>
             </p>
             <div className="flex gap-2 mt-5">
@@ -515,20 +515,20 @@ export default function ProfilePage() {
       <ProfileMobileOrdersHeader />
 
       <main className={`px-0 md:px-6 ${DESKTOP_TOP_PADDING}`}>
-        <div className="relative z-10 mx-auto max-w-7xl -mt-5 rounded-t-[1.25rem] bg-white px-3 pt-4 shadow-[0_-4px_20px_rgba(0,0,0,0.08)] md:mt-0 md:rounded-none md:bg-transparent md:px-0 md:pt-0 md:shadow-none">
+        <div className="relative z-10 mx-auto max-w-7xl -mt-5 rounded-t-[1.25rem] bg-[#121b20] px-3 pt-4 shadow-[0_-8px_28px_rgba(0,0,0,0.35)] md:mt-0 md:rounded-none md:bg-transparent md:px-0 md:pt-0 md:shadow-none">
           <div className="flex items-center gap-3 mb-3 md:mb-2">
               <div className="w-12 h-12 md:w-14 md:h-14 rounded-full bg-[#007782]/10 flex items-center justify-center text-[#007782] text-lg md:text-xl font-bold shrink-0">
               {user?.email?.charAt(0).toUpperCase() || '?'}
             </div>
             <div className="min-w-0">
               <h1 className="text-xl md:text-2xl font-bold truncate">{t('profile.title')}</h1>
-              <div className="flex items-center gap-2 text-xs text-gray-500 mt-1">
+              <div className="flex items-center gap-2 text-xs text-[#9dafb6] mt-1">
                 <span>
                   {t('profile.memberSince', {
                     date: createdAt ? formatDate(createdAt) : '—',
                   })}
                 </span>
-                <span className="w-1 h-1 rounded-full bg-gray-300" />
+                <span className="w-1 h-1 rounded-full bg-[#4f626b]" />
                 <span>{t('profile.productCount', { count: stats.totalProducts })}</span>
               </div>
             </div>
@@ -556,7 +556,7 @@ export default function ProfilePage() {
               </Link>
               <Link
                 href={`/profile/${user.id}/closet`}
-                className="rounded-full border border-gray-200 bg-white px-3 py-1.5 text-xs font-semibold text-gray-700 hover:border-[#007782]/35 hover:text-[#007782]"
+                className="rounded-full border border-[#2a3941] bg-[#121b20] px-3 py-1.5 text-xs font-semibold text-[#b2c0c6] hover:border-[#38c7d0]/35 hover:text-[#38c7d0]"
               >
                 {t('profile.shopNav.closet')}
               </Link>
@@ -588,7 +588,7 @@ export default function ProfilePage() {
             }
           >
           {products.length === 0 ? (
-            <div className="text-center py-16 text-gray-400">
+            <div className="text-center py-16 text-[#98a9b0]">
               <p className="text-lg mb-3">{t('profile.emptyListings')}</p>
               <Link href="/upload" className="text-[#007782] font-semibold hover:underline">
                 {t('profile.uploadFirst')} →
@@ -596,12 +596,12 @@ export default function ProfilePage() {
             </div>
           ) : (
             <>
-              <p className="text-gray-500 text-sm mb-4">{t('profile.productCount', { count: products.length })}</p>
+              <p className="text-[#9aadb5] text-sm mb-4">{t('profile.productCount', { count: products.length })}</p>
               <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-2">
                 {products.map((product) => (
                   <div 
                     key={product.id} 
-                    className="group bg-white border border-gray-200 rounded-lg overflow-hidden relative"
+                    className="group bg-[#121b20] border border-[#2a3941] rounded-lg overflow-hidden relative"
                   >
                     <Link href={`/products/${product.id}`} className="aspect-[4/5] overflow-hidden block relative">
                       {product.image_url ? (
@@ -614,7 +614,7 @@ export default function ProfilePage() {
                           className="w-full h-full object-contain bg-[#0f1a1d]/5"
                         />
                       ) : (
-                        <div className="w-full h-full bg-gray-100 flex items-center justify-center text-gray-400">
+                        <div className="w-full h-full bg-[#182329] flex items-center justify-center text-[#8ea0a8]">
                           📷
                         </div>
                       )}
@@ -633,10 +633,10 @@ export default function ProfilePage() {
                     </button>
 
                     <div className="p-1.5 space-y-0.5">
-                      <div className="text-gray-500 text-[8px] uppercase tracking-wider">
+                      <div className="text-[#8ea0a8] text-[8px] uppercase tracking-wider">
                         {categoryDisplayLabel(t, product.category)}
                       </div>
-                      <h3 className="font-medium text-[11px] truncate leading-tight text-gray-800">{product.name}</h3>
+                      <h3 className="font-medium text-[11px] truncate leading-tight text-[#e7edf0]">{product.name}</h3>
                       <div className="text-accent font-bold text-xs">{formatPrice(product.price)}</div>
                       {canPromoteProduct(product.status) ? (
                         <button
@@ -647,7 +647,7 @@ export default function ProfilePage() {
                             isProductFeatured(product)
                               ? 'bg-emerald-50 text-emerald-700 border border-emerald-200 cursor-not-allowed'
                               : promotingProductIds.has(product.id)
-                                ? 'bg-gray-100 text-gray-500 border border-gray-200 cursor-wait'
+                                ? 'bg-[#19252b] text-[#8ea0a8] border border-[#2a3941] cursor-wait'
                                 : 'bg-[#007782] text-white hover:bg-[#00616b]'
                           }`}
                         >
@@ -668,11 +668,11 @@ export default function ProfilePage() {
 
           <ProfileSection title={t('profile.soldItems')}>
             {soldProducts.length === 0 ? (
-              <p className="text-sm text-gray-500">{t('profile.emptySold')}</p>
+              <p className="text-sm text-[#98a9b0]">{t('profile.emptySold')}</p>
             ) : (
               <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-2">
                 {soldProducts.map((product) => (
-                  <div key={product.id} className="group bg-white border border-gray-200 rounded-lg overflow-hidden relative">
+                  <div key={product.id} className="group bg-[#121b20] border border-[#2a3941] rounded-lg overflow-hidden relative">
                     <Link href={`/products/${product.id}`} className="block">
                     <div className="aspect-[4/5] overflow-hidden relative">
                       {product.image_url ? (
@@ -685,7 +685,7 @@ export default function ProfilePage() {
                           className="w-full h-full object-contain bg-[#0f1a1d]/5 opacity-70 grayscale"
                         />
                       ) : (
-                        <div className="w-full h-full bg-gray-100 flex items-center justify-center text-gray-400">📷</div>
+                        <div className="w-full h-full bg-[#182329] flex items-center justify-center text-[#8ea0a8]">📷</div>
                       )}
                       <div className="pointer-events-none absolute inset-0 flex items-center justify-center bg-black/30">
                         <span className="rounded-md bg-black/75 px-2 py-1 text-[10px] font-bold uppercase tracking-wide text-white">
@@ -694,8 +694,8 @@ export default function ProfilePage() {
                       </div>
                     </div>
                     <div className="p-1.5">
-                      <h3 className="font-medium text-[11px] truncate leading-tight text-gray-800">{product.name}</h3>
-                      <div className="text-gray-500 font-bold text-xs">{formatPrice(product.price)}</div>
+                      <h3 className="font-medium text-[11px] truncate leading-tight text-[#e7edf0]">{product.name}</h3>
+                      <div className="text-[#9dafb6] font-bold text-xs">{formatPrice(product.price)}</div>
                     </div>
                     </Link>
                     <button
@@ -726,25 +726,25 @@ export default function ProfilePage() {
                 <BuyerOffersList />
               </ProfileSection>
               <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-6">
-                <div className="bg-gray-50 border border-gray-200 rounded-lg p-4">
+                <div className="bg-[#121b20] border border-[#2a3941] rounded-lg p-4">
                   <div className="text-[#007782] text-xs uppercase tracking-wider mb-1">
                     {t('profile.stats.revenue')}
                   </div>
                   <div className="text-xl font-bold">{formatPrice(stats.totalRevenue)}</div>
                 </div>
-                <div className="bg-gray-50 border border-gray-200 rounded-lg p-4">
+                <div className="bg-[#121b20] border border-[#2a3941] rounded-lg p-4">
                   <div className="text-[#007782] text-xs uppercase tracking-wider mb-1">
                     {t('profile.stats.sold')}
                   </div>
                   <div className="text-xl font-bold">{stats.soldProducts}</div>
                 </div>
-                <div className="bg-gray-50 border border-gray-200 rounded-lg p-4">
+                <div className="bg-[#121b20] border border-[#2a3941] rounded-lg p-4">
                   <div className="text-[#007782] text-xs uppercase tracking-wider mb-1">
                     {t('profile.stats.listings')}
                   </div>
                   <div className="text-xl font-bold">{stats.totalProducts}</div>
                 </div>
-                <div className="bg-gray-50 border border-gray-200 rounded-lg p-4">
+                <div className="bg-[#121b20] border border-[#2a3941] rounded-lg p-4">
                   <div className="text-[#007782] text-xs uppercase tracking-wider mb-1">
                     {t('profile.stats.rating')}
                   </div>
@@ -766,7 +766,7 @@ export default function ProfilePage() {
                       {t('orders.viewAll')} →
                     </Link>
                   </div>
-                  <Suspense fallback={<div className="text-sm text-gray-500 py-4">{t('common.loading')}</div>}>
+                  <Suspense fallback={<div className="text-sm text-[#9aadb5] py-4">{t('common.loading')}</div>}>
                     <TransactionList />
                   </Suspense>
                 </div>
@@ -774,13 +774,13 @@ export default function ProfilePage() {
               <WalletBalanceCard userId={user?.id} />
               <Link
                 href="/notifications"
-                className="mb-6 flex items-center justify-between rounded-xl border border-gray-200 bg-white px-4 py-3 hover:bg-gray-50 transition-colors"
+                className="mb-6 flex items-center justify-between rounded-xl border border-[#2a3941] bg-[#121b20] px-4 py-3 hover:bg-[#182329] transition-colors"
               >
-                <span className="flex items-center gap-2 text-sm font-semibold text-gray-900">
+                <span className="flex items-center gap-2 text-sm font-semibold text-[#e7edf0]">
                   <Bell size={18} className="text-[#007782]" />
                   {t('nav.notifications')}
                 </span>
-                <span className="text-xs text-gray-500">→</span>
+                <span className="text-xs text-[#98a9b0]">→</span>
               </Link>
               <BundleDiscountSettings userId={user?.id} />
             </>
@@ -795,7 +795,7 @@ export default function ProfilePage() {
           {activeTab === 'reviews' ? (
           <ProfileSection title={t('profile.reviews')}>
             {receivedReviews.length === 0 ? (
-              <p className="text-sm text-gray-500">{t('profile.noReviews')}</p>
+              <p className="text-sm text-[#98a9b0]">{t('profile.noReviews')}</p>
             ) : (
               <div className="space-y-3">
                 {receivedReviews.map((review) => (

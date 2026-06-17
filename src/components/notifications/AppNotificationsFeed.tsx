@@ -181,7 +181,7 @@ export default function AppNotificationsFeed({ embedded = false }: { embedded?: 
 
   if (!userId && !loading) {
     const loginPrompt = (
-      <p className="text-center text-gray-600 mt-12">
+      <p className="text-center text-[#9aadb5] mt-12">
         <Link href="/auth" className="text-[#007782] font-semibold hover:underline">
           {t('notifications.login')}
         </Link>{' '}
@@ -189,7 +189,7 @@ export default function AppNotificationsFeed({ embedded = false }: { embedded?: 
       </p>
     );
     if (embedded) return <div className="px-4">{loginPrompt}</div>;
-    return <main className={`min-h-screen bg-white ${MAIN_TOP_PADDING} px-4`}>{loginPrompt}</main>;
+    return <main className={`min-h-screen bg-[#11171a] ${MAIN_TOP_PADDING} px-4`}>{loginPrompt}</main>;
   }
 
   const body = (
@@ -236,8 +236,8 @@ export default function AppNotificationsFeed({ embedded = false }: { embedded?: 
               className={cn(
                 'shrink-0 rounded-full border px-3 py-1.5 text-xs font-semibold',
                 filter === tab.id
-                  ? 'border-[#007782] bg-[#007782] text-white'
-                  : 'border-gray-200 bg-white text-gray-700 hover:bg-gray-50',
+                  ? 'border-[#38c7d0] bg-[#17343a] text-[#9be2e8]'
+                  : 'border-[#2a3941] bg-[#121b20] text-[#b0bfc6] hover:bg-[#182329]',
               )}
             >
               {tab.label}
@@ -246,9 +246,9 @@ export default function AppNotificationsFeed({ embedded = false }: { embedded?: 
         </div>
 
         {loading ? (
-          <p className="text-sm text-gray-500 text-center py-8">{t('notifications.loading')}</p>
+          <p className="text-sm text-[#9aadb5] text-center py-8">{t('notifications.loading')}</p>
         ) : filteredItems.length === 0 ? (
-          <p className="text-sm text-gray-500 text-center py-8">{t('notifications.empty')}</p>
+          <p className="text-sm text-[#9aadb5] text-center py-8">{t('notifications.empty')}</p>
         ) : (
           <ul className="space-y-2">
             {filteredItems.map((n) => {

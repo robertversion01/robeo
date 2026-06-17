@@ -6,6 +6,7 @@ import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { useTranslation } from 'react-i18next';
 import { Heart, X } from 'lucide-react';
+import { toast } from 'sonner';
 import ProductGrid from '@/components/product/ProductGrid';
 import FreshOffersStrip from '@/components/home/FreshOffersStrip';
 import PageHeader from '@/components/layout/PageHeader';
@@ -29,6 +30,7 @@ export default function FavoritesPage() {
   const [loading, setLoading] = useState(true);
   const [favorites, setFavorites] = useState<Set<string>>(new Set());
   const [sort, setSort] = useState<FavoritesSortId>('newest');
+  const [favoritePending, setFavoritePending] = useState<Set<string>>(new Set());
   const router = useRouter();
 
   useEffect(() => {
@@ -83,11 +85,36 @@ export default function FavoritesPage() {
   const toggleFavorite = async (productId: string) => {
     const { data: { user } } = await supabase.auth.getUser();
     if (!user) return;
+    if (favoritePending.has(productId)) return;
+    setFavoritePending((prev) => new Set(prev).add(productId));
 
-    await supabase.from('favorites').delete().eq('user_id', user.id).eq('product_id', productId);
+    const snapshotProduct = products.find((p) => p.id === productId) || null;
 
     setProducts((prev) => prev.filter((p) => p.id !== productId));
     setFavorites((prev) => {
+      const next = new Set(prev);
+      next.delete(productId);
+      return next;
+    });
+
+    const { error } = await supabase
+      .from('favorites')
+      .delete()
+      .eq('user_id', user.id)
+      .eq('product_id', productId);
+
+    if (error) {
+      if (snapshotProduct) {
+        setProducts((prev) => [snapshotProduct, ...prev]);
+      }
+      setFavorites((prev) => {
+        const next = new Set(prev);
+        next.add(productId);
+        return next;
+      });
+      toast.error(t('favorites.updateFailed'));
+    }
+    setFavoritePending((prev) => {
       const next = new Set(prev);
       next.delete(productId);
       return next;

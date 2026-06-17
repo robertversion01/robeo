@@ -25,15 +25,15 @@ export default function PageHeader({
       {backHref ? (
         <Link
           href={backHref}
-          className="mb-2 inline-flex items-center gap-1 text-sm text-gray-500 hover:text-[#007782]"
+          className="mb-2 inline-flex items-center gap-1 text-sm text-[#97a9b0] hover:text-[#38c7d0]"
         >
           ← {backLabel}
         </Link>
       ) : null}
       <div className="flex items-start justify-between gap-3">
         <div>
-          <h1 className="text-xl font-bold text-gray-900 md:text-2xl">{title}</h1>
-          {subtitle ? <p className="mt-0.5 text-sm text-gray-500">{subtitle}</p> : null}
+          <h1 className="text-xl font-bold text-[#e7edf0] md:text-2xl">{title}</h1>
+          {subtitle ? <p className="mt-0.5 text-sm text-[#9aabb2]">{subtitle}</p> : null}
         </div>
         {action ? <div className="shrink-0">{action}</div> : null}
       </div>

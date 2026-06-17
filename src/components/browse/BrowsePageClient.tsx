@@ -9,7 +9,7 @@ export default function BrowsePageClient() {
   const { t } = useTranslation();
 
   return (
-    <div className="min-h-screen max-w-[100vw] overflow-x-clip bg-white text-gray-900">
+    <div className="min-h-screen max-w-[100vw] overflow-x-clip bg-[#11171a] text-[#e7edf0]">
       <main className={`px-2 pb-0 md:px-6 md:pb-12 ${DESKTOP_TOP_PADDING}`}>
         <div className="mx-auto max-w-7xl">
           <PageHeader

@@ -42,6 +42,7 @@ interface Message {
   product_id: string | null;
   message_type?: 'text' | 'image' | 'system';
   media_url?: string | null;
+  delivery_state?: 'sending' | 'sent' | 'failed';
 }
 
 interface Conversation {
@@ -411,7 +412,7 @@ export default function MessagesPage() {
       .order('created_at', { ascending: true });
 
     if (error) return;
-    setMessages((data as Message[]) || []);
+    setMessages(((data as Message[]) || []).map((msg) => ({ ...msg, delivery_state: 'sent' })));
   };
 
   const closeConversation = () => {
@@ -449,6 +450,7 @@ export default function MessagesPage() {
       product_id: latestProductMessage?.product_id || null,
       message_type: 'text',
       media_url: null,
+      delivery_state: 'sending',
     };
     setMessages((prev) => [...prev, optimisticMessage]);
 
@@ -464,15 +466,60 @@ export default function MessagesPage() {
       .select('*')
       .single();
     if (error) {
-      setMessages((prev) => prev.filter((m) => m.id !== tempId));
-      setNewMessage(content);
+      setMessages((prev) =>
+        prev.map((m) => (m.id === tempId ? { ...m, delivery_state: 'failed' } : m)),
+      );
       toast.error(t('messages.sendFailed'));
       return;
     }
     if (data) {
-      setMessages((prev) => prev.map((m) => (m.id === tempId ? (data as Message) : m)));
+      setMessages((prev) =>
+        prev.map((m) => (m.id === tempId ? ({ ...(data as Message), delivery_state: 'sent' } as Message) : m)),
+      );
     }
     trackEvent(AnalyticsEvent.MessageSent);
+  };
+
+  const retryFailedMessage = async (tempMessageId: string) => {
+    const failedMessage = messages.find((msg) => msg.id === tempMessageId && msg.delivery_state === 'failed');
+    if (!failedMessage || !selectedConversation || !user || threadBlocked) return;
+
+    setMessages((prev) =>
+      prev.map((msg) => (msg.id === tempMessageId ? { ...msg, delivery_state: 'sending' } : msg)),
+    );
+
+    const { data, error } = await supabase
+      .from('messages')
+      .insert({
+        sender_id: user.id,
+        receiver_id: selectedConversation,
+        content: failedMessage.content,
+        product_id: failedMessage.product_id,
+        message_type: failedMessage.message_type || 'text',
+      })
+      .select('*')
+      .single();
+
+    if (error) {
+      setMessages((prev) =>
+        prev.map((msg) => (msg.id === tempMessageId ? { ...msg, delivery_state: 'failed' } : msg)),
+      );
+      toast.error(t('messages.sendRetryFailed'));
+      return;
+    }
+
+    if (data) {
+      setMessages((prev) =>
+        prev.map((msg) =>
+          msg.id === tempMessageId ? ({ ...(data as Message), delivery_state: 'sent' } as Message) : msg,
+        ),
+      );
+      toast.success(t('messages.sendRetryOk'));
+    }
+  };
+
+  const rollbackFailedMessage = (tempMessageId: string) => {
+    setMessages((prev) => prev.filter((msg) => msg.id !== tempMessageId));
   };
 
   const sendImageMessage = async (file: File) => {
@@ -516,7 +563,7 @@ export default function MessagesPage() {
 
   if (loading) {
     return (
-      <div className="min-h-screen bg-white text-gray-900 flex items-center justify-center">
+      <div className="min-h-screen bg-[#11171a] text-[#e7edf0] flex items-center justify-center">
         <div className="animate-spin h-12 w-12 border-4 border-[#007782] border-t-transparent rounded-full"></div>
       </div>
     );
@@ -604,7 +651,7 @@ export default function MessagesPage() {
   };
 
   return (
-    <div className="min-h-screen bg-white text-gray-900">
+    <div className="min-h-screen bg-[#11171a] text-[#e7edf0]">
 
       {/* Offer Modal */}
       {showOfferModal && (
@@ -616,7 +663,7 @@ export default function MessagesPage() {
           <div
             role="dialog"
             aria-modal="true"
-            className="w-full max-w-md rounded-t-2xl sm:rounded-2xl bg-white border border-gray-200 shadow-2xl p-5 sm:p-6"
+            className="w-full max-w-md rounded-t-2xl sm:rounded-2xl bg-[#121b20] border border-[#2b3a42] shadow-2xl p-5 sm:p-6"
             onClick={(e) => e.stopPropagation()}
           >
             <h2 className="text-lg font-bold text-gray-900">{t('messages.offerModalTitle')}</h2>
@@ -625,7 +672,7 @@ export default function MessagesPage() {
             ) : (
               <p className="text-sm text-amber-700 mt-1">{t('messages.loadingProduct')}</p>
             )}
-            <p className="text-xs text-gray-500 mt-3">
+            <p className="text-xs text-[#98a9b1] mt-3">
               {offerMeta
                 ? t('messages.offerMinHint', {
                     min: offerMeta.min.toLocaleString(i18n.language?.startsWith('en') ? 'en-HU' : 'hu-HU'),
@@ -672,14 +719,14 @@ export default function MessagesPage() {
         {!selectedConversation ? (
           <div className="md:hidden px-4 pt-1">
             <h1 className="mb-2 text-lg font-bold text-gray-900">{t('messages.inboxTitle')}</h1>
-            <div className="flex border-b border-gray-200">
+            <div className="flex border-b border-[#2b3a42]">
               <button
                 type="button"
                 onClick={() => setInboxTab('messages')}
                 className={`relative flex-1 pb-2 text-center text-sm font-semibold transition-colors ${
                   inboxTab === 'messages'
                     ? 'border-b-2 border-[#007782] text-[#007782]'
-                    : 'text-gray-500'
+                    : 'text-[#90a2aa]'
                 }`}
               >
                 <span className="relative inline-block">
@@ -693,7 +740,7 @@ export default function MessagesPage() {
                 className={`relative flex-1 pb-2 text-center text-sm font-semibold transition-colors ${
                   inboxTab === 'notifications'
                     ? 'border-b-2 border-[#007782] text-[#007782]'
-                    : 'text-gray-500'
+                    : 'text-[#90a2aa]'
                 }`}
               >
                 <span className="relative inline-block">
@@ -719,8 +766,8 @@ export default function MessagesPage() {
         >
           
           {/* Offers Section */}
-          <div className={`w-full md:w-80 border-b md:border-b-0 md:border-r border-gray-200 overflow-y-auto flex flex-col min-h-0 ${selectedConversation ? 'hidden md:flex' : ''}`}>
-            <div className="border-b border-gray-200 shrink-0">
+          <div className={`w-full md:w-80 border-b md:border-b-0 md:border-r border-[#2b3a42] overflow-y-auto flex flex-col min-h-0 ${selectedConversation ? 'hidden md:flex' : ''}`}>
+            <div className="border-b border-[#2b3a42] shrink-0">
               <button
                 type="button"
                 onClick={() => setOffersOpen((o) => !o)}
@@ -739,7 +786,7 @@ export default function MessagesPage() {
               </div>
             </div>
 
-            <h2 className="text-lg font-bold px-4 py-3 border-b border-gray-200 shrink-0">{t('messages.conversationsTitle')}</h2>
+            <h2 className="text-lg font-bold px-4 py-3 border-b border-[#2b3a42] shrink-0">{t('messages.conversationsTitle')}</h2>
             
             {conversations.length === 0 ? (
               <EmptyState
@@ -772,7 +819,7 @@ export default function MessagesPage() {
                           </span>
                         </div>
                         <div className="mt-0.5 flex items-center gap-1.5">
-                          <span className="flex-1 truncate text-xs text-gray-500">{conv.last_message}</span>
+                          <span className="flex-1 truncate text-xs text-[#95a7af]">{conv.last_message}</span>
                           {conv.product_id ? (
                             <Link
                               href={`/products/${conv.product_id}`}
@@ -805,14 +852,14 @@ export default function MessagesPage() {
             ) : (
               <>
                 {/* Chat Header (mobile back button) */}
-                <div className="hidden md:flex items-center gap-3 px-4 py-3 border-b border-gray-200 shrink-0">
+                <div className="hidden md:flex items-center gap-3 px-4 py-3 border-b border-[#2b3a42] shrink-0">
                   <div className="w-9 h-9 rounded-full bg-[#007782]/10 flex items-center justify-center text-[#007782] font-bold text-sm">
                     {selectedDisplayName?.charAt(0).toUpperCase() || selectedEmail?.charAt(0).toUpperCase() || '?'}
                   </div>
                   <div className="min-w-0 flex-1">
                     <div className="font-semibold truncate">{selectedDisplayName || selectedEmail}</div>
                     {partnerTrust && (partnerTrust.verified || partnerTrust.reviewCount > 0) ? (
-                      <span className="mt-0.5 flex items-center gap-2 text-[11px] text-gray-500">
+                      <span className="mt-0.5 flex items-center gap-2 text-[11px] text-[#97a9b1]">
                         {partnerTrust.verified ? (
                           <span className="inline-flex items-center gap-0.5 font-medium text-[#007782]">
                             <BadgeCheck size={12} aria-hidden />
@@ -841,7 +888,7 @@ export default function MessagesPage() {
                     </div>
                   ) : null}
                 </div>
-                <div className="flex items-center gap-3 p-3 border-b border-gray-200 md:hidden shrink-0">
+                <div className="flex items-center gap-3 p-3 border-b border-[#2b3a42] md:hidden shrink-0">
                   <button
                     type="button"
                     onClick={closeConversation}
@@ -856,7 +903,7 @@ export default function MessagesPage() {
                   <div className="min-w-0 flex-1">
                     <div className="font-medium truncate">{selectedDisplayName || selectedEmail}</div>
                     {partnerTrust && (partnerTrust.verified || partnerTrust.reviewCount > 0) ? (
-                      <span className="mt-0.5 flex items-center gap-2 text-[11px] text-gray-500">
+                      <span className="mt-0.5 flex items-center gap-2 text-[11px] text-[#97a9b1]">
                         {partnerTrust.verified ? (
                           <span className="inline-flex items-center gap-0.5 font-medium text-[#007782]">
                             <BadgeCheck size={12} aria-hidden />
@@ -910,7 +957,7 @@ export default function MessagesPage() {
                       <div key={msg.id}>
                         {item.showDateSeparator ? (
                           <div className="flex justify-center my-3">
-                            <span className="rounded-full bg-gray-100 px-3 py-0.5 text-[11px] font-medium text-gray-500">
+                            <span className="rounded-full bg-[#19252b] px-3 py-0.5 text-[11px] font-medium text-[#98aab2]">
                               {item.dateLabel}
                             </span>
                           </div>
@@ -937,7 +984,7 @@ export default function MessagesPage() {
                                 className={`px-3.5 py-2 text-sm shadow-sm break-words rounded-2xl ${
                                   mine
                                     ? `bg-[#007782] text-white ${item.isLastInGroup ? 'rounded-br-md' : ''}`
-                                    : `bg-gray-100 text-gray-800 border border-gray-200 ${item.isLastInGroup ? 'rounded-bl-md' : ''}`
+                                    : `bg-[#1a252b] text-[#e2ebef] border border-[#2a3941] ${item.isLastInGroup ? 'rounded-bl-md' : ''}`
                                 }`}
                               >
                                 {msg.message_type === 'image' && msg.media_url ? (
@@ -953,11 +1000,38 @@ export default function MessagesPage() {
                                 )}
                               </div>
                               {item.showTime ? (
-                                <div className="mt-0.5 px-1 text-[10px] text-gray-400">
+                                <div className="mt-0.5 px-1 text-[10px] text-[#8ea0a8]">
                                   {new Date(msg.created_at).toLocaleTimeString(timeLocale, {
                                     hour: '2-digit',
                                     minute: '2-digit',
                                   })}
+                                  {mine ? (
+                                    <span className="ml-1">
+                                      {msg.delivery_state === 'sending'
+                                        ? `· ${t('messages.deliverySending')}`
+                                        : msg.delivery_state === 'failed'
+                                          ? `· ${t('messages.deliveryFailed')}`
+                                          : `· ${t('messages.deliverySent')}`}
+                                    </span>
+                                  ) : null}
+                                </div>
+                              ) : null}
+                              {mine && msg.delivery_state === 'failed' ? (
+                                <div className="mt-1 flex items-center gap-1.5">
+                                  <button
+                                    type="button"
+                                    onClick={() => void retryFailedMessage(msg.id)}
+                                    className="rounded-full border border-amber-300 bg-amber-50 px-2 py-0.5 text-[10px] font-semibold text-amber-800 hover:bg-amber-100"
+                                  >
+                                    {t('messages.retrySend')}
+                                  </button>
+                                  <button
+                                    type="button"
+                                    onClick={() => rollbackFailedMessage(msg.id)}
+                                    className="rounded-full border border-gray-300 bg-white px-2 py-0.5 text-[10px] font-semibold text-gray-600 hover:bg-gray-50"
+                                  >
+                                    {t('messages.rollbackSend')}
+                                  </button>
                                 </div>
                               ) : null}
                             </div>
@@ -970,9 +1044,9 @@ export default function MessagesPage() {
                 </div>
 
                 {/* Message Input */}
-                <div className="shrink-0 p-2.5 md:p-4 border-t border-gray-200 bg-white pb-[calc(0.625rem+env(safe-area-inset-bottom,0px))]">
+                <div className="shrink-0 p-2.5 md:p-4 border-t border-[#2b3a42] bg-[#11191d] pb-[calc(0.625rem+env(safe-area-inset-bottom,0px))]">
                   {threadBlocked ? (
-                    <p className="mb-2 text-center text-xs text-gray-500">{t('block.threadClosed')}</p>
+                    <p className="mb-2 text-center text-xs text-[#97a9b1]">{t('block.threadClosed')}</p>
                   ) : null}
                   <PaymentPresetChips
                     disabled={threadBlocked}

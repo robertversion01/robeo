@@ -103,14 +103,14 @@ function CategoryTab({
           ? cn(
               'whitespace-nowrap border-b-2 pb-1.5 text-sm',
               active
-                ? 'border-[#007782] font-bold text-gray-900'
-                : 'border-transparent font-medium text-gray-500',
+                ? 'border-[#38c7d0] font-bold text-[#e8edf0]'
+                : 'border-transparent font-medium text-[#93a5ad]',
             )
           : cn(
               'rounded-full border px-3.5 py-1.5 text-xs font-semibold touch-manipulation',
               active
-                ? 'border-[#007782] bg-[#007782] text-white shadow-sm'
-                : 'border-gray-200 bg-white text-gray-700 hover:border-[#007782]/30 hover:bg-[#007782]/5',
+                ? 'border-[#38c7d0] bg-[#17343a] text-[#9be2e8] shadow-sm'
+                : 'border-[#2b3a42] bg-[#121b20] text-[#b6c2c8] hover:border-[#38c7d0]/40 hover:bg-[#19262d]',
             ),
       )}
     >

@@ -329,7 +329,7 @@ function CatalogBrowsePanelInner({
   const resultsLine = (
     <p
       className={cn(
-        'mb-2 text-sm tabular-nums text-gray-500',
+        'mb-2 text-sm tabular-nums text-[#9aadb5]',
         isFeed && 'hidden md:block',
       )}
     >
@@ -370,7 +370,7 @@ function CatalogBrowsePanelInner({
             type="button"
             onClick={() => void loadMore()}
             disabled={loadingMore}
-            className="min-h-11 rounded-xl border border-gray-200 bg-white px-6 py-2.5 text-sm font-semibold text-gray-800 shadow-sm transition hover:bg-gray-50 disabled:opacity-60"
+            className="min-h-11 rounded-xl border border-[#2a3941] bg-[#121b20] px-6 py-2.5 text-sm font-semibold text-[#d7e2e7] shadow-sm transition hover:bg-[#182329] disabled:opacity-60"
           >
             {loadingMore
               ? t('landing.catalog.loadingMore')
@@ -485,7 +485,7 @@ function CatalogBrowsePanelInner({
             />
             <Filters {...filtersProps} />
           </div>
-          <div className="sticky top-[3.25rem] z-20 -mx-3 mb-3 border-y border-gray-100 bg-white/95 px-3 py-2 backdrop-blur lg:hidden">
+          <div className="sticky top-[3.25rem] z-20 -mx-3 mb-3 border-y border-[#27363d] bg-[#111a1e]/95 px-3 py-2 backdrop-blur lg:hidden">
             <ActiveFilterBar {...activeFilterBarProps} />
           </div>
           {productGridBlock}
@@ -517,7 +517,7 @@ function CatalogBrowsePanelInner({
             />
             <Filters {...filtersProps} />
           </div>
-          <div className="sticky top-[3.25rem] z-20 -mx-3 mb-3 border-y border-gray-100 bg-white/95 px-3 py-2 backdrop-blur lg:hidden">
+          <div className="sticky top-[3.25rem] z-20 -mx-3 mb-3 border-y border-[#27363d] bg-[#111a1e]/95 px-3 py-2 backdrop-blur lg:hidden">
             <ActiveFilterBar {...activeFilterBarProps} />
           </div>
           {user && showPersonalization ? <FollowedSellersStrip className="mb-3 lg:hidden" /> : null}
@@ -549,9 +549,9 @@ function CatalogBrowsePanelInner({
           </aside>
 
           <div className="min-w-0">
-            <div className="sticky top-[4.4rem] z-20 mb-3 hidden border-y border-gray-100 bg-white/95 py-2 backdrop-blur lg:block">
+            <div className="sticky top-[4.4rem] z-20 mb-3 hidden border-y border-[#27363d] bg-[#111a1e]/95 py-2 backdrop-blur lg:block">
               <div className="flex items-center gap-2">
-                <span className="rounded-full border border-gray-200 bg-gray-50 px-2 py-0.5 text-[11px] font-semibold text-gray-600">
+                <span className="rounded-full border border-[#2a3941] bg-[#182329] px-2 py-0.5 text-[11px] font-semibold text-[#9db0b8]">
                   {activeFilterCount}
                 </span>
                 <ActiveFilterBar {...activeFilterBarProps} />
