@@ -9,7 +9,7 @@ import { type CatalogFilterState, countActiveCatalogFilters } from '@/lib/catalo
 import { supabase } from '@/lib/supabase';
 import { fetchCatalogMatchCount } from '@/lib/catalogFilterCounts';
 import { ROBEO_BP_MODE } from '@/lib/features';
-import { BUDAPEST_DISTRICTS } from '@/lib/budapestDistricts';
+import BudapestDistrictGrid from '@/components/browse/BudapestDistrictGrid';
 
 export type ImmersiveFiltersMeta = {
   categories: { id: string; label: string }[];
@@ -144,18 +144,11 @@ export default function ImmersiveFilterSheet({
               <h3 className="mb-2 text-xs font-bold uppercase tracking-wide text-gray-700">
                 {t('browse.filters.district')}
               </h3>
-              <select
-                value={draft.budapest_district ?? 'all'}
-                onChange={(e) => patchDraft({ budapest_district: e.target.value })}
-                className="h-11 w-full rounded-lg border border-gray-200 bg-gray-50 px-3 text-sm text-gray-800 focus:outline-none focus:ring-2 focus:ring-[#007782]/30"
-              >
-                <option value="all">{t('browse.filters.allDistricts')}</option>
-                {BUDAPEST_DISTRICTS.map((d) => (
-                  <option key={d.id} value={d.id}>
-                    {d.label}
-                  </option>
-                ))}
-              </select>
+              <BudapestDistrictGrid
+                selectedDistrict={draft.budapest_district ?? 'all'}
+                onDistrictPick={(id) => patchDraft({ budapest_district: id })}
+                allLabel={t('browse.filters.allDistricts')}
+              />
             </div>
           ) : null}
                     <Filters

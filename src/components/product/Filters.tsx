@@ -8,6 +8,8 @@ import {
   VINTED_BRANDS,
   VINTED_CONDITIONS,
 } from '@/lib/vintedCatalog';
+import { ROBEO_BP_MODE } from '@/lib/features';
+import { BUDAPEST_DISTRICTS } from '@/lib/budapestDistricts';
 import { conditionI18nKey } from '@/lib/conditionI18n';
 import {
   getSubcategoriesForTaxonomyDepartment,
@@ -46,6 +48,8 @@ export interface FiltersProps {
   onClearAll?: () => void;
   activeFilterCount?: number;
   listingType?: 'all' | 'product' | 'service';
+  selectedBudapestDistrict?: string;
+  onBudapestDistrictChange?: (id: string) => void;
 }
 
 function buildCategoryOptions(
@@ -82,6 +86,7 @@ const PANEL = {
   condition: 'condition',
   color: 'color',
   price: 'price',
+  district: 'district',
 } as const;
 
 export default function Filters({
@@ -109,6 +114,8 @@ export default function Filters({
   onClearAll,
   activeFilterCount = 0,
   listingType = 'all',
+  selectedBudapestDistrict = 'all',
+  onBudapestDistrictChange,
 }: FiltersProps) {
   const { t, i18n } = useTranslation();
   const showProductFilters = showProductCatalogFilters(listingType);
@@ -154,6 +161,14 @@ export default function Filters({
       ...subs.map((s) => ({ id: s.id, label: subcategoryLabel(t, s.id) })),
     ];
   }, [selectedCategory, t]);
+
+  const districtOptions = useMemo(
+    () => [
+      { id: 'all', label: t('browse.filters.allDistricts') },
+      ...BUDAPEST_DISTRICTS.map((d) => ({ id: d.id, label: d.short })),
+    ],
+    [t],
+  );
 
   const colorOptions = useMemo(
     () => [
@@ -312,6 +327,18 @@ export default function Filters({
   return (
     <div className="space-y-2 pb-2">
       <div className="flex items-center gap-2 overflow-x-auto overflow-y-visible no-scrollbar pb-1 -mx-0.5 px-0.5">
+        {ROBEO_BP_MODE && onBudapestDistrictChange ? (
+          <FilterChipDropdown
+            panelId={PANEL.district}
+            openPanelId={openPanelId}
+            onOpenPanelChange={setOpenPanelId}
+            label={t('browse.filters.district')}
+            options={districtOptions}
+            value={selectedBudapestDistrict}
+            onChange={onBudapestDistrictChange}
+            active={selectedBudapestDistrict !== 'all'}
+          />
+        ) : null}
         <FilterChipDropdown
           panelId={PANEL.category}
           openPanelId={openPanelId}

@@ -68,7 +68,7 @@ export async function POST(req: NextRequest) {
     const { error: uploadError } = await db.storage.from('product-images').upload(objectPath, buffer, {
       contentType,
       upsert: false,
-      cacheControl: '3600',
+      cacheControl: '31536000, immutable',
     });
 
     if (uploadError) {

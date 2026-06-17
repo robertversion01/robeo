@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { motion, AnimatePresence } from 'framer-motion';
 import ProductCard from './ProductCard';
@@ -38,8 +38,13 @@ export default function ProductGrid({
 }: ProductGridProps) {
   const { t } = useTranslation();
   const [visible, setVisible] = useState(true);
+  const skipNextFadeRef = useRef(true);
 
   useEffect(() => {
+    if (skipNextFadeRef.current) {
+      skipNextFadeRef.current = false;
+      return;
+    }
     setVisible(false);
     const frame = window.requestAnimationFrame(() => setVisible(true));
     return () => window.cancelAnimationFrame(frame);
@@ -96,7 +101,7 @@ export default function ProductGrid({
     <AnimatePresence mode="wait">
       <motion.div
         key={transitionKey}
-        initial={{ opacity: 0 }}
+        initial={false}
         animate={{ opacity: visible ? 1 : 0 }}
         exit={{ opacity: 0 }}
         transition={{ duration: 0.28, ease: 'easeOut' }}
@@ -108,7 +113,7 @@ export default function ProductGrid({
             product={product}
             isFavorite={favorites.has(product.id)}
             onToggleFavorite={() => onToggleFavorite(product.id)}
-            priority={index < 6}
+            priority={index < 12}
           />
         ))}
       </motion.div>

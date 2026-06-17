@@ -18,13 +18,13 @@ type SupabaseLike = {
       upload: (
         path: string,
         file: File,
-        opts?: { contentType?: string; upsert?: boolean },
+        opts?: { contentType?: string; upsert?: boolean; cacheControl?: string },
       ) => Promise<{ error: { message: string } | null }>;
       uploadToSignedUrl: (
         path: string,
         token: string,
         file: File,
-        opts?: { contentType?: string; upsert?: boolean },
+        opts?: { contentType?: string; upsert?: boolean; cacheControl?: string },
       ) => Promise<{ error: { message: string } | null }>;
       getPublicUrl: (path: string) => { data: { publicUrl: string } };
     };
@@ -50,6 +50,7 @@ export async function uploadProductImageFile(
   const direct = await supabase.storage.from('product-images').upload(path, file, {
     contentType,
     upsert: false,
+    cacheControl: '31536000, immutable',
   });
   if (!direct.error) {
     return supabase.storage.from('product-images').getPublicUrl(path).data.publicUrl;
@@ -79,6 +80,7 @@ export async function uploadProductImageFile(
         .uploadToSignedUrl(signJson.path, signJson.token, file, {
           contentType,
           upsert: false,
+          cacheControl: '31536000, immutable',
         });
       if (!signed.error) return signJson.publicUrl;
       signError = signed.error.message;

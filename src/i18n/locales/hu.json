@@ -1167,6 +1167,7 @@
       "shipped": "Feladva",
       "inTransit": "Úton",
       "readyForPickup": "Átvételre vár",
+      "localPickupPending": "Foglalva — egyeztessetek a chatben",
       "completed": "Befejezve",
       "refunded": "Visszatérítve",
       "disputeOpen": "Vitatás alatt",

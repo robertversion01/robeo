@@ -1,15 +1,15 @@
 'use client';
 
 import { useEffect, useState } from 'react';
-import { MapPin } from 'lucide-react';
+import { ChevronDown, MapPin } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
-import Link from 'next/link';
 import { cn } from '@/lib/utils';
-import { BUDAPEST_DISTRICTS } from '@/lib/budapestDistricts';
+import { BUDAPEST_DISTRICTS, getDistrictLabel } from '@/lib/budapestDistricts';
 import { catalogUrlFromFilters } from '@/lib/catalogUrlParams';
 import type { CatalogFilterState } from '@/lib/catalogFilters';
 import { fetchDistrictFilterCounts } from '@/lib/catalogFilterCounts';
 import { supabase } from '@/lib/supabase';
+import BudapestDistrictGrid from '@/components/browse/BudapestDistrictGrid';
 
 type Props = {
   browsePath?: string;
@@ -18,6 +18,8 @@ type Props = {
   selectedDistrict?: string;
   onDistrictPick?: (districtId: string) => void;
   className?: string;
+  /** Mobilon alapból összecsukva, ha nincs aktív kerület. */
+  collapsible?: boolean;
 };
 
 /** RobeoBP — kerület-felfedező rács találatszámmal. */
@@ -28,10 +30,17 @@ export default function DistrictDiscoveryRail({
   selectedDistrict = 'all',
   onDistrictPick,
   className,
+  collapsible = false,
 }: Props) {
   const { t } = useTranslation();
   const [counts, setCounts] = useState<Record<string, number>>({});
   const [loading, setLoading] = useState(true);
+  const hasActiveDistrict = Boolean(selectedDistrict && selectedDistrict !== 'all');
+  const [expanded, setExpanded] = useState(!collapsible || hasActiveDistrict);
+
+  useEffect(() => {
+    if (hasActiveDistrict) setExpanded(true);
+  }, [hasActiveDistrict]);
 
   useEffect(() => {
     let cancelled = false;
@@ -56,60 +65,41 @@ export default function DistrictDiscoveryRail({
       browsePath,
     )}#catalog`;
 
+  const activeLabel = hasActiveDistrict ? getDistrictLabel(selectedDistrict) : null;
+
   return (
     <section className={cn('rounded-xl border border-[#007782]/15 bg-[#007782]/5 p-3', className)}>
-      <div className="mb-2 flex items-center gap-2">
-        <MapPin size={16} className="text-[#007782] shrink-0" aria-hidden />
-        <h3 className="text-sm font-bold text-gray-900">{t('bp.discovery.districtTitle')}</h3>
+      <div className="mb-2 flex items-start justify-between gap-2">
+        <div className="min-w-0">
+          <div className="flex items-center gap-2">
+            <MapPin size={16} className="text-[#007782] shrink-0" aria-hidden />
+            <h3 className="text-sm font-bold text-gray-900">{t('bp.discovery.districtTitle')}</h3>
+          </div>
+          <p className="mt-1 text-xs text-gray-600">{t('bp.discovery.districtHint')}</p>
+        </div>
+        {collapsible ? (
+          <button
+            type="button"
+            onClick={() => setExpanded((v) => !v)}
+            className="inline-flex shrink-0 items-center gap-1 rounded-lg border border-[#007782]/25 bg-white px-2.5 py-1.5 text-[11px] font-semibold text-[#007782] touch-manipulation"
+            aria-expanded={expanded}
+          >
+            {activeLabel ?? t('browse.filters.district')}
+            <ChevronDown size={14} className={cn('transition-transform', expanded && 'rotate-180')} />
+          </button>
+        ) : null}
       </div>
-      <p className="text-[11px] text-gray-600 mb-3">{t('bp.discovery.districtHint')}</p>
-      <div className="flex flex-wrap gap-1.5">
-        {BUDAPEST_DISTRICTS.map((d) => {
-          const active = selectedDistrict === d.id;
-          const count = counts[d.id];
-          const inner = (
-            <>
-              <span>{d.short}</span>
-              {!loading && typeof count === 'number' ? (
-                <span className="ml-1 tabular-nums text-[10px] opacity-80">({count})</span>
-              ) : null}
-            </>
-          );
 
-          if (onDistrictPick) {
-            return (
-              <button
-                key={d.id}
-                type="button"
-                onClick={() => onDistrictPick(d.id)}
-                className={cn(
-                  'inline-flex items-center rounded-full border px-2.5 py-1 text-xs font-medium transition-colors',
-                  active
-                    ? 'border-[#007782] bg-[#007782] text-white'
-                    : 'border-[#007782]/30 bg-white text-[#007782] hover:bg-[#007782]/10',
-                )}
-              >
-                {inner}
-              </button>
-            );
-          }
-
-          return (
-            <Link
-              key={d.id}
-              href={districtHref(d.id)}
-              className={cn(
-                'inline-flex items-center rounded-full border px-2.5 py-1 text-xs font-medium transition-colors',
-                active
-                  ? 'border-[#007782] bg-[#007782] text-white'
-                  : 'border-[#007782]/30 bg-white text-[#007782] hover:bg-[#007782]/10',
-              )}
-            >
-              {inner}
-            </Link>
-          );
-        })}
-      </div>
+      {!collapsible || expanded ? (
+        <BudapestDistrictGrid
+          selectedDistrict={selectedDistrict}
+          counts={counts}
+          loadingCounts={loading}
+          onDistrictPick={onDistrictPick}
+          districtHref={onDistrictPick ? undefined : districtHref}
+          allLabel={t('browse.filters.allDistricts')}
+        />
+      ) : null}
     </section>
   );
 }

@@ -331,6 +331,8 @@ export default function ProductPage({ params }: { params: Promise<{ id: string }
                   src={getOptimizedImageUrl(activeImage, 800, 90)}
                   alt={product.name}
                   loading="eager"
+                  fetchPriority="high"
+                  decoding="async"
                   className={`w-full h-full object-cover transition-transform duration-300 ${isZoomed ? 'scale-150' : 'scale-100'} ${isSold ? 'opacity-70 grayscale' : ''}`}
                   onError={() => markGalleryUrlFailed(activeImage)}
                 />

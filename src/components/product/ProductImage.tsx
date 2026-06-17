@@ -1,7 +1,11 @@
 'use client';
 
-import { useState, type ImgHTMLAttributes } from 'react';
+import { useEffect, useMemo, useState, type ImgHTMLAttributes } from 'react';
 import { normalizeProductImageUrl } from '@/lib/productImageValidation';
+import {
+  getOriginalStorageObjectUrl,
+  isSupabaseTransformImageUrl,
+} from '@/lib/imageUtils';
 import { cn } from '@/lib/utils';
 
 type ProductImageProps = ImgHTMLAttributes<HTMLImageElement> & {
@@ -21,19 +25,41 @@ export default function ProductImage({
   ...rest
 }: ProductImageProps) {
   const normalized = normalizeProductImageUrl(src);
+  const [useOriginalFallback, setUseOriginalFallback] = useState(false);
   const [failed, setFailed] = useState(false);
 
-  if (!normalized || (hideOnError && failed)) return null;
+  useEffect(() => {
+    setUseOriginalFallback(false);
+    setFailed(false);
+  }, [normalized]);
+
+  const displaySrc = useMemo(() => {
+    if (!normalized) return null;
+    if (useOriginalFallback && isSupabaseTransformImageUrl(normalized)) {
+      return getOriginalStorageObjectUrl(normalized);
+    }
+    return normalized;
+  }, [normalized, useOriginalFallback]);
+
+  if (!displaySrc || (hideOnError && failed)) return null;
 
   return (
     <img
       {...rest}
-      src={normalized}
+      src={displaySrc}
       alt={alt}
       loading={loading ?? 'lazy'}
       decoding={decoding ?? 'async'}
       className={cn(className)}
       onError={(event) => {
+        if (
+          !useOriginalFallback &&
+          normalized &&
+          isSupabaseTransformImageUrl(normalized)
+        ) {
+          setUseOriginalFallback(true);
+          return;
+        }
         setFailed(true);
         onError?.(event);
       }}

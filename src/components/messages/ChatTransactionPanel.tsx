@@ -13,6 +13,10 @@ import {
   TX_STATUS,
 } from '@/lib/transactionFlow';
 import { useTranslation } from 'react-i18next';
+import {
+  ROBEO_BP_MODE,
+  LOCAL_PICKUP_STATUS,
+} from '@/lib/features';
 import { orderStatusI18nKey } from '@/lib/orderStatusI18n';
 import { markPackageShipped, type ShippingTransaction } from '@/lib/sellerShipping';
 import OrderTimelinePanel from '@/components/messages/OrderTimelinePanel';
@@ -233,6 +237,15 @@ export default function ChatTransactionPanel({
   }, [userId, productId, scheduleReload]);
 
   if (!productId) return null;
+
+  const isLocalPickupTransaction = Boolean(
+    transaction && transaction.status === LOCAL_PICKUP_STATUS,
+  );
+
+  if (ROBEO_BP_MODE) {
+    if (loading && !transaction) return null;
+    if (isLocalPickupTransaction) return null;
+  }
 
   const isSeller = transaction?.seller_id === userId;
   const isBuyer = transaction?.buyer_id === userId;

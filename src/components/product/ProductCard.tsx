@@ -88,7 +88,7 @@ export default function ProductCard({
         }}
       >
         <ProductImage
-          src={getOptimizedImageUrl(displayImage, 320, 82)}
+          src={getOptimizedImageUrl(displayImage, 280, 78)}
           alt={product.name}
           loading={priority ? 'eager' : 'lazy'}
           fetchPriority={priority ? 'high' : 'auto'}
@@ -189,7 +189,7 @@ export default function ProductCard({
           >
             {product.sellerAvatarUrl ? (
               <img
-                src={getOptimizedImageUrl(product.sellerAvatarUrl, 32, 80)}
+                src={getOptimizedImageUrl(product.sellerAvatarUrl, 32, 75)}
                 alt=""
                 loading="lazy"
                 decoding="async"

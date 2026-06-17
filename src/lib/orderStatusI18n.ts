@@ -9,6 +9,7 @@ export function orderStatusI18nKey(status: string): string {
     uton: 'orders.status.inTransit',
     atvetelre_var: 'orders.status.readyForPickup',
     sikeresen_atveve: 'orders.status.completed',
+    local_pickup_pending: 'orders.status.localPickupPending',
     completed: 'orders.status.completed',
     refunded: 'orders.status.refunded',
     dispute_open: 'orders.status.disputeOpen',

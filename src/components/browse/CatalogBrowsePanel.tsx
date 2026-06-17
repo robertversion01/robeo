@@ -527,6 +527,7 @@ function CatalogBrowsePanelInner({
                 selectedDistrict={selectedBudapestDistrict}
                 onDistrictPick={setSelectedBudapestDistrict}
                 className="mb-3"
+                collapsible
               />
             </>
           ) : null}

@@ -4,8 +4,48 @@
 
 import { getValidProductImageUrls } from '@/lib/productImageValidation';
 
+const SUPABASE_OBJECT_PUBLIC_PATH = '/storage/v1/object/public/';
+const SUPABASE_RENDER_PUBLIC_PATH = '/storage/v1/render/image/public/';
+
+function clampTransformWidth(width: number): number {
+  return Math.min(2500, Math.max(1, Math.round(width)));
+}
+
+function clampTransformQuality(quality: number): number {
+  return Math.min(100, Math.max(20, Math.round(quality)));
+}
+
+/** Supabase Storage eredeti (nem transformált) public URL — query paraméterek nélkül. */
+export function getOriginalStorageObjectUrl(url: string): string {
+  if (!url) return '';
+
+  try {
+    const parsed = new URL(url);
+    if (parsed.pathname.includes(SUPABASE_RENDER_PUBLIC_PATH)) {
+      parsed.pathname = parsed.pathname.replace(
+        SUPABASE_RENDER_PUBLIC_PATH,
+        SUPABASE_OBJECT_PUBLIC_PATH,
+      );
+    }
+    parsed.searchParams.delete('width');
+    parsed.searchParams.delete('quality');
+    parsed.searchParams.delete('height');
+    parsed.searchParams.delete('resize');
+    const qs = parsed.searchParams.toString();
+    return qs ? `${parsed.origin}${parsed.pathname}?${qs}` : `${parsed.origin}${parsed.pathname}`;
+  } catch {
+    const withoutQuery = url.split('?')[0] ?? url;
+    return withoutQuery.replace(SUPABASE_RENDER_PUBLIC_PATH, SUPABASE_OBJECT_PUBLIC_PATH);
+  }
+}
+
+export function isSupabaseTransformImageUrl(url: string): boolean {
+  return url.includes(SUPABASE_RENDER_PUBLIC_PATH);
+}
+
 /**
- * Formats an image URL for optimal loading
+ * Supabase Image Transformations URL — a /object/public/ query paraméterek nem méreteznek.
+ * @see https://supabase.com/docs/guides/storage/serving/image-transformations
  */
 export function getOptimizedImageUrl(
   url: string | null,
@@ -14,12 +54,13 @@ export function getOptimizedImageUrl(
 ): string {
   if (!url) return '';
 
-  if (url.includes('supabase.co/storage/v1/object/public')) {
-    const separator = url.includes('?') ? '&' : '?';
-    return `${url}${separator}width=${width}&quality=${quality}`;
-  }
+  const original = getOriginalStorageObjectUrl(url);
+  if (!original.includes(SUPABASE_OBJECT_PUBLIC_PATH)) return original;
 
-  return url;
+  const renderUrl = original.replace(SUPABASE_OBJECT_PUBLIC_PATH, SUPABASE_RENDER_PUBLIC_PATH);
+  const w = clampTransformWidth(width);
+  const q = clampTransformQuality(quality);
+  return `${renderUrl}?width=${w}&quality=${q}`;
 }
 
 export function getPlaceholderImage(

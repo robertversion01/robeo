@@ -6,6 +6,7 @@ import { motion, useReducedMotion } from 'framer-motion';
 import { useTranslation } from 'react-i18next';
 import { formatPrice } from '@/lib/utils';
 import { getOptimizedImageUrl } from '@/lib/imageUtils';
+import ProductImage from '@/components/product/ProductImage';
 import GuestLandingHeader from '@/components/home/GuestLandingHeader';
 import BudapestBetaBanner from '@/components/home/BudapestBetaBanner';
 import {
@@ -174,7 +175,7 @@ function HeroImageTile({
       href={`/products/${tile.product.id}`}
       className={`landing-hero-tile block w-full shrink-0 overflow-hidden rounded-lg sm:rounded-xl md:rounded-2xl ${heightClass}`}
     >
-      <img
+      <ProductImage
         src={getOptimizedImageUrl(tile.imageUrl, 320, 70)}
         alt=""
         role="presentation"
@@ -455,15 +456,13 @@ export default function VintedHero({
                       compact ? 'h-[112px] sm:h-[128px]' : 'h-[168px] sm:h-[182px]'
                     }`}
                   >
-                    <img
+                    <ProductImage
                       src={getOptimizedImageUrl(imageSrc, 320, 75)}
                       alt={item.name}
-                      loading="lazy"
+                      loading={idx < 3 ? 'eager' : 'lazy'}
+                      fetchPriority={idx < 3 ? 'high' : 'auto'}
                       decoding="async"
                       className="h-full w-full object-cover"
-                      onError={(e) => {
-                        (e.currentTarget as HTMLImageElement).style.display = 'none';
-                      }}
                     />
                   </div>
                   <div

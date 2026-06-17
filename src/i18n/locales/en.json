@@ -1226,6 +1226,7 @@
       "shipped": "Shipped",
       "inTransit": "In transit",
       "readyForPickup": "Ready for pickup",
+      "localPickupPending": "Reserved — arrange meetup in chat",
       "completed": "Completed",
       "refunded": "Refunded",
       "disputeOpen": "Dispute open",
