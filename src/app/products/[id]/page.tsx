@@ -469,6 +469,27 @@ export default function ProductPage({ params }: { params: Promise<{ id: string }
                 {product.description}
               </div>
 
+              <div className="mb-4 grid grid-cols-1 gap-2 sm:grid-cols-3">
+                <div className="rounded-lg border border-gray-200 bg-gray-50 px-3 py-2">
+                  <p className="text-[11px] font-semibold uppercase tracking-wide text-gray-500">
+                    {t('product.decision.safetyTitle')}
+                  </p>
+                  <p className="mt-1 text-xs text-gray-700">{t('product.decision.safetyHint')}</p>
+                </div>
+                <div className="rounded-lg border border-gray-200 bg-gray-50 px-3 py-2">
+                  <p className="text-[11px] font-semibold uppercase tracking-wide text-gray-500">
+                    {t('product.decision.qaTitle')}
+                  </p>
+                  <p className="mt-1 text-xs text-gray-700">{t('product.decision.qaHint')}</p>
+                </div>
+                <div className="rounded-lg border border-gray-200 bg-gray-50 px-3 py-2">
+                  <p className="text-[11px] font-semibold uppercase tracking-wide text-gray-500">
+                    {t('product.decision.nextTitle')}
+                  </p>
+                  <p className="mt-1 text-xs text-gray-700">{t('product.decision.nextHint')}</p>
+                </div>
+              </div>
+
               <ProductQA productId={product.id} sellerId={product.user_id} viewerId={viewerId} />
 
               <SimilarProductsRail

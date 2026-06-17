@@ -545,6 +545,22 @@ export default function ProfilePage() {
 
           {activeTab === 'shop' ? (
             <>
+          {user?.id ? (
+            <div className="mb-4 flex flex-wrap gap-2">
+              <Link
+                href={`/profile/${user.id}`}
+                className="rounded-full border border-[#007782]/30 bg-[#007782]/5 px-3 py-1.5 text-xs font-semibold text-[#007782] hover:bg-[#007782]/10"
+              >
+                {t('profile.shopNav.publicProfile')}
+              </Link>
+              <Link
+                href={`/profile/${user.id}/closet`}
+                className="rounded-full border border-gray-200 bg-white px-3 py-1.5 text-xs font-semibold text-gray-700 hover:border-[#007782]/35 hover:text-[#007782]"
+              >
+                {t('profile.shopNav.closet')}
+              </Link>
+            </div>
+          ) : null}
           <OrdersQuickHub className="hidden md:grid" />
           <WalletBalanceCard userId={user?.id} />
           <ProfileMarketplaceStats

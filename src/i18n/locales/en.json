@@ -244,7 +244,11 @@
       "browseAllServices": "Browse all services",
       "districtTitle": "No items yet in {{district}}",
       "districtDescription": "Be the first to list here, or check listings in other Budapest districts.",
-      "viewAllDistricts": "View all districts"
+      "viewAllDistricts": "View all districts",
+      "exploreFresh": "Fresh listings",
+      "openWatchlist": "Favorites and watches",
+      "tryBroader": "Try broader search",
+      "openMessages": "Open messages"
     },
     "pagination": {
       "loadMore": "Load more products",
@@ -262,9 +266,12 @@
       "syncing": "Saving…",
       "remove": "Remove saved search",
       "emptyHint": "Save your filters and return to them with one tap.",
+      "summary": "{{total}} saved · {{alerts}} active alerts",
       "alertToggle": "Toggle alert",
       "alertOn": "Alerts on",
       "alertOff": "Alerts off",
+      "openWatchlist": "Open favorites",
+      "openAlerts": "Alert settings",
       "removeConfirm": "Remove saved search “{{label}}”?",
       "removeFailed": "Could not remove saved search."
     },
@@ -321,6 +328,14 @@
     "buyOfferPrice": "Buy at offer price",
     "makeOffer": "Make an offer",
     "messageSeller": "Message seller",
+    "decision": {
+      "safetyTitle": "Safety",
+      "safetyHint": "Check seller profile and reviews before deciding.",
+      "qaTitle": "Ask quickly",
+      "qaHint": "Use Q&A to clarify details before buying.",
+      "nextTitle": "Next step",
+      "nextHint": "Send message or offer to move the deal forward."
+    },
     "messagePrefill": "Hi! I'm interested in {{name}}.",
     "offerOwnProduct": "You cannot make an offer on your own item.",
     "messageModalTitle": "Message seller",
@@ -405,6 +420,10 @@
     "sentOffers": "Sent offers",
     "myListings": "My listings",
     "soldItems": "Sold items",
+    "shopNav": {
+      "publicProfile": "Open public profile",
+      "closet": "My shop / closet"
+    },
     "relist": "List again",
     "relistBusy": "Listing…",
     "relistSuccess": "Listing published again!",
@@ -765,6 +784,8 @@
     "products": "Listings",
     "shopSearchPlaceholder": "Search this shop (name, brand, size)…",
     "allCategories": "All categories",
+    "openCloset": "Open full closet",
+    "openBrowse": "Back to browse",
     "noMatchesTitle": "No matches in this shop",
     "noMatchesHint": "Try another query or loosen your filters.",
     "resetFilters": "Clear filters",

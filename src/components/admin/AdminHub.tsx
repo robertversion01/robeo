@@ -1,6 +1,7 @@
 'use client';
 
 import { useCallback, useEffect, useState } from 'react';
+import Link from 'next/link';
 import { BadgeCheck, Search } from 'lucide-react';
 import { toast } from 'sonner';
 import { supabase } from '@/lib/supabase';
@@ -203,6 +204,17 @@ export default function AdminHub({ userId }: Props) {
           ). Itt csak kiemelés, audit és jelentések.
         </p>
       </div>
+      <div className="flex flex-wrap gap-2">
+        <Link href="#admin-observability" className="rounded-full border border-gray-200 bg-white px-3 py-1.5 text-xs font-semibold text-gray-700 hover:text-[#007782]">
+          Minőség
+        </Link>
+        <Link href="#admin-moderation" className="rounded-full border border-gray-200 bg-white px-3 py-1.5 text-xs font-semibold text-gray-700 hover:text-[#007782]">
+          Moderálás
+        </Link>
+        <Link href="#admin-reports" className="rounded-full border border-gray-200 bg-white px-3 py-1.5 text-xs font-semibold text-gray-700 hover:text-[#007782]">
+          Jelentések
+        </Link>
+      </div>
 
       <ProfileSection
         title="Kiemelés és képek"
@@ -330,21 +342,27 @@ export default function AdminHub({ userId }: Props) {
         )}
       </ProfileSection>
 
-      <ProfileSection title="Mérés és visszajelzés" description="Funnel, hibanapló és felhasználói visszajelzések (lokális).">
-        <AdminObservabilityPanel />
-      </ProfileSection>
+      <div id="admin-observability">
+        <ProfileSection title="Mérés és visszajelzés" description="Funnel, hibanapló és felhasználói visszajelzések (lokális).">
+          <AdminObservabilityPanel />
+        </ProfileSection>
+      </div>
 
       <ProfileSection title="Vitatások" description="Vevői refund kérelmek — jóváhagyás vagy elutasítás.">
         <AdminDisputesPanel />
       </ProfileSection>
 
-      <ProfileSection title="Jelentések" description="Felhasználók által jelentett hirdetések.">
-        <AdminReportedItems />
-      </ProfileSection>
+      <div id="admin-reports">
+        <ProfileSection title="Jelentések" description="Felhasználók által jelentett hirdetések.">
+          <AdminReportedItems />
+        </ProfileSection>
+      </div>
 
-      <ProfileSection title="Moderálás és visszaélések" description="Felhasználó-jelentések és visszaeső felhasználók (termék-report + user-report + vitatás).">
-        <AdminModerationPanel />
-      </ProfileSection>
+      <div id="admin-moderation">
+        <ProfileSection title="Moderálás és visszaélések" description="Felhasználó-jelentések és visszaeső felhasználók (termék-report + user-report + vitatás).">
+          <AdminModerationPanel />
+        </ProfileSection>
+      </div>
 
       <ProfileSection title="DAC7 jelentés" description="Demo export admin célokra.">
         <AdminDac7Report />

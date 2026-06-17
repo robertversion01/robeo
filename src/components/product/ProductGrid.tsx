@@ -3,6 +3,7 @@
 import { useEffect, useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { motion, AnimatePresence } from 'framer-motion';
+import Link from 'next/link';
 import ProductCard from './ProductCard';
 import ProductGridSkeleton from './ProductGridSkeleton';
 import EmptyState from '@/components/ui/EmptyState';
@@ -59,13 +60,29 @@ export default function ProductGrid({
   if (displayProducts.length === 0) {
     if (districtLabel) {
       return (
-        <EmptyState
-          icon="search"
-          title={t('browse.empty.districtTitle', { district: districtLabel })}
-          description={t('browse.empty.districtDescription', { district: districtLabel })}
-          actionLabel={t('browse.empty.viewAllDistricts')}
-          onAction={onClearDistrict ?? onClearFilters}
-        />
+        <div>
+          <EmptyState
+            icon="search"
+            title={t('browse.empty.districtTitle', { district: districtLabel })}
+            description={t('browse.empty.districtDescription', { district: districtLabel })}
+            actionLabel={t('browse.empty.viewAllDistricts')}
+            onAction={onClearDistrict ?? onClearFilters}
+          />
+          <div className="-mt-8 mb-4 flex flex-wrap items-center justify-center gap-2">
+            <Link
+              href="/browse?sort=newest#catalog"
+              className="rounded-full border border-gray-200 bg-white px-3 py-1.5 text-xs font-semibold text-gray-700 hover:border-[#007782]/35 hover:text-[#007782]"
+            >
+              {t('browse.empty.exploreFresh')}
+            </Link>
+            <Link
+              href="/favorites"
+              className="rounded-full border border-gray-200 bg-white px-3 py-1.5 text-xs font-semibold text-gray-700 hover:border-[#007782]/35 hover:text-[#007782]"
+            >
+              {t('browse.empty.openWatchlist')}
+            </Link>
+          </div>
+        </div>
       );
     }
     const isService = listingType === 'service';
@@ -86,14 +103,36 @@ export default function ProductGrid({
         : t('browse.empty.browseAll');
 
     return (
-      <EmptyState
-        icon="search"
-        title={emptyTitle}
-        description={emptyDescription}
-        actionLabel={emptyAction}
-        actionHref={hasActiveFilters ? undefined : isService ? '/browse?type=service' : '/browse'}
-        onAction={hasActiveFilters ? onClearFilters : undefined}
-      />
+      <div>
+        <EmptyState
+          icon="search"
+          title={emptyTitle}
+          description={emptyDescription}
+          actionLabel={emptyAction}
+          actionHref={hasActiveFilters ? undefined : isService ? '/browse?type=service' : '/browse'}
+          onAction={hasActiveFilters ? onClearFilters : undefined}
+        />
+        <div className="-mt-8 mb-4 flex flex-wrap items-center justify-center gap-2">
+          <Link
+            href="/browse#catalog"
+            className="rounded-full border border-gray-200 bg-white px-3 py-1.5 text-xs font-semibold text-gray-700 hover:border-[#007782]/35 hover:text-[#007782]"
+          >
+            {t('browse.empty.tryBroader')}
+          </Link>
+          <Link
+            href="/favorites"
+            className="rounded-full border border-gray-200 bg-white px-3 py-1.5 text-xs font-semibold text-gray-700 hover:border-[#007782]/35 hover:text-[#007782]"
+          >
+            {t('browse.empty.openWatchlist')}
+          </Link>
+          <Link
+            href="/messages"
+            className="rounded-full border border-gray-200 bg-white px-3 py-1.5 text-xs font-semibold text-gray-700 hover:border-[#007782]/35 hover:text-[#007782]"
+          >
+            {t('browse.empty.openMessages')}
+          </Link>
+        </div>
+      </div>
     );
   }
 

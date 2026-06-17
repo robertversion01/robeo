@@ -244,7 +244,11 @@
       "browseAllServices": "Összes szolgáltatás",
       "districtTitle": "Még nincs termék itt: {{district}}",
       "districtDescription": "Légy te az első, vagy nézd meg a többi budapesti kerület hirdetéseit.",
-      "viewAllDistricts": "Összes kerület megtekintése"
+      "viewAllDistricts": "Összes kerület megtekintése",
+      "exploreFresh": "Friss hirdetések",
+      "openWatchlist": "Kedvencek és figyelések",
+      "tryBroader": "Tágabb keresés",
+      "openMessages": "Üzenetek megnyitása"
     },
     "pagination": {
       "loadMore": "Több termék betöltése",
@@ -262,9 +266,12 @@
       "syncing": "Mentés…",
       "remove": "Mentett keresés törlése",
       "emptyHint": "Mentsd el a szűrőket, és egy kattintással visszatérhetsz hozzájuk.",
+      "summary": "{{total}} mentés · {{alerts}} aktív értesítés",
       "alertToggle": "Értesítés be/ki",
       "alertOn": "Értesítés bekapcsolva",
       "alertOff": "Értesítés kikapcsolva",
+      "openWatchlist": "Kedvencek",
+      "openAlerts": "Értesítés beállítások",
       "removeConfirm": "Törlöd a „{{label}}” mentett keresést?",
       "removeFailed": "Nem sikerült törölni."
     },
@@ -321,6 +328,14 @@
     "buyOfferPrice": "Vásárlás alkudott áron",
     "makeOffer": "Ajánlatot teszek",
     "messageSeller": "Üzenet az eladónak",
+    "decision": {
+      "safetyTitle": "Biztonság",
+      "safetyHint": "Ellenőrizd az eladó profilját és értékeléseit.",
+      "qaTitle": "Kérdezz rá",
+      "qaHint": "A Q&A blokkban gyorsan tisztázhatod a részleteket.",
+      "nextTitle": "Következő lépés",
+      "nextHint": "Üzenet vagy ajánlat: a chatben folytathatod."
+    },
     "messagePrefill": "Szia! Érdeklődöm a {{name}} iránt.",
     "offerOwnProduct": "Nem tehetsz ajánlatot a saját termékedre.",
     "messageModalTitle": "Üzenet az eladónak",
@@ -405,6 +420,10 @@
     "sentOffers": "Küldött ajánlataim",
     "myListings": "Saját hirdetéseim",
     "soldItems": "Eladott termékeim",
+    "shopNav": {
+      "publicProfile": "Nyilvános profil megnyitása",
+      "closet": "Saját bolt / closet"
+    },
     "relist": "Újralistázás",
     "relistBusy": "Listázás…",
     "relistSuccess": "Hirdetés újra közzétéve!",
@@ -1314,6 +1333,8 @@
     "products": "Termék",
     "shopSearchPlaceholder": "Keresés a boltban (név, márka, méret)…",
     "allCategories": "Összes kategória",
+    "openCloset": "Eladó teljes kínálata",
+    "openBrowse": "Vissza a böngészéshez",
     "noMatchesTitle": "Nincs találat ebben a boltban",
     "noMatchesHint": "Próbálj más keresést vagy lazítsd a szűrőket.",
     "resetFilters": "Szűrők törlése",

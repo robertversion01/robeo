@@ -204,6 +204,20 @@ export default function PublicSellerProfile({ sellerId }: Props) {
               </Link>
             ) : null}
           </div>
+          <div className="mt-3 flex flex-wrap items-center gap-2">
+            <Link
+              href={`/profile/${sellerId}/closet`}
+              className="rounded-full border border-[#007782]/30 bg-[#007782]/5 px-3 py-1.5 text-xs font-semibold text-[#007782] hover:bg-[#007782]/10"
+            >
+              {t('publicSeller.openCloset')}
+            </Link>
+            <Link
+              href="/browse#catalog"
+              className="rounded-full border border-gray-200 bg-white px-3 py-1.5 text-xs font-semibold text-gray-700 hover:border-[#007782]/35 hover:text-[#007782]"
+            >
+              {t('publicSeller.openBrowse')}
+            </Link>
+          </div>
         </div>
 
         {reviews.length > 0 ? (

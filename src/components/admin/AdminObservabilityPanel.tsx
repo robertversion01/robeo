@@ -50,6 +50,11 @@ export default function AdminObservabilityPanel() {
   const [errors, setErrors] = useState<ErrorRow[]>([]);
   const [schemaMissing, setSchemaMissing] = useState(false);
   const [loading, setLoading] = useState(true);
+  const openFeedbackCount = feedback.filter((f) => f.status !== 'closed').length;
+  const issues: string[] = [];
+  if (errors.length >= 8) issues.push('Magas hibaszám');
+  if (openFeedbackCount >= 6) issues.push('Sok nyitott visszajelzés');
+  if (funnel.length > 0 && funnel.every((row) => row.last7d === 0)) issues.push('Nincs friss aktivitás 7 napja');
 
   const load = useCallback(async () => {
     setLoading(true);
@@ -115,13 +120,31 @@ export default function AdminObservabilityPanel() {
         <div className="rounded-xl border border-gray-200 bg-white p-3">
           <p className="text-[11px] text-gray-500">Nyitott feedback</p>
           <p className="mt-1 text-lg font-bold tabular-nums text-amber-700">
-            {feedback.filter((f) => f.status !== 'closed').length}
+            {openFeedbackCount}
           </p>
         </div>
         <div className="rounded-xl border border-gray-200 bg-white p-3">
           <p className="text-[11px] text-gray-500">Hibanapló</p>
           <p className="mt-1 text-lg font-bold tabular-nums text-red-700">{errors.length}</p>
         </div>
+      </div>
+
+      <div className="rounded-xl border border-gray-200 bg-white p-3">
+        <p className="text-xs font-semibold text-gray-800">Minőség jelzés</p>
+        {issues.length === 0 ? (
+          <p className="mt-1 text-xs text-emerald-700">Stabil: nincs kiugró minőségromlási jel.</p>
+        ) : (
+          <ul className="mt-1 flex flex-wrap gap-2">
+            {issues.map((issue) => (
+              <li
+                key={issue}
+                className="rounded-full border border-amber-300 bg-amber-50 px-2 py-0.5 text-[10px] font-semibold text-amber-800"
+              >
+                {issue}
+              </li>
+            ))}
+          </ul>
+        )}
       </div>
 
       {/* Funnel */}

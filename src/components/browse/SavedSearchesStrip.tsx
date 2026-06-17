@@ -1,6 +1,7 @@
 'use client';
 
 import { useCallback, useEffect, useState } from 'react';
+import Link from 'next/link';
 import { Bell, BellOff, Bookmark, Trash2 } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 import { toast } from 'sonner';
@@ -33,6 +34,7 @@ export default function SavedSearchesStrip({ filters, onApply, hasActiveFilters 
   const [items, setItems] = useState<SavedSearch[]>([]);
   const [syncing, setSyncing] = useState(false);
   const [alertRevision, setAlertRevision] = useState(0);
+  const enabledAlertCount = items.filter((item) => isSavedSearchAlertEnabled(item.id)).length;
 
   const refresh = useCallback(async () => {
     const merged = await loadSavedSearchesMerged(supabase);
@@ -112,6 +114,11 @@ export default function SavedSearchesStrip({ filters, onApply, hasActiveFilters 
         ) : null}
       </div>
       {items.length > 0 ? (
+        <p className="text-[11px] text-gray-500">
+          {t('browse.saved.summary', { total: items.length, alerts: enabledAlertCount })}
+        </p>
+      ) : null}
+      {items.length > 0 ? (
         <div className="flex gap-2 overflow-x-auto pb-0.5 no-scrollbar">
           {items.map((item) => (
             <div
@@ -171,7 +178,17 @@ export default function SavedSearchesStrip({ filters, onApply, hasActiveFilters 
           ))}
         </div>
       ) : (
-        <p className="text-xs text-gray-500">{t('browse.saved.emptyHint')}</p>
+        <div className="space-y-1.5">
+          <p className="text-xs text-gray-500">{t('browse.saved.emptyHint')}</p>
+          <div className="flex flex-wrap items-center gap-3 text-[11px]">
+            <Link href="/favorites" className="font-semibold text-[#007782] hover:underline">
+              {t('browse.saved.openWatchlist')}
+            </Link>
+            <Link href="/profile?tab=settings" className="font-semibold text-[#007782] hover:underline">
+              {t('browse.saved.openAlerts')}
+            </Link>
+          </div>
+        </div>
       )}
     </div>
   );
