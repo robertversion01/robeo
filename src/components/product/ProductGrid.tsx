@@ -151,7 +151,7 @@ export default function ProductGrid({
             product={product}
             isFavorite={favorites.has(product.id)}
             onToggleFavorite={() => onToggleFavorite(product.id)}
-            priority={index < 12}
+            priority={index < 8}
           />
         ))}
       </motion.div>

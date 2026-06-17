@@ -6,7 +6,7 @@ import Link from 'next/link';
 import { useTranslation } from 'react-i18next';
 import { supabase } from '@/lib/supabase';
 import { formatPrice } from '@/lib/utils';
-import { getOptimizedImageUrl } from '@/lib/imageUtils';
+import { getOptimizedImageSrcSet, getOptimizedImageUrl } from '@/lib/imageUtils';
 import { normalizePrimaryProductImageUrl } from '@/lib/productImageValidation';
 import ProductImage from '@/components/product/ProductImage';
 import ProductAlertsBar from '@/components/product/ProductAlertsBar';
@@ -145,10 +145,17 @@ export default function SimilarProductsRail({
                 <div className="aspect-[4/5] bg-gray-100">
                   {imageUrl ? (
                     <ProductImage
-                      src={getOptimizedImageUrl(imageUrl, 120, 80)}
+                      src={getOptimizedImageUrl(imageUrl, 120, 74, { height: 150, resize: 'contain' })}
+                      srcSet={getOptimizedImageSrcSet(imageUrl, [96, 120, 144], 74, {
+                        height: 150,
+                        resize: 'contain',
+                      })}
+                      sizes="108px"
                       alt={p.name}
                       loading="lazy"
-                      className="h-full w-full object-cover"
+                      width={120}
+                      height={150}
+                      className="h-full w-full object-contain bg-[#0f1a1d]/5"
                     />
                   ) : null}
                 </div>

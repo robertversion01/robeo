@@ -64,8 +64,8 @@ export default function ProductCard({
   const districtLabel = getDistrictLabel(product.budapest_district);
   const sellerName = product.sellerName;
   const sellerInitial = sellerName?.trim()?.charAt(0)?.toUpperCase() || '?';
-  const cardImageOptions = { height: 450, resize: 'cover' as const };
-  const cardSrcSet = getOptimizedImageSrcSet(displayImage, [220, 280, 360, 440], 74, cardImageOptions);
+  const cardImageOptions = { height: 400, resize: 'cover' as const };
+  const cardSrcSet = getOptimizedImageSrcSet(displayImage, [200, 260, 320, 400], 72, cardImageOptions);
 
   return (
     <div className="group card-base overflow-hidden rounded-lg sm:rounded-xl transition-all duration-200 relative border-0 sm:border sm:border-gray-100 hover:border-[#007782]/40 hover:shadow-md active:scale-[0.98] touch-manipulation">
@@ -90,12 +90,12 @@ export default function ProductCard({
         }}
       >
         <ProductImage
-          src={getOptimizedImageUrl(displayImage, 360, 74, cardImageOptions)}
+          src={getOptimizedImageUrl(displayImage, 320, 72, cardImageOptions)}
           srcSet={cardSrcSet}
           sizes="(max-width: 640px) 50vw, (max-width: 1024px) 33vw, (max-width: 1280px) 20vw, 16vw"
           alt={product.name}
-          width={360}
-          height={450}
+          width={320}
+          height={400}
           loading={priority ? 'eager' : 'lazy'}
           fetchPriority={priority ? 'high' : 'auto'}
           className={cn(
