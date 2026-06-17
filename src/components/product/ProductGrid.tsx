@@ -7,11 +7,13 @@ import Link from 'next/link';
 import ProductCard from './ProductCard';
 import ProductGridSkeleton from './ProductGridSkeleton';
 import EmptyState from '@/components/ui/EmptyState';
+import ListRefreshingBar from '@/components/ui/ListRefreshingBar';
 import type { Product } from '@/types';
 
 interface ProductGridProps {
   products: Product[];
   loading: boolean;
+  refreshing?: boolean;
   favorites: Set<string>;
   onToggleFavorite: (productId: string) => void;
   transitionKey?: string;
@@ -27,6 +29,7 @@ interface ProductGridProps {
 export default function ProductGrid({
   products,
   loading,
+  refreshing = false,
   favorites,
   onToggleFavorite,
   transitionKey = 'default',
@@ -47,10 +50,14 @@ export default function ProductGrid({
       skipNextFadeRef.current = false;
       return;
     }
+    if (products.length > 0 || refreshing) {
+      setVisible(true);
+      return;
+    }
     setVisible(false);
     const frame = window.requestAnimationFrame(() => setVisible(true));
     return () => window.cancelAnimationFrame(frame);
-  }, [transitionKey]);
+  }, [transitionKey, products.length, refreshing]);
 
   const displayProducts = products;
   const windowedProducts = useMemo(
@@ -75,7 +82,7 @@ export default function ProductGrid({
     return () => observer.disconnect();
   }, [displayProducts.length, loading, windowedProducts.length]);
 
-  if (loading) {
+  if (loading && products.length === 0) {
     return <ProductGridSkeleton />;
   }
 
@@ -159,13 +166,15 @@ export default function ProductGrid({
   }
 
   return (
-    <AnimatePresence mode="wait">
+    <>
+      <ListRefreshingBar active={refreshing} />
+      <AnimatePresence mode="wait">
       <motion.div
         key={transitionKey}
         initial={false}
         animate={{ opacity: visible ? 1 : 0 }}
         exit={{ opacity: 0 }}
-        transition={{ duration: 0.28, ease: 'easeOut' }}
+        transition={{ duration: refreshing ? 0 : 0.28, ease: 'easeOut' }}
         className="grid grid-cols-2 gap-1.5 sm:grid-cols-3 sm:gap-2 lg:grid-cols-5 xl:grid-cols-6 lg:gap-3"
       >
         {windowedProducts.map((product, index) => (
@@ -182,5 +191,6 @@ export default function ProductGrid({
         <div ref={loadMoreRef} className="h-2 w-full" />
       ) : null}
     </AnimatePresence>
+    </>
   );
 }

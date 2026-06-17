@@ -11,6 +11,7 @@
     },
     "catalog": {
       "loading": "Betöltés...",
+      "refreshing": "Frissítés…",
       "results": "{{count}} találat",
       "resultsPaged": "{{shown}} / {{total}} találat megjelenítve",
       "loadMore": "Több termék betöltése",

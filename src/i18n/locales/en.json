@@ -11,6 +11,7 @@
     },
     "catalog": {
       "loading": "Loading...",
+      "refreshing": "Refreshing…",
       "results": "{{count}} results",
       "resultsPaged": "Showing {{shown}} of {{total}} results",
       "loadMore": "Load more products",

@@ -1,6 +1,7 @@
 'use client';
 
 import { useEffect, useState, use, useMemo, useCallback, useRef } from 'react';
+import dynamic from 'next/dynamic';
 import { useTranslation } from 'react-i18next';
 import { supabase } from '@/lib/supabase';
 import Link from 'next/link';
@@ -13,18 +14,14 @@ import { getValidProductImageUrls } from '@/lib/productImageValidation';
 import ProductImage from '@/components/product/ProductImage';
 import ProductFavoriteButton from '@/components/product/ProductFavoriteButton';
 import ProductShareReportBar from '@/components/product/ProductShareReportBar';
-import OfferModal from '@/components/product/OfferModal';
 import SellerBundleHint from '@/components/product/SellerBundleHint';
-import SellerClosetBundle from '@/components/product/SellerClosetBundle';
-import SimilarProductsRail from '@/components/product/SimilarProductsRail';
 import ProductStickyCta from '@/components/product/ProductStickyCta';
 import PriceHistoryBadge from '@/components/product/PriceHistoryBadge';
 import TrustSafetyBlock from '@/components/trust/TrustSafetyBlock';
 import SellerTrustPanel from '@/components/profile/SellerTrustPanel';
-import ProductQA from '@/components/product/ProductQA';
 import ProductAlertsBar from '@/components/product/ProductAlertsBar';
 import DistrictMeetingHint from '@/components/product/DistrictMeetingHint';
-import BundleOfferModal from '@/components/product/BundleOfferModal';
+import ProductPageSkeleton from '@/components/product/ProductPageSkeleton';
 import type { Product } from '@/types';
 import { canViewProductDetail, isListedProduct, isSoldListing } from '@/lib/listedProducts';
 import { recordPriceSnapshot } from '@/lib/priceHistory';
@@ -32,6 +29,18 @@ import { MAIN_TOP_PADDING, MOBILE_PRODUCT_STICKY_CTA_PAD } from '@/lib/layoutTok
 import { formatConditionLabel } from '@/lib/conditionI18n';
 import { getDistrictLabel } from '@/lib/budapestDistricts';
 import { categoryDisplayLabel } from '@/lib/categoryDisplay';
+
+const OfferModal = dynamic(() => import('@/components/product/OfferModal'), { ssr: false });
+const BundleOfferModal = dynamic(() => import('@/components/product/BundleOfferModal'), { ssr: false });
+const SellerClosetBundle = dynamic(() => import('@/components/product/SellerClosetBundle'), {
+  loading: () => <div className="h-24 animate-pulse rounded-xl bg-[#141d21] mx-3 md:mx-0" />,
+});
+const SimilarProductsRail = dynamic(() => import('@/components/product/SimilarProductsRail'), {
+  loading: () => <div className="h-40 animate-pulse rounded-xl bg-[#141d21] mx-3 md:mx-0 mt-4" />,
+});
+const ProductQA = dynamic(() => import('@/components/product/ProductQA'), {
+  loading: () => <div className="h-28 animate-pulse rounded-xl bg-[#141d21] mx-3 md:mx-0 mt-4" />,
+});
 
 export default function ProductPage({ params }: { params: Promise<{ id: string }> }) {
   const { id } = use(params);
@@ -203,11 +212,7 @@ export default function ProductPage({ params }: { params: Promise<{ id: string }
   };
 
   if (loading) {
-    return (
-      <div className="min-h-screen bg-[#11171a] text-[#e7edf0] flex items-center justify-center">
-        <div className="animate-spin h-12 w-12 border-4 border-accent border-t-transparent rounded-full"></div>
-      </div>
-    );
+    return <ProductPageSkeleton />;
   }
 
   if (!product) {

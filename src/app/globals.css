@@ -344,6 +344,15 @@ select option {
   box-shadow: 0 0 0 1px var(--ring);
 }
 
+@keyframes shimmer {
+  0% {
+    transform: translateX(-120%);
+  }
+  100% {
+    transform: translateX(320%);
+  }
+}
+
 /* Scrollbar styling */
 ::-webkit-scrollbar {
   width: 6px;

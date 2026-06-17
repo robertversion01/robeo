@@ -70,6 +70,7 @@ export function useProducts() {
   const { searchQuery, setSearchQuery } = useBrowseSearch();
   const [products, setProducts] = useState<Product[]>([]);
   const [loading, setLoading] = useState(true);
+  const [refreshing, setRefreshing] = useState(false);
   const [loadingMore, setLoadingMore] = useState(false);
   const [totalCount, setTotalCount] = useState(0);
   const [page, setPage] = useState(0);
@@ -89,6 +90,7 @@ export function useProducts() {
   const [favorites, setFavorites] = useState<Set<string>>(new Set());
   const [user, setUser] = useState<any>(null);
   const fetchGenRef = useRef(0);
+  const productsRef = useRef<Product[]>([]);
   const serverFilterSupportRef = useRef<{
     sizeFilterOnServer: boolean;
     districtFilterOnServer: boolean;
@@ -136,6 +138,10 @@ export function useProducts() {
   );
 
   const filterKey = useMemo(() => serializeCatalogFilters(catalogFilters), [catalogFilters]);
+
+  useEffect(() => {
+    productsRef.current = products;
+  }, [products]);
 
   const bumpFilterRevision = useCallback(() => {
     setFilterRevision((n) => n + 1);
@@ -212,9 +218,15 @@ export function useProducts() {
   const fetchProductsPage = useCallback(
     async (pageIndex: number, append: boolean) => {
       const generation = ++fetchGenRef.current;
-      if (append) setLoadingMore(true);
-      else {
-        setLoading(true);
+      if (append) {
+        setLoadingMore(true);
+      } else {
+        const hasCached = productsRef.current.length > 0;
+        if (hasCached) {
+          setRefreshing(true);
+        } else {
+          setLoading(true);
+        }
         setPage(0);
       }
 
@@ -287,11 +299,21 @@ export function useProducts() {
           fetched = fetched.filter((p) => (p.size || '').toLowerCase().includes(sizeQ));
         }
 
+        if (!append) {
+          setProducts(fetched);
+          if (generation === fetchGenRef.current) {
+            setLoading(false);
+            setRefreshing(false);
+          }
+        }
+
         const [favoriteEnriched, sellerEnriched] = await Promise.all([
           enrichProductsWithFavoriteCounts(supabase, fetched),
           enrichProductsWithSellerInfo(supabase, fetched),
         ]);
         fetched = mergeEnrichedProducts(fetched, favoriteEnriched, sellerEnriched);
+
+        if (generation !== fetchGenRef.current) return;
 
         const serverTotal = count ?? fetched.length;
         setTotalCount(serverTotal);
@@ -319,12 +341,15 @@ export function useProducts() {
       } catch (error) {
         console.error('Error fetching products:', formatSupabaseError(error));
         if (generation === fetchGenRef.current && !append) {
-          setProducts([]);
-          setTotalCount(0);
+          if (productsRef.current.length === 0) {
+            setProducts([]);
+            setTotalCount(0);
+          }
         }
       } finally {
         if (generation === fetchGenRef.current) {
           setLoading(false);
+          setRefreshing(false);
           setLoadingMore(false);
         }
       }
@@ -572,6 +597,7 @@ export function useProducts() {
     allProducts: products,
     products,
     loading,
+    refreshing,
     loadingMore,
     totalCount,
     hasMore,

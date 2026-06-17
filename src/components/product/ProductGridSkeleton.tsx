@@ -4,7 +4,7 @@ export default function ProductGridSkeleton() {
       {Array.from({ length: 12 }).map((_, i) => (
         <div key={i} className="rounded-lg overflow-hidden border border-border bg-card/50">
           {/* Image skeleton */}
-          <div className="aspect-[3/4] sm:aspect-[4/5] bg-[#0f1a1d]/5 animate-pulse" />
+          <div className="aspect-[3/4] sm:aspect-[4/5] bg-[#0f1a1d]/40 animate-pulse" style={{ contentVisibility: 'auto' }} />
           
           {/* Content skeleton */}
           <div className="p-1.5 space-y-1.5">

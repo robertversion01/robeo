@@ -1,11 +1,11 @@
 'use client';
 
 import { useEffect, useState, useRef, useMemo } from 'react';
+import dynamic from 'next/dynamic';
 import { supabase } from '@/lib/supabase';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import { ChevronDown, ChevronLeft, BadgeCheck, Star, Undo2 } from 'lucide-react';
-import OffersList from '@/components/product/OffersList';
 import ChatProductSummary from '@/components/messages/ChatProductSummary';
 import ChatTransactionPanel from '@/components/messages/ChatTransactionPanel';
 import ChatBuyerOffersPanel from '@/components/messages/ChatBuyerOffersPanel';
@@ -28,10 +28,17 @@ import { trackEvent, AnalyticsEvent } from '@/lib/analytics';
 import { useTranslation } from 'react-i18next';
 import EmptyState from '@/components/ui/EmptyState';
 import PaymentPresetChips from '@/components/messages/PaymentPresetChips';
-import AppNotificationsFeed from '@/components/notifications/AppNotificationsFeed';
 import { FeedNavBadge, MessagesNavBadge } from '@/context/NotificationContext';
 import SavedReplyChips from '@/components/seller/SavedReplyChips';
 import { loadAllSavedReplies, type SellerSavedReply } from '@/lib/sellerSavedReplies';
+
+const OffersList = dynamic(() => import('@/components/product/OffersList'), {
+  loading: () => <div className="mx-4 h-20 animate-pulse rounded-xl bg-[#141d21]" />,
+});
+const AppNotificationsFeed = dynamic(
+  () => import('@/components/notifications/AppNotificationsFeed'),
+  { loading: () => <div className="mx-4 h-32 animate-pulse rounded-xl bg-[#141d21]" /> },
+);
 
 interface Message {
   id: string;

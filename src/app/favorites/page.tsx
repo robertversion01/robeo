@@ -8,6 +8,7 @@ import { useTranslation } from 'react-i18next';
 import { Heart, X } from 'lucide-react';
 import { toast } from 'sonner';
 import ProductGrid from '@/components/product/ProductGrid';
+import ProductGridSkeleton from '@/components/product/ProductGridSkeleton';
 import FreshOffersStrip from '@/components/home/FreshOffersStrip';
 import PageHeader from '@/components/layout/PageHeader';
 import FavoritesSortBar, { type FavoritesSortId } from '@/components/favorites/FavoritesSortBar';
@@ -54,16 +55,18 @@ export default function FavoritesPage() {
     let fetchedProducts: Product[] = [];
     if (error) {
       console.error(error);
+      setLoading(false);
     } else {
       fetchedProducts = (((data || []) as FavoriteRow[])
         .map((item) => item?.product)
         .filter(Boolean) as unknown) as Product[];
-      fetchedProducts = await enrichProductsWithFavoriteCounts(supabase, fetchedProducts);
       setProducts(fetchedProducts);
       setFavorites(new Set(fetchedProducts.map((p) => p.id)));
+      setLoading(false);
+      void enrichProductsWithFavoriteCounts(supabase, fetchedProducts).then((enriched) => {
+        setProducts(enriched);
+      });
     }
-
-    setLoading(false);
 
     if (user && fetchedProducts.length > 0) {
       const hits = detectPriceDrops(
@@ -123,8 +126,13 @@ export default function FavoritesPage() {
 
   if (loading) {
     return (
-      <div className="min-h-screen bg-[#11171a] text-[#e7edf0] flex items-center justify-center">
-        <div className="animate-spin h-10 w-10 border-4 border-[#007782] border-t-transparent rounded-full" />
+      <div className="min-h-screen bg-[#11171a] text-[#e7edf0]">
+        <main className={`${MAIN_TOP_PADDING} px-3 pb-2 md:px-6 md:pb-12`}>
+          <div className="max-w-7xl mx-auto">
+            <PageHeader title={t('favorites.title')} subtitle={t('favorites.subtitle')} />
+            <ProductGridSkeleton />
+          </div>
+        </main>
       </div>
     );
   }

@@ -10,7 +10,7 @@ import ReceivedReviewCard, { type ReceivedReview } from '@/components/review/Rec
 import OffersList from '@/components/product/OffersList';
 import BuyerOffersList from '@/components/product/BuyerOffersList';
 import TransactionList from '@/components/profile/TransactionList';
-import ProductGrid from '@/components/product/ProductGrid';
+import ProfilePageSkeleton from '@/components/profile/ProfilePageSkeleton';
 import ProductImage from '@/components/product/ProductImage';
 import { formatPrice } from '@/lib/utils';
 import { getOptimizedImageUrl } from '@/lib/imageUtils';
@@ -406,11 +406,7 @@ export default function ProfilePage() {
   };
 
   if (loading) {
-    return (
-      <div className="min-h-screen bg-[#11171a] text-[#e7edf0] flex items-center justify-center">
-        <div className="animate-spin h-10 w-10 border-4 border-accent border-t-transparent rounded-full"></div>
-      </div>
-    );
+    return <ProfilePageSkeleton />;
   }
 
   const isProductFeatured = (product: Product) =>

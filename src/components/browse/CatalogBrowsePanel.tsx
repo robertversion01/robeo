@@ -102,6 +102,7 @@ function CatalogBrowsePanelInner({
   const {
     products,
     loading,
+    refreshing,
     loadingMore,
     totalCount,
     hasMore,
@@ -333,9 +334,11 @@ function CatalogBrowsePanelInner({
         isFeed && 'hidden md:block',
       )}
     >
-      {loading
+      {loading && catalogProducts.length === 0
         ? t('landing.catalog.loading')
-        : totalCount > catalogProducts.length
+        : refreshing
+          ? t('landing.catalog.refreshing')
+          : totalCount > catalogProducts.length
           ? t('landing.catalog.resultsPaged', {
               shown: catalogProducts.length,
               total: totalCount,
@@ -355,6 +358,7 @@ function CatalogBrowsePanelInner({
       <ProductGrid
         products={catalogProducts}
         loading={loading}
+        refreshing={refreshing}
         favorites={favorites}
         onToggleFavorite={toggleFavorite}
         transitionKey={filterKey}
@@ -364,7 +368,7 @@ function CatalogBrowsePanelInner({
         districtLabel={activeDistrictLabel || undefined}
         onClearDistrict={() => removeFilter('budapest_district')}
       />
-      {!loading && hasMore ? (
+      {!loading && catalogProducts.length > 0 && hasMore ? (
         <div className="mt-6 flex justify-center pb-4 md:pb-8">
           <button
             type="button"
