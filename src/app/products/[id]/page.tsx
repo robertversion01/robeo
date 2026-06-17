@@ -260,6 +260,12 @@ export default function ProductPage({ params }: { params: Promise<{ id: string }
     }
   };
 
+  const handleMainCarouselGestureStart = () => {
+    // Sticky zoom reset: lapozás indításakor azonnal visszaáll alap zoomra,
+    // így nem "tapad rá" a nagyított állapot a következő slide-ra.
+    setIsZoomed(false);
+  };
+
   return (
     <div className="min-h-screen bg-white text-gray-900">
 
@@ -331,7 +337,10 @@ export default function ProductPage({ params }: { params: Promise<{ id: string }
                 <div
                   ref={mainCarouselRef}
                   onScroll={handleMainCarouselScroll}
-                  className="relative z-[1] flex h-full w-full snap-x snap-mandatory overflow-x-auto no-scrollbar"
+                  onTouchStart={handleMainCarouselGestureStart}
+                  onPointerDown={handleMainCarouselGestureStart}
+                  className="relative z-[1] flex h-full w-full snap-x snap-mandatory overflow-x-auto overscroll-x-contain touch-pan-x no-scrollbar"
+                  style={{ WebkitOverflowScrolling: 'touch' }}
                 >
                   {productImages.map((imgUrl, idx) => (
                     <div key={imgUrl} className="h-full min-w-full snap-center">
