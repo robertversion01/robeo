@@ -235,11 +235,15 @@ export default function ProductPage({ params }: { params: Promise<{ id: string }
 
   const safeSelectedIndex = Math.min(selectedImageIndex, productImages.length - 1);
   const activeImage = productImages[safeSelectedIndex];
-  // PDP fo kepet kulon kezeljuk (nem feed-kartya orokles), hogy ne legyen
-  // cropolt/zoomolt alapallapot, es stabil maradjon a letoltesi meret.
-  const pdpMainImageOptions = { height: 960, resize: 'contain' } as const;
-  const pdpMainSrc = getOptimizedImageUrl(activeImage, 960, 84, pdpMainImageOptions);
-  const pdpMainSrcSet = getOptimizedImageSrcSet(activeImage, [480, 640, 800, 960, 1200], 84, pdpMainImageOptions);
+  // PDP fo kep kulon pipeline: mobilon keretkitolto, hogy ne maradjon oldalsav.
+  const pdpMainImageOptions = { height: 1280, resize: 'cover' } as const;
+  const pdpMainSrc = getOptimizedImageUrl(activeImage, 1024, 82, pdpMainImageOptions);
+  const pdpMainSrcSet = getOptimizedImageSrcSet(
+    activeImage,
+    [480, 640, 768, 960, 1200, 1440],
+    82,
+    pdpMainImageOptions,
+  );
 
   const sellerDisplayName = sellerProfile?.full_name || sellerProfile?.email?.split('@')[0] || t('product.seller');
   const sellerInitial = sellerDisplayName?.charAt(0).toUpperCase() || 'E';
@@ -328,19 +332,10 @@ export default function ProductPage({ params }: { params: Promise<{ id: string }
             <div>
               {/* Main Image */}
               <div
-                className="relative aspect-square md:rounded-xl md:overflow-hidden bg-[#0f1a1d]/8 mb-2 border border-gray-200 touch-pan-y"
+                className="relative aspect-[4/5] md:aspect-square md:rounded-xl md:overflow-hidden bg-[#0f1a1d]/10 mb-2 border border-gray-200 touch-pan-y"
                 onTouchStart={handleImageTouchStart}
                 onTouchEnd={handleImageTouchEnd}
               >
-                <ProductImage
-                  src={pdpMainSrc}
-                  alt=""
-                  aria-hidden
-                  loading="eager"
-                  fetchPriority="high"
-                  decoding="async"
-                  className={`pointer-events-none absolute inset-0 h-full w-full object-cover blur-xl scale-110 opacity-45 ${isSold ? 'grayscale' : ''}`}
-                />
                 <ProductImage
                   src={pdpMainSrc}
                   srcSet={pdpMainSrcSet}
@@ -351,7 +346,7 @@ export default function ProductPage({ params }: { params: Promise<{ id: string }
                   loading="eager"
                   fetchPriority="high"
                   decoding="async"
-                  className={`relative z-[1] w-full h-full object-contain transition-transform duration-300 ${isZoomed ? 'scale-125' : 'scale-100'} ${isSold ? 'opacity-70 grayscale' : ''}`}
+                  className={`relative z-[1] w-full h-full object-cover transition-transform duration-300 ${isZoomed ? 'scale-125' : 'scale-100'} ${isSold ? 'opacity-70 grayscale' : ''}`}
                   onError={() => markGalleryUrlFailed(activeImage)}
                 />
                 {isSold ? (
@@ -400,10 +395,10 @@ export default function ProductPage({ params }: { params: Promise<{ id: string }
                       }`}
                     >
                       <ProductImage
-                        src={getOptimizedImageUrl(imgUrl, 100, 80)}
+                        src={getOptimizedImageUrl(imgUrl, 100, 76, { height: 100, resize: 'contain' })}
                         alt=""
                         loading={shouldLazyLoad(index) ? 'lazy' : 'eager'}
-                        className="h-full w-full object-cover"
+                        className="h-full w-full object-contain bg-[#0f1a1d]/5"
                         onError={() => markGalleryUrlFailed(imgUrl)}
                       />
                     </button>
