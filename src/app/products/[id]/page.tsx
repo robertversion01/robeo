@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useState, use, useMemo, useCallback } from 'react';
+import { useEffect, useState, use, useMemo, useCallback, useRef } from 'react';
 import { useTranslation } from 'react-i18next';
 import { supabase } from '@/lib/supabase';
 import Link from 'next/link';
@@ -40,7 +40,7 @@ export default function ProductPage({ params }: { params: Promise<{ id: string }
   const [loading, setLoading] = useState(true);
   const [selectedImageIndex, setSelectedImageIndex] = useState(0);
   const [isZoomed, setIsZoomed] = useState(false);
-  const [touchStartX, setTouchStartX] = useState<number | null>(null);
+  const mainCarouselRef = useRef<HTMLDivElement | null>(null);
   const [sellerProfile, setSellerProfile] = useState<{ full_name?: string | null; email?: string | null } | null>(null);
   // Modal States
   const [showMessageModal, setShowMessageModal] = useState(false);
@@ -250,19 +250,13 @@ export default function ProductPage({ params }: { params: Promise<{ id: string }
   const isSold = isSoldListing(product.status);
   const isPurchasable = isListedProduct(product.status);
 
-  const handleImageTouchStart = (event: React.TouchEvent<HTMLDivElement>) => {
-    setTouchStartX(event.touches[0]?.clientX ?? null);
-  };
-
-  const handleImageTouchEnd = (event: React.TouchEvent<HTMLDivElement>) => {
-    if (touchStartX === null || productImages.length <= 1) return;
-    const endX = event.changedTouches[0]?.clientX ?? touchStartX;
-    const delta = touchStartX - endX;
-    if (Math.abs(delta) < 35) return;
-    if (delta > 0) {
-      setSelectedImageIndex((prev) => (prev + 1) % productImages.length);
-    } else {
-      setSelectedImageIndex((prev) => (prev - 1 + productImages.length) % productImages.length);
+  const handleMainCarouselScroll = (event: React.UIEvent<HTMLDivElement>) => {
+    const el = event.currentTarget;
+    if (el.clientWidth <= 0) return;
+    const nextIndex = Math.round(el.scrollLeft / el.clientWidth);
+    if (nextIndex !== selectedImageIndex && nextIndex >= 0 && nextIndex < productImages.length) {
+      setSelectedImageIndex(nextIndex);
+      setIsZoomed(false);
     }
   };
 
@@ -333,22 +327,37 @@ export default function ProductPage({ params }: { params: Promise<{ id: string }
               {/* Main Image */}
               <div
                 className="relative aspect-[4/5] md:aspect-square md:rounded-xl md:overflow-hidden bg-[#0f1a1d]/10 mb-2 border border-gray-200 touch-pan-y"
-                onTouchStart={handleImageTouchStart}
-                onTouchEnd={handleImageTouchEnd}
               >
-                <ProductImage
-                  src={pdpMainSrc}
-                  srcSet={pdpMainSrcSet}
-                  sizes="(max-width: 768px) 100vw, 50vw"
-                  alt={product.name}
-                  width={960}
-                  height={960}
-                  loading="eager"
-                  fetchPriority="high"
-                  decoding="async"
-                  className={`relative z-[1] w-full h-full object-cover transition-transform duration-300 ${isZoomed ? 'scale-125' : 'scale-100'} ${isSold ? 'opacity-70 grayscale' : ''}`}
-                  onError={() => markGalleryUrlFailed(activeImage)}
-                />
+                <div
+                  ref={mainCarouselRef}
+                  onScroll={handleMainCarouselScroll}
+                  className="relative z-[1] flex h-full w-full snap-x snap-mandatory overflow-x-auto no-scrollbar"
+                >
+                  {productImages.map((imgUrl, idx) => (
+                    <div key={imgUrl} className="h-full min-w-full snap-center">
+                      <ProductImage
+                        src={idx === safeSelectedIndex ? pdpMainSrc : getOptimizedImageUrl(imgUrl, 1024, 82, pdpMainImageOptions)}
+                        srcSet={idx === safeSelectedIndex ? pdpMainSrcSet : getOptimizedImageSrcSet(
+                          imgUrl,
+                          [480, 640, 768, 960, 1200, 1440],
+                          82,
+                          pdpMainImageOptions,
+                        )}
+                        sizes="(max-width: 768px) 100vw, 50vw"
+                        alt={product.name}
+                        width={960}
+                        height={960}
+                        loading={idx <= 1 ? 'eager' : 'lazy'}
+                        fetchPriority={idx === safeSelectedIndex ? 'high' : 'auto'}
+                        decoding="async"
+                        className={`h-full w-full object-cover transition-transform duration-300 ${
+                          idx === safeSelectedIndex && isZoomed ? 'scale-125' : 'scale-100'
+                        } ${isSold ? 'opacity-70 grayscale' : ''}`}
+                        onError={() => markGalleryUrlFailed(imgUrl)}
+                      />
+                    </div>
+                  ))}
+                </div>
                 {isSold ? (
                   <div className="pointer-events-none absolute inset-0 flex items-center justify-center bg-black/30">
                     <span className="rounded-md bg-black/75 px-3 py-1.5 text-xs font-bold uppercase tracking-wide text-white">
@@ -387,6 +396,10 @@ export default function ProductPage({ params }: { params: Promise<{ id: string }
                       onClick={() => {
                         setSelectedImageIndex(index);
                         setIsZoomed(false);
+                        const carousel = mainCarouselRef.current;
+                        if (carousel) {
+                          carousel.scrollTo({ left: carousel.clientWidth * index, behavior: 'smooth' });
+                        }
                       }}
                       className={`w-14 h-14 rounded-md overflow-hidden flex-shrink-0 border transition-all ${
                         safeSelectedIndex === index
