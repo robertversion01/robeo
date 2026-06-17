@@ -720,7 +720,8 @@
     "chatImageAlt": "Attached image",
     "noProductContext": "No product linked to this conversation.",
     "sendAria": "Send message",
-    "offersCollapsible": "Incoming offers"
+    "offersCollapsible": "Incoming offers",
+    "quickUndo": "Undo last quick insert"
   },
   "offersList": {
     "emptyTitle": "No incoming offers yet.",

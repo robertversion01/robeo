@@ -4,7 +4,7 @@ import { useEffect, useState, useRef, useMemo } from 'react';
 import { supabase } from '@/lib/supabase';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
-import { ChevronDown, ChevronLeft, BadgeCheck, Star } from 'lucide-react';
+import { ChevronDown, ChevronLeft, BadgeCheck, Star, Undo2 } from 'lucide-react';
 import OffersList from '@/components/product/OffersList';
 import ChatProductSummary from '@/components/messages/ChatProductSummary';
 import ChatTransactionPanel from '@/components/messages/ChatTransactionPanel';
@@ -53,6 +53,11 @@ interface Conversation {
   product_id?: string | null;
 }
 
+type QuickInsertUndoState = {
+  previous: string;
+  next: string;
+};
+
 export default function MessagesPage() {
   const { t, i18n } = useTranslation();
   const [user, setUser] = useState<any>(null);
@@ -83,6 +88,7 @@ export default function MessagesPage() {
   const [savedReplies, setSavedReplies] = useState<SellerSavedReply[]>([]);
   const threadBlockedRef = useRef(false);
   const conversationsReloadTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const [quickInsertUndo, setQuickInsertUndo] = useState<QuickInsertUndoState | null>(null);
 
   const activeProductId =
     [...messages].reverse().find((msg) => msg.product_id)?.product_id ?? null;
@@ -165,6 +171,13 @@ export default function MessagesPage() {
   useEffect(() => {
     scrollToBottom();
   }, [messages]);
+
+  useEffect(() => {
+    if (!quickInsertUndo) return;
+    if (newMessage !== quickInsertUndo.next) {
+      setQuickInsertUndo(null);
+    }
+  }, [newMessage, quickInsertUndo]);
 
   const chatRenderItems = useMemo(
     () => buildChatRenderItems(messages, timeLocale, t),
@@ -424,6 +437,7 @@ export default function MessagesPage() {
 
     const content = newMessage.trim();
     setNewMessage('');
+    setQuickInsertUndo(null);
     const latestProductMessage = [...messages].reverse().find((msg) => msg.product_id);
 
     await supabase
@@ -467,6 +481,14 @@ export default function MessagesPage() {
     } finally {
       setUploadingImage(false);
     }
+  };
+
+  const applyQuickInsert = (text: string) => {
+    setNewMessage((prev) => {
+      const next = prev ? `${prev} ${text}` : text;
+      setQuickInsertUndo({ previous: prev, next });
+      return next;
+    });
   };
 
   if (loading) {
@@ -931,13 +953,26 @@ export default function MessagesPage() {
                   ) : null}
                   <PaymentPresetChips
                     disabled={threadBlocked}
-                    onInsert={(text) => setNewMessage((prev) => (prev ? `${prev} ${text}` : text))}
+                    onInsert={applyQuickInsert}
                   />
                   <SavedReplyChips
                     replies={savedReplies}
                     className="mb-2"
-                    onPick={(text) => setNewMessage((prev) => (prev ? `${prev} ${text}` : text))}
+                    onPick={applyQuickInsert}
                   />
+                  {quickInsertUndo ? (
+                    <button
+                      type="button"
+                      onClick={() => {
+                        setNewMessage(quickInsertUndo.previous);
+                        setQuickInsertUndo(null);
+                      }}
+                      className="mb-2 inline-flex items-center gap-1.5 rounded-full border border-amber-300 bg-amber-50 px-2.5 py-1 text-[11px] font-semibold text-amber-800 hover:bg-amber-100"
+                    >
+                      <Undo2 size={12} />
+                      {t('messages.quickUndo')}
+                    </button>
+                  ) : null}
                   <form onSubmit={sendMessage} className="flex flex-nowrap items-center gap-2 max-w-full box-border">
                     {canMakeOffer ? (
                       <button

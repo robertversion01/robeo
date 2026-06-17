@@ -728,6 +728,8 @@
     "noProductContext": "Ehhez a beszélgetéshez nincs termék hozzárendelve.",
     "sendAria": "Üzenet küldése",
     "offersCollapsible": "Beérkező ajánlatok"
+    ,
+    "quickUndo": "Utolsó gyors beszúrás törlése"
   },
   "auth": {
     "loginTitle": "Belépés",
