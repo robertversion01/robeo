@@ -1304,6 +1304,24 @@
       "cancelled": "Visszavonva"
     }
   },
+  "offerExpiry": {
+    "remaining": "Lejáratig: {{time}}",
+    "expired": "Lejárt"
+  },
+  "sellerInsights": {
+    "title": "Eladói statisztikák",
+    "subtitle": "Rövid áttekintés a teljesítményedről.",
+    "empty": "Még nincs eladási adat.",
+    "emptyHint": "Amint lezárt eladásaid lesznek, itt látod a trendeket.",
+    "netRevenue": "Nettó bevétel",
+    "grossHint": "Bruttó: {{gross}}",
+    "lastMonth": "Elmúlt 30 nap",
+    "totalSalesHint": "{{count}} eladás összesen",
+    "avgSale": "Átlagos eladási ár",
+    "topCountHint": "{{count}} top termék",
+    "monthlyTitle": "Havi bevétel",
+    "topProductsTitle": "Top termékek"
+  },
   "chatTransaction": {
     "orderStatus": "Rendelés állapota:",
     "orderLabel": "Rendelés:",

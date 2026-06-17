@@ -11,6 +11,7 @@ import OffersList from '@/components/product/OffersList';
 import BuyerOffersList from '@/components/product/BuyerOffersList';
 import TransactionList from '@/components/profile/TransactionList';
 import ProductGrid from '@/components/product/ProductGrid';
+import ProductImage from '@/components/product/ProductImage';
 import { formatPrice } from '@/lib/utils';
 import { getOptimizedImageUrl } from '@/lib/imageUtils';
 import { categoryDisplayLabel } from '@/lib/categoryDisplay';
@@ -604,11 +605,13 @@ export default function ProfilePage() {
                   >
                     <Link href={`/products/${product.id}`} className="aspect-[4/5] overflow-hidden block relative">
                       {product.image_url ? (
-                        <img 
-                          src={getOptimizedImageUrl(product.image_url, 300, 85)} 
+                        <ProductImage
+                          src={getOptimizedImageUrl(product.image_url, 300, 78, { height: 375, resize: 'contain' })}
                           alt={product.name}
                           loading="lazy"
-                          className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
+                          width={300}
+                          height={375}
+                          className="w-full h-full object-contain bg-[#0f1a1d]/5"
                         />
                       ) : (
                         <div className="w-full h-full bg-gray-100 flex items-center justify-center text-gray-400">
@@ -673,11 +676,13 @@ export default function ProfilePage() {
                     <Link href={`/products/${product.id}`} className="block">
                     <div className="aspect-[4/5] overflow-hidden relative">
                       {product.image_url ? (
-                        <img
-                          src={getOptimizedImageUrl(product.image_url, 300, 85)}
+                        <ProductImage
+                          src={getOptimizedImageUrl(product.image_url, 300, 76, { height: 375, resize: 'contain' })}
                           alt={product.name}
                           loading="lazy"
-                          className="w-full h-full object-cover opacity-70 grayscale group-hover:scale-105 transition-transform duration-500"
+                          width={300}
+                          height={375}
+                          className="w-full h-full object-contain bg-[#0f1a1d]/5 opacity-70 grayscale"
                         />
                       ) : (
                         <div className="w-full h-full bg-gray-100 flex items-center justify-center text-gray-400">📷</div>

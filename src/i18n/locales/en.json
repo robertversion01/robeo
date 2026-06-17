@@ -755,6 +755,24 @@
       "cancelled": "Withdrawn"
     }
   },
+  "offerExpiry": {
+    "remaining": "Time left: {{time}}",
+    "expired": "Expired"
+  },
+  "sellerInsights": {
+    "title": "Seller insights",
+    "subtitle": "Quick view of your selling performance.",
+    "empty": "No sales data yet.",
+    "emptyHint": "Once sales are completed, trends will appear here.",
+    "netRevenue": "Net revenue",
+    "grossHint": "Gross: {{gross}}",
+    "lastMonth": "Last 30 days",
+    "totalSalesHint": "{{count}} sales total",
+    "avgSale": "Average sale price",
+    "topCountHint": "{{count}} top items",
+    "monthlyTitle": "Monthly revenue",
+    "topProductsTitle": "Top products"
+  },
   "chatTransaction": {
     "orderStatus": "Order status:",
     "orderLabel": "Order:",

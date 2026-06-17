@@ -286,11 +286,11 @@ export default function OffersList() {
               >
                 {thumb ? (
                   <img
-                    src={getOptimizedImageUrl(thumb, 160, 85)}
+                    src={getOptimizedImageUrl(thumb, 160, 76, { height: 160, resize: 'contain' })}
                     alt=""
                     loading="lazy"
                     decoding="async"
-                    className="w-full h-full object-cover"
+                    className="w-full h-full object-contain bg-[#0f1a1d]/5"
                   />
                 ) : (
                   <div className="w-full h-full flex items-center justify-center text-2xl">📷</div>
