@@ -30,6 +30,8 @@ import EmptyState from '@/components/ui/EmptyState';
 import PaymentPresetChips from '@/components/messages/PaymentPresetChips';
 import AppNotificationsFeed from '@/components/notifications/AppNotificationsFeed';
 import { FeedNavBadge, MessagesNavBadge } from '@/context/NotificationContext';
+import SavedReplyChips from '@/components/seller/SavedReplyChips';
+import { loadAllSavedReplies, type SellerSavedReply } from '@/lib/sellerSavedReplies';
 
 interface Message {
   id: string;
@@ -78,6 +80,7 @@ export default function MessagesPage() {
   const [partnerTrust, setPartnerTrust] = useState<ChatPartnerTrust | null>(null);
   const [productSellerId, setProductSellerId] = useState<string | null>(null);
   const [activeProductStatus, setActiveProductStatus] = useState<string | null>(null);
+  const [savedReplies, setSavedReplies] = useState<SellerSavedReply[]>([]);
   const threadBlockedRef = useRef(false);
 
   const activeProductId =
@@ -143,6 +146,14 @@ export default function MessagesPage() {
       if (channel) void supabase.removeChannel(channel);
     };
   }, [user]);
+
+  useEffect(() => {
+    if (!user?.id) {
+      setSavedReplies([]);
+      return;
+    }
+    void loadAllSavedReplies(supabase, t).then(setSavedReplies).catch(() => setSavedReplies([]));
+  }, [user?.id, t]);
 
   useEffect(() => {
     scrollToBottom();
@@ -884,6 +895,11 @@ export default function MessagesPage() {
                   <PaymentPresetChips
                     disabled={threadBlocked}
                     onInsert={(text) => setNewMessage((prev) => (prev ? `${prev} ${text}` : text))}
+                  />
+                  <SavedReplyChips
+                    replies={savedReplies}
+                    className="mb-2"
+                    onPick={(text) => setNewMessage((prev) => (prev ? `${prev} ${text}` : text))}
                   />
                   <form onSubmit={sendMessage} className="flex flex-nowrap items-center gap-2 max-w-full box-border">
                     {canMakeOffer ? (

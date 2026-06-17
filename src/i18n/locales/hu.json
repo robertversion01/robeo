@@ -133,6 +133,7 @@
     "filters": {
       "category": "Kategória",
       "allCategories": "Összes kategória",
+      "contextService": "Szolgáltatás nézet: csak releváns szűrők láthatók.",
       "district": "Kerület",
       "allDistricts": "Összes kerület",
       "subcategory": "Alkategória",
@@ -447,7 +448,10 @@
     "discoverHint": "Nem a mentett kedvenceid — új hirdetések felfedezéséhez.",
     "discoverMore": "Továbbiak",
     "discoverEmpty": "Jelenleg nincs friss hirdetés.",
-    "emptyHint": "Ments el termékeket a szív ikonnal a böngészés során."
+    "emptyHint": "Ments el termékeket a szív ikonnal a böngészés során.",
+    "returnReasonFresh": "Friss hirdetések böngészése",
+    "returnReasonDeals": "Jó árú ajánlatok keresése",
+    "returnReasonAlerts": "Értesítések finomhangolása"
   },
   "notifications": {
     "title": "Értesítések",
@@ -469,6 +473,24 @@
   },
   "settings": {
     "saving": "Mentés…",
+    "vacation": {
+      "title": "Szabadság mód",
+      "heading": "Eladóként szüneteltetem a hirdetéseimet",
+      "hint": "Bekapcsolva a hirdetéseid átmenetileg pihennek, és a vevők látják, hogy jelenleg nem vagy elérhető.",
+      "onLabel": "Szabadság mód: be",
+      "offLabel": "Szabadság mód: ki",
+      "enabled": "Szabadság mód bekapcsolva.",
+      "disabled": "Szabadság mód kikapcsolva.",
+      "schemaMissing": "Hiányzó vacation_mode oszlop. Futtasd a szükséges DB patch-et."
+    },
+    "bio": {
+      "title": "Profil bemutatkozás",
+      "hint": "Rövid bemutatkozás az eladói profilodhoz (max. 280 karakter).",
+      "placeholder": "Pl. Budapest, gyors válasz, tiszta és pontos csomagolás.",
+      "save": "Mentés",
+      "saved": "Bemutatkozás mentve.",
+      "schemaMissing": "Hiányzó bio oszlop. Futtasd a szükséges DB patch-et."
+    },
     "personalisation": {
       "title": "Személyre szabás",
       "hint": "A preferenciák a főoldali feed sorrendjét finomítják.",
@@ -497,7 +519,11 @@
     "delivery": {
       "title": "Push és e-mail",
       "hint": "Az in-app értesítések mindig működnek. Push (böngésző) és e-mail a szerver env beállításaitól függ.",
+      "pushE2eHint": "Kapcsold be a push-t, majd küldj tesztértesítést az eszköz ellenőrzéséhez.",
+      "vapidMissing": "A push szerverkulcs hiányzik (VAPID). Állítsd be a környezeti változókat.",
       "push": "Push értesítések",
+      "testPush": "Teszt push küldése",
+      "testPushOk": "Teszt push elküldve ({{sent}} eszköz).",
       "email": "E-mail értesítések",
       "digest": "Napi összefoglaló e-mail",
       "hintEnv": "Éles küldéshez Vercelen állítsd be a VAPID kulcsokat és Resend/SMTP változókat (.env.example).",
@@ -510,7 +536,13 @@
     },
     "privacy": {
       "title": "Adatvédelem",
-      "body": "A profilod és hirdetéseid csak a piactér szabályai szerint láthatók. Részletes beállítások hamarosan."
+      "body": "A profilod és hirdetéseid csak a piactér szabályai szerint láthatók. Részletes beállítások hamarosan.",
+      "export": "Adat-export letöltése",
+      "exportDone": "Az export elkészült, a letöltés elindult.",
+      "deleteAccount": "Fiók törlése",
+      "deleteConfirm": "Biztosan törölni szeretnéd a fiókodat? Ez a művelet nem visszavonható.",
+      "deleteConfirmBtn": "Fiók végleges törlése",
+      "deleteDone": "A fiók törlése sikeresen elindult."
     }
   },
   "sellerTrust": {
@@ -1280,6 +1312,11 @@
     "followers": "Követő",
     "following": "Követés",
     "products": "Termék",
+    "shopSearchPlaceholder": "Keresés a boltban (név, márka, méret)…",
+    "allCategories": "Összes kategória",
+    "noMatchesTitle": "Nincs találat ebben a boltban",
+    "noMatchesHint": "Próbálj más keresést vagy lazítsd a szűrőket.",
+    "resetFilters": "Szűrők törlése",
     "emptyListings": "Nincs aktív hirdetés.",
     "refresh": "Frissítés",
     "ownProfileLink": "Saját profil beállítások →",
@@ -1295,7 +1332,8 @@
   "common": {
     "loading": "Betöltés…",
     "currencyHuf": "Ft",
-    "selectPlaceholder": "Válassz…"
+    "selectPlaceholder": "Válassz…",
+    "cancel": "Mégse"
   },
   "offerModal": {
     "listPrice": "Listaár",
@@ -1389,7 +1427,9 @@
     "tooShort": "Kérlek írj egy rövid kérdést.",
     "sent": "Kérdés elküldve.",
     "answerSaved": "Válasz elmentve.",
-    "error": "Sikertelen művelet."
+    "error": "Sikertelen művelet.",
+    "answeredCount": "{{count}} megválaszolt kérdés",
+    "pendingCount": "{{count}} függő kérdés"
   },
   "savedReplies": {
     "quickInsert": "Gyors válasz",

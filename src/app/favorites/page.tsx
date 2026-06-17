@@ -5,7 +5,7 @@ import { supabase } from '@/lib/supabase';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { useTranslation } from 'react-i18next';
-import { Heart } from 'lucide-react';
+import { Heart, X } from 'lucide-react';
 import ProductGrid from '@/components/product/ProductGrid';
 import FreshOffersStrip from '@/components/home/FreshOffersStrip';
 import PageHeader from '@/components/layout/PageHeader';
@@ -78,6 +78,8 @@ export default function FavoritesPage() {
     return list;
   }, [products, sort]);
 
+  const hasActiveSort = sort !== 'newest';
+
   const toggleFavorite = async (productId: string) => {
     const { data: { user } } = await supabase.auth.getUser();
     if (!user) return;
@@ -107,6 +109,26 @@ export default function FavoritesPage() {
           <PageHeader title={t('favorites.title')} subtitle={t('favorites.subtitle')} />
           <TrustSafetyBlock variant="compact" className="mb-4" />
           <WatchlistSummaryStrip />
+          <div className="mb-4 grid grid-cols-1 gap-2 sm:grid-cols-3">
+            <Link
+              href="/browse#catalog"
+              className="rounded-xl border border-gray-200 bg-white px-3 py-2 text-xs font-semibold text-gray-700 hover:border-[#007782]/40 hover:text-[#007782]"
+            >
+              {t('favorites.returnReasonFresh')}
+            </Link>
+            <Link
+              href="/browse?sort=price_asc#catalog"
+              className="rounded-xl border border-gray-200 bg-white px-3 py-2 text-xs font-semibold text-gray-700 hover:border-[#007782]/40 hover:text-[#007782]"
+            >
+              {t('favorites.returnReasonDeals')}
+            </Link>
+            <Link
+              href="/profile?tab=settings"
+              className="rounded-xl border border-gray-200 bg-white px-3 py-2 text-xs font-semibold text-gray-700 hover:border-[#007782]/40 hover:text-[#007782]"
+            >
+              {t('favorites.returnReasonAlerts')}
+            </Link>
+          </div>
 
           {products.length > 0 ? <FavoritePriceWatchPanel products={products} /> : null}
 
@@ -114,6 +136,26 @@ export default function FavoritesPage() {
             <div className="mb-5 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
               <p className="text-gray-500 text-sm">{t('favorites.count', { count: products.length })}</p>
               <FavoritesSortBar value={sort} onChange={setSort} />
+            </div>
+          ) : null}
+
+          {products.length > 0 && hasActiveSort ? (
+            <div className="mb-4 flex items-center gap-2 overflow-x-auto no-scrollbar">
+              <button
+                type="button"
+                onClick={() => setSort('newest')}
+                className="inline-flex items-center gap-1 rounded-full border border-[#007782]/30 bg-[#007782]/5 px-2.5 py-1 text-xs font-medium text-[#007782]"
+              >
+                {t(`favorites.sort${sort === 'price_asc' ? 'PriceAsc' : 'PriceDesc'}`)}
+                <X size={12} />
+              </button>
+              <button
+                type="button"
+                onClick={() => setSort('newest')}
+                className="text-xs font-semibold text-gray-500 hover:text-[#007782] hover:underline"
+              >
+                {t('browse.activeFilters.clearAll')}
+              </button>
             </div>
           ) : null}
 

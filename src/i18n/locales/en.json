@@ -133,6 +133,7 @@
     "filters": {
       "category": "Category",
       "allCategories": "All categories",
+      "contextService": "Service view: only relevant filters are shown.",
       "district": "District",
       "allDistricts": "All districts",
       "subcategory": "Subcategory",
@@ -440,7 +441,10 @@
     "discoverHint": "Not your saved favorites — browse new listings.",
     "discoverMore": "See more",
     "discoverEmpty": "No fresh listings right now.",
-    "emptyHint": "Tap the heart icon while browsing to save items here."
+    "emptyHint": "Tap the heart icon while browsing to save items here.",
+    "returnReasonFresh": "Browse fresh listings",
+    "returnReasonDeals": "Find good deals",
+    "returnReasonAlerts": "Tune alert settings"
   },
   "notifications": {
     "title": "Notifications",
@@ -462,6 +466,24 @@
   },
   "settings": {
     "saving": "Saving…",
+    "vacation": {
+      "title": "Vacation mode",
+      "heading": "Pause my listings as a seller",
+      "hint": "When enabled, your listings are temporarily paused and buyers can see you're currently unavailable.",
+      "onLabel": "Vacation mode: on",
+      "offLabel": "Vacation mode: off",
+      "enabled": "Vacation mode enabled.",
+      "disabled": "Vacation mode disabled.",
+      "schemaMissing": "Missing vacation_mode column. Run the required DB patch."
+    },
+    "bio": {
+      "title": "Profile bio",
+      "hint": "Short intro on your seller profile (max 280 characters).",
+      "placeholder": "E.g. Budapest seller, quick replies, careful packaging.",
+      "save": "Save",
+      "saved": "Bio saved.",
+      "schemaMissing": "Missing bio column. Run the required DB patch."
+    },
     "personalisation": {
       "title": "Personalisation",
       "hint": "Preferences tune your home feed ranking.",
@@ -490,7 +512,11 @@
     "delivery": {
       "title": "Push & email",
       "hint": "In-app notifications always work. Push (browser) and email depend on server env vars.",
+      "pushE2eHint": "Enable push, then send a test notification to verify delivery on this device.",
+      "vapidMissing": "Push server key is missing (VAPID). Configure environment variables.",
       "push": "Push notifications",
+      "testPush": "Send test push",
+      "testPushOk": "Test push sent ({{sent}} device(s)).",
       "email": "Email notifications",
       "digest": "Daily email digest",
       "hintEnv": "For production delivery, set VAPID keys and Resend/SMTP on Vercel (.env.example).",
@@ -503,7 +529,13 @@
     },
     "privacy": {
       "title": "Privacy",
-      "body": "Your profile and listings follow marketplace rules. More controls coming soon."
+      "body": "Your profile and listings follow marketplace rules. More controls coming soon.",
+      "export": "Download data export",
+      "exportDone": "Export is ready and download has started.",
+      "deleteAccount": "Delete account",
+      "deleteConfirm": "Are you sure you want to delete your account? This action cannot be undone.",
+      "deleteConfirmBtn": "Permanently delete account",
+      "deleteDone": "Account deletion has been started."
     }
   },
   "sellerTrust": {
@@ -731,6 +763,11 @@
     "followers": "Followers",
     "following": "Following",
     "products": "Listings",
+    "shopSearchPlaceholder": "Search this shop (name, brand, size)…",
+    "allCategories": "All categories",
+    "noMatchesTitle": "No matches in this shop",
+    "noMatchesHint": "Try another query or loosen your filters.",
+    "resetFilters": "Clear filters",
     "emptyListings": "No active listings.",
     "refresh": "Refresh",
     "ownProfileLink": "My profile settings →",
@@ -1288,7 +1325,8 @@
   "common": {
     "loading": "Loading…",
     "currencyHuf": "Ft",
-    "selectPlaceholder": "Select…"
+    "selectPlaceholder": "Select…",
+    "cancel": "Cancel"
   },
   "offerModal": {
     "listPrice": "List price",
@@ -1382,7 +1420,9 @@
     "tooShort": "Please write a short question.",
     "sent": "Question sent.",
     "answerSaved": "Answer saved.",
-    "error": "Action failed."
+    "error": "Action failed.",
+    "answeredCount": "{{count}} answered questions",
+    "pendingCount": "{{count}} pending questions"
   },
   "savedReplies": {
     "quickInsert": "Quick reply",

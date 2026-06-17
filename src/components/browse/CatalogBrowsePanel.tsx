@@ -477,14 +477,16 @@ function CatalogBrowsePanelInner({
               />
             </div>
           </div>
-          <div className="mb-3 lg:hidden">
+          <div className="mb-2 lg:hidden">
             <ListingTypeToggle
               value={selectedListingType}
               onChange={setSelectedListingType}
               className="mb-2"
             />
             <Filters {...filtersProps} />
-            <ActiveFilterBar {...activeFilterBarProps} className="pt-2 pb-1" />
+          </div>
+          <div className="sticky top-[3.25rem] z-20 -mx-3 mb-3 border-y border-gray-100 bg-white/95 px-3 py-2 backdrop-blur lg:hidden">
+            <ActiveFilterBar {...activeFilterBarProps} />
           </div>
           {productGridBlock}
         </FeedCategorySwipeSurface>
@@ -507,14 +509,16 @@ function CatalogBrowsePanelInner({
               onApply={applySavedSearch}
             />
           </MobileFeedChrome>
-          <div className="mb-3 lg:hidden">
+          <div className="mb-2 lg:hidden">
             <ListingTypeToggle
               value={selectedListingType}
               onChange={setSelectedListingType}
               className="mb-2"
             />
             <Filters {...filtersProps} />
-            <ActiveFilterBar {...activeFilterBarProps} className="pt-2 pb-1" />
+          </div>
+          <div className="sticky top-[3.25rem] z-20 -mx-3 mb-3 border-y border-gray-100 bg-white/95 px-3 py-2 backdrop-blur lg:hidden">
+            <ActiveFilterBar {...activeFilterBarProps} />
           </div>
           {user && showPersonalization ? <FollowedSellersStrip className="mb-3 lg:hidden" /> : null}
           {ROBEO_BP_MODE ? (

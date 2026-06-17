@@ -15,6 +15,15 @@ function clampTransformQuality(quality: number): number {
   return Math.min(100, Math.max(20, Math.round(quality)));
 }
 
+function clampTransformHeight(height: number): number {
+  return Math.min(2500, Math.max(1, Math.round(height)));
+}
+
+export type SupabaseTransformOptions = {
+  height?: number;
+  resize?: 'cover' | 'contain' | 'fill';
+};
+
 /** Supabase Storage eredeti (nem transformált) public URL — query paraméterek nélkül. */
 export function getOriginalStorageObjectUrl(url: string): string {
   if (!url) return '';
@@ -51,6 +60,7 @@ export function getOptimizedImageUrl(
   url: string | null,
   width: number = 400,
   quality: number = 80,
+  options: SupabaseTransformOptions = {},
 ): string {
   if (!url) return '';
 
@@ -60,7 +70,33 @@ export function getOptimizedImageUrl(
   const renderUrl = original.replace(SUPABASE_OBJECT_PUBLIC_PATH, SUPABASE_RENDER_PUBLIC_PATH);
   const w = clampTransformWidth(width);
   const q = clampTransformQuality(quality);
-  return `${renderUrl}?width=${w}&quality=${q}`;
+  const params = new URLSearchParams({
+    width: String(w),
+    quality: String(q),
+  });
+  if (typeof options.height === 'number') {
+    params.set('height', String(clampTransformHeight(options.height)));
+  }
+  if (options.resize) {
+    params.set('resize', options.resize);
+  }
+  return `${renderUrl}?${params.toString()}`;
+}
+
+/** Több felbontású srcset mobil/retina kijelzőkhöz. */
+export function getOptimizedImageSrcSet(
+  url: string | null,
+  widths: number[],
+  quality: number = 80,
+  options: SupabaseTransformOptions = {},
+): string | undefined {
+  if (!url || widths.length === 0) return undefined;
+  const entries = widths
+    .map((w) => clampTransformWidth(w))
+    .filter((w, idx, arr) => arr.indexOf(w) === idx)
+    .sort((a, b) => a - b)
+    .map((w) => `${getOptimizedImageUrl(url, w, quality, options)} ${w}w`);
+  return entries.length > 0 ? entries.join(', ') : undefined;
 }
 
 export function getPlaceholderImage(

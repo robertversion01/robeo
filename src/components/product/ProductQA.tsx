@@ -205,6 +205,18 @@ export default function ProductQA({ productId, sellerId, viewerId }: Props) {
         ) : null}
       </h3>
       <p className="mt-0.5 text-[11px] text-gray-500 leading-snug">{t('qa.subtitle')}</p>
+      {questions.length > 0 ? (
+        <div className="mt-2 flex flex-wrap gap-1.5">
+          <span className="rounded-full border border-[#007782]/25 bg-[#007782]/5 px-2.5 py-1 text-[10px] font-semibold text-[#007782]">
+            {t('qa.answeredCount', { count: answered.length })}
+          </span>
+          {pending.length > 0 ? (
+            <span className="rounded-full border border-amber-300 bg-amber-50 px-2.5 py-1 text-[10px] font-semibold text-amber-700">
+              {t('qa.pendingCount', { count: pending.length })}
+            </span>
+          ) : null}
+        </div>
+      ) : null}
 
       {isOwner ? <SellerSavedRepliesEditor className="mt-2" /> : null}
 
@@ -240,7 +252,14 @@ export default function ProductQA({ productId, sellerId, viewerId }: Props) {
       ) : null}
 
       {questions.length === 0 ? (
-        <p className="mt-2 text-xs text-gray-500">{t('qa.empty')}</p>
+        <div className="mt-2 rounded-lg border border-dashed border-gray-300 px-3 py-2.5">
+          <p className="text-xs text-gray-600">{t('qa.empty')}</p>
+          {!isOwner && !viewerId ? (
+            <Link href="/auth" className="mt-1 inline-block text-xs font-semibold text-[#007782] hover:underline">
+              {t('qa.loginToAsk')}
+            </Link>
+          ) : null}
+        </div>
       ) : (
         <div className="mt-3 space-y-3">
           {answered.length > 0 ? (

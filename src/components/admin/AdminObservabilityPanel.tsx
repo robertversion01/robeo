@@ -101,6 +101,29 @@ export default function AdminObservabilityPanel() {
         </p>
       ) : null}
 
+      <div className="grid grid-cols-2 gap-2 sm:grid-cols-4">
+        <div className="rounded-xl border border-gray-200 bg-white p-3">
+          <p className="text-[11px] text-gray-500">Funnel események</p>
+          <p className="mt-1 text-lg font-bold tabular-nums text-gray-900">
+            {funnel.reduce((sum, row) => sum + row.total, 0)}
+          </p>
+        </div>
+        <div className="rounded-xl border border-gray-200 bg-white p-3">
+          <p className="text-[11px] text-gray-500">Visszajelzés</p>
+          <p className="mt-1 text-lg font-bold tabular-nums text-gray-900">{feedback.length}</p>
+        </div>
+        <div className="rounded-xl border border-gray-200 bg-white p-3">
+          <p className="text-[11px] text-gray-500">Nyitott feedback</p>
+          <p className="mt-1 text-lg font-bold tabular-nums text-amber-700">
+            {feedback.filter((f) => f.status !== 'closed').length}
+          </p>
+        </div>
+        <div className="rounded-xl border border-gray-200 bg-white p-3">
+          <p className="text-[11px] text-gray-500">Hibanapló</p>
+          <p className="mt-1 text-lg font-bold tabular-nums text-red-700">{errors.length}</p>
+        </div>
+      </div>
+
       {/* Funnel */}
       <div className="grid grid-cols-2 gap-2 sm:grid-cols-3">
         {funnel.map((row) => (

@@ -326,6 +326,9 @@ export default function Filters({
 
   return (
     <div className="space-y-2 pb-2">
+      {!showProductFilters ? (
+        <p className="px-1 text-[11px] text-gray-500">{t('browse.filters.contextService')}</p>
+      ) : null}
       <div className="flex items-center gap-2 overflow-x-auto overflow-y-visible no-scrollbar pb-1 -mx-0.5 px-0.5">
         {ROBEO_BP_MODE && onBudapestDistrictChange ? (
           <FilterChipDropdown

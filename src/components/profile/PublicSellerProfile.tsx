@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import Link from 'next/link';
 import { supabase } from '@/lib/supabase';
 import { fetchFollowCounts } from '@/lib/followCounts';
@@ -18,6 +18,7 @@ import { isActiveListing } from '@/lib/listedProducts';
 import { enrichProductsWithFavoriteCounts } from '@/lib/favoriteCounts';
 import { MAIN_TOP_PADDING } from '@/lib/layoutTokens';
 import { useTranslation } from 'react-i18next';
+import { categoryDisplayLabel } from '@/lib/categoryDisplay';
 
 type Props = {
   sellerId: string;
@@ -36,6 +37,8 @@ export default function PublicSellerProfile({ sellerId }: Props) {
   const [reviews, setReviews] = useState<ReceivedReview[]>([]);
   const [viewerId, setViewerId] = useState<string | null>(null);
   const [favorites, setFavorites] = useState<Set<string>>(new Set());
+  const [shopQuery, setShopQuery] = useState('');
+  const [shopCategory, setShopCategory] = useState('all');
 
   useEffect(() => {
     void load();
@@ -122,6 +125,25 @@ export default function PublicSellerProfile({ sellerId }: Props) {
     });
   };
 
+  const shopCategories = useMemo(() => {
+    const set = new Set<string>();
+    for (const p of products) {
+      if (p.category) set.add(p.category);
+    }
+    return ['all', ...Array.from(set)];
+  }, [products]);
+
+  const filteredProducts = useMemo(() => {
+    const q = shopQuery.trim().toLowerCase();
+    return products.filter((p) => {
+      const categoryMatch = shopCategory === 'all' || p.category === shopCategory;
+      if (!categoryMatch) return false;
+      if (!q) return true;
+      const hay = `${p.name} ${p.brand || ''} ${p.size || ''}`.toLowerCase();
+      return hay.includes(q);
+    });
+  }, [products, shopCategory, shopQuery]);
+
   return (
     <main className={`min-h-screen bg-white ${MAIN_TOP_PADDING} px-4`}>
       <div className="max-w-4xl mx-auto">
@@ -198,8 +220,81 @@ export default function PublicSellerProfile({ sellerId }: Props) {
         ) : null}
 
         <h2 className="text-lg font-bold text-gray-900 mb-3">{t('publicSeller.listingsTitle')}</h2>
+        <div className="mb-3 rounded-xl border border-gray-200 bg-gray-50/70 p-2.5">
+          <div className="flex flex-col gap-2 sm:flex-row">
+            <input
+              type="search"
+              value={shopQuery}
+              onChange={(e) => setShopQuery(e.target.value)}
+              placeholder={t('publicSeller.shopSearchPlaceholder')}
+              className="h-9 flex-1 rounded-lg border border-gray-200 bg-white px-3 text-sm"
+            />
+            <select
+              value={shopCategory}
+              onChange={(e) => setShopCategory(e.target.value)}
+              className="h-9 rounded-lg border border-gray-200 bg-white px-3 text-sm"
+            >
+              <option value="all">{t('publicSeller.allCategories')}</option>
+              {shopCategories
+                .filter((id) => id !== 'all')
+                .map((id) => (
+                  <option key={id} value={id}>
+                    {categoryDisplayLabel(t, id)}
+                  </option>
+                ))}
+            </select>
+          </div>
+          {(shopQuery.trim() || shopCategory !== 'all') && (
+            <div className="mt-2 flex items-center gap-2">
+              {shopQuery.trim() ? (
+                <button
+                  type="button"
+                  onClick={() => setShopQuery('')}
+                  className="inline-flex items-center gap-1 rounded-full border border-[#007782]/30 bg-[#007782]/5 px-2.5 py-1 text-xs font-medium text-[#007782]"
+                >
+                  “{shopQuery.trim()}”
+                </button>
+              ) : null}
+              {shopCategory !== 'all' ? (
+                <button
+                  type="button"
+                  onClick={() => setShopCategory('all')}
+                  className="inline-flex items-center gap-1 rounded-full border border-[#007782]/30 bg-[#007782]/5 px-2.5 py-1 text-xs font-medium text-[#007782]"
+                >
+                  {categoryDisplayLabel(t, shopCategory)}
+                </button>
+              ) : null}
+              <button
+                type="button"
+                onClick={() => {
+                  setShopQuery('');
+                  setShopCategory('all');
+                }}
+                className="text-xs font-semibold text-gray-500 hover:text-[#007782] hover:underline"
+              >
+                {t('browse.activeFilters.clearAll')}
+              </button>
+            </div>
+          )}
+        </div>
+        {filteredProducts.length === 0 && products.length > 0 ? (
+          <div className="mb-4 rounded-xl border border-dashed border-gray-300 px-4 py-6 text-center">
+            <p className="text-sm font-semibold text-gray-800">{t('publicSeller.noMatchesTitle')}</p>
+            <p className="mt-1 text-xs text-gray-500">{t('publicSeller.noMatchesHint')}</p>
+            <button
+              type="button"
+              onClick={() => {
+                setShopQuery('');
+                setShopCategory('all');
+              }}
+              className="mt-3 rounded-full border border-[#007782]/30 bg-[#007782]/5 px-4 py-1.5 text-xs font-semibold text-[#007782]"
+            >
+              {t('publicSeller.resetFilters')}
+            </button>
+          </div>
+        ) : null}
         <ProductGrid
-          products={products}
+          products={filteredProducts}
           loading={loading}
           favorites={favorites}
           onToggleFavorite={toggleFavorite}
