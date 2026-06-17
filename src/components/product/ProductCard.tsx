@@ -68,7 +68,10 @@ export default function ProductCard({
   const cardSrcSet = getOptimizedImageSrcSet(displayImage, [200, 260, 320, 400], 72, cardImageOptions);
 
   return (
-    <div className="group card-base overflow-hidden rounded-lg sm:rounded-xl transition-all duration-200 relative border-0 sm:border sm:border-gray-100 hover:border-[#007782]/40 hover:shadow-md active:scale-[0.98] touch-manipulation">
+    <div
+      className="group card-base overflow-hidden rounded-lg sm:rounded-xl transition-all duration-200 relative border-0 sm:border sm:border-gray-100 hover:border-[#007782]/40 hover:shadow-md active:scale-[0.98] touch-manipulation"
+      style={{ contentVisibility: 'auto', containIntrinsicSize: '420px 560px' }}
+    >
       <Link
         href={`/products/${product.id}`}
         className="relative aspect-[4/5] overflow-hidden block bg-[#0f1a1d]/5"

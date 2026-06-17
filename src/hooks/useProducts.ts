@@ -40,6 +40,20 @@ import {
 /** Szerver-oldali lapozás — Supabase range chunk méret. */
 export const CATALOG_PAGE_SIZE = 48;
 
+function mergeEnrichedProducts(
+  base: Product[],
+  favoriteEnriched: Product[],
+  sellerEnriched: Product[],
+): Product[] {
+  const favMap = new Map(favoriteEnriched.map((p) => [p.id, p]));
+  const sellerMap = new Map(sellerEnriched.map((p) => [p.id, p]));
+  return base.map((p) => ({
+    ...p,
+    ...(favMap.get(p.id) ?? {}),
+    ...(sellerMap.get(p.id) ?? {}),
+  }));
+}
+
 const SORT_OPTIONS = [
   { id: 'newest', label: 'Legújabb előre', column: 'created_at', order: 'desc' as const },
   { id: 'price_asc', label: 'Legolcsóbb előre', column: 'price', order: 'asc' as const },
@@ -271,8 +285,11 @@ export function useProducts() {
           fetched = fetched.filter((p) => (p.size || '').toLowerCase().includes(sizeQ));
         }
 
-        fetched = await enrichProductsWithFavoriteCounts(supabase, fetched);
-        fetched = await enrichProductsWithSellerInfo(supabase, fetched);
+        const [favoriteEnriched, sellerEnriched] = await Promise.all([
+          enrichProductsWithFavoriteCounts(supabase, fetched),
+          enrichProductsWithSellerInfo(supabase, fetched),
+        ]);
+        fetched = mergeEnrichedProducts(fetched, favoriteEnriched, sellerEnriched);
 
         const serverTotal = count ?? fetched.length;
         setTotalCount(serverTotal);

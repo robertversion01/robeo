@@ -305,7 +305,7 @@ export default function MessagesPage() {
             scheduleConversationsReload();
             return;
           }
-          setMessages((prev) => [...prev, newMsg]);
+          setMessages((prev) => (prev.some((m) => m.id === newMsg.id) ? prev : [...prev, newMsg]));
         }
         patchConversationPreview(newMsg);
         scheduleConversationsReload();
@@ -439,8 +439,20 @@ export default function MessagesPage() {
     setNewMessage('');
     setQuickInsertUndo(null);
     const latestProductMessage = [...messages].reverse().find((msg) => msg.product_id);
+    const tempId = `temp-${Date.now()}`;
+    const optimisticMessage: Message = {
+      id: tempId,
+      sender_id: user.id,
+      receiver_id: selectedConversation,
+      content,
+      created_at: new Date().toISOString(),
+      product_id: latestProductMessage?.product_id || null,
+      message_type: 'text',
+      media_url: null,
+    };
+    setMessages((prev) => [...prev, optimisticMessage]);
 
-    await supabase
+    const { data, error } = await supabase
       .from('messages')
       .insert({
         sender_id: user.id,
@@ -448,7 +460,18 @@ export default function MessagesPage() {
         content,
         product_id: latestProductMessage?.product_id || null,
         message_type: 'text'
-      });
+      })
+      .select('*')
+      .single();
+    if (error) {
+      setMessages((prev) => prev.filter((m) => m.id !== tempId));
+      setNewMessage(content);
+      toast.error(t('messages.sendFailed'));
+      return;
+    }
+    if (data) {
+      setMessages((prev) => prev.map((m) => (m.id === tempId ? (data as Message) : m)));
+    }
     trackEvent(AnalyticsEvent.MessageSent);
   };
 

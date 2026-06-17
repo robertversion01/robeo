@@ -694,6 +694,7 @@
     "cancel": "Cancel",
     "send": "Send",
     "sending": "Sending…",
+    "sendFailed": "Message sending failed.",
     "loadingProduct": "Loading product…",
     "offerMinHint": "At least {{min}} Ft (~60% of list price).",
     "offerMinDefault": "Minimum follows the current list price.",

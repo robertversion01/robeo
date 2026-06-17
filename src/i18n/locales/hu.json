@@ -701,6 +701,7 @@
     "cancel": "Mégse",
     "send": "Küldés",
     "sending": "Küldés…",
+    "sendFailed": "Üzenetküldés sikertelen.",
     "loadingProduct": "Termék betöltése…",
     "offerMinHint": "Legalább {{min}} Ft (listaár ~60%-a).",
     "offerMinDefault": "A minimum az aktuális listaárhoz igazodik.",
