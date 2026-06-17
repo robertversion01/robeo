@@ -7,7 +7,7 @@ import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { toast } from 'sonner';
 import { ZoomIn, ZoomOut, MapPin } from 'lucide-react';
-import { getOptimizedImageUrl, shouldLazyLoad } from '@/lib/imageUtils';
+import { getOptimizedImageUrl, getOptimizedImageSrcSet, shouldLazyLoad } from '@/lib/imageUtils';
 import { trackEvent, AnalyticsEvent } from '@/lib/analytics';
 import { getValidProductImageUrls } from '@/lib/productImageValidation';
 import ProductImage from '@/components/product/ProductImage';
@@ -235,6 +235,11 @@ export default function ProductPage({ params }: { params: Promise<{ id: string }
 
   const safeSelectedIndex = Math.min(selectedImageIndex, productImages.length - 1);
   const activeImage = productImages[safeSelectedIndex];
+  // PDP fo kepet kulon kezeljuk (nem feed-kartya orokles), hogy ne legyen
+  // cropolt/zoomolt alapallapot, es stabil maradjon a letoltesi meret.
+  const pdpMainImageOptions = { height: 960, resize: 'contain' } as const;
+  const pdpMainSrc = getOptimizedImageUrl(activeImage, 960, 84, pdpMainImageOptions);
+  const pdpMainSrcSet = getOptimizedImageSrcSet(activeImage, [480, 640, 800, 960, 1200], 84, pdpMainImageOptions);
 
   const sellerDisplayName = sellerProfile?.full_name || sellerProfile?.email?.split('@')[0] || t('product.seller');
   const sellerInitial = sellerDisplayName?.charAt(0).toUpperCase() || 'E';
@@ -328,12 +333,16 @@ export default function ProductPage({ params }: { params: Promise<{ id: string }
                 onTouchEnd={handleImageTouchEnd}
               >
                 <ProductImage
-                  src={getOptimizedImageUrl(activeImage, 800, 90)}
+                  src={pdpMainSrc}
+                  srcSet={pdpMainSrcSet}
+                  sizes="(max-width: 768px) 100vw, 50vw"
                   alt={product.name}
+                  width={960}
+                  height={960}
                   loading="eager"
                   fetchPriority="high"
                   decoding="async"
-                  className={`w-full h-full object-cover transition-transform duration-300 ${isZoomed ? 'scale-150' : 'scale-100'} ${isSold ? 'opacity-70 grayscale' : ''}`}
+                  className={`w-full h-full object-contain transition-transform duration-300 ${isZoomed ? 'scale-125' : 'scale-100'} ${isSold ? 'opacity-70 grayscale' : ''}`}
                   onError={() => markGalleryUrlFailed(activeImage)}
                 />
                 {isSold ? (
