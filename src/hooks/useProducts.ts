@@ -74,6 +74,13 @@ export function useProducts() {
   const [favorites, setFavorites] = useState<Set<string>>(new Set());
   const [user, setUser] = useState<any>(null);
   const fetchGenRef = useRef(0);
+  const serverFilterSupportRef = useRef<{
+    sizeFilterOnServer: boolean;
+    districtFilterOnServer: boolean;
+    vacationIds: string[];
+    loadedAt: number;
+  } | null>(null);
+  const refreshTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   const categories = useMemo(() => {
     if (selectedListingType === 'all') return CATEGORIES_ALL;
@@ -203,20 +210,38 @@ export function useProducts() {
         let query = supabase.from('products').select('*', { count: 'exact' });
         query = applyListedProductFilter(query);
 
-        const vacationIds = await fetchAllVacationSellerIds(supabase);
-        const sizeFilterOnServer =
-          catalogFilters.listingType !== 'service' &&
-          catalogFilters.size !== 'all' &&
-          (await canFilterProductsBySize(supabase));
+        const supportCache = serverFilterSupportRef.current;
+        const now = Date.now();
+        const supportFresh = supportCache && now - supportCache.loadedAt < 5 * 60 * 1000;
+        let sizeFilterOnServer = supportCache?.sizeFilterOnServer ?? false;
+        let districtFilterOnServer = supportCache?.districtFilterOnServer ?? false;
+        let vacationIds = supportCache?.vacationIds ?? [];
+        if (!supportFresh) {
+          const [sizeSupport, districtSupport, vacation] = await Promise.all([
+            canFilterProductsBySize(supabase),
+            productsHasDistrictColumn(supabase),
+            fetchAllVacationSellerIds(supabase),
+          ]);
+          sizeFilterOnServer = sizeSupport;
+          districtFilterOnServer = districtSupport;
+          vacationIds = vacation;
+          serverFilterSupportRef.current = {
+            sizeFilterOnServer,
+            districtFilterOnServer,
+            vacationIds,
+            loadedAt: now,
+          };
+        }
 
-        const districtFilterOnServer =
-          Boolean(getBudapestDistrictFilter(catalogFilters)) &&
-          (await productsHasDistrictColumn(supabase));
+        const canUseSizeFilter =
+          catalogFilters.listingType !== 'service' && catalogFilters.size !== 'all' && sizeFilterOnServer;
+        const canUseDistrictFilter =
+          Boolean(getBudapestDistrictFilter(catalogFilters)) && districtFilterOnServer;
 
         query = applyCatalogFiltersToProductQuery(query, catalogFilters, {
           vacationIds,
-          sizeFilterOnServer,
-          districtFilterOnServer,
+          sizeFilterOnServer: canUseSizeFilter,
+          districtFilterOnServer: canUseDistrictFilter,
         });
 
         query = query.order(sortConfig.column, { ascending: sortConfig.order === 'asc' }).range(from, to);
@@ -241,7 +266,7 @@ export function useProducts() {
           );
         }
 
-        if (catalogFilters.size !== 'all' && !sizeFilterOnServer) {
+        if (catalogFilters.size !== 'all' && !canUseSizeFilter) {
           const sizeQ = catalogFilters.size.toLowerCase();
           fetched = fetched.filter((p) => (p.size || '').toLowerCase().includes(sizeQ));
         }
@@ -305,12 +330,29 @@ export function useProducts() {
   }, []);
 
   useEffect(() => {
+    return () => {
+      if (refreshTimerRef.current) {
+        clearTimeout(refreshTimerRef.current);
+      }
+    };
+  }, []);
+
+  const scheduleRefresh = useCallback((delayMs: number = 700) => {
+    if (refreshTimerRef.current) {
+      clearTimeout(refreshTimerRef.current);
+    }
+    refreshTimerRef.current = setTimeout(() => {
+      void fetchProductsRef.current(0, false);
+    }, delayMs);
+  }, []);
+
+  useEffect(() => {
     const onCatalogRefresh = () => {
-      void fetchProductsPage(0, false);
+      scheduleRefresh(250);
     };
     window.addEventListener(CATALOG_UPDATED_EVENT, onCatalogRefresh);
     return () => window.removeEventListener(CATALOG_UPDATED_EVENT, onCatalogRefresh);
-  }, [fetchProductsPage]);
+  }, [scheduleRefresh]);
 
   const fetchProductsRef = useRef(fetchProductsPage);
   fetchProductsRef.current = fetchProductsPage;
@@ -323,14 +365,14 @@ export function useProducts() {
       'postgres_changes',
       { event: 'INSERT', schema: 'public', table: 'products' },
       () => {
-        void fetchProductsRef.current(0, false);
+        scheduleRefresh();
       },
     );
     channel.on(
       'postgres_changes',
       { event: 'UPDATE', schema: 'public', table: 'products' },
       () => {
-        void fetchProductsRef.current(0, false);
+        scheduleRefresh();
       },
     );
     channel.subscribe();
@@ -338,7 +380,7 @@ export function useProducts() {
     return () => {
       void supabase.removeChannel(channel);
     };
-  }, []);
+  }, [scheduleRefresh]);
 
   const checkUserAndFavorites = async () => {
     try {

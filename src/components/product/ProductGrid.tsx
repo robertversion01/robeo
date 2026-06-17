@@ -7,7 +7,6 @@ import Link from 'next/link';
 import ProductCard from './ProductCard';
 import ProductGridSkeleton from './ProductGridSkeleton';
 import EmptyState from '@/components/ui/EmptyState';
-import { filterProductsWithValidImages } from '@/lib/productImageValidation';
 import type { Product } from '@/types';
 
 interface ProductGridProps {
@@ -55,7 +54,7 @@ export default function ProductGrid({
     return <ProductGridSkeleton />;
   }
 
-  const displayProducts = filterProductsWithValidImages(products);
+  const displayProducts = products;
 
   if (displayProducts.length === 0) {
     if (districtLabel) {

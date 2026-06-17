@@ -82,6 +82,7 @@ export default function MessagesPage() {
   const [activeProductStatus, setActiveProductStatus] = useState<string | null>(null);
   const [savedReplies, setSavedReplies] = useState<SellerSavedReply[]>([]);
   const threadBlockedRef = useRef(false);
+  const conversationsReloadTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   const activeProductId =
     [...messages].reverse().find((msg) => msg.product_id)?.product_id ?? null;
@@ -146,6 +147,12 @@ export default function MessagesPage() {
       if (channel) void supabase.removeChannel(channel);
     };
   }, [user]);
+
+  useEffect(() => {
+    return () => {
+      if (conversationsReloadTimerRef.current) clearTimeout(conversationsReloadTimerRef.current);
+    };
+  }, []);
 
   useEffect(() => {
     if (!user?.id) {
@@ -236,6 +243,31 @@ export default function MessagesPage() {
   };
 
   const subscribeToMessages = (): ReturnType<typeof supabase.channel> => {
+    const scheduleConversationsReload = (delayMs: number = 450) => {
+      if (conversationsReloadTimerRef.current) clearTimeout(conversationsReloadTimerRef.current);
+      conversationsReloadTimerRef.current = setTimeout(() => {
+        void loadConversations();
+      }, delayMs);
+    };
+
+    const patchConversationPreview = (msg: Message) => {
+      if (!user?.id) return;
+      const otherUser = msg.sender_id === user.id ? msg.receiver_id : msg.sender_id;
+      if (!otherUser) return;
+      setConversations((prev) => {
+        const existing = prev.find((c) => c.user_id === otherUser);
+        const nextLast = msg.message_type === 'image' ? t('messages.imagePreview') : msg.content;
+        if (!existing) return prev;
+        const updated: Conversation = {
+          ...existing,
+          last_message: nextLast,
+          last_message_time: msg.created_at,
+          product_id: msg.product_id ?? existing.product_id ?? null,
+        };
+        return [updated, ...prev.filter((c) => c.user_id !== otherUser)];
+      });
+    };
+
     const channel = supabase.channel('messages')
       .on('postgres_changes', {
         event: 'INSERT',
@@ -243,9 +275,13 @@ export default function MessagesPage() {
         table: 'messages',
       }, (payload: any) => {
         const newMsg = payload.new as Message;
+        if (!user?.id) return;
+        const relevantToUser = newMsg.sender_id === user.id || newMsg.receiver_id === user.id;
+        if (!relevantToUser) return;
         const activeId = selectedConversationRef.current;
-        if (!activeId || !user?.id) {
-          loadConversations();
+        if (!activeId) {
+          patchConversationPreview(newMsg);
+          scheduleConversationsReload();
           return;
         }
         const inThread =
@@ -253,12 +289,13 @@ export default function MessagesPage() {
           (newMsg.sender_id === activeId && newMsg.receiver_id === user.id);
         if (inThread) {
           if (newMsg.sender_id === activeId && threadBlockedRef.current) {
-            loadConversations();
+            scheduleConversationsReload();
             return;
           }
           setMessages((prev) => [...prev, newMsg]);
         }
-        loadConversations();
+        patchConversationPreview(newMsg);
+        scheduleConversationsReload();
       })
       .on('postgres_changes', {
         event: '*',
@@ -270,7 +307,7 @@ export default function MessagesPage() {
         const offer = payload.new;
         if (!offer) return;
         if (offer.buyer_id === currentUser.id || offer.seller_id === currentUser.id) {
-          loadConversations();
+          scheduleConversationsReload();
           const activeConversationId = selectedConversationRef.current;
           if (activeConversationId) {
             loadConversation(activeConversationId, selectedEmailRef.current);
