@@ -6,6 +6,7 @@ import { useTranslation } from 'react-i18next';
 import PresetImage from '@/components/product/PresetImage';
 import { useSnapCarousel } from '@/hooks/useSnapCarousel';
 import { usePinchZoom } from '@/hooks/usePinchZoom';
+import { useBodyScrollLock } from '@/hooks/useBodyScrollLock';
 import { IMAGE_VIEWPORT_PRELOAD_RADIUS } from '@/lib/imagePresets';
 import { cn } from '@/lib/utils';
 
@@ -17,29 +18,6 @@ type ProductImageViewerProps = {
   productName?: string;
 };
 
-function lockBodyScroll() {
-  const scrollY = window.scrollY;
-  document.body.style.position = 'fixed';
-  document.body.style.top = `-${scrollY}px`;
-  document.body.style.left = '0';
-  document.body.style.right = '0';
-  document.body.style.width = '100%';
-  document.body.style.overflow = 'hidden';
-  document.documentElement.style.overflow = 'hidden';
-  return scrollY;
-}
-
-function unlockBodyScroll(scrollY: number) {
-  document.body.style.position = '';
-  document.body.style.top = '';
-  document.body.style.left = '';
-  document.body.style.right = '';
-  document.body.style.width = '';
-  document.body.style.overflow = '';
-  document.documentElement.style.overflow = '';
-  window.scrollTo(0, scrollY);
-}
-
 export default function ProductImageViewer({
   images,
   initialIndex = 0,
@@ -49,8 +27,9 @@ export default function ProductImageViewer({
 }: ProductImageViewerProps) {
   const { t } = useTranslation();
   const [mounted, setMounted] = useState(false);
-  const scrollLockY = useRef(0);
   const { scale, isZoomed, reset, handlers, onDoubleTap } = usePinchZoom(open);
+
+  useBodyScrollLock(open);
 
   const { ref: carouselRef, activeIndex, scrollToIndex, handleScroll } = useSnapCarousel(
     images.length,
@@ -74,16 +53,6 @@ export default function ProductImageViewer({
 
   useEffect(() => {
     if (!open) return;
-    scrollLockY.current = lockBodyScroll();
-    document.body.dataset.feedViewerOpen = 'true';
-    return () => {
-      delete document.body.dataset.feedViewerOpen;
-      unlockBodyScroll(scrollLockY.current);
-    };
-  }, [open]);
-
-  useEffect(() => {
-    if (!open) return;
     const onKey = (e: KeyboardEvent) => {
       if (e.key === 'Escape') onClose();
     };
@@ -91,8 +60,8 @@ export default function ProductImageViewer({
     return () => window.removeEventListener('keydown', onKey);
   }, [open, onClose]);
 
-  const stopBubble = useCallback((e: SyntheticEvent) => {
-    e.stopPropagation();
+  const blockContextMenu = useCallback((e: SyntheticEvent) => {
+    e.preventDefault();
   }, []);
 
   if (!open || images.length === 0 || !mounted) return null;
@@ -101,15 +70,11 @@ export default function ProductImageViewer({
     <div
       data-feed-image-viewer
       data-no-feed-swipe
-      className="product-gallery-overlay fixed inset-0 z-[99999] flex flex-col bg-black select-none"
+      className="product-gallery-overlay fixed inset-0 z-[99999] flex h-[100dvh] w-full flex-col bg-black select-none"
       role="dialog"
       aria-modal="true"
       aria-label={t('product.imageViewer')}
-      onContextMenu={(e) => e.preventDefault()}
-      onTouchStart={stopBubble}
-      onTouchMove={stopBubble}
-      onTouchEnd={stopBubble}
-      onTouchCancel={stopBubble}
+      onContextMenu={blockContextMenu}
     >
       <div className="pointer-events-none absolute inset-x-0 top-0 z-20 flex justify-end p-3 pt-[max(0.75rem,env(safe-area-inset-top))]">
         <button
@@ -125,8 +90,8 @@ export default function ProductImageViewer({
         ref={carouselRef}
         onScroll={handleScroll}
         className={cn(
-          'relative flex h-full w-full snap-x snap-mandatory overflow-x-auto overscroll-x-none no-scrollbar',
-          isZoomed ? 'touch-none overflow-hidden' : 'touch-pan-x [touch-action:pan-x]',
+          'relative min-h-0 w-full flex-1 snap-x snap-mandatory overflow-x-auto overscroll-x-none no-scrollbar',
+          isZoomed ? 'overflow-hidden touch-none' : 'touch-pan-x [touch-action:pan-x]',
         )}
         style={{ WebkitOverflowScrolling: 'touch' }}
       >
@@ -140,7 +105,7 @@ export default function ProductImageViewer({
             >
               {inBand ? (
                 <div
-                  className="flex h-full w-full items-center justify-center px-1"
+                  className="flex h-full w-full max-h-full items-center justify-center overflow-hidden px-2 pb-8 pt-12"
                   onClick={isActive ? onDoubleTap : undefined}
                   {...(isActive ? handlers : {})}
                 >
@@ -151,12 +116,9 @@ export default function ProductImageViewer({
                     lazy={!isActive}
                     alt={productName}
                     draggable={false}
-                    className={cn(
-                      'max-h-[92vh] w-full object-contain transition-transform duration-150 ease-out pointer-events-none',
-                      isActive && isZoomed ? 'h-[92vh]' : 'h-full',
-                    )}
+                    className="block max-h-full max-w-full object-contain pointer-events-none"
                     style={
-                      isActive
+                      isActive && isZoomed
                         ? {
                             transform: `scale(${scale})`,
                             transformOrigin: 'center center',
@@ -166,7 +128,7 @@ export default function ProductImageViewer({
                   />
                 </div>
               ) : (
-                <div className="h-[60vh] w-full" aria-hidden />
+                <div className="h-full w-full" aria-hidden />
               )}
             </div>
           );

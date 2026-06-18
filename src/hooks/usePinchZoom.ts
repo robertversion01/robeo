@@ -49,21 +49,21 @@ export function usePinchZoom(enabled: boolean) {
 
   const onTouchEnd = useCallback(() => {
     pinchStartRef.current = null;
-    if (scale < 1.05) setScale(1);
+    if (scale < 1.15) setScale(1);
   }, [scale]);
 
   const onDoubleTap = useCallback(() => {
     if (!enabled) return;
     const now = Date.now();
     if (now - lastTapRef.current < 320) {
-      setScale((s) => (s > 1.05 ? 1 : 2));
+      setScale((s) => (s > 1.15 ? 1 : 2.5));
     }
     lastTapRef.current = now;
   }, [enabled]);
 
   return {
     scale,
-    isZoomed: scale > 1.05,
+    isZoomed: scale > 1.15,
     reset,
     handlers: { onTouchStart, onTouchMove, onTouchEnd, onTouchCancel: onTouchEnd },
     onDoubleTap,

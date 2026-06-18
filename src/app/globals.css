@@ -579,7 +579,6 @@ select option {
   -webkit-touch-callout: none;
   -webkit-user-select: none;
   user-select: none;
-  touch-action: manipulation;
 }
 
 .product-gallery-surface img,
@@ -587,4 +586,13 @@ select option {
   -webkit-user-drag: none;
   user-drag: none;
   pointer-events: none;
+}
+
+body.feed-viewer-scroll-lock {
+  position: fixed;
+  left: 0;
+  right: 0;
+  width: 100%;
+  overflow: hidden;
+  touch-action: none;
 }
