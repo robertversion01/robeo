@@ -34,6 +34,7 @@ function HomePageContent() {
               browsePath="/"
               stickyTopClass="top-0"
               showPersonalization={false}
+              variant="feed"
             />
           </div>
         </main>

@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useState, use, useMemo, useCallback, useRef } from 'react';
+import { useEffect, useState, use, useMemo, useCallback } from 'react';
 import dynamic from 'next/dynamic';
 import { useTranslation } from 'react-i18next';
 import { supabase } from '@/lib/supabase';
@@ -8,8 +8,10 @@ import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { toast } from 'sonner';
 import { ZoomIn, MapPin } from 'lucide-react';
-import { shouldLazyLoad } from '@/lib/imageUtils';
+import { useSnapCarousel } from '@/hooks/useSnapCarousel';
+import { useImageGalleryGestures } from '@/hooks/useImageGalleryGestures';
 import { imageFromPreset } from '@/lib/imagePresets';
+import { shouldLazyLoad } from '@/lib/imageUtils';
 import { trackEvent, AnalyticsEvent } from '@/lib/analytics';
 import { getValidProductImageUrls } from '@/lib/productImageValidation';
 import PresetImage from '@/components/product/PresetImage';
@@ -51,7 +53,6 @@ export default function ProductPage({ params }: { params: Promise<{ id: string }
   const [loading, setLoading] = useState(true);
   const [selectedImageIndex, setSelectedImageIndex] = useState(0);
   const [showImageViewer, setShowImageViewer] = useState(false);
-  const mainCarouselRef = useRef<HTMLDivElement | null>(null);
   const [sellerProfile, setSellerProfile] = useState<{ full_name?: string | null; email?: string | null } | null>(null);
   // Modal States
   const [showMessageModal, setShowMessageModal] = useState(false);
@@ -88,6 +89,22 @@ export default function ProductPage({ params }: { params: Promise<{ id: string }
     () => allProductImages.filter((url) => !failedGalleryUrls.has(url)),
     [allProductImages, failedGalleryUrls],
   );
+
+  const {
+    ref: mainCarouselRef,
+    activeIndex: carouselIndex,
+    scrollToIndex,
+    handleScroll: handleMainCarouselScroll,
+  } = useSnapCarousel(productImages.length, {
+    initialIndex: 0,
+    onIndexChange: setSelectedImageIndex,
+  });
+
+  const pdpGalleryGestures = useImageGalleryGestures({
+    onTap: () => {},
+    onOpenViewer: () => setShowImageViewer(true),
+    enabled: productImages.length > 0,
+  });
 
   const pdpLcpSrc = useMemo(() => {
     if (productImages.length === 0) return null;
@@ -259,25 +276,12 @@ export default function ProductPage({ params }: { params: Promise<{ id: string }
   const categoryBrowseHref = `/browse?cat=${encodeURIComponent(categoryKey)}#catalog`;
   const categoryLabel = categoryDisplayLabel(t, categoryKey);
 
-  const safeSelectedIndex = Math.min(selectedImageIndex, productImages.length - 1);
+  const safeSelectedIndex = Math.min(carouselIndex, productImages.length - 1);
 
   const sellerDisplayName = sellerProfile?.full_name || sellerProfile?.email?.split('@')[0] || t('product.seller');
   const sellerInitial = sellerDisplayName?.charAt(0).toUpperCase() || 'E';
   const isSold = isSoldListing(product.status);
   const isPurchasable = isListedProduct(product.status);
-
-  const handleMainCarouselScroll = (event: React.UIEvent<HTMLDivElement>) => {
-    const el = event.currentTarget;
-    if (el.clientWidth <= 0) return;
-    const nextIndex = Math.round(el.scrollLeft / el.clientWidth);
-    if (nextIndex !== selectedImageIndex && nextIndex >= 0 && nextIndex < productImages.length) {
-      setSelectedImageIndex(nextIndex);
-    }
-  };
-
-  const handleMainCarouselGestureStart = () => {
-    /* swipe — zoom csak a fullscreen viewerben */
-  };
 
   return (
     <div className="min-h-screen bg-[#11171a] text-[#e7edf0]">
@@ -345,13 +349,15 @@ export default function ProductPage({ params }: { params: Promise<{ id: string }
             <div>
               {/* Main Image */}
               <div
-                className="relative aspect-[4/5] md:aspect-square md:rounded-xl md:overflow-hidden bg-[#0f1a1d]/10 mb-2 border border-[#2a3941] touch-pan-y"
+                className="relative aspect-[4/5] md:aspect-square md:rounded-xl md:overflow-hidden bg-[#0f1a1d]/10 mb-2 border border-[#2a3941] select-none [touch-callout:none]"
+                onContextMenu={pdpGalleryGestures.onContextMenu}
               >
                 <div
                   ref={mainCarouselRef}
                   onScroll={handleMainCarouselScroll}
-                  onTouchStart={handleMainCarouselGestureStart}
-                  onPointerDown={handleMainCarouselGestureStart}
+                  onTouchStart={pdpGalleryGestures.onTouchStart}
+                  onTouchMove={pdpGalleryGestures.onTouchMove}
+                  onTouchEnd={pdpGalleryGestures.onTouchEnd}
                   className="relative z-[1] flex h-full w-full snap-x snap-mandatory overflow-x-auto overscroll-x-contain touch-pan-x no-scrollbar"
                   style={{ WebkitOverflowScrolling: 'touch' }}
                 >
@@ -359,7 +365,7 @@ export default function ProductPage({ params }: { params: Promise<{ id: string }
                     const isActive = idx === safeSelectedIndex;
                     const distance = Math.abs(idx - safeSelectedIndex);
                     return (
-                    <div key={imgUrl} className="relative h-full min-w-full snap-center">
+                    <div key={imgUrl} className="relative h-full min-w-full shrink-0 snap-center snap-always">
                       {distance <= 1 ? (
                         <PresetImage
                           url={imgUrl}
@@ -414,11 +420,7 @@ export default function ProductPage({ params }: { params: Promise<{ id: string }
                       key={imgUrl}
                       type="button"
                       onClick={() => {
-                        setSelectedImageIndex(index);
-                        const carousel = mainCarouselRef.current;
-                        if (carousel) {
-                          carousel.scrollTo({ left: carousel.clientWidth * index, behavior: 'smooth' });
-                        }
+                        scrollToIndex(index, true);
                       }}
                       className={`w-14 h-14 rounded-md overflow-hidden flex-shrink-0 border transition-all ${
                         safeSelectedIndex === index

@@ -4,6 +4,7 @@ import { useCallback, useEffect, useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { X, ZoomIn, ZoomOut } from 'lucide-react';
 import PresetImage from '@/components/product/PresetImage';
+import { useSnapCarousel } from '@/hooks/useSnapCarousel';
 import { cn } from '@/lib/utils';
 
 type ProductImageViewerProps = {
@@ -22,23 +23,20 @@ export default function ProductImageViewer({
   productName = '',
 }: ProductImageViewerProps) {
   const { t } = useTranslation();
-  const [activeIndex, setActiveIndex] = useState(initialIndex);
   const [isZoomed, setIsZoomed] = useState(false);
-  const carouselRef = useRef<HTMLDivElement | null>(null);
   const lastTapRef = useRef(0);
+
+  const { ref: carouselRef, activeIndex, scrollToIndex, handleScroll } = useSnapCarousel(
+    images.length,
+    { initialIndex },
+  );
 
   useEffect(() => {
     if (!open) return;
     const safe = Math.min(Math.max(0, initialIndex), images.length - 1);
-    setActiveIndex(safe);
     setIsZoomed(false);
-    requestAnimationFrame(() => {
-      const el = carouselRef.current;
-      if (el && el.clientWidth > 0) {
-        el.scrollLeft = el.clientWidth * safe;
-      }
-    });
-  }, [open, initialIndex, images.length]);
+    requestAnimationFrame(() => scrollToIndex(safe, false));
+  }, [open, initialIndex, images.length, scrollToIndex]);
 
   useEffect(() => {
     if (!open) return;
@@ -58,19 +56,6 @@ export default function ProductImageViewer({
     return () => window.removeEventListener('keydown', onKey);
   }, [open, onClose]);
 
-  const handleScroll = useCallback(
-    (event: React.UIEvent<HTMLDivElement>) => {
-      const el = event.currentTarget;
-      if (el.clientWidth <= 0) return;
-      const next = Math.round(el.scrollLeft / el.clientWidth);
-      if (next !== activeIndex && next >= 0 && next < images.length) {
-        setActiveIndex(next);
-        setIsZoomed(false);
-      }
-    },
-    [activeIndex, images.length],
-  );
-
   const handleDoubleTap = useCallback(() => {
     const now = Date.now();
     if (now - lastTapRef.current < 300) {
@@ -83,10 +68,11 @@ export default function ProductImageViewer({
 
   return (
     <div
-      className="fixed inset-0 z-[300] flex flex-col bg-black/95 backdrop-blur-sm"
+      className="fixed inset-0 z-[300] flex flex-col bg-black/95 backdrop-blur-sm select-none [touch-callout:none]"
       role="dialog"
       aria-modal="true"
       aria-label={t('product.imageViewer')}
+      onContextMenu={(e) => e.preventDefault()}
     >
       <header className="relative z-10 flex items-center justify-between px-3 py-3 safe-area-top">
         <button
@@ -122,7 +108,7 @@ export default function ProductImageViewer({
           return (
             <div
               key={`${imgUrl}-${idx}`}
-              className="flex h-full min-w-full snap-center items-center justify-center px-1"
+              className="flex h-full min-w-full shrink-0 snap-center snap-always items-center justify-center px-1"
               onClick={handleDoubleTap}
             >
               {distance <= 1 ? (
@@ -132,8 +118,9 @@ export default function ProductImageViewer({
                   priority={isActive}
                   lazy={!isActive}
                   alt={productName}
+                  draggable={false}
                   className={cn(
-                    'max-h-full max-w-full object-contain transition-transform duration-200 ease-out',
+                    'max-h-full max-w-full object-contain transition-transform duration-200 ease-out pointer-events-none',
                     isActive && isZoomed ? 'scale-[2] cursor-zoom-out' : 'scale-100 cursor-zoom-in',
                   )}
                 />

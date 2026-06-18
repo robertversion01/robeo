@@ -10,6 +10,8 @@ import EmptyState from '@/components/ui/EmptyState';
 import ListRefreshingBar from '@/components/ui/ListRefreshingBar';
 import type { Product } from '@/types';
 
+import type { ImagePresetName } from '@/lib/imagePresets';
+
 interface ProductGridProps {
   products: Product[];
   loading: boolean;
@@ -24,6 +26,8 @@ interface ProductGridProps {
   districtLabel?: string;
   /** RobeoBP — csak a kerület-szűrő törlése (a többit megtartja). */
   onClearDistrict?: () => void;
+  /** Főoldal vs browse kép preset */
+  cardImagePreset?: ImagePresetName;
 }
 
 export default function ProductGrid({
@@ -38,6 +42,7 @@ export default function ProductGrid({
   listingType = 'all',
   districtLabel,
   onClearDistrict,
+  cardImagePreset = 'feedCard',
 }: ProductGridProps) {
   const { t } = useTranslation();
   const [visible, setVisible] = useState(true);
@@ -184,6 +189,7 @@ export default function ProductGrid({
             isFavorite={favorites.has(product.id)}
             onToggleFavorite={() => onToggleFavorite(product.id)}
             priority={index < 3}
+            imagePreset={cardImagePreset}
           />
         ))}
       </motion.div>

@@ -367,6 +367,7 @@ function CatalogBrowsePanelInner({
         listingType={selectedListingType}
         districtLabel={activeDistrictLabel || undefined}
         onClearDistrict={() => removeFilter('budapest_district')}
+        cardImagePreset={isFeed ? 'homepageFeed' : 'feedCard'}
       />
       {!loading && catalogProducts.length > 0 && hasMore ? (
         <div className="mt-6 flex justify-center pb-4 md:pb-8">

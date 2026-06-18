@@ -9,13 +9,14 @@ import {
 } from '@/lib/imageUtils';
 
 export const IMAGE_QUALITY = {
-  feed: 50,
+  homepageFeed: 62,
+  feed: 54,
   rail: 48,
   thumb: 46,
   pdp: 64,
-  pdpViewer: 70,
+  pdpViewer: 72,
   avatar: 52,
-  hero: 50,
+  hero: 58,
 } as const;
 
 export type ImageLazyPolicy = 'lazy' | 'eager' | 'inherit';
@@ -33,7 +34,8 @@ type ImagePreset = {
 
 /** Várható byte-budget / kép (WebP, mobilon) — CI audit célra. */
 export const IMAGE_BYTE_BUDGETS: Record<string, { maxKb: number; note: string }> = {
-  feedCard: { maxKb: 12, note: 'Feed kártya ~140w q50' },
+  homepageFeed: { maxKb: 18, note: 'Főoldal feed ~200w q62' },
+  feedCard: { maxKb: 14, note: 'Browse feed ~170w q54' },
   railCard: { maxKb: 10, note: 'Hasonló termék rail ~96w' },
   pdpMain: { maxKb: 45, note: 'PDP aktív slide ~560w' },
   pdpCarouselIdle: { maxKb: 8, note: 'PDP inaktív slide ~180w' },
@@ -43,11 +45,22 @@ export const IMAGE_BYTE_BUDGETS: Record<string, { maxKb: number; note: string }>
 };
 
 export const IMAGE_PRESETS = {
+  /** Főoldal feed — olvashatóbb minőség, még mindig mobil-barát */
+  homepageFeed: {
+    width: 200,
+    quality: IMAGE_QUALITY.homepageFeed,
+    options: { height: 250, resize: 'cover', format: 'webp' },
+    srcSetWidths: [160, 200, 260, 320],
+    sizes: '(max-width: 640px) 48vw, (max-width: 1024px) 32vw, 20vw',
+    lazyPolicy: 'lazy',
+    fetchPriority: 'low',
+  },
+  /** Browse / kedvencek — kicsit agresszívebb, mint homepage */
   feedCard: {
-    width: 140,
+    width: 170,
     quality: IMAGE_QUALITY.feed,
-    options: { height: 175, resize: 'cover', format: 'webp' },
-    srcSetWidths: [100, 140, 180],
+    options: { height: 212, resize: 'cover', format: 'webp' },
+    srcSetWidths: [140, 170, 220],
     sizes: '(max-width: 640px) 45vw, (max-width: 1024px) 30vw, 18vw',
     lazyPolicy: 'lazy',
     fetchPriority: 'low',
@@ -71,10 +84,10 @@ export const IMAGE_PRESETS = {
     fetchPriority: 'low',
   },
   pdpViewer: {
-    width: 900,
+    width: 1080,
     quality: IMAGE_QUALITY.pdpViewer,
-    options: { height: 1125, resize: 'contain', format: 'webp' },
-    srcSetWidths: [560, 720, 900, 1080],
+    options: { height: 1350, resize: 'contain', format: 'webp' },
+    srcSetWidths: [720, 900, 1080, 1280],
     sizes: '100vw',
     lazyPolicy: 'inherit',
     fetchPriority: 'high',
@@ -89,10 +102,10 @@ export const IMAGE_PRESETS = {
     fetchPriority: 'low',
   },
   heroTile: {
-    width: 100,
+    width: 130,
     quality: IMAGE_QUALITY.hero,
-    options: { height: 130, resize: 'cover', format: 'webp' },
-    srcSetWidths: [80, 100, 130],
+    options: { height: 168, resize: 'cover', format: 'webp' },
+    srcSetWidths: [100, 130, 170],
     sizes: '(max-width: 640px) 30vw, (max-width: 1024px) 18vw, 14vw',
     lazyPolicy: 'inherit',
     fetchPriority: 'high',

@@ -1,15 +1,20 @@
 'use client';
 
-import { useCallback, useRef, useState } from 'react';
+import { useCallback, useEffect, useState } from 'react';
 import Link from 'next/link';
+import { useRouter } from 'next/navigation';
 import { Heart, MapPin, BadgeCheck } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 import { cn, formatPrice } from '@/lib/utils';
 import { getDistrictLabel } from '@/lib/budapestDistricts';
 import { categoryDisplayLabel } from '@/lib/categoryDisplay';
 import PresetImage from '@/components/product/PresetImage';
+import ProductImageViewer from '@/components/product/ProductImageViewer';
 import { normalizePrimaryProductImageUrl } from '@/lib/productImageValidation';
 import { getListingAgeBadge, getProductCardImages } from '@/lib/productListingBadges';
+import { useSnapCarousel } from '@/hooks/useSnapCarousel';
+import { useImageGalleryGestures } from '@/hooks/useImageGalleryGestures';
+import type { ImagePresetName } from '@/lib/imagePresets';
 import Badge from '@/components/ui/Badge';
 import type { ProductWithSeller } from '@/lib/sellerCardEnrichment';
 
@@ -19,6 +24,8 @@ interface ProductCardProps {
   onToggleFavorite: () => void;
   /** Above-the-fold kártya: azonnali (eager) + magas prioritású képbetöltés. */
   priority?: boolean;
+  /** Főoldal vs browse feed képminőség */
+  imagePreset?: ImagePresetName;
 }
 
 export default function ProductCard({
@@ -26,27 +33,54 @@ export default function ProductCard({
   isFavorite,
   onToggleFavorite,
   priority = false,
+  imagePreset = 'feedCard',
 }: ProductCardProps) {
   const { t } = useTranslation();
+  const router = useRouter();
   const cardImages = getProductCardImages(product);
   const primaryImage = normalizePrimaryProductImageUrl(product) || cardImages[0];
   const [imageVisible, setImageVisible] = useState(true);
   const [heartBump, setHeartBump] = useState(false);
-  const [imageIndex, setImageIndex] = useState(0);
   const [nowMs] = useState(() => Date.now());
-  const touchStartX = useRef<number | null>(null);
+  const [showViewer, setShowViewer] = useState(false);
 
-  const displayImage = cardImages[imageIndex] || primaryImage;
+  const images = cardImages.length > 0 ? cardImages : primaryImage ? [primaryImage] : [];
 
-  const cycleImage = useCallback(
-    (delta: number) => {
-      if (cardImages.length <= 1) return;
-      setImageIndex((prev) => (prev + delta + cardImages.length) % cardImages.length);
-    },
-    [cardImages.length],
+  const { ref: carouselRef, activeIndex, scrollToIndex, handleScroll } = useSnapCarousel(
+    images.length,
+    { initialIndex: 0 },
   );
 
-  if (!displayImage || !imageVisible) return null;
+  const openProduct = useCallback(() => {
+    router.push(`/products/${product.id}`);
+  }, [product.id, router]);
+
+  const openViewer = useCallback(() => {
+    if (images.length === 0) return;
+    setShowViewer(true);
+  }, [images.length]);
+
+  const gestures = useImageGalleryGestures({
+    onTap: openProduct,
+    onOpenViewer: openViewer,
+    enabled: images.length > 0,
+  });
+
+  useEffect(() => {
+    if (images.length <= 1) return;
+    const onEnter = () => scrollToIndex(1 % images.length, false);
+    const onLeave = () => scrollToIndex(0, false);
+    const el = carouselRef.current?.parentElement;
+    if (!el) return;
+    el.addEventListener('mouseenter', onEnter);
+    el.addEventListener('mouseleave', onLeave);
+    return () => {
+      el.removeEventListener('mouseenter', onEnter);
+      el.removeEventListener('mouseleave', onLeave);
+    };
+  }, [carouselRef, images.length, scrollToIndex]);
+
+  if (images.length === 0 || !imageVisible) return null;
 
   const isFeatured =
     typeof product.featured_until === 'string' &&
@@ -63,53 +97,75 @@ export default function ProductCard({
   const districtLabel = getDistrictLabel(product.budapest_district);
   const sellerName = product.sellerName;
   const sellerInitial = sellerName?.trim()?.charAt(0)?.toUpperCase() || '?';
-  const cardImg = displayImage;
 
   return (
     <div
       className="group card-base overflow-hidden rounded-lg sm:rounded-xl transition-all duration-200 relative border-0 sm:border sm:border-[#233138] hover:border-[#38c7d0]/40 hover:shadow-md active:scale-[0.98] touch-manipulation"
       style={{ contentVisibility: 'auto', containIntrinsicSize: '420px 560px' }}
     >
-      <Link
-        href={`/products/${product.id}`}
-        className="relative aspect-[4/5] overflow-hidden block bg-[#0f1a1d]/5"
-        onMouseEnter={() => {
-          if (cardImages.length > 1) setImageIndex(1 % cardImages.length);
-        }}
-        onMouseLeave={() => setImageIndex(0)}
-        onTouchStart={(e) => {
-          touchStartX.current = e.changedTouches[0]?.clientX ?? null;
-        }}
-        onTouchEnd={(e) => {
-          const start = touchStartX.current;
-          const end = e.changedTouches[0]?.clientX;
-          touchStartX.current = null;
-          if (start == null || end == null) return;
-          const delta = end - start;
-          if (Math.abs(delta) < 30) return;
-          cycleImage(delta < 0 ? 1 : -1);
+      <div
+        className="relative aspect-[4/5] overflow-hidden bg-[#0f1a1d]/5 select-none [touch-callout:none] [-webkit-touch-callout:none]"
+        onTouchStart={gestures.onTouchStart}
+        onTouchMove={gestures.onTouchMove}
+        onTouchEnd={gestures.onTouchEnd}
+        onContextMenu={gestures.onContextMenu}
+        onClick={gestures.onClick}
+        role="button"
+        tabIndex={0}
+        aria-label={product.name}
+        onKeyDown={(e) => {
+          if (e.key === 'Enter' || e.key === ' ') {
+            e.preventDefault();
+            openProduct();
+          }
         }}
       >
-        <PresetImage
-          url={cardImg}
-          preset="feedCard"
-          priority={priority}
-          alt={product.name}
+        <div
+          ref={carouselRef}
+          onScroll={handleScroll}
           className={cn(
-            'w-full h-full object-cover',
-            isSold && 'opacity-60 grayscale',
-            isReserved && !isSold && 'opacity-90',
+            'flex h-full w-full snap-x snap-mandatory overscroll-x-contain touch-pan-x no-scrollbar',
+            images.length > 1 ? 'overflow-x-auto' : 'overflow-hidden',
           )}
-          onError={() => setImageVisible(false)}
-        />
-        {cardImages.length > 1 ? (
+          style={{ WebkitOverflowScrolling: 'touch' }}
+        >
+          {images.map((url, idx) => {
+            const distance = Math.abs(idx - activeIndex);
+            return (
+              <div key={`${url}-${idx}`} className="h-full min-w-full shrink-0 snap-center snap-always">
+                {distance <= 1 ? (
+                  <PresetImage
+                    url={url}
+                    preset={imagePreset}
+                    priority={priority && idx === 0}
+                    lazy={!(priority && idx === 0)}
+                    alt={product.name}
+                    draggable={false}
+                    className={cn(
+                      'h-full w-full object-cover pointer-events-none',
+                      isSold && 'opacity-60 grayscale',
+                      isReserved && !isSold && 'opacity-90',
+                    )}
+                    onError={() => {
+                      if (idx === activeIndex) setImageVisible(false);
+                    }}
+                  />
+                ) : (
+                  <div className="h-full w-full bg-[#0f1a1d]/15" aria-hidden />
+                )}
+              </div>
+            );
+          })}
+        </div>
+
+        {images.length > 1 ? (
           <div className="pointer-events-none absolute bottom-1 right-1 flex gap-0.5">
-            {cardImages.slice(0, 5).map((_, idx) => (
+            {images.slice(0, 5).map((_, idx) => (
               <span
                 key={idx}
                 className={cn(
                   'h-1 w-1 rounded-full',
-                  idx === imageIndex ? 'bg-[#e7edf0]' : 'bg-[#e7edf0]/50',
+                  idx === activeIndex ? 'bg-[#e7edf0]' : 'bg-[#e7edf0]/50',
                 )}
               />
             ))}
@@ -137,7 +193,15 @@ export default function ProductCard({
             {t('product.featured')}
           </Badge>
         ) : null}
-      </Link>
+      </div>
+
+      <ProductImageViewer
+        images={images}
+        initialIndex={activeIndex}
+        open={showViewer}
+        onClose={() => setShowViewer(false)}
+        productName={product.name}
+      />
 
       <button
         type="button"
@@ -176,14 +240,16 @@ export default function ProductCard({
       </button>
 
       <div className="px-1.5 pt-1 pb-1.5 sm:px-2 sm:pt-1.5 sm:pb-2 text-left space-y-0.5 sm:space-y-1">
-        <div className="text-[15px] sm:text-base font-extrabold text-[#007782] tabular-nums leading-tight tracking-tight">
-          {formatPrice(product.price)}
-        </div>
-        <p className="text-[11px] sm:text-xs text-[#9db0b8] leading-snug truncate">
-          <span className="font-medium text-[#e6edf0]">{brandOrName}</span>
-          <span className="text-[#5f747c] mx-0.5">·</span>
-          <span className="text-[#a0b1b8]">{sizePart}</span>
-        </p>
+        <Link href={`/products/${product.id}`} className="block">
+          <div className="text-[15px] sm:text-base font-extrabold text-[#007782] tabular-nums leading-tight tracking-tight">
+            {formatPrice(product.price)}
+          </div>
+          <p className="text-[11px] sm:text-xs text-[#9db0b8] leading-snug truncate">
+            <span className="font-medium text-[#e6edf0]">{brandOrName}</span>
+            <span className="text-[#5f747c] mx-0.5">·</span>
+            <span className="text-[#a0b1b8]">{sizePart}</span>
+          </p>
+        </Link>
         {sellerName ? (
           <Link
             href={`/profile/${product.user_id}`}
