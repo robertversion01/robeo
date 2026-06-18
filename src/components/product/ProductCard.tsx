@@ -148,7 +148,7 @@ export default function ProductCard({
                       alt={product.name}
                       draggable={false}
                       className={cn(
-                        'object-cover pointer-events-none',
+                        'object-contain object-center pointer-events-none',
                         isSold && 'opacity-60 grayscale',
                         isReserved && !isSold && 'opacity-90',
                       )}
