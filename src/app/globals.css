@@ -594,5 +594,4 @@ body.feed-viewer-scroll-lock {
   right: 0;
   width: 100%;
   overflow: hidden;
-  touch-action: none;
 }

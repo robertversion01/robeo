@@ -22,8 +22,8 @@ export const IMAGE_QUALITY = {
 /** Első viewport kártyák (mobil 2×2): eager + fetchpriority high. */
 export const FEED_VIEWPORT_PRIORITY_COUNT = 4;
 
-/** Kezdeti grid mount — kevesebb párhuzamos képrequest. */
-export const FEED_INITIAL_RENDER_COUNT = 12;
+/** Kezdeti grid mount — gyors first paint. */
+export const FEED_INITIAL_RENDER_COUNT = 8;
 
 /** Carousel / viewer: ±N slide tölt nagyobb presetből. */
 export const IMAGE_VIEWPORT_PRELOAD_RADIUS = 1;
@@ -43,7 +43,7 @@ type ImagePreset = {
 
 /** Várható byte-budget / kép (WebP, mobilon) — CI audit célra. */
 export const IMAGE_BYTE_BUDGETS: Record<string, { maxKb: number; note: string }> = {
-  homepageFeed: { maxKb: 32, note: 'Főoldal feed ~400w q74 contain 4:5' },
+  homepageFeed: { maxKb: 26, note: 'Főoldal feed ~360w q72 WebP only' },
   feedCard: { maxKb: 24, note: 'Browse feed ~300w q62 contain 4:5' },
   railCard: { maxKb: 10, note: 'Hasonló termék rail ~96w' },
   pdpMain: { maxKb: 50, note: 'PDP aktív slide ~640w' },
@@ -56,20 +56,20 @@ export const IMAGE_BYTE_BUDGETS: Record<string, { maxKb: number; note: string }>
 export const IMAGE_PRESETS = {
   /** Főoldal feed — CDN contain 4:5, teljes termék, éles thumbnail */
   homepageFeed: {
-    width: 400,
+    width: 360,
     quality: IMAGE_QUALITY.homepageFeed,
-    options: { height: 500, resize: 'contain', format: 'webp' },
-    srcSetWidths: [300, 360, 400, 480, 560],
+    options: { height: 450, resize: 'contain', format: 'webp' },
+    srcSetWidths: [280, 360, 440],
     sizes: '(max-width: 640px) 50vw, (max-width: 1024px) 33vw, 20vw',
     lazyPolicy: 'lazy',
     fetchPriority: 'low',
   },
   /** Browse / kedvencek */
   feedCard: {
-    width: 300,
+    width: 280,
     quality: IMAGE_QUALITY.feed,
-    options: { height: 375, resize: 'contain', format: 'webp' },
-    srcSetWidths: [240, 300, 360, 420],
+    options: { height: 350, resize: 'contain', format: 'webp' },
+    srcSetWidths: [220, 280, 340],
     sizes: '(max-width: 640px) 50vw, (max-width: 1024px) 33vw, 18vw',
     lazyPolicy: 'lazy',
     fetchPriority: 'low',
@@ -171,6 +171,20 @@ export const profileListing = IMAGE_PRESETS.profileGrid;
 
 export type ImagePresetName = keyof typeof IMAGE_PRESETS;
 
+/** Feed thumbnailek: csak WebP — gyorsabb decode, kevesebb format probe. */
+export const WEBP_ONLY_PRESETS = new Set<ImagePresetName>([
+  'homepageFeed',
+  'feedCard',
+  'railCard',
+  'heroTile',
+  'featuredStrip',
+  'pdpCarouselIdle',
+  'pdpThumb',
+  'chatThumb',
+  'avatar',
+  'profileGrid',
+]);
+
 /** Feed preset: CDN már 4:5 contain → object-cover kitölti a kártyát extra vágás nélkül. */
 export function feedPresetImageClass(preset: ImagePresetName): string {
   if (preset === 'homepageFeed' || preset === 'feedCard') {
@@ -223,10 +237,14 @@ export function imageFromPreset(
   const fetchPriority: 'high' | 'low' | 'auto' =
     priority || p.fetchPriority === 'high' ? 'high' : p.fetchPriority === 'low' ? 'low' : 'auto';
 
+  const webpOnly = WEBP_ONLY_PRESETS.has(preset);
+
   return {
     src: getOptimizedImageUrl(url, p.width, p.quality, webpOpts),
     srcSet: getOptimizedImageSrcSet(url, widths, p.quality, webpOpts),
-    avifSrcSet: getOptimizedImageSrcSet(url, widths, p.quality, avifOpts),
+    avifSrcSet: webpOnly
+      ? undefined
+      : getOptimizedImageSrcSet(url, widths, p.quality, avifOpts),
     sizes: p.sizes,
     width: p.width,
     height:

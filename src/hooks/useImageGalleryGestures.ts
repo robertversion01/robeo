@@ -2,7 +2,7 @@
 
 import { useCallback, useRef } from 'react';
 
-const LONG_PRESS_MS = 500;
+const LONG_PRESS_MS = 450;
 const LONG_PRESS_JITTER_PX = 10;
 const CAROUSEL_CANCEL_DX = 14;
 

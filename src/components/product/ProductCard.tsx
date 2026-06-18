@@ -105,7 +105,7 @@ export default function ProductCard({
 
   return (
     <div
-      className="group card-base overflow-hidden rounded-lg sm:rounded-xl transition-all duration-200 relative border-0 sm:border sm:border-[#233138] hover:border-[#38c7d0]/40 hover:shadow-md active:scale-[0.98] touch-manipulation"
+      className="group card-base overflow-hidden rounded-lg sm:rounded-xl relative border-0 sm:border sm:border-[#233138] hover:border-[#38c7d0]/40 hover:shadow-md touch-manipulation"
       style={{ contentVisibility: 'auto', containIntrinsicSize: '420px 560px' }}
     >
       <div
@@ -215,7 +215,7 @@ export default function ProductCard({
           onToggleFavorite();
         }}
         className={cn(
-          'absolute top-0.5 right-0.5 z-50 flex items-center gap-0.5 rounded-full bg-[#10181c]/95 backdrop-blur-sm hover:bg-[#162228] active:scale-90 transition-transform shadow-sm border border-[#2a3941]/80',
+          'absolute top-0.5 right-0.5 z-50 flex items-center gap-0.5 rounded-full bg-[#10181c] hover:bg-[#162228] active:scale-90 shadow-sm border border-[#2a3941]/80',
           favoriteCount > 0 ? 'h-7 min-w-[1.75rem] px-1.5' : 'h-7 w-7 justify-center',
         )}
         aria-label={

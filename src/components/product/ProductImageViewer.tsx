@@ -1,6 +1,6 @@
 'use client';
 
-import { useCallback, useEffect, useRef, useState, type SyntheticEvent } from 'react';
+import { useCallback, useEffect, useState, type SyntheticEvent } from 'react';
 import { createPortal } from 'react-dom';
 import { useTranslation } from 'react-i18next';
 import PresetImage from '@/components/product/PresetImage';
@@ -26,7 +26,7 @@ export default function ProductImageViewer({
   productName = '',
 }: ProductImageViewerProps) {
   const { t } = useTranslation();
-  const [mounted, setMounted] = useState(false);
+  const [portalReady, setPortalReady] = useState(false);
   const { scale, isZoomed, reset, handlers, onDoubleTap } = usePinchZoom(open);
 
   useBodyScrollLock(open);
@@ -37,14 +37,14 @@ export default function ProductImageViewer({
   );
 
   useEffect(() => {
-    setMounted(true);
+    setPortalReady(true);
   }, []);
 
   useEffect(() => {
     if (!open) return;
     const safe = Math.min(Math.max(0, initialIndex), images.length - 1);
     reset();
-    requestAnimationFrame(() => scrollToIndex(safe, false));
+    scrollToIndex(safe, false);
   }, [open, initialIndex, images.length, scrollToIndex, reset]);
 
   useEffect(() => {
@@ -64,7 +64,7 @@ export default function ProductImageViewer({
     e.preventDefault();
   }, []);
 
-  if (!open || images.length === 0 || !mounted) return null;
+  if (!open || images.length === 0 || !portalReady) return null;
 
   const content = (
     <div
@@ -141,7 +141,7 @@ export default function ProductImageViewer({
             <span
               key={idx}
               className={cn(
-                'h-1.5 w-1.5 rounded-full transition-colors',
+                'h-1.5 w-1.5 rounded-full',
                 idx === activeIndex ? 'bg-white' : 'bg-white/35',
               )}
             />

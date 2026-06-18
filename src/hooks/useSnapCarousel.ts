@@ -2,8 +2,8 @@
 
 import { useCallback, useEffect, useRef, useState } from 'react';
 
-const SCROLL_SETTLE_MS = 60;
-const SWIPE_COMMIT_RATIO = 0.22;
+const SCROLL_SETTLE_MS = 32;
+const SWIPE_COMMIT_RATIO = 0.18;
 
 type Options = {
   initialIndex?: number;
@@ -43,7 +43,7 @@ export function useSnapCarousel(itemCount: number, options: Options = {}) {
       optionsRef.current.onIndexChange?.(clamped);
       window.setTimeout(() => {
         programmaticRef.current = false;
-      }, smooth ? 280 : 0);
+      }, smooth ? 120 : 0);
     },
     [clampIndex],
   );
@@ -82,7 +82,7 @@ export function useSnapCarousel(itemCount: number, options: Options = {}) {
       }
 
       if (next !== Math.round(el.scrollLeft / w)) {
-        applyIndex(next, true);
+        applyIndex(next, false);
         return;
       }
       if (el.scrollLeft !== next * w) {
