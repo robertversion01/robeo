@@ -1,6 +1,6 @@
 'use client';
 
-import { useCallback, useEffect, useRef, useState } from 'react';
+import { useCallback, useEffect, useRef, useState, type SyntheticEvent } from 'react';
 import { createPortal } from 'react-dom';
 import { useTranslation } from 'react-i18next';
 import PresetImage from '@/components/product/PresetImage';
@@ -15,6 +15,29 @@ type ProductImageViewerProps = {
   productName?: string;
 };
 
+function lockBodyScroll() {
+  const scrollY = window.scrollY;
+  document.body.style.position = 'fixed';
+  document.body.style.top = `-${scrollY}px`;
+  document.body.style.left = '0';
+  document.body.style.right = '0';
+  document.body.style.width = '100%';
+  document.body.style.overflow = 'hidden';
+  document.documentElement.style.overflow = 'hidden';
+  return scrollY;
+}
+
+function unlockBodyScroll(scrollY: number) {
+  document.body.style.position = '';
+  document.body.style.top = '';
+  document.body.style.left = '';
+  document.body.style.right = '';
+  document.body.style.width = '';
+  document.body.style.overflow = '';
+  document.documentElement.style.overflow = '';
+  window.scrollTo(0, scrollY);
+}
+
 export default function ProductImageViewer({
   images,
   initialIndex = 0,
@@ -26,6 +49,7 @@ export default function ProductImageViewer({
   const [mounted, setMounted] = useState(false);
   const [isZoomed, setIsZoomed] = useState(false);
   const lastTapRef = useRef(0);
+  const scrollLockY = useRef(0);
 
   const { ref: carouselRef, activeIndex, scrollToIndex, handleScroll } = useSnapCarousel(
     images.length,
@@ -45,10 +69,11 @@ export default function ProductImageViewer({
 
   useEffect(() => {
     if (!open) return;
-    const prev = document.body.style.overflow;
-    document.body.style.overflow = 'hidden';
+    scrollLockY.current = lockBodyScroll();
+    document.body.dataset.feedViewerOpen = 'true';
     return () => {
-      document.body.style.overflow = prev;
+      delete document.body.dataset.feedViewerOpen;
+      unlockBodyScroll(scrollLockY.current);
     };
   }, [open]);
 
@@ -60,6 +85,10 @@ export default function ProductImageViewer({
     window.addEventListener('keydown', onKey);
     return () => window.removeEventListener('keydown', onKey);
   }, [open, onClose]);
+
+  const stopBubble = useCallback((e: SyntheticEvent) => {
+    e.stopPropagation();
+  }, []);
 
   const handleDoubleTap = useCallback(() => {
     const now = Date.now();
@@ -73,13 +102,19 @@ export default function ProductImageViewer({
 
   const content = (
     <div
-      className="fixed inset-0 z-[9999] flex flex-col bg-black select-none touch-none [touch-callout:none] [-webkit-touch-callout:none]"
+      data-feed-image-viewer
+      data-no-feed-swipe
+      className="fixed inset-0 z-[99999] flex flex-col bg-black select-none [touch-callout:none] [-webkit-touch-callout:none]"
       role="dialog"
       aria-modal="true"
       aria-label={t('product.imageViewer')}
       onContextMenu={(e) => e.preventDefault()}
+      onTouchStart={stopBubble}
+      onTouchMove={stopBubble}
+      onTouchEnd={stopBubble}
+      onTouchCancel={stopBubble}
+      onClick={stopBubble}
     >
-      {/* Vinted-szerű bezárás — jobb felső */}
       <div className="pointer-events-none absolute inset-x-0 top-0 z-20 flex justify-end p-3 pt-[max(0.75rem,env(safe-area-inset-top))]">
         <button
           type="button"
@@ -93,11 +128,10 @@ export default function ProductImageViewer({
       <div
         ref={carouselRef}
         onScroll={handleScroll}
-        className="relative flex h-full w-full snap-x snap-mandatory overflow-x-auto overscroll-x-contain touch-pan-x no-scrollbar"
+        className="relative flex h-full w-full snap-x snap-mandatory overflow-x-auto overscroll-x-none touch-pan-x no-scrollbar [touch-action:pan-x]"
         style={{ WebkitOverflowScrolling: 'touch' }}
       >
         {images.map((imgUrl, idx) => {
-          const distance = Math.abs(idx - activeIndex);
           const isActive = idx === activeIndex;
           return (
             <div
@@ -105,28 +139,23 @@ export default function ProductImageViewer({
               className="flex h-full min-w-full shrink-0 snap-center snap-always items-center justify-center px-2"
               onClick={handleDoubleTap}
             >
-              {distance <= 1 ? (
-                <PresetImage
-                  url={imgUrl}
-                  preset="pdpViewer"
-                  priority={isActive}
-                  lazy={!isActive}
-                  alt={productName}
-                  draggable={false}
-                  className={cn(
-                    'max-h-[85vh] max-w-full object-contain transition-transform duration-200 ease-out pointer-events-none',
-                    isActive && isZoomed ? 'scale-[2]' : 'scale-100',
-                  )}
-                />
-              ) : (
-                <div className="h-[60vh] w-full" aria-hidden />
-              )}
+              <PresetImage
+                url={imgUrl}
+                preset="pdpViewer"
+                priority={isActive}
+                lazy={!isActive}
+                alt={productName}
+                draggable={false}
+                className={cn(
+                  'h-full w-full max-h-[88vh] object-contain transition-transform duration-200 ease-out pointer-events-none',
+                  isActive && isZoomed ? 'scale-[2]' : 'scale-100',
+                )}
+              />
             </div>
           );
         })}
       </div>
 
-      {/* Lapozó pöttyök — alul középen, mint Vinted */}
       {images.length > 1 ? (
         <div className="pointer-events-none absolute inset-x-0 bottom-0 z-20 flex justify-center gap-1.5 pb-[max(1rem,env(safe-area-inset-bottom))]">
           {images.map((_, idx) => (

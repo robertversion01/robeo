@@ -2,8 +2,9 @@
 
 import { useCallback, useRef } from 'react';
 
-const LONG_PRESS_MS = 380;
-const MOVE_CANCEL_PX = 12;
+const LONG_PRESS_MS = 420;
+const VERTICAL_CANCEL_PX = 14;
+const HORIZONTAL_SWIPE_CANCEL_PX = 36;
 
 type Options = {
   onTap: () => void;
@@ -48,7 +49,6 @@ export function useImageGalleryGestures({ onTap, onOpenViewer, enabled = true }:
       timerRef.current = setTimeout(() => {
         gestureRef.current.longPressFired = true;
         gestureRef.current.suppressTap = true;
-        gestureRef.current.moved = true;
         if (typeof navigator !== 'undefined' && navigator.vibrate) {
           navigator.vibrate(12);
         }
@@ -65,7 +65,7 @@ export function useImageGalleryGestures({ onTap, onOpenViewer, enabled = true }:
       if (!t) return;
       const dx = Math.abs(t.clientX - gestureRef.current.startX);
       const dy = Math.abs(t.clientY - gestureRef.current.startY);
-      if (dx > MOVE_CANCEL_PX || dy > MOVE_CANCEL_PX) {
+      if (dy > VERTICAL_CANCEL_PX || dx > HORIZONTAL_SWIPE_CANCEL_PX) {
         gestureRef.current.moved = true;
         clearTimer();
       }
@@ -78,12 +78,16 @@ export function useImageGalleryGestures({ onTap, onOpenViewer, enabled = true }:
       clearTimer();
       const g = gestureRef.current;
       if (!enabled) return;
-      if (g.longPressFired) return;
+      if (g.longPressFired) {
+        e.preventDefault();
+        e.stopPropagation();
+        return;
+      }
       const t = e.changedTouches[0];
       if (t) {
         const dx = Math.abs(t.clientX - g.startX);
         const dy = Math.abs(t.clientY - g.startY);
-        if (dx > MOVE_CANCEL_PX || dy > MOVE_CANCEL_PX) {
+        if (dy > VERTICAL_CANCEL_PX || dx > HORIZONTAL_SWIPE_CANCEL_PX) {
           g.moved = true;
         }
       }

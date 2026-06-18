@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from 'react';
 import { useFeedCategorySwipe } from '@/hooks/useFeedCategorySwipe';
+import { useFeedImageViewer } from '@/context/FeedImageViewerContext';
 import { cn } from '@/lib/utils';
 
 type Category = { id: string; label: string };
@@ -34,7 +35,8 @@ export default function FeedCategorySwipeSurface({
     return () => mq.removeEventListener('change', sync);
   }, []);
 
-  const active = enabled && mobile;
+  const { isOpen: viewerOpen } = useFeedImageViewer();
+  const active = enabled && mobile && !viewerOpen;
   const { swipeHandlers } = useFeedCategorySwipe({
     enabled: active,
     categories,

@@ -9,7 +9,7 @@ import { cn, formatPrice } from '@/lib/utils';
 import { getDistrictLabel } from '@/lib/budapestDistricts';
 import { categoryDisplayLabel } from '@/lib/categoryDisplay';
 import PresetImage from '@/components/product/PresetImage';
-import ProductImageViewer from '@/components/product/ProductImageViewer';
+import { useFeedImageViewer } from '@/context/FeedImageViewerContext';
 import { normalizePrimaryProductImageUrl } from '@/lib/productImageValidation';
 import { getListingAgeBadge, getProductCardImages } from '@/lib/productListingBadges';
 import { useSnapCarousel } from '@/hooks/useSnapCarousel';
@@ -42,7 +42,7 @@ export default function ProductCard({
   const [imageVisible, setImageVisible] = useState(true);
   const [heartBump, setHeartBump] = useState(false);
   const [nowMs] = useState(() => Date.now());
-  const [showViewer, setShowViewer] = useState(false);
+  const { openViewer: openFeedViewer, isOpen: viewerOpen } = useFeedImageViewer();
 
   const images = cardImages.length > 0 ? cardImages : primaryImage ? [primaryImage] : [];
 
@@ -57,13 +57,17 @@ export default function ProductCard({
 
   const openViewer = useCallback(() => {
     if (images.length === 0) return;
-    setShowViewer(true);
-  }, [images.length]);
+    openFeedViewer({
+      images,
+      initialIndex: activeIndex,
+      productName: product.name,
+    });
+  }, [images, activeIndex, product.name, openFeedViewer]);
 
   const gestures = useImageGalleryGestures({
     onTap: openProduct,
     onOpenViewer: openViewer,
-    enabled: images.length > 0 && !showViewer,
+    enabled: images.length > 0 && !viewerOpen,
   });
 
   useEffect(() => {
@@ -104,6 +108,7 @@ export default function ProductCard({
       style={{ contentVisibility: 'auto', containIntrinsicSize: '420px 560px' }}
     >
       <div
+        data-product-card-gallery
         className="relative aspect-[4/5] overflow-hidden bg-[#0f1a1d]/5 select-none [touch-callout:none] [-webkit-touch-callout:none]"
         onTouchStart={gestures.onTouchStart}
         onTouchMove={gestures.onTouchMove}
@@ -132,24 +137,26 @@ export default function ProductCard({
           {images.map((url, idx) => {
             const distance = Math.abs(idx - activeIndex);
             return (
-              <div key={`${url}-${idx}`} className="flex h-full min-w-full shrink-0 snap-center snap-always items-center justify-center bg-[#0f1a1d]/5">
+              <div key={`${url}-${idx}`} className="relative h-full min-w-full shrink-0 snap-center snap-always bg-[#0f1a1d]/5">
                 {distance <= 1 ? (
-                  <PresetImage
-                    url={url}
-                    preset={imagePreset}
-                    priority={priority && idx === 0}
-                    lazy={!(priority && idx === 0)}
-                    alt={product.name}
-                    draggable={false}
-                    className={cn(
-                      'h-full w-full object-contain pointer-events-none',
-                      isSold && 'opacity-60 grayscale',
-                      isReserved && !isSold && 'opacity-90',
-                    )}
-                    onError={() => {
-                      if (idx === activeIndex) setImageVisible(false);
-                    }}
-                  />
+                  <div className="absolute inset-0">
+                    <PresetImage
+                      url={url}
+                      preset={imagePreset}
+                      priority={priority && idx === 0}
+                      lazy={!(priority && idx === 0)}
+                      alt={product.name}
+                      draggable={false}
+                      className={cn(
+                        'object-cover pointer-events-none',
+                        isSold && 'opacity-60 grayscale',
+                        isReserved && !isSold && 'opacity-90',
+                      )}
+                      onError={() => {
+                        if (idx === activeIndex) setImageVisible(false);
+                      }}
+                    />
+                  </div>
                 ) : (
                   <div className="h-full w-full bg-[#0f1a1d]/15" aria-hidden />
                 )}
@@ -194,14 +201,6 @@ export default function ProductCard({
           </Badge>
         ) : null}
       </div>
-
-      <ProductImageViewer
-        images={images}
-        initialIndex={activeIndex}
-        open={showViewer}
-        onClose={() => setShowViewer(false)}
-        productName={product.name}
-      />
 
       <button
         type="button"

@@ -10,6 +10,7 @@ import { ImmersiveBrowseProvider, useImmersiveBrowse } from '@/context/Immersive
 import { supabase } from '@/lib/supabase';
 import { cn } from '@/lib/utils';
 import { shouldPadForMobileBottomNav } from '@/lib/navVisibility';
+import { FeedImageViewerProvider } from '@/context/FeedImageViewerContext';
 import AccountSetupGuard from '@/components/legal/AccountSetupGuard';
 
 const MOBILE_BOTTOM_NAV_PAD =
@@ -89,9 +90,11 @@ export default function V1AppViewport({ children }: { children: React.ReactNode 
 
   return (
     <ImmersiveBrowseProvider loggedIn={loggedIn}>
-      <AccountSetupGuard>
-        <V1AppViewportInner>{children}</V1AppViewportInner>
-      </AccountSetupGuard>
+      <FeedImageViewerProvider>
+        <AccountSetupGuard>
+          <V1AppViewportInner>{children}</V1AppViewportInner>
+        </AccountSetupGuard>
+      </FeedImageViewerProvider>
     </ImmersiveBrowseProvider>
   );
 }

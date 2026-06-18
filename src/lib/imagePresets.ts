@@ -45,7 +45,7 @@ export const IMAGE_BYTE_BUDGETS: Record<string, { maxKb: number; note: string }>
 };
 
 export const IMAGE_PRESETS = {
-  /** Főoldal feed — teljes termék látszik, nincs cover-vágás */
+  /** Főoldal feed — szélesség alapú transform, teljes kép object-contain-nel */
   homepageFeed: {
     width: 200,
     quality: IMAGE_QUALITY.homepageFeed,

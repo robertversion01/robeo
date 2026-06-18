@@ -18,8 +18,11 @@ const SWIPE_COOLDOWN_MS = 350;
 
 function isNoSwipeTarget(target: EventTarget | null): boolean {
   if (!(target instanceof Element)) return false;
+  if (document.body.dataset.feedViewerOpen === 'true') return true;
   return Boolean(
-    target.closest('input, textarea, select, [data-no-feed-swipe]'),
+    target.closest(
+      'input, textarea, select, [data-no-feed-swipe], [data-feed-image-viewer], [data-product-card-gallery]',
+    ),
   );
 }
 

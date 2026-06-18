@@ -18,16 +18,11 @@ type PresetImageProps = Omit<
 > & {
   url: string | null | undefined;
   preset: ImagePresetName;
-  /** Fold feletti / LCP — eager + fetchpriority high */
   priority?: boolean;
-  /** Explicit lazy override */
   lazy?: boolean;
   hideOnError?: boolean;
 };
 
-/**
- * Egyetlen belépési pont preset-alapú képekhez: srcset, sizes, WebP/AVIF, lazy policy.
- */
 export default function PresetImage({
   url,
   preset,
@@ -68,13 +63,11 @@ export default function PresetImage({
   const imgProps = {
     ...rest,
     alt,
-    width: resolved.width,
-    height: resolved.height,
     sizes: resolved.sizes,
     loading: resolved.loading,
     fetchPriority: resolved.fetchPriority,
     decoding: decoding ?? 'async',
-    className: cn('block max-h-full max-w-full', className),
+    className: cn('block size-full max-w-none max-h-none', className),
     style,
     onError: (event: React.SyntheticEvent<HTMLImageElement>) => {
       if (
@@ -95,7 +88,7 @@ export default function PresetImage({
 
   if (hasAvif || hasWebpSrcSet) {
     return (
-      <picture className="flex h-full w-full items-center justify-center">
+      <picture className="block size-full">
         {hasAvif ? (
           <source srcSet={resolved.avifSrcSet} sizes={resolved.sizes} type="image/avif" />
         ) : null}
