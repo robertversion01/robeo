@@ -7,10 +7,9 @@ import { useTranslation } from 'react-i18next';
 import { cn, formatPrice } from '@/lib/utils';
 import { getDistrictLabel } from '@/lib/budapestDistricts';
 import { categoryDisplayLabel } from '@/lib/categoryDisplay';
-import { getOptimizedImageSrcSet, getOptimizedImageUrl } from '@/lib/imageUtils';
+import PresetImage from '@/components/product/PresetImage';
 import { normalizePrimaryProductImageUrl } from '@/lib/productImageValidation';
 import { getListingAgeBadge, getProductCardImages } from '@/lib/productListingBadges';
-import ProductImage from '@/components/product/ProductImage';
 import Badge from '@/components/ui/Badge';
 import type { ProductWithSeller } from '@/lib/sellerCardEnrichment';
 
@@ -64,8 +63,7 @@ export default function ProductCard({
   const districtLabel = getDistrictLabel(product.budapest_district);
   const sellerName = product.sellerName;
   const sellerInitial = sellerName?.trim()?.charAt(0)?.toUpperCase() || '?';
-  const cardImageOptions = { height: 400, resize: 'cover' as const };
-  const cardSrcSet = getOptimizedImageSrcSet(displayImage, [200, 260, 320, 400], 72, cardImageOptions);
+  const cardImg = displayImage;
 
   return (
     <div
@@ -92,15 +90,11 @@ export default function ProductCard({
           cycleImage(delta < 0 ? 1 : -1);
         }}
       >
-        <ProductImage
-          src={getOptimizedImageUrl(displayImage, 320, 72, cardImageOptions)}
-          srcSet={cardSrcSet}
-          sizes="(max-width: 640px) 50vw, (max-width: 1024px) 33vw, (max-width: 1280px) 20vw, 16vw"
+        <PresetImage
+          url={cardImg}
+          preset="feedCard"
+          priority={priority}
           alt={product.name}
-          width={320}
-          height={400}
-          loading={priority ? 'eager' : 'lazy'}
-          fetchPriority={priority ? 'high' : 'auto'}
           className={cn(
             'w-full h-full object-cover',
             isSold && 'opacity-60 grayscale',
@@ -197,11 +191,10 @@ export default function ProductCard({
             className="flex items-center gap-1 text-[10px] text-[#9eb0b7] hover:text-[#38c7d0] truncate"
           >
             {product.sellerAvatarUrl ? (
-              <img
-                src={getOptimizedImageUrl(product.sellerAvatarUrl, 32, 75)}
+              <PresetImage
+                url={product.sellerAvatarUrl}
+                preset="avatar"
                 alt=""
-                loading="lazy"
-                decoding="async"
                 className="h-4 w-4 rounded-full object-cover shrink-0"
               />
             ) : (

@@ -6,9 +6,8 @@ import Link from 'next/link';
 import { useTranslation } from 'react-i18next';
 import { supabase } from '@/lib/supabase';
 import { formatPrice } from '@/lib/utils';
-import { getOptimizedImageSrcSet, getOptimizedImageUrl } from '@/lib/imageUtils';
+import PresetImage from '@/components/product/PresetImage';
 import { normalizePrimaryProductImageUrl } from '@/lib/productImageValidation';
-import ProductImage from '@/components/product/ProductImage';
 import ProductAlertsBar from '@/components/product/ProductAlertsBar';
 import type { Product } from '@/types';
 import { categoryDbValues, productMatchesCategory, normalizeCategory, CATEGORY_ALIASES } from '@/lib/catalogFilters';
@@ -144,17 +143,10 @@ export default function SimilarProductsRail({
               >
                 <div className="aspect-[4/5] bg-[#1a2328]">
                   {imageUrl ? (
-                    <ProductImage
-                      src={getOptimizedImageUrl(imageUrl, 120, 74, { height: 150, resize: 'contain' })}
-                      srcSet={getOptimizedImageSrcSet(imageUrl, [96, 120, 144], 74, {
-                        height: 150,
-                        resize: 'contain',
-                      })}
-                      sizes="108px"
+                    <PresetImage
+                      url={imageUrl}
+                      preset="railCard"
                       alt={p.name}
-                      loading="lazy"
-                      width={120}
-                      height={150}
                       className="h-full w-full object-contain bg-[#0f1a1d]/5"
                     />
                   ) : null}

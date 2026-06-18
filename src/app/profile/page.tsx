@@ -11,9 +11,8 @@ import OffersList from '@/components/product/OffersList';
 import BuyerOffersList from '@/components/product/BuyerOffersList';
 import TransactionList from '@/components/profile/TransactionList';
 import ProfilePageSkeleton from '@/components/profile/ProfilePageSkeleton';
-import ProductImage from '@/components/product/ProductImage';
+import PresetImage from '@/components/product/PresetImage';
 import { formatPrice } from '@/lib/utils';
-import { getOptimizedImageUrl } from '@/lib/imageUtils';
 import { categoryDisplayLabel } from '@/lib/categoryDisplay';
 import type { Product } from '@/types';
 import { DESKTOP_TOP_PADDING } from '@/lib/layoutTokens';
@@ -601,12 +600,10 @@ export default function ProfilePage() {
                   >
                     <Link href={`/products/${product.id}`} className="aspect-[4/5] overflow-hidden block relative">
                       {product.image_url ? (
-                        <ProductImage
-                          src={getOptimizedImageUrl(product.image_url, 300, 78, { height: 375, resize: 'contain' })}
+                        <PresetImage
+                          url={product.image_url}
+                          preset="profileGrid"
                           alt={product.name}
-                          loading="lazy"
-                          width={300}
-                          height={375}
                           className="w-full h-full object-contain bg-[#0f1a1d]/5"
                         />
                       ) : (
@@ -672,12 +669,10 @@ export default function ProfilePage() {
                     <Link href={`/products/${product.id}`} className="block">
                     <div className="aspect-[4/5] overflow-hidden relative">
                       {product.image_url ? (
-                        <ProductImage
-                          src={getOptimizedImageUrl(product.image_url, 300, 76, { height: 375, resize: 'contain' })}
+                        <PresetImage
+                          url={product.image_url}
+                          preset="profileGrid"
                           alt={product.name}
-                          loading="lazy"
-                          width={300}
-                          height={375}
                           className="w-full h-full object-contain bg-[#0f1a1d]/5 opacity-70 grayscale"
                         />
                       ) : (

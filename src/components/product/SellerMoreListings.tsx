@@ -6,9 +6,8 @@ import Link from 'next/link';
 import { useTranslation } from 'react-i18next';
 import { supabase } from '@/lib/supabase';
 import { formatPrice } from '@/lib/utils';
-import { getOptimizedImageUrl } from '@/lib/imageUtils';
+import PresetImage from '@/components/product/PresetImage';
 import { normalizePrimaryProductImageUrl } from '@/lib/productImageValidation';
-import ProductImage from '@/components/product/ProductImage';
 import type { Product } from '@/types';
 
 type Props = {
@@ -66,10 +65,10 @@ export default function SellerMoreListings({ sellerId, excludeProductId }: Props
           >
             <div className="aspect-[4/5] bg-[#1a2328]">
               {imageUrl ? (
-                <ProductImage
-                  src={getOptimizedImageUrl(imageUrl, 120, 80)}
+                <PresetImage
+                  url={imageUrl}
+                  preset="railCard"
                   alt={p.name}
-                  loading="lazy"
                   className="h-full w-full object-cover"
                 />
               ) : null}

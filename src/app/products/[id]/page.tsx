@@ -7,11 +7,13 @@ import { supabase } from '@/lib/supabase';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { toast } from 'sonner';
-import { ZoomIn, ZoomOut, MapPin } from 'lucide-react';
-import { getOptimizedImageUrl, getOptimizedImageSrcSet, shouldLazyLoad } from '@/lib/imageUtils';
+import { ZoomIn, MapPin } from 'lucide-react';
+import { shouldLazyLoad } from '@/lib/imageUtils';
+import { imageFromPreset } from '@/lib/imagePresets';
 import { trackEvent, AnalyticsEvent } from '@/lib/analytics';
 import { getValidProductImageUrls } from '@/lib/productImageValidation';
-import ProductImage from '@/components/product/ProductImage';
+import PresetImage from '@/components/product/PresetImage';
+import ProductImageViewer from '@/components/product/ProductImageViewer';
 import ProductFavoriteButton from '@/components/product/ProductFavoriteButton';
 import ProductShareReportBar from '@/components/product/ProductShareReportBar';
 import SellerBundleHint from '@/components/product/SellerBundleHint';
@@ -48,7 +50,7 @@ export default function ProductPage({ params }: { params: Promise<{ id: string }
   const [product, setProduct] = useState<Product | null>(null);
   const [loading, setLoading] = useState(true);
   const [selectedImageIndex, setSelectedImageIndex] = useState(0);
-  const [isZoomed, setIsZoomed] = useState(false);
+  const [showImageViewer, setShowImageViewer] = useState(false);
   const mainCarouselRef = useRef<HTMLDivElement | null>(null);
   const [sellerProfile, setSellerProfile] = useState<{ full_name?: string | null; email?: string | null } | null>(null);
   // Modal States
@@ -86,6 +88,25 @@ export default function ProductPage({ params }: { params: Promise<{ id: string }
     () => allProductImages.filter((url) => !failedGalleryUrls.has(url)),
     [allProductImages, failedGalleryUrls],
   );
+
+  const pdpLcpSrc = useMemo(() => {
+    if (productImages.length === 0) return null;
+    const idx = Math.min(selectedImageIndex, productImages.length - 1);
+    return imageFromPreset(productImages[idx], 'pdpMain', { priority: true }).src;
+  }, [productImages, selectedImageIndex]);
+
+  useEffect(() => {
+    if (!pdpLcpSrc) return;
+    const link = document.createElement('link');
+    link.rel = 'preload';
+    link.as = 'image';
+    link.href = pdpLcpSrc;
+    link.setAttribute('fetchpriority', 'high');
+    document.head.appendChild(link);
+    return () => {
+      document.head.removeChild(link);
+    };
+  }, [pdpLcpSrc]);
 
   useEffect(() => {
     if (selectedImageIndex >= productImages.length && productImages.length > 0) {
@@ -239,16 +260,6 @@ export default function ProductPage({ params }: { params: Promise<{ id: string }
   const categoryLabel = categoryDisplayLabel(t, categoryKey);
 
   const safeSelectedIndex = Math.min(selectedImageIndex, productImages.length - 1);
-  const activeImage = productImages[safeSelectedIndex];
-  // PDP fo kep kulon pipeline: mobilon keretkitolto, hogy ne maradjon oldalsav.
-  const pdpMainImageOptions = { height: 1280, resize: 'cover' } as const;
-  const pdpMainSrc = getOptimizedImageUrl(activeImage, 1024, 82, pdpMainImageOptions);
-  const pdpMainSrcSet = getOptimizedImageSrcSet(
-    activeImage,
-    [480, 640, 768, 960, 1200, 1440],
-    82,
-    pdpMainImageOptions,
-  );
 
   const sellerDisplayName = sellerProfile?.full_name || sellerProfile?.email?.split('@')[0] || t('product.seller');
   const sellerInitial = sellerDisplayName?.charAt(0).toUpperCase() || 'E';
@@ -261,14 +272,11 @@ export default function ProductPage({ params }: { params: Promise<{ id: string }
     const nextIndex = Math.round(el.scrollLeft / el.clientWidth);
     if (nextIndex !== selectedImageIndex && nextIndex >= 0 && nextIndex < productImages.length) {
       setSelectedImageIndex(nextIndex);
-      setIsZoomed(false);
     }
   };
 
   const handleMainCarouselGestureStart = () => {
-    // Sticky zoom reset: lapozás indításakor azonnal visszaáll alap zoomra,
-    // így nem "tapad rá" a nagyított állapot a következő slide-ra.
-    setIsZoomed(false);
+    /* swipe — zoom csak a fullscreen viewerben */
   };
 
   return (
@@ -347,30 +355,27 @@ export default function ProductPage({ params }: { params: Promise<{ id: string }
                   className="relative z-[1] flex h-full w-full snap-x snap-mandatory overflow-x-auto overscroll-x-contain touch-pan-x no-scrollbar"
                   style={{ WebkitOverflowScrolling: 'touch' }}
                 >
-                  {productImages.map((imgUrl, idx) => (
-                    <div key={imgUrl} className="h-full min-w-full snap-center">
-                      <ProductImage
-                        src={idx === safeSelectedIndex ? pdpMainSrc : getOptimizedImageUrl(imgUrl, 1024, 82, pdpMainImageOptions)}
-                        srcSet={idx === safeSelectedIndex ? pdpMainSrcSet : getOptimizedImageSrcSet(
-                          imgUrl,
-                          [480, 640, 768, 960, 1200, 1440],
-                          82,
-                          pdpMainImageOptions,
-                        )}
-                        sizes="(max-width: 768px) 100vw, 50vw"
-                        alt={product.name}
-                        width={960}
-                        height={960}
-                        loading={idx <= 1 ? 'eager' : 'lazy'}
-                        fetchPriority={idx === safeSelectedIndex ? 'high' : 'auto'}
-                        decoding="async"
-                        className={`h-full w-full object-cover transition-transform duration-300 ${
-                          idx === safeSelectedIndex && isZoomed ? 'scale-125' : 'scale-100'
-                        } ${isSold ? 'opacity-70 grayscale' : ''}`}
-                        onError={() => markGalleryUrlFailed(imgUrl)}
-                      />
+                  {productImages.map((imgUrl, idx) => {
+                    const isActive = idx === safeSelectedIndex;
+                    const distance = Math.abs(idx - safeSelectedIndex);
+                    return (
+                    <div key={imgUrl} className="relative h-full min-w-full snap-center">
+                      {distance <= 1 ? (
+                        <PresetImage
+                          url={imgUrl}
+                          preset={isActive ? 'pdpMain' : 'pdpCarouselIdle'}
+                          priority={isActive}
+                          lazy={!isActive}
+                          alt={product.name}
+                          className={`h-full w-full object-cover ${isSold ? 'opacity-70 grayscale' : ''}`}
+                          onError={() => markGalleryUrlFailed(imgUrl)}
+                        />
+                      ) : (
+                        <div className="h-full w-full bg-[#0f1a1d]/20" aria-hidden />
+                      )}
                     </div>
-                  ))}
+                    );
+                  })}
                 </div>
                 {isSold ? (
                   <div className="pointer-events-none absolute inset-0 flex items-center justify-center bg-black/30">
@@ -392,11 +397,12 @@ export default function ProductPage({ params }: { params: Promise<{ id: string }
                 />
                 <button
                   type="button"
-                  onClick={() => setIsZoomed((prev) => !prev)}
-                  className="absolute bottom-2 right-2 inline-flex items-center gap-1 rounded-full bg-black/60 px-2 py-1 text-xs text-white"
+                  onClick={() => setShowImageViewer(true)}
+                  className="absolute bottom-2 right-2 z-10 inline-flex items-center gap-1 rounded-full bg-black/60 px-2.5 py-1 text-xs text-white"
+                  aria-label={t('product.openGallery')}
                 >
-                  {isZoomed ? <ZoomOut size={12} /> : <ZoomIn size={12} />}
-                  {isZoomed ? t('product.zoomOut') : t('product.zoomIn')}
+                  <ZoomIn size={12} />
+                  {t('product.openGallery')}
                 </button>
               </div>
 
@@ -409,7 +415,6 @@ export default function ProductPage({ params }: { params: Promise<{ id: string }
                       type="button"
                       onClick={() => {
                         setSelectedImageIndex(index);
-                        setIsZoomed(false);
                         const carousel = mainCarouselRef.current;
                         if (carousel) {
                           carousel.scrollTo({ left: carousel.clientWidth * index, behavior: 'smooth' });
@@ -421,10 +426,11 @@ export default function ProductPage({ params }: { params: Promise<{ id: string }
                           : 'border-[#2a3941] opacity-70 hover:opacity-100'
                       }`}
                     >
-                      <ProductImage
-                        src={getOptimizedImageUrl(imgUrl, 100, 76, { height: 100, resize: 'contain' })}
+                      <PresetImage
+                        url={imgUrl}
+                        preset="pdpThumb"
+                        lazy={shouldLazyLoad(index)}
                         alt=""
-                        loading={shouldLazyLoad(index) ? 'lazy' : 'eager'}
                         className="h-full w-full object-contain bg-[#0f1a1d]/5"
                         onError={() => markGalleryUrlFailed(imgUrl)}
                       />
@@ -587,6 +593,14 @@ export default function ProductPage({ params }: { params: Promise<{ id: string }
           </div>
         </div>
       </main>
+
+      <ProductImageViewer
+        images={productImages}
+        initialIndex={safeSelectedIndex}
+        open={showImageViewer}
+        onClose={() => setShowImageViewer(false)}
+        productName={product.name}
+      />
     </div>
   );
 }

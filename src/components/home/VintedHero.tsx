@@ -5,8 +5,7 @@ import Link from 'next/link';
 import { motion, useReducedMotion } from 'framer-motion';
 import { useTranslation } from 'react-i18next';
 import { formatPrice } from '@/lib/utils';
-import { getOptimizedImageUrl, getOptimizedImageSrcSet } from '@/lib/imageUtils';
-import ProductImage from '@/components/product/ProductImage';
+import PresetImage from '@/components/product/PresetImage';
 import GuestLandingHeader from '@/components/home/GuestLandingHeader';
 import BudapestBetaBanner from '@/components/home/BudapestBetaBanner';
 import {
@@ -39,8 +38,6 @@ type HeroTile = {
   tileKey: string;
 };
 
-const HERO_TILE_IMAGE = { height: 200, resize: 'cover' as const };
-const FEATURED_STRIP_IMAGE = { height: 150, resize: 'cover' as const };
 const TILE_HEIGHTS = [
   'h-[7.25rem] sm:h-[9.5rem] md:h-[10.5rem] lg:h-[11.5rem] xl:h-[12.5rem]',
   'h-[8.25rem] sm:h-[10.75rem] md:h-[11.75rem] lg:h-[12.75rem] xl:h-[13.75rem]',
@@ -172,23 +169,20 @@ function HeroImageTile({
   if (!isValidHeroTile(tile) || loadFailed) return null;
   if (!normalizeProductImageUrl(tile.imageUrl)) return null;
 
+  const tileImg = tile.imageUrl;
+
   return (
     <Link
       href={`/products/${tile.product.id}`}
       className={`landing-hero-tile block w-full shrink-0 overflow-hidden rounded-lg sm:rounded-xl md:rounded-2xl ${heightClass}`}
     >
-      <ProductImage
-        src={getOptimizedImageUrl(tile.imageUrl, 160, 72, HERO_TILE_IMAGE)}
-        srcSet={getOptimizedImageSrcSet(tile.imageUrl, [120, 160, 200], 72, HERO_TILE_IMAGE)}
-        sizes="(max-width: 640px) 33vw, (max-width: 1024px) 20vw, 16vw"
+      <PresetImage
+        url={tileImg}
+        preset="heroTile"
+        priority={priority}
         alt=""
         role="presentation"
-        width={160}
-        height={200}
         className="h-full w-full object-cover"
-        loading={priority ? 'eager' : 'lazy'}
-        fetchPriority={priority ? 'high' : 'auto'}
-        decoding="async"
         onError={() => setLoadFailed(true)}
       />
     </Link>
@@ -233,7 +227,7 @@ function FloatingMasonryColumn({
           key={tile.tileKey}
           tile={tile}
           heightClass={TILE_HEIGHTS[(idx + colIndex) % TILE_HEIGHTS.length]}
-          priority={colIndex < 3 && idx < 3}
+          priority={colIndex === 0 && idx < 1}
         />
       ))}
     </div>
@@ -446,6 +440,7 @@ export default function VintedHero({
             {featuredLoopItems.map((item, idx) => {
               const imageSrc = primaryImageUrl(item);
               if (!imageSrc) return null;
+              const stripImg = imageSrc;
               return (
               <Link
                 key={`${item.id}-${idx}`}
@@ -462,16 +457,11 @@ export default function VintedHero({
                       compact ? 'h-[112px] sm:h-[128px]' : 'h-[168px] sm:h-[182px]'
                     }`}
                   >
-                    <ProductImage
-                      src={getOptimizedImageUrl(imageSrc, 120, 75, FEATURED_STRIP_IMAGE)}
-                      srcSet={getOptimizedImageSrcSet(imageSrc, [100, 120, 160], 75, FEATURED_STRIP_IMAGE)}
-                      sizes={compact ? '100px' : '132px'}
-                      width={120}
-                      height={150}
+                    <PresetImage
+                      url={stripImg}
+                      preset="featuredStrip"
+                      priority={idx < 1}
                       alt={item.name}
-                      loading={idx < 3 ? 'eager' : 'lazy'}
-                      fetchPriority={idx < 3 ? 'high' : 'auto'}
-                      decoding="async"
                       className="h-full w-full object-cover"
                     />
                   </div>

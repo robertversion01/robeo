@@ -22,6 +22,8 @@ function clampTransformHeight(height: number): number {
 export type SupabaseTransformOptions = {
   height?: number;
   resize?: 'cover' | 'contain' | 'fill';
+  /** Supabase auto-WebP Accept nélkül is: explicit webp/avif cache-barátabb. */
+  format?: 'origin' | 'webp' | 'avif' | 'jpeg' | 'png';
 };
 
 /** Supabase Storage eredeti (nem transformált) public URL — query paraméterek nélkül. */
@@ -79,6 +81,9 @@ export function getOptimizedImageUrl(
   }
   if (options.resize) {
     params.set('resize', options.resize);
+  }
+  if (options.format && options.format !== 'origin') {
+    params.set('format', options.format);
   }
   return `${renderUrl}?${params.toString()}`;
 }

@@ -19,7 +19,7 @@ import {
   type SellerBundleDiscountSettings,
 } from '@/lib/bundleDiscount';
 import type { Product } from '@/types';
-import { getOptimizedImageUrl } from '@/lib/imageUtils';
+import PresetImage from '@/components/product/PresetImage';
 
 type Props = {
   sellerId: string;
@@ -106,11 +106,10 @@ export default function SellerClosetBundle({ sellerId, currentProductId, onBundl
             >
               <Link href={`/products/${p.id}`} className="block aspect-[4/5] bg-[#1a2328]">
                 {p.image_url ? (
-                  <img
-                    src={getOptimizedImageUrl(p.image_url, 120, 80)}
+                  <PresetImage
+                    url={p.image_url}
+                    preset="railCard"
                     alt=""
-                    loading="lazy"
-                    decoding="async"
                     className="h-full w-full object-cover"
                   />
                 ) : null}

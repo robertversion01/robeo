@@ -4,7 +4,7 @@ import { useEffect, useState } from 'react';
 import Link from 'next/link';
 import { useTranslation } from 'react-i18next';
 import { supabase } from '@/lib/supabase';
-import { getOptimizedImageUrl } from '@/lib/imageUtils';
+import PresetImage from '@/components/product/PresetImage';
 import {
   fetchVacationSellerIdSet,
   filterProductsExcludingVacationSellers,
@@ -90,11 +90,10 @@ export default function FreshOffersStrip({
               <div className="flex items-center gap-2.5">
                 <div className="h-14 w-14 bg-[#1a2328] rounded-lg overflow-hidden shrink-0">
                   {item.image_url ? (
-                    <img
-                      src={getOptimizedImageUrl(item.image_url, 112, 80)}
+                    <PresetImage
+                      url={item.image_url}
+                      preset="railCard"
                       alt={item.name || t('product.defaultProduct')}
-                      loading="lazy"
-                      decoding="async"
                       className="h-full w-full object-cover"
                     />
                   ) : (
