@@ -5,6 +5,7 @@ import { createPortal } from 'react-dom';
 import { useTranslation } from 'react-i18next';
 import PresetImage from '@/components/product/PresetImage';
 import { useSnapCarousel } from '@/hooks/useSnapCarousel';
+import { usePinchZoom } from '@/hooks/usePinchZoom';
 import { IMAGE_VIEWPORT_PRELOAD_RADIUS } from '@/lib/imagePresets';
 import { cn } from '@/lib/utils';
 
@@ -48,11 +49,10 @@ export default function ProductImageViewer({
 }: ProductImageViewerProps) {
   const { t } = useTranslation();
   const [mounted, setMounted] = useState(false);
-  const [isZoomed, setIsZoomed] = useState(false);
-  const lastTapRef = useRef(0);
   const scrollLockY = useRef(0);
+  const { scale, isZoomed, reset, handlers, onDoubleTap } = usePinchZoom(open);
 
-  const { ref: carouselRef, activeIndex, scrollToIndex, handleScroll, carouselTouchHandlers } = useSnapCarousel(
+  const { ref: carouselRef, activeIndex, scrollToIndex, handleScroll } = useSnapCarousel(
     images.length,
     { initialIndex },
   );
@@ -64,9 +64,13 @@ export default function ProductImageViewer({
   useEffect(() => {
     if (!open) return;
     const safe = Math.min(Math.max(0, initialIndex), images.length - 1);
-    setIsZoomed(false);
+    reset();
     requestAnimationFrame(() => scrollToIndex(safe, false));
-  }, [open, initialIndex, images.length, scrollToIndex]);
+  }, [open, initialIndex, images.length, scrollToIndex, reset]);
+
+  useEffect(() => {
+    reset();
+  }, [activeIndex, reset]);
 
   useEffect(() => {
     if (!open) return;
@@ -91,21 +95,13 @@ export default function ProductImageViewer({
     e.stopPropagation();
   }, []);
 
-  const handleDoubleTap = useCallback(() => {
-    const now = Date.now();
-    if (now - lastTapRef.current < 300) {
-      setIsZoomed((z) => !z);
-    }
-    lastTapRef.current = now;
-  }, []);
-
   if (!open || images.length === 0 || !mounted) return null;
 
   const content = (
     <div
       data-feed-image-viewer
       data-no-feed-swipe
-      className="fixed inset-0 z-[99999] flex flex-col bg-black select-none [touch-callout:none] [-webkit-touch-callout:none]"
+      className="product-gallery-overlay fixed inset-0 z-[99999] flex flex-col bg-black select-none"
       role="dialog"
       aria-modal="true"
       aria-label={t('product.imageViewer')}
@@ -114,7 +110,6 @@ export default function ProductImageViewer({
       onTouchMove={stopBubble}
       onTouchEnd={stopBubble}
       onTouchCancel={stopBubble}
-      onClick={stopBubble}
     >
       <div className="pointer-events-none absolute inset-x-0 top-0 z-20 flex justify-end p-3 pt-[max(0.75rem,env(safe-area-inset-top))]">
         <button
@@ -129,9 +124,10 @@ export default function ProductImageViewer({
       <div
         ref={carouselRef}
         onScroll={handleScroll}
-        onTouchStart={carouselTouchHandlers.onTouchStart}
-        onTouchEnd={carouselTouchHandlers.onTouchEnd}
-        className="relative flex h-full w-full snap-x snap-mandatory overflow-x-auto overscroll-x-none touch-pan-x no-scrollbar [touch-action:pan-x]"
+        className={cn(
+          'relative flex h-full w-full snap-x snap-mandatory overflow-x-auto overscroll-x-none no-scrollbar',
+          isZoomed ? 'touch-none overflow-hidden' : 'touch-pan-x [touch-action:pan-x]',
+        )}
         style={{ WebkitOverflowScrolling: 'touch' }}
       >
         {images.map((imgUrl, idx) => {
@@ -140,22 +136,35 @@ export default function ProductImageViewer({
           return (
             <div
               key={`${imgUrl}-${idx}`}
-              className="flex h-full min-w-full shrink-0 snap-center snap-always items-center justify-center px-2"
-              onClick={handleDoubleTap}
+              className="flex h-full min-w-full shrink-0 snap-center snap-always snap-stop-always items-center justify-center"
             >
               {inBand ? (
-                <PresetImage
-                  url={imgUrl}
-                  preset="pdpViewer"
-                  priority={isActive}
-                  lazy={!isActive}
-                  alt={productName}
-                  draggable={false}
-                  className={cn(
-                    'h-full w-full max-h-[88vh] object-contain transition-transform duration-200 ease-out pointer-events-none',
-                    isActive && isZoomed ? 'scale-[2]' : 'scale-100',
-                  )}
-                />
+                <div
+                  className="flex h-full w-full items-center justify-center px-1"
+                  onClick={isActive ? onDoubleTap : undefined}
+                  {...(isActive ? handlers : {})}
+                >
+                  <PresetImage
+                    url={imgUrl}
+                    preset="pdpViewer"
+                    priority={isActive}
+                    lazy={!isActive}
+                    alt={productName}
+                    draggable={false}
+                    className={cn(
+                      'max-h-[92vh] w-full object-contain transition-transform duration-150 ease-out pointer-events-none',
+                      isActive && isZoomed ? 'h-[92vh]' : 'h-full',
+                    )}
+                    style={
+                      isActive
+                        ? {
+                            transform: `scale(${scale})`,
+                            transformOrigin: 'center center',
+                          }
+                        : undefined
+                    }
+                  />
+                </div>
               ) : (
                 <div className="h-[60vh] w-full" aria-hidden />
               )}

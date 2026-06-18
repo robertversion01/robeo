@@ -2,9 +2,9 @@
 
 import { useCallback, useRef } from 'react';
 
-const LONG_PRESS_MS = 420;
-const VERTICAL_CANCEL_PX = 14;
-const HORIZONTAL_SWIPE_CANCEL_PX = 36;
+const LONG_PRESS_MS = 500;
+const LONG_PRESS_JITTER_PX = 10;
+const CAROUSEL_CANCEL_DX = 14;
 
 type Options = {
   onTap: () => void;
@@ -13,8 +13,8 @@ type Options = {
 };
 
 /**
- * Rövid tap → navigáció; long-press / contextmenu → fullscreen viewer.
- * Swipe közben nem nyit navigációt (a carousel kezeli).
+ * Tap → navigáció; long-press → fullscreen viewer (nem böngésző menü).
+ * Horizontális swipe carousel közben long-press nem indul.
  */
 export function useImageGalleryGestures({ onTap, onOpenViewer, enabled = true }: Options) {
   const gestureRef = useRef({
@@ -23,6 +23,7 @@ export function useImageGalleryGestures({ onTap, onOpenViewer, enabled = true }:
     moved: false,
     longPressFired: false,
     suppressTap: false,
+    carouselSwipe: false,
   });
   const timerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
@@ -44,11 +45,14 @@ export function useImageGalleryGestures({ onTap, onOpenViewer, enabled = true }:
         moved: false,
         longPressFired: false,
         suppressTap: false,
+        carouselSwipe: false,
       };
       clearTimer();
       timerRef.current = setTimeout(() => {
-        gestureRef.current.longPressFired = true;
-        gestureRef.current.suppressTap = true;
+        const g = gestureRef.current;
+        if (g.moved || g.carouselSwipe) return;
+        g.longPressFired = true;
+        g.suppressTap = true;
         if (typeof navigator !== 'undefined' && navigator.vibrate) {
           navigator.vibrate(12);
         }
@@ -63,9 +67,19 @@ export function useImageGalleryGestures({ onTap, onOpenViewer, enabled = true }:
       if (!enabled) return;
       const t = e.touches[0];
       if (!t) return;
-      const dx = Math.abs(t.clientX - gestureRef.current.startX);
-      const dy = Math.abs(t.clientY - gestureRef.current.startY);
-      if (dy > VERTICAL_CANCEL_PX || dx > HORIZONTAL_SWIPE_CANCEL_PX) {
+      const dx = t.clientX - gestureRef.current.startX;
+      const dy = t.clientY - gestureRef.current.startY;
+      const absDx = Math.abs(dx);
+      const absDy = Math.abs(dy);
+
+      if (absDx > CAROUSEL_CANCEL_DX && absDx > absDy) {
+        gestureRef.current.carouselSwipe = true;
+        gestureRef.current.moved = true;
+        clearTimer();
+        return;
+      }
+
+      if (absDy > LONG_PRESS_JITTER_PX || Math.hypot(dx, dy) > LONG_PRESS_JITTER_PX * 1.4) {
         gestureRef.current.moved = true;
         clearTimer();
       }
@@ -83,15 +97,7 @@ export function useImageGalleryGestures({ onTap, onOpenViewer, enabled = true }:
         e.stopPropagation();
         return;
       }
-      const t = e.changedTouches[0];
-      if (t) {
-        const dx = Math.abs(t.clientX - g.startX);
-        const dy = Math.abs(t.clientY - g.startY);
-        if (dy > VERTICAL_CANCEL_PX || dx > HORIZONTAL_SWIPE_CANCEL_PX) {
-          g.moved = true;
-        }
-      }
-      if (g.moved || g.suppressTap) return;
+      if (g.carouselSwipe || g.moved || g.suppressTap) return;
       onTap();
     },
     [clearTimer, enabled, onTap],
@@ -101,6 +107,7 @@ export function useImageGalleryGestures({ onTap, onOpenViewer, enabled = true }:
     (e: React.SyntheticEvent) => {
       if (!enabled) return;
       e.preventDefault();
+      e.stopPropagation();
       onOpenViewer();
     },
     [enabled, onOpenViewer],
@@ -109,7 +116,8 @@ export function useImageGalleryGestures({ onTap, onOpenViewer, enabled = true }:
   const onClick = useCallback(
     (e: React.MouseEvent) => {
       if (!enabled) return;
-      if (gestureRef.current.moved || gestureRef.current.longPressFired) {
+      const g = gestureRef.current;
+      if (g.moved || g.longPressFired || g.carouselSwipe) {
         e.preventDefault();
         return;
       }

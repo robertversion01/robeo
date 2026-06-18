@@ -95,7 +95,6 @@ export default function ProductPage({ params }: { params: Promise<{ id: string }
     activeIndex: carouselIndex,
     scrollToIndex,
     handleScroll: handleMainCarouselScroll,
-    carouselTouchHandlers,
   } = useSnapCarousel(productImages.length, {
     initialIndex: 0,
     onIndexChange: setSelectedImageIndex,
@@ -356,15 +355,9 @@ export default function ProductPage({ params }: { params: Promise<{ id: string }
                 <div
                   ref={mainCarouselRef}
                   onScroll={handleMainCarouselScroll}
-                  onTouchStart={(e) => {
-                    carouselTouchHandlers.onTouchStart();
-                    pdpGalleryGestures.onTouchStart(e);
-                  }}
+                  onTouchStart={pdpGalleryGestures.onTouchStart}
                   onTouchMove={pdpGalleryGestures.onTouchMove}
-                  onTouchEnd={(e) => {
-                    carouselTouchHandlers.onTouchEnd(e);
-                    pdpGalleryGestures.onTouchEnd(e);
-                  }}
+                  onTouchEnd={pdpGalleryGestures.onTouchEnd}
                   className="relative z-[1] flex h-full w-full snap-x snap-mandatory overflow-x-auto overscroll-x-contain touch-pan-x no-scrollbar"
                   style={{ WebkitOverflowScrolling: 'touch' }}
                 >

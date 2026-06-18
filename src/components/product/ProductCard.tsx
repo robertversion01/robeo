@@ -15,7 +15,7 @@ import { getListingAgeBadge, getProductCardImages } from '@/lib/productListingBa
 import { useSnapCarousel } from '@/hooks/useSnapCarousel';
 import { useImageGalleryGestures } from '@/hooks/useImageGalleryGestures';
 import type { ImagePresetName } from '@/lib/imagePresets';
-import { IMAGE_VIEWPORT_PRELOAD_RADIUS } from '@/lib/imagePresets';
+import { feedPresetImageClass, IMAGE_VIEWPORT_PRELOAD_RADIUS } from '@/lib/imagePresets';
 import Badge from '@/components/ui/Badge';
 import type { ProductWithSeller } from '@/lib/sellerCardEnrichment';
 
@@ -47,7 +47,7 @@ export default function ProductCard({
 
   const images = cardImages.length > 0 ? cardImages : primaryImage ? [primaryImage] : [];
 
-  const { ref: carouselRef, activeIndex, scrollToIndex, handleScroll, carouselTouchHandlers } = useSnapCarousel(
+  const { ref: carouselRef, activeIndex, scrollToIndex, handleScroll } = useSnapCarousel(
     images.length,
     { initialIndex: 0 },
   );
@@ -110,7 +110,7 @@ export default function ProductCard({
     >
       <div
         data-product-card-gallery
-        className="relative aspect-[4/5] overflow-hidden bg-[#0f1a1d]/5 select-none [touch-callout:none] [-webkit-touch-callout:none]"
+        className="product-gallery-surface relative aspect-[4/5] overflow-hidden bg-[#121a1e] select-none"
         onTouchStart={gestures.onTouchStart}
         onTouchMove={gestures.onTouchMove}
         onTouchEnd={gestures.onTouchEnd}
@@ -129,8 +129,6 @@ export default function ProductCard({
         <div
           ref={carouselRef}
           onScroll={handleScroll}
-          onTouchStart={carouselTouchHandlers.onTouchStart}
-          onTouchEnd={carouselTouchHandlers.onTouchEnd}
           className={cn(
             'flex h-full w-full snap-x snap-mandatory overscroll-x-contain touch-pan-x no-scrollbar',
             images.length > 1 ? 'overflow-x-auto' : 'overflow-hidden',
@@ -141,7 +139,7 @@ export default function ProductCard({
             const distance = Math.abs(idx - activeIndex);
             const inBand = distance <= IMAGE_VIEWPORT_PRELOAD_RADIUS;
             return (
-              <div key={`${url}-${idx}`} className="relative h-full min-w-full shrink-0 snap-center snap-always bg-[#0f1a1d]/5">
+              <div key={`${url}-${idx}`} className="relative h-full min-w-full shrink-0 snap-center snap-always snap-stop-always bg-[#121a1e]">
                 {inBand ? (
                   <div className="absolute inset-0">
                     <PresetImage
@@ -152,7 +150,8 @@ export default function ProductCard({
                       alt={product.name}
                       draggable={false}
                       className={cn(
-                        'object-contain object-center pointer-events-none',
+                        feedPresetImageClass(imagePreset),
+                        'pointer-events-none',
                         isSold && 'opacity-60 grayscale',
                         isReserved && !isSold && 'opacity-90',
                       )}

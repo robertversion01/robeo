@@ -9,8 +9,8 @@ import {
 } from '@/lib/imageUtils';
 
 export const IMAGE_QUALITY = {
-  homepageFeed: 70,
-  feed: 58,
+  homepageFeed: 74,
+  feed: 62,
   rail: 48,
   thumb: 46,
   pdp: 66,
@@ -19,8 +19,8 @@ export const IMAGE_QUALITY = {
   hero: 58,
 } as const;
 
-/** Első viewport kártyák: eager + fetchpriority high. */
-export const FEED_VIEWPORT_PRIORITY_COUNT = 6;
+/** Első viewport kártyák (mobil 2×2): eager + fetchpriority high. */
+export const FEED_VIEWPORT_PRIORITY_COUNT = 4;
 
 /** Kezdeti grid mount — kevesebb párhuzamos képrequest. */
 export const FEED_INITIAL_RENDER_COUNT = 12;
@@ -43,8 +43,8 @@ type ImagePreset = {
 
 /** Várható byte-budget / kép (WebP, mobilon) — CI audit célra. */
 export const IMAGE_BYTE_BUDGETS: Record<string, { maxKb: number; note: string }> = {
-  homepageFeed: { maxKb: 28, note: 'Főoldal feed ~320w q70' },
-  feedCard: { maxKb: 20, note: 'Browse feed ~220w q58' },
+  homepageFeed: { maxKb: 32, note: 'Főoldal feed ~400w q74 contain 4:5' },
+  feedCard: { maxKb: 24, note: 'Browse feed ~300w q62 contain 4:5' },
   railCard: { maxKb: 10, note: 'Hasonló termék rail ~96w' },
   pdpMain: { maxKb: 50, note: 'PDP aktív slide ~640w' },
   pdpCarouselIdle: { maxKb: 10, note: 'PDP inaktív slide ~200w' },
@@ -54,23 +54,23 @@ export const IMAGE_BYTE_BUDGETS: Record<string, { maxKb: number; note: string }>
 };
 
 export const IMAGE_PRESETS = {
-  /** Főoldal feed — élesebb thumbnail, width-only transform */
+  /** Főoldal feed — CDN contain 4:5, teljes termék, éles thumbnail */
   homepageFeed: {
-    width: 320,
+    width: 400,
     quality: IMAGE_QUALITY.homepageFeed,
-    options: { format: 'webp' },
-    srcSetWidths: [240, 280, 320, 400, 480],
-    sizes: '(max-width: 640px) 48vw, (max-width: 1024px) 32vw, 20vw',
+    options: { height: 500, resize: 'contain', format: 'webp' },
+    srcSetWidths: [300, 360, 400, 480, 560],
+    sizes: '(max-width: 640px) 50vw, (max-width: 1024px) 33vw, 20vw',
     lazyPolicy: 'lazy',
     fetchPriority: 'low',
   },
   /** Browse / kedvencek */
   feedCard: {
-    width: 220,
+    width: 300,
     quality: IMAGE_QUALITY.feed,
-    options: { format: 'webp' },
-    srcSetWidths: [180, 220, 280, 340],
-    sizes: '(max-width: 640px) 45vw, (max-width: 1024px) 30vw, 18vw',
+    options: { height: 375, resize: 'contain', format: 'webp' },
+    srcSetWidths: [240, 300, 360, 420],
+    sizes: '(max-width: 640px) 50vw, (max-width: 1024px) 33vw, 18vw',
     lazyPolicy: 'lazy',
     fetchPriority: 'low',
   },
@@ -170,6 +170,14 @@ export const IMAGE_PRESETS = {
 export const profileListing = IMAGE_PRESETS.profileGrid;
 
 export type ImagePresetName = keyof typeof IMAGE_PRESETS;
+
+/** Feed preset: CDN már 4:5 contain → object-cover kitölti a kártyát extra vágás nélkül. */
+export function feedPresetImageClass(preset: ImagePresetName): string {
+  if (preset === 'homepageFeed' || preset === 'feedCard') {
+    return 'object-cover object-center';
+  }
+  return 'object-contain object-center';
+}
 
 export type ResolvedPresetImage = {
   src: string;

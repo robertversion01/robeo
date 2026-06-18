@@ -8,6 +8,7 @@ import {
   useState,
   type ReactNode,
 } from 'react';
+import { useSuppressNativeImageMenu } from '@/hooks/useSuppressNativeImageMenu';
 import ProductImageViewer from '@/components/product/ProductImageViewer';
 
 type ViewerPayload = {
@@ -33,6 +34,7 @@ export function useFeedImageViewer() {
 }
 
 export function FeedImageViewerProvider({ children }: { children: ReactNode }) {
+  useSuppressNativeImageMenu();
   const [state, setState] = useState<ViewerPayload & { open: boolean }>({
     open: false,
     images: [],

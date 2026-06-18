@@ -572,3 +572,19 @@ select option {
     -webkit-animation: none !important;
   }
 }
+
+/* Termékgaléria — nincs natív long-press / context menü */
+.product-gallery-surface,
+.product-gallery-overlay {
+  -webkit-touch-callout: none;
+  -webkit-user-select: none;
+  user-select: none;
+  touch-action: manipulation;
+}
+
+.product-gallery-surface img,
+.product-gallery-overlay img {
+  -webkit-user-drag: none;
+  user-drag: none;
+  pointer-events: none;
+}

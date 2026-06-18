@@ -107,8 +107,21 @@ const checks = [
     ok: read('src/hooks/useFeedCategorySwipe.ts').includes('data-product-card-gallery'),
   },
   {
-    name: 'Viewer body scroll lock',
-    ok: viewer.includes('lockBodyScroll') && viewer.includes('feedViewerOpen'),
+    name: 'Natív image menü tiltás (contextmenu/selectstart)',
+    ok: read('src/hooks/useSuppressNativeImageMenu.ts').includes('contextmenu') &&
+      read('src/context/FeedImageViewerContext.tsx').includes('useSuppressNativeImageMenu'),
+  },
+  {
+    name: 'Feed CDN contain 4:5 + feedPresetImageClass',
+    ok: presetsSrc.includes("resize: 'contain'") && presetsSrc.includes('feedPresetImageClass'),
+  },
+  {
+    name: 'Viewer pinch / double-tap zoom',
+    ok: viewer.includes('usePinchZoom'),
+  },
+  {
+    name: 'Carousel touchmove scroll clamp (passive: false)',
+    ok: snapCarousel.includes('passive: false') && snapCarousel.includes('touchAnchorRef'),
   },
 ];
 
@@ -125,7 +138,7 @@ console.log(`
 
   1. Főoldal első ${priorityCount} kártya:
      - loading=eager, fetchpriority=high
-     - homepageFeed ~280–400w variant, ≤28 KB WebP
+     - homepageFeed ~360–480w contain 4:5, ≤32 KB WebP
      - csak az első slide képe (carousel idx 0)
 
   2. Főoldal 7+ kártya:
