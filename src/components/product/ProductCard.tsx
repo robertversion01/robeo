@@ -63,7 +63,7 @@ export default function ProductCard({
   const gestures = useImageGalleryGestures({
     onTap: openProduct,
     onOpenViewer: openViewer,
-    enabled: images.length > 0,
+    enabled: images.length > 0 && !showViewer,
   });
 
   useEffect(() => {
@@ -132,7 +132,7 @@ export default function ProductCard({
           {images.map((url, idx) => {
             const distance = Math.abs(idx - activeIndex);
             return (
-              <div key={`${url}-${idx}`} className="h-full min-w-full shrink-0 snap-center snap-always">
+              <div key={`${url}-${idx}`} className="flex h-full min-w-full shrink-0 snap-center snap-always items-center justify-center bg-[#0f1a1d]/5">
                 {distance <= 1 ? (
                   <PresetImage
                     url={url}
@@ -142,7 +142,7 @@ export default function ProductCard({
                     alt={product.name}
                     draggable={false}
                     className={cn(
-                      'h-full w-full object-cover pointer-events-none',
+                      'h-full w-full object-contain pointer-events-none',
                       isSold && 'opacity-60 grayscale',
                       isReserved && !isSold && 'opacity-90',
                     )}

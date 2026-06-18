@@ -2,7 +2,7 @@
 
 import { useCallback, useRef } from 'react';
 
-const LONG_PRESS_MS = 480;
+const LONG_PRESS_MS = 380;
 const MOVE_CANCEL_PX = 12;
 
 type Options = {
@@ -48,6 +48,7 @@ export function useImageGalleryGestures({ onTap, onOpenViewer, enabled = true }:
       timerRef.current = setTimeout(() => {
         gestureRef.current.longPressFired = true;
         gestureRef.current.suppressTap = true;
+        gestureRef.current.moved = true;
         if (typeof navigator !== 'undefined' && navigator.vibrate) {
           navigator.vibrate(12);
         }

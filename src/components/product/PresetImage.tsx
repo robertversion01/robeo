@@ -74,14 +74,8 @@ export default function PresetImage({
     loading: resolved.loading,
     fetchPriority: resolved.fetchPriority,
     decoding: decoding ?? 'async',
-    className: cn(className),
-    style: {
-      backgroundColor: '#0f1a1d',
-      backgroundImage: resolved.placeholder ? `url(${resolved.placeholder})` : undefined,
-      backgroundSize: 'cover',
-      backgroundPosition: 'center',
-      ...style,
-    },
+    className: cn('block max-h-full max-w-full', className),
+    style,
     onError: (event: React.SyntheticEvent<HTMLImageElement>) => {
       if (
         !useOriginalFallback &&
@@ -101,7 +95,7 @@ export default function PresetImage({
 
   if (hasAvif || hasWebpSrcSet) {
     return (
-      <picture>
+      <picture className="flex h-full w-full items-center justify-center">
         {hasAvif ? (
           <source srcSet={resolved.avifSrcSet} sizes={resolved.sizes} type="image/avif" />
         ) : null}

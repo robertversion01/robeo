@@ -1,8 +1,8 @@
 'use client';
 
 import { useCallback, useEffect, useRef, useState } from 'react';
+import { createPortal } from 'react-dom';
 import { useTranslation } from 'react-i18next';
-import { X, ZoomIn, ZoomOut } from 'lucide-react';
 import PresetImage from '@/components/product/PresetImage';
 import { useSnapCarousel } from '@/hooks/useSnapCarousel';
 import { cn } from '@/lib/utils';
@@ -23,6 +23,7 @@ export default function ProductImageViewer({
   productName = '',
 }: ProductImageViewerProps) {
   const { t } = useTranslation();
+  const [mounted, setMounted] = useState(false);
   const [isZoomed, setIsZoomed] = useState(false);
   const lastTapRef = useRef(0);
 
@@ -30,6 +31,10 @@ export default function ProductImageViewer({
     images.length,
     { initialIndex },
   );
+
+  useEffect(() => {
+    setMounted(true);
+  }, []);
 
   useEffect(() => {
     if (!open) return;
@@ -64,42 +69,31 @@ export default function ProductImageViewer({
     lastTapRef.current = now;
   }, []);
 
-  if (!open || images.length === 0) return null;
+  if (!open || images.length === 0 || !mounted) return null;
 
-  return (
+  const content = (
     <div
-      className="fixed inset-0 z-[300] flex flex-col bg-black/95 backdrop-blur-sm select-none [touch-callout:none]"
+      className="fixed inset-0 z-[9999] flex flex-col bg-black select-none touch-none [touch-callout:none] [-webkit-touch-callout:none]"
       role="dialog"
       aria-modal="true"
       aria-label={t('product.imageViewer')}
       onContextMenu={(e) => e.preventDefault()}
     >
-      <header className="relative z-10 flex items-center justify-between px-3 py-3 safe-area-top">
+      {/* Vinted-szerű bezárás — jobb felső */}
+      <div className="pointer-events-none absolute inset-x-0 top-0 z-20 flex justify-end p-3 pt-[max(0.75rem,env(safe-area-inset-top))]">
         <button
           type="button"
           onClick={onClose}
-          className="inline-flex h-10 w-10 items-center justify-center rounded-full bg-white/10 text-white hover:bg-white/20"
-          aria-label={t('product.closeViewer')}
+          className="pointer-events-auto rounded-full border border-white/90 px-4 py-1.5 text-sm font-semibold text-white"
         >
-          <X size={22} />
+          {t('product.closeViewer')}
         </button>
-        <span className="text-sm font-medium text-white/80 tabular-nums">
-          {t('product.imageCounter', { current: activeIndex + 1, total: images.length })}
-        </span>
-        <button
-          type="button"
-          onClick={() => setIsZoomed((z) => !z)}
-          className="inline-flex h-10 w-10 items-center justify-center rounded-full bg-white/10 text-white hover:bg-white/20"
-          aria-label={isZoomed ? t('product.zoomOut') : t('product.zoomIn')}
-        >
-          {isZoomed ? <ZoomOut size={20} /> : <ZoomIn size={20} />}
-        </button>
-      </header>
+      </div>
 
       <div
         ref={carouselRef}
         onScroll={handleScroll}
-        className="relative flex flex-1 w-full snap-x snap-mandatory overflow-x-auto overscroll-x-contain touch-pan-x no-scrollbar"
+        className="relative flex h-full w-full snap-x snap-mandatory overflow-x-auto overscroll-x-contain touch-pan-x no-scrollbar"
         style={{ WebkitOverflowScrolling: 'touch' }}
       >
         {images.map((imgUrl, idx) => {
@@ -108,7 +102,7 @@ export default function ProductImageViewer({
           return (
             <div
               key={`${imgUrl}-${idx}`}
-              className="flex h-full min-w-full shrink-0 snap-center snap-always items-center justify-center px-1"
+              className="flex h-full min-w-full shrink-0 snap-center snap-always items-center justify-center px-2"
               onClick={handleDoubleTap}
             >
               {distance <= 1 ? (
@@ -120,17 +114,34 @@ export default function ProductImageViewer({
                   alt={productName}
                   draggable={false}
                   className={cn(
-                    'max-h-full max-w-full object-contain transition-transform duration-200 ease-out pointer-events-none',
-                    isActive && isZoomed ? 'scale-[2] cursor-zoom-out' : 'scale-100 cursor-zoom-in',
+                    'max-h-[85vh] max-w-full object-contain transition-transform duration-200 ease-out pointer-events-none',
+                    isActive && isZoomed ? 'scale-[2]' : 'scale-100',
                   )}
                 />
               ) : (
-                <div className="h-[60vh] w-full max-w-sm rounded-lg bg-white/5" aria-hidden />
+                <div className="h-[60vh] w-full" aria-hidden />
               )}
             </div>
           );
         })}
       </div>
+
+      {/* Lapozó pöttyök — alul középen, mint Vinted */}
+      {images.length > 1 ? (
+        <div className="pointer-events-none absolute inset-x-0 bottom-0 z-20 flex justify-center gap-1.5 pb-[max(1rem,env(safe-area-inset-bottom))]">
+          {images.map((_, idx) => (
+            <span
+              key={idx}
+              className={cn(
+                'h-1.5 w-1.5 rounded-full transition-colors',
+                idx === activeIndex ? 'bg-white' : 'bg-white/35',
+              )}
+            />
+          ))}
+        </div>
+      ) : null}
     </div>
   );
+
+  return createPortal(content, document.body);
 }

@@ -45,21 +45,21 @@ export const IMAGE_BYTE_BUDGETS: Record<string, { maxKb: number; note: string }>
 };
 
 export const IMAGE_PRESETS = {
-  /** Főoldal feed — olvashatóbb minőség, még mindig mobil-barát */
+  /** Főoldal feed — teljes termék látszik, nincs cover-vágás */
   homepageFeed: {
     width: 200,
     quality: IMAGE_QUALITY.homepageFeed,
-    options: { height: 250, resize: 'cover', format: 'webp' },
+    options: { format: 'webp' },
     srcSetWidths: [160, 200, 260, 320],
     sizes: '(max-width: 640px) 48vw, (max-width: 1024px) 32vw, 20vw',
     lazyPolicy: 'lazy',
     fetchPriority: 'low',
   },
-  /** Browse / kedvencek — kicsit agresszívebb, mint homepage */
+  /** Browse / kedvencek */
   feedCard: {
     width: 170,
     quality: IMAGE_QUALITY.feed,
-    options: { height: 212, resize: 'cover', format: 'webp' },
+    options: { format: 'webp' },
     srcSetWidths: [140, 170, 220],
     sizes: '(max-width: 640px) 45vw, (max-width: 1024px) 30vw, 18vw',
     lazyPolicy: 'lazy',
@@ -212,12 +212,18 @@ export function imageFromPreset(
     avifSrcSet: getOptimizedImageSrcSet(url, widths, p.quality, avifOpts),
     sizes: p.sizes,
     width: p.width,
-    height: p.options?.height ?? p.width,
+    height:
+      p.options && 'height' in p.options && typeof p.options.height === 'number'
+        ? p.options.height
+        : Math.round(p.width * 1.25),
     loading,
     fetchPriority,
     placeholder: getOptimizedImageUrl(url, 20, 38, {
       ...webpOpts,
-      height: p.options?.height ? Math.max(20, Math.round(p.options.height / 10)) : 20,
+      height:
+        p.options && 'height' in p.options && typeof p.options.height === 'number'
+          ? Math.max(20, Math.round(p.options.height / 10))
+          : 20,
       resize: 'cover',
     }),
   };
