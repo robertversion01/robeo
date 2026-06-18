@@ -5,6 +5,7 @@ import { createPortal } from 'react-dom';
 import { useTranslation } from 'react-i18next';
 import PresetImage from '@/components/product/PresetImage';
 import { useSnapCarousel } from '@/hooks/useSnapCarousel';
+import { IMAGE_VIEWPORT_PRELOAD_RADIUS } from '@/lib/imagePresets';
 import { cn } from '@/lib/utils';
 
 type ProductImageViewerProps = {
@@ -51,7 +52,7 @@ export default function ProductImageViewer({
   const lastTapRef = useRef(0);
   const scrollLockY = useRef(0);
 
-  const { ref: carouselRef, activeIndex, scrollToIndex, handleScroll } = useSnapCarousel(
+  const { ref: carouselRef, activeIndex, scrollToIndex, handleScroll, carouselTouchHandlers } = useSnapCarousel(
     images.length,
     { initialIndex },
   );
@@ -128,29 +129,36 @@ export default function ProductImageViewer({
       <div
         ref={carouselRef}
         onScroll={handleScroll}
+        onTouchStart={carouselTouchHandlers.onTouchStart}
+        onTouchEnd={carouselTouchHandlers.onTouchEnd}
         className="relative flex h-full w-full snap-x snap-mandatory overflow-x-auto overscroll-x-none touch-pan-x no-scrollbar [touch-action:pan-x]"
         style={{ WebkitOverflowScrolling: 'touch' }}
       >
         {images.map((imgUrl, idx) => {
           const isActive = idx === activeIndex;
+          const inBand = Math.abs(idx - activeIndex) <= IMAGE_VIEWPORT_PRELOAD_RADIUS;
           return (
             <div
               key={`${imgUrl}-${idx}`}
               className="flex h-full min-w-full shrink-0 snap-center snap-always items-center justify-center px-2"
               onClick={handleDoubleTap}
             >
-              <PresetImage
-                url={imgUrl}
-                preset="pdpViewer"
-                priority={isActive}
-                lazy={!isActive}
-                alt={productName}
-                draggable={false}
-                className={cn(
-                  'h-full w-full max-h-[88vh] object-contain transition-transform duration-200 ease-out pointer-events-none',
-                  isActive && isZoomed ? 'scale-[2]' : 'scale-100',
-                )}
-              />
+              {inBand ? (
+                <PresetImage
+                  url={imgUrl}
+                  preset="pdpViewer"
+                  priority={isActive}
+                  lazy={!isActive}
+                  alt={productName}
+                  draggable={false}
+                  className={cn(
+                    'h-full w-full max-h-[88vh] object-contain transition-transform duration-200 ease-out pointer-events-none',
+                    isActive && isZoomed ? 'scale-[2]' : 'scale-100',
+                  )}
+                />
+              ) : (
+                <div className="h-[60vh] w-full" aria-hidden />
+              )}
             </div>
           );
         })}

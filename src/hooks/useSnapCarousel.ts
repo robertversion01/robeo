@@ -1,8 +1,8 @@
 'use client';
 
-import { useCallback, useEffect, useRef, useState } from 'react';
+import { useCallback, useEffect, useRef, useState, type TouchEvent } from 'react';
 
-const SCROLL_SETTLE_MS = 120;
+const SCROLL_SETTLE_MS = 80;
 
 type Options = {
   initialIndex?: number;
@@ -10,13 +10,14 @@ type Options = {
 };
 
 /**
- * Egy gesztus = max ±1 slide. Scroll végén snap + lock, hogy fling ne ugorjon át több képen.
+ * Egy gesztus = max ±1 slide. Touch végén azonnali clamp + scroll settle backup.
  */
 export function useSnapCarousel(itemCount: number, options: Options = {}) {
   const initial = options.initialIndex ?? 0;
   const ref = useRef<HTMLDivElement | null>(null);
   const [activeIndex, setActiveIndex] = useState(initial);
   const settledRef = useRef(initial);
+  const touchStartIndexRef = useRef(initial);
   const settleTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const programmaticRef = useRef(false);
 
@@ -25,51 +26,81 @@ export function useSnapCarousel(itemCount: number, options: Options = {}) {
     [itemCount],
   );
 
-  const scrollToIndex = useCallback(
-    (index: number, smooth = true) => {
+  const applyIndex = useCallback(
+    (next: number, smooth: boolean) => {
       const el = ref.current;
-      if (!el || el.clientWidth <= 0 || itemCount <= 0) return;
-      const next = clampIndex(index);
+      if (!el || el.clientWidth <= 0) return;
+      const clamped = clampIndex(next);
       programmaticRef.current = true;
-      el.scrollTo({ left: next * el.clientWidth, behavior: smooth ? 'smooth' : 'auto' });
-      settledRef.current = next;
-      setActiveIndex(next);
-      options.onIndexChange?.(next);
+      el.scrollTo({ left: clamped * el.clientWidth, behavior: smooth ? 'smooth' : 'auto' });
+      settledRef.current = clamped;
+      setActiveIndex(clamped);
+      options.onIndexChange?.(clamped);
       window.setTimeout(() => {
         programmaticRef.current = false;
-      }, smooth ? 320 : 0);
+      }, smooth ? 300 : 0);
     },
-    [clampIndex, itemCount, options],
+    [clampIndex, options],
   );
 
-  const settleScroll = useCallback(() => {
-    const el = ref.current;
-    if (!el || el.clientWidth <= 0 || itemCount <= 0) return;
-    const raw = Math.round(el.scrollLeft / el.clientWidth);
-    const last = settledRef.current;
-    let next = raw;
-    if (next > last + 1) next = last + 1;
-    if (next < last - 1) next = last - 1;
-    next = clampIndex(next);
-    if (next !== raw) {
-      programmaticRef.current = true;
-      el.scrollTo({ left: next * el.clientWidth, behavior: 'smooth' });
-      window.setTimeout(() => {
-        programmaticRef.current = false;
-      }, 320);
-    }
-    if (next !== settledRef.current) {
-      settledRef.current = next;
-      setActiveIndex(next);
-      options.onIndexChange?.(next);
-    }
-  }, [clampIndex, itemCount, options]);
+  const scrollToIndex = useCallback(
+    (index: number, smooth = true) => {
+      if (itemCount <= 0) return;
+      applyIndex(index, smooth);
+    },
+    [applyIndex, itemCount],
+  );
+
+  const clampToGestureWindow = useCallback(
+    (rawIndex: number, anchorIndex: number) => {
+      let next = rawIndex;
+      if (next > anchorIndex + 1) next = anchorIndex + 1;
+      if (next < anchorIndex - 1) next = anchorIndex - 1;
+      return clampIndex(next);
+    },
+    [clampIndex],
+  );
+
+  const settleScroll = useCallback(
+    (anchorIndex = settledRef.current) => {
+      const el = ref.current;
+      if (!el || el.clientWidth <= 0 || itemCount <= 0) return;
+      const raw = Math.round(el.scrollLeft / el.clientWidth);
+      const next = clampToGestureWindow(raw, anchorIndex);
+      if (next !== raw) {
+        applyIndex(next, true);
+        return;
+      }
+      if (next !== settledRef.current) {
+        settledRef.current = next;
+        setActiveIndex(next);
+        options.onIndexChange?.(next);
+      }
+    },
+    [applyIndex, clampToGestureWindow, itemCount, options],
+  );
 
   const handleScroll = useCallback(() => {
     if (programmaticRef.current) return;
     if (settleTimerRef.current) clearTimeout(settleTimerRef.current);
-    settleTimerRef.current = setTimeout(settleScroll, SCROLL_SETTLE_MS);
+    settleTimerRef.current = setTimeout(() => settleScroll(), SCROLL_SETTLE_MS);
   }, [settleScroll]);
+
+  const onTouchStart = useCallback(() => {
+    touchStartIndexRef.current = settledRef.current;
+  }, []);
+
+  const onTouchEnd = useCallback(() => {
+    window.requestAnimationFrame(() => settleScroll(touchStartIndexRef.current));
+  }, [settleScroll]);
+
+  const carouselTouchHandlers = {
+    onTouchStart,
+    onTouchEnd: (e: TouchEvent<HTMLElement>) => {
+      onTouchEnd();
+      void e;
+    },
+  };
 
   useEffect(() => {
     return () => {
@@ -82,5 +113,12 @@ export function useSnapCarousel(itemCount: number, options: Options = {}) {
     setActiveIndex(clampIndex(initial));
   }, [initial, clampIndex]);
 
-  return { ref, activeIndex, scrollToIndex, handleScroll, settledRef };
+  return {
+    ref,
+    activeIndex,
+    scrollToIndex,
+    handleScroll,
+    carouselTouchHandlers,
+    settledRef,
+  };
 }

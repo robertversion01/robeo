@@ -10,7 +10,11 @@ import EmptyState from '@/components/ui/EmptyState';
 import ListRefreshingBar from '@/components/ui/ListRefreshingBar';
 import type { Product } from '@/types';
 
-import type { ImagePresetName } from '@/lib/imagePresets';
+import {
+  FEED_INITIAL_RENDER_COUNT,
+  FEED_VIEWPORT_PRIORITY_COUNT,
+  type ImagePresetName,
+} from '@/lib/imagePresets';
 
 interface ProductGridProps {
   products: Product[];
@@ -28,6 +32,10 @@ interface ProductGridProps {
   onClearDistrict?: () => void;
   /** Főoldal vs browse kép preset */
   cardImagePreset?: ImagePresetName;
+  /** Első N kártya eager/high priority */
+  priorityCount?: number;
+  /** Kezdeti renderelt kártyaszám (hálózati terhelés) */
+  initialRenderCount?: number;
 }
 
 export default function ProductGrid({
@@ -43,12 +51,14 @@ export default function ProductGrid({
   districtLabel,
   onClearDistrict,
   cardImagePreset = 'feedCard',
+  priorityCount = 4,
+  initialRenderCount = FEED_INITIAL_RENDER_COUNT,
 }: ProductGridProps) {
   const { t } = useTranslation();
   const [visible, setVisible] = useState(true);
   const skipNextFadeRef = useRef(true);
   const loadMoreRef = useRef<HTMLDivElement | null>(null);
-  const [renderLimit, setRenderLimit] = useState(24);
+  const [renderLimit, setRenderLimit] = useState(initialRenderCount);
 
   useEffect(() => {
     if (skipNextFadeRef.current) {
@@ -79,13 +89,13 @@ export default function ProductGrid({
       (entries) => {
         const first = entries[0];
         if (!first?.isIntersecting) return;
-        setRenderLimit((prev) => Math.min(prev + 24, displayProducts.length));
+        setRenderLimit((prev) => Math.min(prev + initialRenderCount, displayProducts.length));
       },
       { rootMargin: '500px 0px' },
     );
     observer.observe(target);
     return () => observer.disconnect();
-  }, [displayProducts.length, loading, windowedProducts.length]);
+  }, [displayProducts.length, initialRenderCount, loading, windowedProducts.length]);
 
   if (loading && products.length === 0) {
     return <ProductGridSkeleton />;
@@ -188,7 +198,7 @@ export default function ProductGrid({
             product={product}
             isFavorite={favorites.has(product.id)}
             onToggleFavorite={() => onToggleFavorite(product.id)}
-            priority={index < 3}
+            priority={index < priorityCount}
             imagePreset={cardImagePreset}
           />
         ))}

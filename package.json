@@ -15,6 +15,7 @@
     "db:apply-patch": "node scripts/apply-supabase-patch.mjs",
     "db:ensure-schema": "node scripts/ensure-marketplace-schema.mjs",
     "db:check-patches": "node scripts/check-supabase-patches.mjs",
+    "audit:images": "node scripts/audit-image-presets.mjs",
     "grant-admin": "node scripts/grant-admin-role.mjs",
     "test:wallet-release": "node scripts/run-wallet-release-e2e.mjs",
     "test:notifications": "node scripts/run-e2e-notification-pipeline.mjs",

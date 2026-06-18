@@ -15,6 +15,7 @@ import { getListingAgeBadge, getProductCardImages } from '@/lib/productListingBa
 import { useSnapCarousel } from '@/hooks/useSnapCarousel';
 import { useImageGalleryGestures } from '@/hooks/useImageGalleryGestures';
 import type { ImagePresetName } from '@/lib/imagePresets';
+import { IMAGE_VIEWPORT_PRELOAD_RADIUS } from '@/lib/imagePresets';
 import Badge from '@/components/ui/Badge';
 import type { ProductWithSeller } from '@/lib/sellerCardEnrichment';
 
@@ -46,7 +47,7 @@ export default function ProductCard({
 
   const images = cardImages.length > 0 ? cardImages : primaryImage ? [primaryImage] : [];
 
-  const { ref: carouselRef, activeIndex, scrollToIndex, handleScroll } = useSnapCarousel(
+  const { ref: carouselRef, activeIndex, scrollToIndex, handleScroll, carouselTouchHandlers } = useSnapCarousel(
     images.length,
     { initialIndex: 0 },
   );
@@ -128,6 +129,8 @@ export default function ProductCard({
         <div
           ref={carouselRef}
           onScroll={handleScroll}
+          onTouchStart={carouselTouchHandlers.onTouchStart}
+          onTouchEnd={carouselTouchHandlers.onTouchEnd}
           className={cn(
             'flex h-full w-full snap-x snap-mandatory overscroll-x-contain touch-pan-x no-scrollbar',
             images.length > 1 ? 'overflow-x-auto' : 'overflow-hidden',
@@ -136,9 +139,10 @@ export default function ProductCard({
         >
           {images.map((url, idx) => {
             const distance = Math.abs(idx - activeIndex);
+            const inBand = distance <= IMAGE_VIEWPORT_PRELOAD_RADIUS;
             return (
               <div key={`${url}-${idx}`} className="relative h-full min-w-full shrink-0 snap-center snap-always bg-[#0f1a1d]/5">
-                {distance <= 1 ? (
+                {inBand ? (
                   <div className="absolute inset-0">
                     <PresetImage
                       url={url}

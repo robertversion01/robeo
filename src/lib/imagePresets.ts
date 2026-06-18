@@ -9,15 +9,24 @@ import {
 } from '@/lib/imageUtils';
 
 export const IMAGE_QUALITY = {
-  homepageFeed: 62,
-  feed: 54,
+  homepageFeed: 70,
+  feed: 58,
   rail: 48,
   thumb: 46,
-  pdp: 64,
-  pdpViewer: 72,
+  pdp: 66,
+  pdpViewer: 76,
   avatar: 52,
   hero: 58,
 } as const;
+
+/** Első viewport kártyák: eager + fetchpriority high. */
+export const FEED_VIEWPORT_PRIORITY_COUNT = 6;
+
+/** Kezdeti grid mount — kevesebb párhuzamos képrequest. */
+export const FEED_INITIAL_RENDER_COUNT = 12;
+
+/** Carousel / viewer: ±N slide tölt nagyobb presetből. */
+export const IMAGE_VIEWPORT_PRELOAD_RADIUS = 1;
 
 export type ImageLazyPolicy = 'lazy' | 'eager' | 'inherit';
 
@@ -34,51 +43,51 @@ type ImagePreset = {
 
 /** Várható byte-budget / kép (WebP, mobilon) — CI audit célra. */
 export const IMAGE_BYTE_BUDGETS: Record<string, { maxKb: number; note: string }> = {
-  homepageFeed: { maxKb: 18, note: 'Főoldal feed ~200w q62' },
-  feedCard: { maxKb: 14, note: 'Browse feed ~170w q54' },
+  homepageFeed: { maxKb: 28, note: 'Főoldal feed ~320w q70' },
+  feedCard: { maxKb: 20, note: 'Browse feed ~220w q58' },
   railCard: { maxKb: 10, note: 'Hasonló termék rail ~96w' },
-  pdpMain: { maxKb: 45, note: 'PDP aktív slide ~560w' },
-  pdpCarouselIdle: { maxKb: 8, note: 'PDP inaktív slide ~180w' },
-  pdpViewer: { maxKb: 80, note: 'Fullscreen viewer ~900w' },
-  heroTile: { maxKb: 8, note: 'Hero masonry ~100w' },
-  profileGrid: { maxKb: 14, note: 'Profil grid ~150w' },
+  pdpMain: { maxKb: 50, note: 'PDP aktív slide ~640w' },
+  pdpCarouselIdle: { maxKb: 10, note: 'PDP inaktív slide ~200w' },
+  pdpViewer: { maxKb: 95, note: 'Fullscreen viewer ~1080w' },
+  heroTile: { maxKb: 10, note: 'Hero masonry ~130w' },
+  profileGrid: { maxKb: 16, note: 'Profil grid ~150w' },
 };
 
 export const IMAGE_PRESETS = {
-  /** Főoldal feed — szélesség alapú transform, teljes kép object-contain-nel */
+  /** Főoldal feed — élesebb thumbnail, width-only transform */
   homepageFeed: {
-    width: 200,
+    width: 320,
     quality: IMAGE_QUALITY.homepageFeed,
     options: { format: 'webp' },
-    srcSetWidths: [160, 200, 260, 320],
+    srcSetWidths: [240, 280, 320, 400, 480],
     sizes: '(max-width: 640px) 48vw, (max-width: 1024px) 32vw, 20vw',
     lazyPolicy: 'lazy',
     fetchPriority: 'low',
   },
   /** Browse / kedvencek */
   feedCard: {
-    width: 170,
+    width: 220,
     quality: IMAGE_QUALITY.feed,
     options: { format: 'webp' },
-    srcSetWidths: [140, 170, 220],
+    srcSetWidths: [180, 220, 280, 340],
     sizes: '(max-width: 640px) 45vw, (max-width: 1024px) 30vw, 18vw',
     lazyPolicy: 'lazy',
     fetchPriority: 'low',
   },
   pdpMain: {
-    width: 560,
+    width: 640,
     quality: IMAGE_QUALITY.pdp,
-    options: { height: 700, resize: 'cover', format: 'webp' },
-    srcSetWidths: [360, 480, 560, 720],
+    options: { height: 800, resize: 'contain', format: 'webp' },
+    srcSetWidths: [400, 520, 640, 800],
     sizes: '(max-width: 768px) 100vw, 50vw',
     lazyPolicy: 'eager',
     fetchPriority: 'high',
   },
   pdpCarouselIdle: {
-    width: 180,
-    quality: 48,
-    options: { height: 225, resize: 'cover', format: 'webp' },
-    srcSetWidths: [140, 180],
+    width: 200,
+    quality: 52,
+    options: { height: 250, resize: 'contain', format: 'webp' },
+    srcSetWidths: [160, 200, 260],
     sizes: '100vw',
     lazyPolicy: 'lazy',
     fetchPriority: 'low',

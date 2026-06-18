@@ -10,7 +10,7 @@ import { toast } from 'sonner';
 import { ZoomIn, MapPin } from 'lucide-react';
 import { useSnapCarousel } from '@/hooks/useSnapCarousel';
 import { useImageGalleryGestures } from '@/hooks/useImageGalleryGestures';
-import { imageFromPreset } from '@/lib/imagePresets';
+import { imageFromPreset, IMAGE_VIEWPORT_PRELOAD_RADIUS } from '@/lib/imagePresets';
 import { shouldLazyLoad } from '@/lib/imageUtils';
 import { trackEvent, AnalyticsEvent } from '@/lib/analytics';
 import { getValidProductImageUrls } from '@/lib/productImageValidation';
@@ -95,6 +95,7 @@ export default function ProductPage({ params }: { params: Promise<{ id: string }
     activeIndex: carouselIndex,
     scrollToIndex,
     handleScroll: handleMainCarouselScroll,
+    carouselTouchHandlers,
   } = useSnapCarousel(productImages.length, {
     initialIndex: 0,
     onIndexChange: setSelectedImageIndex,
@@ -355,25 +356,32 @@ export default function ProductPage({ params }: { params: Promise<{ id: string }
                 <div
                   ref={mainCarouselRef}
                   onScroll={handleMainCarouselScroll}
-                  onTouchStart={pdpGalleryGestures.onTouchStart}
+                  onTouchStart={(e) => {
+                    carouselTouchHandlers.onTouchStart();
+                    pdpGalleryGestures.onTouchStart(e);
+                  }}
                   onTouchMove={pdpGalleryGestures.onTouchMove}
-                  onTouchEnd={pdpGalleryGestures.onTouchEnd}
+                  onTouchEnd={(e) => {
+                    carouselTouchHandlers.onTouchEnd(e);
+                    pdpGalleryGestures.onTouchEnd(e);
+                  }}
                   className="relative z-[1] flex h-full w-full snap-x snap-mandatory overflow-x-auto overscroll-x-contain touch-pan-x no-scrollbar"
                   style={{ WebkitOverflowScrolling: 'touch' }}
                 >
                   {productImages.map((imgUrl, idx) => {
                     const isActive = idx === safeSelectedIndex;
                     const distance = Math.abs(idx - safeSelectedIndex);
+                    const inBand = distance <= IMAGE_VIEWPORT_PRELOAD_RADIUS;
                     return (
                     <div key={imgUrl} className="relative h-full min-w-full shrink-0 snap-center snap-always">
-                      {distance <= 1 ? (
+                      {inBand ? (
                         <PresetImage
                           url={imgUrl}
                           preset={isActive ? 'pdpMain' : 'pdpCarouselIdle'}
                           priority={isActive}
                           lazy={!isActive}
                           alt={product.name}
-                          className={`h-full w-full object-cover ${isSold ? 'opacity-70 grayscale' : ''}`}
+                          className={`h-full w-full object-contain ${isSold ? 'opacity-70 grayscale' : ''}`}
                           onError={() => markGalleryUrlFailed(imgUrl)}
                         />
                       ) : (

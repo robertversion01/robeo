@@ -36,6 +36,7 @@ import DistrictDiscoveryRail from '@/components/browse/DistrictDiscoveryRail';
 import HomeDistrictPicker from '@/components/browse/HomeDistrictPicker';
 import { departmentLabel } from '@/lib/categoryDisplay';
 import { ROBEO_BP_MODE } from '@/lib/features';
+import { FEED_VIEWPORT_PRIORITY_COUNT } from '@/lib/imagePresets';
 import { getDistrictLabel } from '@/lib/budapestDistricts';
 
 function sortLabelKey(id: string) {
@@ -368,6 +369,7 @@ function CatalogBrowsePanelInner({
         districtLabel={activeDistrictLabel || undefined}
         onClearDistrict={() => removeFilter('budapest_district')}
         cardImagePreset={isFeed ? 'homepageFeed' : 'feedCard'}
+        priorityCount={isFeed ? FEED_VIEWPORT_PRIORITY_COUNT : 4}
       />
       {!loading && catalogProducts.length > 0 && hasMore ? (
         <div className="mt-6 flex justify-center pb-4 md:pb-8">
