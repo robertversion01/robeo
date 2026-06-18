@@ -4,6 +4,7 @@ import { useEffect, useMemo, useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import Link from 'next/link';
 import ProductCard from './ProductCard';
+import FeedLcpPreloader from './FeedLcpPreloader';
 import ProductGridSkeleton from './ProductGridSkeleton';
 import EmptyState from '@/components/ui/EmptyState';
 import ListRefreshingBar from '@/components/ui/ListRefreshingBar';
@@ -165,6 +166,7 @@ export default function ProductGrid({
 
   return (
     <>
+      <FeedLcpPreloader products={windowedProducts} preset={cardImagePreset} count={priorityCount} />
       <ListRefreshingBar active={refreshing} />
       <div
         key={transitionKey}

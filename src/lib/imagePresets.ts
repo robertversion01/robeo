@@ -7,6 +7,12 @@ import {
   getOptimizedImageUrl,
   type SupabaseTransformOptions,
 } from '@/lib/imageUtils';
+import {
+  getConnectionProfile,
+  scaleQualityForConnection,
+  scaleWidthForConnection,
+  type ConnectionProfile,
+} from '@/lib/connectionProfile';
 
 export const IMAGE_QUALITY = {
   homepageFeed: 74,
@@ -215,12 +221,17 @@ function withFormat(
 export function imageFromPreset(
   url: string | null,
   preset: ImagePresetName,
-  overrides?: { priority?: boolean; lazy?: boolean },
+  overrides?: { priority?: boolean; lazy?: boolean; connection?: ConnectionProfile },
 ): ResolvedPresetImage {
   const p = IMAGE_PRESETS[preset];
+  const connection = overrides?.connection ?? getConnectionProfile();
+  const width = scaleWidthForConnection(p.width, connection);
+  const quality = scaleQualityForConnection(p.quality, connection);
   const webpOpts = withFormat(p.options, 'webp');
   const avifOpts = withFormat(p.options, 'avif');
-  const widths = [...p.srcSetWidths];
+  const widths = [...p.srcSetWidths]
+    .map((w) => scaleWidthForConnection(w, connection))
+    .filter((w, i, arr) => w > 0 && arr.indexOf(w) === i);
 
   const priority = overrides?.priority === true;
   const lazyExplicit = overrides?.lazy;
@@ -240,11 +251,11 @@ export function imageFromPreset(
   const webpOnly = WEBP_ONLY_PRESETS.has(preset);
 
   return {
-    src: getOptimizedImageUrl(url, p.width, p.quality, webpOpts),
-    srcSet: getOptimizedImageSrcSet(url, widths, p.quality, webpOpts),
+    src: getOptimizedImageUrl(url, width, quality, webpOpts),
+    srcSet: getOptimizedImageSrcSet(url, widths, quality, webpOpts),
     avifSrcSet: webpOnly
       ? undefined
-      : getOptimizedImageSrcSet(url, widths, p.quality, avifOpts),
+      : getOptimizedImageSrcSet(url, widths, quality, avifOpts),
     sizes: p.sizes,
     width: p.width,
     height:

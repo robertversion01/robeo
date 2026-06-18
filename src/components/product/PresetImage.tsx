@@ -10,6 +10,7 @@ import {
   imageFromPreset,
   type ImagePresetName,
 } from '@/lib/imagePresets';
+import { useConnectionProfile } from '@/hooks/useConnectionProfile';
 import { cn } from '@/lib/utils';
 
 type PresetImageProps = Omit<
@@ -37,9 +38,10 @@ export default function PresetImage({
   ...rest
 }: PresetImageProps) {
   const normalized = normalizeProductImageUrl(url);
+  const connection = useConnectionProfile();
   const resolved = useMemo(
-    () => imageFromPreset(normalized, preset, { priority, lazy }),
-    [normalized, preset, priority, lazy],
+    () => imageFromPreset(normalized, preset, { priority, lazy, connection }),
+    [normalized, preset, priority, lazy, connection],
   );
 
   const [useOriginalFallback, setUseOriginalFallback] = useState(false);

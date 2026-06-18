@@ -120,8 +120,20 @@ const checks = [
     ok: viewer.includes('usePinchZoom'),
   },
   {
-    name: 'Carousel touchmove scroll clamp (passive: false)',
-    ok: snapCarousel.includes('passive: false') && snapCarousel.includes('touchAnchorRef'),
+    name: 'Connection-aware feed presets',
+    ok: read('src/lib/connectionProfile.ts').includes('getConnectionProfile'),
+  },
+  {
+    name: 'LCP preload for first feed cards',
+    ok: read('src/components/product/FeedLcpPreloader.tsx').includes('preloadImageUrls'),
+  },
+  {
+    name: 'Long-press speculative viewer preload',
+    ok: read('src/hooks/useImageGalleryGestures.ts').includes('onPreloadViewer'),
+  },
+  {
+    name: 'ProductCard React.memo',
+    ok: read('src/components/product/ProductCard.tsx').includes('memo(function ProductCard'),
   },
 ];
 

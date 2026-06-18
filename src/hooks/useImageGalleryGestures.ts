@@ -9,14 +9,22 @@ const CAROUSEL_CANCEL_DX = 14;
 type Options = {
   onTap: () => void;
   onOpenViewer: () => void;
+  onPreloadViewer?: () => void;
   enabled?: boolean;
 };
+
+const PRELOAD_VIEWER_MS = 180;
 
 /**
  * Tap → navigáció; long-press → fullscreen viewer (nem böngésző menü).
  * Horizontális swipe carousel közben long-press nem indul.
  */
-export function useImageGalleryGestures({ onTap, onOpenViewer, enabled = true }: Options) {
+export function useImageGalleryGestures({
+  onTap,
+  onOpenViewer,
+  onPreloadViewer,
+  enabled = true,
+}: Options) {
   const gestureRef = useRef({
     startX: 0,
     startY: 0,
@@ -26,11 +34,16 @@ export function useImageGalleryGestures({ onTap, onOpenViewer, enabled = true }:
     carouselSwipe: false,
   });
   const timerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const preloadTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   const clearTimer = useCallback(() => {
     if (timerRef.current) {
       clearTimeout(timerRef.current);
       timerRef.current = null;
+    }
+    if (preloadTimerRef.current) {
+      clearTimeout(preloadTimerRef.current);
+      preloadTimerRef.current = null;
     }
   }, []);
 
@@ -58,8 +71,16 @@ export function useImageGalleryGestures({ onTap, onOpenViewer, enabled = true }:
         }
         onOpenViewer();
       }, LONG_PRESS_MS);
+      if (onPreloadViewer) {
+        preloadTimerRef.current = setTimeout(() => {
+          const g = gestureRef.current;
+          if (!g.moved && !g.carouselSwipe && !g.longPressFired) {
+            onPreloadViewer();
+          }
+        }, PRELOAD_VIEWER_MS);
+      }
     },
-    [clearTimer, enabled, onOpenViewer],
+    [clearTimer, enabled, onOpenViewer, onPreloadViewer],
   );
 
   const onTouchMove = useCallback(

@@ -1,6 +1,6 @@
 'use client';
 
-import { useCallback, useEffect, useState } from 'react';
+import { memo, useCallback, useEffect, useState } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { Heart, MapPin, BadgeCheck } from 'lucide-react';
@@ -15,7 +15,8 @@ import { getListingAgeBadge, getProductCardImages } from '@/lib/productListingBa
 import { useSnapCarousel } from '@/hooks/useSnapCarousel';
 import { useImageGalleryGestures } from '@/hooks/useImageGalleryGestures';
 import type { ImagePresetName } from '@/lib/imagePresets';
-import { feedPresetImageClass, IMAGE_VIEWPORT_PRELOAD_RADIUS } from '@/lib/imagePresets';
+import { feedPresetImageClass, IMAGE_VIEWPORT_PRELOAD_RADIUS, imageFromPreset } from '@/lib/imagePresets';
+import { preloadImageUrl } from '@/lib/preloadImage';
 import Badge from '@/components/ui/Badge';
 import type { ProductWithSeller } from '@/lib/sellerCardEnrichment';
 
@@ -29,7 +30,7 @@ interface ProductCardProps {
   imagePreset?: ImagePresetName;
 }
 
-export default function ProductCard({
+export default memo(function ProductCard({
   product,
   isFavorite,
   onToggleFavorite,
@@ -65,9 +66,17 @@ export default function ProductCard({
     });
   }, [images, activeIndex, product.name, openFeedViewer]);
 
+  const preloadViewer = useCallback(() => {
+    const url = images[activeIndex];
+    if (!url) return;
+    const src = imageFromPreset(url, 'pdpViewer', { priority: true }).src;
+    preloadImageUrl(src, 'high');
+  }, [images, activeIndex]);
+
   const gestures = useImageGalleryGestures({
     onTap: openProduct,
     onOpenViewer: openViewer,
+    onPreloadViewer: preloadViewer,
     enabled: images.length > 0 && !viewerOpen,
   });
 
@@ -293,4 +302,4 @@ export default function ProductCard({
       </div>
     </div>
   );
-}
+});

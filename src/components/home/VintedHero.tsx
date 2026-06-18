@@ -194,11 +194,13 @@ function FloatingMasonryColumn({
   tiles,
   reducedMotion,
   hiddenClass,
+  imagePriority = false,
 }: {
   colIndex: number;
   tiles: HeroTile[];
   reducedMotion: boolean;
   hiddenClass?: string;
+  imagePriority?: boolean;
 }) {
   const travel = COLUMN_TRAVEL_PX[colIndex % COLUMN_TRAVEL_PX.length];
   const duration = FLOAT_SECONDS_BASE + colIndex * 0.35;
@@ -227,7 +229,7 @@ function FloatingMasonryColumn({
           key={tile.tileKey}
           tile={tile}
           heightClass={TILE_HEIGHTS[(idx + colIndex) % TILE_HEIGHTS.length]}
-          priority={colIndex === 0 && idx < 1}
+          priority={imagePriority && colIndex === 0 && idx < 1}
         />
       ))}
     </div>
@@ -248,6 +250,7 @@ export default function VintedHero({
 }: VintedHeroProps) {
   const { t } = useTranslation();
   const reducedMotion = useReducedMotion();
+  const [isMobile, setIsMobile] = useState(false);
   const scrollerRef = useRef<HTMLDivElement | null>(null);
   const autoplayRef = useRef<number | null>(null);
   const lastFrameRef = useRef<number | null>(null);
@@ -271,6 +274,16 @@ export default function VintedHero({
     () => masonryColumns.reduce((sum, col) => sum + col.length, 0),
     [masonryColumns],
   );
+
+  useEffect(() => {
+    const mq = window.matchMedia('(max-width: 767px)');
+    const sync = () => setIsMobile(mq.matches);
+    sync();
+    mq.addEventListener('change', sync);
+    return () => mq.removeEventListener('change', sync);
+  }, []);
+
+  const heroImagePriority = !isMobile;
 
   const featuredLoopItems = useMemo(() => {
     if (featuredProducts.length === 0) return [];
@@ -354,6 +367,7 @@ export default function VintedHero({
                       tiles={colTiles}
                       reducedMotion={!!reducedMotion}
                       hiddenClass={columnVisibilityClass(colIndex)}
+                      imagePriority={heroImagePriority}
                     />
                   );
                 })}
@@ -460,7 +474,7 @@ export default function VintedHero({
                     <PresetImage
                       url={stripImg}
                       preset="featuredStrip"
-                      priority={idx < 1}
+                      priority={heroImagePriority && idx < 1}
                       alt={item.name}
                       className="h-full w-full object-cover"
                     />
