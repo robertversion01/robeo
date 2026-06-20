@@ -3,16 +3,23 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
 
 const SCROLL_SETTLE_MS = 32;
-const SWIPE_COMMIT_RATIO = 0.18;
+/** Szigorúbb commit — véletlen fling ne lapozzon. */
+const SWIPE_COMMIT_RATIO = 0.28;
+const SWIPE_COMMIT_MIN_PX = 52;
+const AXIS_DECIDE_PX = 14;
+const HORIZONTAL_DOMINANCE = 1.35;
+const HORIZONTAL_LOCK_PX = 32;
 
 type Options = {
   initialIndex?: number;
   onIndexChange?: (index: number) => void;
 };
 
+type TouchMode = 'idle' | 'pending' | 'vertical' | 'horizontal';
+
 /**
  * Egy gesztus = max ±1 slide.
- * Touchmove közben scroll clamp + touch végén irány alapú commit.
+ * Függőleges scroll elsőbbség — horizontál csak domináns vízszintes mozdulatnál.
  */
 export function useSnapCarousel(itemCount: number, options: Options = {}) {
   const initial = options.initialIndex ?? 0;
@@ -74,18 +81,15 @@ export function useSnapCarousel(itemCount: number, options: Options = {}) {
       const w = el.clientWidth;
       let next: number;
 
-      if (typeof touchDeltaX === 'number' && Math.abs(touchDeltaX) >= w * SWIPE_COMMIT_RATIO) {
+      const commitThreshold = Math.max(SWIPE_COMMIT_MIN_PX, w * SWIPE_COMMIT_RATIO);
+      if (typeof touchDeltaX === 'number' && Math.abs(touchDeltaX) >= commitThreshold) {
         next = clampIndex(anchorIndex + (touchDeltaX < 0 ? 1 : -1));
       } else {
         const raw = Math.round(el.scrollLeft / w);
         next = clampToGestureWindow(raw, anchorIndex);
       }
 
-      if (next !== Math.round(el.scrollLeft / w)) {
-        applyIndex(next, false);
-        return;
-      }
-      if (el.scrollLeft !== next * w) {
+      if (next !== Math.round(el.scrollLeft / w) || el.scrollLeft !== next * w) {
         applyIndex(next, false);
         return;
       }
@@ -108,42 +112,86 @@ export function useSnapCarousel(itemCount: number, options: Options = {}) {
     const el = ref.current;
     if (!el || itemCount <= 1) return;
 
+    let mode: TouchMode = 'idle';
+    let startX = 0;
+    let startY = 0;
+    let anchor = settledRef.current;
+
+    const clearHorizontalLock = () => {
+      delete el.dataset.horizontalLock;
+    };
+
     const onTouchStart = (e: TouchEvent) => {
-      touchAnchorRef.current = settledRef.current;
-      touchStartXRef.current = e.touches[0]?.clientX ?? 0;
+      mode = 'pending';
+      anchor = settledRef.current;
+      touchAnchorRef.current = anchor;
+      startX = e.touches[0]?.clientX ?? 0;
+      startY = e.touches[0]?.clientY ?? 0;
+      touchStartXRef.current = startX;
     };
 
     const onTouchMove = (e: TouchEvent) => {
-      const w = el.clientWidth;
-      if (w <= 0) return;
-      const anchor = touchAnchorRef.current;
-      const min = Math.max(0, anchor - 1) * w;
-      const max = Math.min(itemCount - 1, anchor + 1) * w;
-      if (el.scrollLeft < min - 1) {
-        el.scrollLeft = min;
-        if (e.cancelable) e.preventDefault();
-      } else if (el.scrollLeft > max + 1) {
-        el.scrollLeft = max;
+      if (mode === 'idle' || mode === 'vertical') return;
+
+      const touch = e.touches[0];
+      if (!touch) return;
+
+      const dx = touch.clientX - startX;
+      const dy = touch.clientY - startY;
+      const absDx = Math.abs(dx);
+      const absDy = Math.abs(dy);
+
+      if (mode === 'pending') {
+        if (absDx < AXIS_DECIDE_PX && absDy < AXIS_DECIDE_PX) return;
+        if (absDy > absDx * HORIZONTAL_DOMINANCE) {
+          mode = 'vertical';
+          return;
+        }
+        if (absDx > absDy * HORIZONTAL_DOMINANCE && absDx >= HORIZONTAL_LOCK_PX) {
+          mode = 'horizontal';
+          el.dataset.horizontalLock = 'true';
+        } else {
+          return;
+        }
+      }
+
+      if (mode === 'horizontal') {
+        const w = el.clientWidth;
+        if (w <= 0) return;
+        const min = Math.max(0, anchor - 1) * w;
+        const max = Math.min(itemCount - 1, anchor + 1) * w;
+        const target = anchor * w - dx;
+        el.scrollLeft = Math.max(min, Math.min(max, target));
         if (e.cancelable) e.preventDefault();
       }
     };
 
     const onTouchEnd = (e: TouchEvent) => {
-      const endX = e.changedTouches[0]?.clientX ?? touchStartXRef.current;
-      const dx = endX - touchStartXRef.current;
-      requestAnimationFrame(() => settleScroll(touchAnchorRef.current, dx));
+      if (mode === 'horizontal') {
+        const endX = e.changedTouches[0]?.clientX ?? startX;
+        const dx = endX - startX;
+        requestAnimationFrame(() => settleScroll(anchor, dx));
+        clearHorizontalLock();
+      }
+      mode = 'idle';
+    };
+
+    const onTouchCancel = () => {
+      clearHorizontalLock();
+      mode = 'idle';
     };
 
     el.addEventListener('touchstart', onTouchStart, { passive: true });
     el.addEventListener('touchmove', onTouchMove, { passive: false });
     el.addEventListener('touchend', onTouchEnd, { passive: true });
-    el.addEventListener('touchcancel', onTouchEnd, { passive: true });
+    el.addEventListener('touchcancel', onTouchCancel, { passive: true });
 
     return () => {
       el.removeEventListener('touchstart', onTouchStart);
       el.removeEventListener('touchmove', onTouchMove);
       el.removeEventListener('touchend', onTouchEnd);
-      el.removeEventListener('touchcancel', onTouchEnd);
+      el.removeEventListener('touchcancel', onTouchCancel);
+      clearHorizontalLock();
     };
   }, [itemCount, settleScroll]);
 

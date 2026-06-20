@@ -36,6 +36,7 @@ import ProfileSettingsHub from '@/components/profile/ProfileSettingsHub';
 import ProfileSignOutBar from '@/components/profile/ProfileSignOutBar';
 import OrdersQuickHub from '@/components/profile/OrdersQuickHub';
 import SellerEngagementHub from '@/components/seller/SellerEngagementHub';
+import SellerDashboardHero from '@/components/seller/SellerDashboardHero';
 import SellerInsightsPanel from '@/components/seller/SellerInsightsPanel';
 import ProfileMarketplaceStats from '@/components/profile/ProfileMarketplaceStats';
 import TrustSafetyBlock from '@/components/trust/TrustSafetyBlock';
@@ -556,6 +557,13 @@ export default function ProfilePage() {
                 {t('profile.shopNav.closet')}
               </Link>
             </div>
+          ) : null}
+          {user?.id ? (
+            <SellerDashboardHero
+              sellerId={user.id}
+              activeListings={products.length}
+              listingFavorites={listingFavoriteCount}
+            />
           ) : null}
           <OrdersQuickHub className="hidden md:grid" />
           <WalletBalanceCard userId={user?.id} />

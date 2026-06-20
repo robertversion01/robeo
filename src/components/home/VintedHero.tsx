@@ -457,7 +457,7 @@ export default function VintedHero({
               const stripImg = imageSrc;
               return (
               <Link
-                key={`${item.id}-${idx}`}
+                key={`featured-loop-${idx}`}
                 href={`/products/${item.id}`}
                 className={`shrink-0 rounded-lg border border-[#27363d] bg-[#1a2328] p-0.5 transition-colors hover:border-[#4baab5]/45 ${
                   compact

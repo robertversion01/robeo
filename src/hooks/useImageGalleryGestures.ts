@@ -3,8 +3,9 @@
 import { useCallback, useRef } from 'react';
 
 const LONG_PRESS_MS = 450;
-const LONG_PRESS_JITTER_PX = 10;
-const CAROUSEL_CANCEL_DX = 14;
+const LONG_PRESS_JITTER_PX = 12;
+const HORIZONTAL_DOMINANCE = 1.35;
+const CAROUSEL_CANCEL_DX = 32;
 
 type Options = {
   onTap: () => void;
@@ -16,8 +17,8 @@ type Options = {
 const PRELOAD_VIEWER_MS = 180;
 
 /**
- * Tap → navigáció; long-press → fullscreen viewer (nem böngésző menü).
- * Horizontális swipe carousel közben long-press nem indul.
+ * Tap → navigáció; long-press → fullscreen viewer.
+ * Függőleges scroll elsőbbség — horizontális carousel csak domináns dx-nél.
  */
 export function useImageGalleryGestures({
   onTap,
@@ -32,6 +33,7 @@ export function useImageGalleryGestures({
     longPressFired: false,
     suppressTap: false,
     carouselSwipe: false,
+    verticalScroll: false,
   });
   const timerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const preloadTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
@@ -59,11 +61,12 @@ export function useImageGalleryGestures({
         longPressFired: false,
         suppressTap: false,
         carouselSwipe: false,
+        verticalScroll: false,
       };
       clearTimer();
       timerRef.current = setTimeout(() => {
         const g = gestureRef.current;
-        if (g.moved || g.carouselSwipe) return;
+        if (g.moved || g.carouselSwipe || g.verticalScroll) return;
         g.longPressFired = true;
         g.suppressTap = true;
         if (typeof navigator !== 'undefined' && navigator.vibrate) {
@@ -74,7 +77,7 @@ export function useImageGalleryGestures({
       if (onPreloadViewer) {
         preloadTimerRef.current = setTimeout(() => {
           const g = gestureRef.current;
-          if (!g.moved && !g.carouselSwipe && !g.longPressFired) {
+          if (!g.moved && !g.carouselSwipe && !g.longPressFired && !g.verticalScroll) {
             onPreloadViewer();
           }
         }, PRELOAD_VIEWER_MS);
@@ -93,14 +96,21 @@ export function useImageGalleryGestures({
       const absDx = Math.abs(dx);
       const absDy = Math.abs(dy);
 
-      if (absDx > CAROUSEL_CANCEL_DX && absDx > absDy) {
+      if (absDy > absDx * HORIZONTAL_DOMINANCE && absDy > LONG_PRESS_JITTER_PX) {
+        gestureRef.current.verticalScroll = true;
+        gestureRef.current.moved = true;
+        clearTimer();
+        return;
+      }
+
+      if (absDx > CAROUSEL_CANCEL_DX && absDx > absDy * HORIZONTAL_DOMINANCE) {
         gestureRef.current.carouselSwipe = true;
         gestureRef.current.moved = true;
         clearTimer();
         return;
       }
 
-      if (absDy > LONG_PRESS_JITTER_PX || Math.hypot(dx, dy) > LONG_PRESS_JITTER_PX * 1.4) {
+      if (Math.hypot(dx, dy) > LONG_PRESS_JITTER_PX * 1.5) {
         gestureRef.current.moved = true;
         clearTimer();
       }
@@ -118,7 +128,7 @@ export function useImageGalleryGestures({
         e.stopPropagation();
         return;
       }
-      if (g.carouselSwipe || g.moved || g.suppressTap) return;
+      if (g.carouselSwipe || g.verticalScroll || g.moved || g.suppressTap) return;
       onTap();
     },
     [clearTimer, enabled, onTap],
@@ -138,7 +148,7 @@ export function useImageGalleryGestures({
     (e: React.MouseEvent) => {
       if (!enabled) return;
       const g = gestureRef.current;
-      if (g.moved || g.longPressFired || g.carouselSwipe) {
+      if (g.moved || g.longPressFired || g.carouselSwipe || g.verticalScroll) {
         e.preventDefault();
         return;
       }

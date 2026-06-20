@@ -2,7 +2,7 @@
 
 import { useEffect, useRef, useState } from 'react';
 import Link from 'next/link';
-import { Search } from 'lucide-react';
+import { Camera, Loader2, Search } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 import { supabase } from '@/lib/supabase';
 import { catalogUrlFromFilters } from '@/lib/catalogUrlParams';
@@ -10,6 +10,7 @@ import type { CatalogFilterState } from '@/lib/catalogFilters';
 import { fetchListedProductTypeahead, type ProductTypeaheadRow } from '@/lib/listedProducts';
 import { categoryDisplayLabel } from '@/lib/categoryDisplay';
 import { cn } from '@/lib/utils';
+import { toast } from 'sonner';
 
 type Props = {
   value: string;
@@ -21,9 +22,26 @@ type Props = {
   onSeeAll?: () => void;
   autoFocus?: boolean;
   browsePath?: string;
-  /** Kompakt mobil feed fejléc — kisebb, szolidabb mező + Keresés gomb */
   compact?: boolean;
+  enableVisualSearch?: boolean;
 };
+
+function fileToBase64(file: File): Promise<string> {
+  return new Promise((resolve, reject) => {
+    const reader = new FileReader();
+    reader.onload = () => {
+      const result = reader.result;
+      if (typeof result !== 'string') {
+        reject(new Error('read_failed'));
+        return;
+      }
+      const base64 = result.replace(/^data:image\/\w+;base64,/, '');
+      resolve(base64);
+    };
+    reader.onerror = () => reject(new Error('read_failed'));
+    reader.readAsDataURL(file);
+  });
+}
 
 export default function SearchTypeahead({
   value,
@@ -36,11 +54,14 @@ export default function SearchTypeahead({
   autoFocus = false,
   browsePath = '/browse',
   compact = false,
+  enableVisualSearch = true,
 }: Props) {
   const { t } = useTranslation();
   const [liveResults, setLiveResults] = useState<ProductTypeaheadRow[]>([]);
   const [open, setOpen] = useState(false);
+  const [visualLoading, setVisualLoading] = useState(false);
   const containerRef = useRef<HTMLDivElement>(null);
+  const fileInputRef = useRef<HTMLInputElement>(null);
 
   useEffect(() => {
     const query = value.trim();
@@ -72,9 +93,79 @@ export default function SearchTypeahead({
       ? `${catalogUrlFromFilters({ ...catalogFilters, search: value }, maxPriceLimit, browsePath)}#catalog`
       : `${browsePath}?q=${encodeURIComponent(value.trim())}#catalog`;
 
+  const runVisualSearch = async (file: File) => {
+    if (visualLoading) return;
+    setVisualLoading(true);
+    try {
+      const imageBase64 = await fileToBase64(file);
+      const res = await fetch('/api/search/visual', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ imageBase64 }),
+      });
+      const data = (await res.json()) as {
+        ok?: boolean;
+        query?: string;
+        products?: ProductTypeaheadRow[];
+        error?: string;
+        hint?: string;
+      };
+
+      if (!res.ok) {
+        if (data.error === 'ollama_unreachable') {
+          toast.error(t('browse.search.visualOffline'));
+        } else {
+          toast.error(t('browse.search.visualFailed'));
+        }
+        return;
+      }
+
+      const query = data.query?.trim() || '';
+      if (query) onChange(query);
+      if (data.products?.length) setLiveResults(data.products);
+      setOpen(true);
+      toast.success(t('browse.search.visualDone', { query }));
+      onSeeAll?.();
+    } catch {
+      toast.error(t('browse.search.visualFailed'));
+    } finally {
+      setVisualLoading(false);
+    }
+  };
+
   const inputClass = compact
-    ? 'h-9 w-full min-w-0 rounded-full border border-[#2c3a42] bg-[#0f171b] pl-8 pr-2.5 text-xs text-[#e7edf0] shadow-sm placeholder:text-[#91a3ab] focus:border-[#38c7d0] focus:outline-none focus:ring-1 focus:ring-[#38c7d0]'
-    : 'h-11 w-full rounded-full border border-[#2c3a42] bg-[#121c21] pl-9 pr-3 text-sm text-[#e7edf0] placeholder:text-[#91a3ab] focus:border-[#38c7d0] focus:bg-[#121c21] focus:outline-none focus:ring-1 focus:ring-[#38c7d0]';
+    ? 'h-9 w-full min-w-0 rounded-full border border-[#2c3a42] bg-[#0f171b] pl-8 pr-9 text-xs text-[#e7edf0] shadow-sm placeholder:text-[#91a3ab] focus:border-[#38c7d0] focus:outline-none focus:ring-1 focus:ring-[#38c7d0]'
+    : 'h-11 w-full rounded-full border border-[#2c3a42] bg-[#121c21] pl-9 pr-10 text-sm text-[#e7edf0] placeholder:text-[#91a3ab] focus:border-[#38c7d0] focus:bg-[#121c21] focus:outline-none focus:ring-1 focus:ring-[#38c7d0]';
+
+  const visualButton =
+    enableVisualSearch ? (
+      <>
+        <input
+          ref={fileInputRef}
+          type="file"
+          accept="image/*"
+          capture="environment"
+          className="sr-only"
+          onChange={(e) => {
+            const file = e.target.files?.[0];
+            e.target.value = '';
+            if (file) void runVisualSearch(file);
+          }}
+        />
+        <button
+          type="button"
+          onClick={() => fileInputRef.current?.click()}
+          disabled={visualLoading}
+          className={cn(
+            'absolute top-1/2 -translate-y-1/2 text-[#90a1a9] hover:text-[#38c7d0] disabled:opacity-50',
+            compact ? 'right-2' : 'right-2.5',
+          )}
+          aria-label={t('browse.search.visualSearch')}
+        >
+          {visualLoading ? <Loader2 size={compact ? 14 : 16} className="animate-spin" /> : <Camera size={compact ? 14 : 16} />}
+        </button>
+      </>
+    ) : null;
 
   const searchField = (
     <div className={cn('relative min-w-0', compact ? 'flex-1' : 'w-full')}>
@@ -98,6 +189,7 @@ export default function SearchTypeahead({
         }}
         className={inputClass}
       />
+      {visualButton}
       {open && value.trim().length >= 2 ? (
         <div className="absolute left-0 right-0 top-[calc(100%+6px)] z-[10050] overflow-hidden rounded-xl border border-[#2c3a42] bg-[#121b20] shadow-lg">
           {liveResults.length === 0 ? (

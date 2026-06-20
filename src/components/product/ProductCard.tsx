@@ -1,8 +1,10 @@
 'use client';
 
-import { memo, useCallback, useEffect, useState } from 'react';
+import { memo, useCallback, useEffect, useState, type CSSProperties } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
+import { navigateWithViewTransition } from '@/lib/viewTransitionNavigate';
+import { productViewTransitionName, shouldUseProductViewTransition } from '@/lib/productViewTransition';
 import { Heart, MapPin, BadgeCheck } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 import { cn, formatPrice } from '@/lib/utils';
@@ -28,6 +30,8 @@ interface ProductCardProps {
   priority?: boolean;
   /** Főoldal vs browse feed képminőség */
   imagePreset?: ImagePresetName;
+  /** Feed kártya — csak kép, ár, cím, 1 jelző */
+  compact?: boolean;
 }
 
 export default memo(function ProductCard({
@@ -36,6 +40,7 @@ export default memo(function ProductCard({
   onToggleFavorite,
   priority = false,
   imagePreset = 'feedCard',
+  compact = false,
 }: ProductCardProps) {
   const { t } = useTranslation();
   const router = useRouter();
@@ -53,9 +58,12 @@ export default memo(function ProductCard({
     { initialIndex: 0 },
   );
 
+  const productHref = `/products/${product.id}`;
+  const heroTransitionName = productViewTransitionName(product.id);
+
   const openProduct = useCallback(() => {
-    router.push(`/products/${product.id}`);
-  }, [product.id, router]);
+    navigateWithViewTransition(router, productHref);
+  }, [productHref, router]);
 
   const openViewer = useCallback(() => {
     if (images.length === 0) return;
@@ -114,17 +122,18 @@ export default memo(function ProductCard({
 
   return (
     <div
-      className="group card-base overflow-hidden rounded-lg sm:rounded-xl relative border-0 sm:border sm:border-[#233138] hover:border-[#38c7d0]/40 hover:shadow-md touch-manipulation"
+      className="group card-base overflow-hidden rounded-lg sm:rounded-xl relative border-0 sm:border sm:border-[#233138] hover:border-[#38c7d0]/40 hover:shadow-md"
       style={{ contentVisibility: 'auto', containIntrinsicSize: '420px 560px' }}
     >
       <div
         data-product-card-gallery
         className="product-gallery-surface relative aspect-[4/5] overflow-hidden bg-[#121a1e] select-none"
-        onTouchStart={gestures.onTouchStart}
-        onTouchMove={gestures.onTouchMove}
-        onTouchEnd={gestures.onTouchEnd}
+        style={
+          shouldUseProductViewTransition()
+            ? ({ viewTransitionName: heroTransitionName } as CSSProperties)
+            : undefined
+        }
         onContextMenu={gestures.onContextMenu}
-        onClick={gestures.onClick}
         role="button"
         tabIndex={0}
         aria-label={product.name}
@@ -138,8 +147,12 @@ export default memo(function ProductCard({
         <div
           ref={carouselRef}
           onScroll={handleScroll}
+          onTouchStart={gestures.onTouchStart}
+          onTouchMove={gestures.onTouchMove}
+          onTouchEnd={gestures.onTouchEnd}
+          onClick={gestures.onClick}
           className={cn(
-            'flex h-full w-full snap-x snap-mandatory overscroll-x-contain touch-pan-x no-scrollbar',
+            'product-card-carousel flex h-full w-full snap-x snap-mandatory overscroll-x-contain no-scrollbar',
             images.length > 1 ? 'overflow-x-auto' : 'overflow-hidden',
           )}
           style={{ WebkitOverflowScrolling: 'touch' }}
@@ -148,7 +161,7 @@ export default memo(function ProductCard({
             const distance = Math.abs(idx - activeIndex);
             const inBand = distance <= IMAGE_VIEWPORT_PRELOAD_RADIUS;
             return (
-              <div key={`${url}-${idx}`} className="relative h-full min-w-full shrink-0 snap-center snap-always snap-stop-always bg-[#121a1e]">
+              <div key={`${product.id}-slide-${idx}`} className="relative h-full min-w-full shrink-0 snap-center snap-always snap-stop-always bg-[#121a1e]">
                 {inBand ? (
                   <div className="absolute inset-0">
                     <PresetImage
@@ -251,7 +264,15 @@ export default memo(function ProductCard({
       </button>
 
       <div className="px-1.5 pt-1 pb-1.5 sm:px-2 sm:pt-1.5 sm:pb-2 text-left space-y-0.5 sm:space-y-1">
-        <Link href={`/products/${product.id}`} className="block">
+        <Link
+          href={productHref}
+          className="block"
+          onClick={(e) => {
+            if (e.metaKey || e.ctrlKey || e.shiftKey || e.altKey || e.button !== 0) return;
+            e.preventDefault();
+            navigateWithViewTransition(router, productHref);
+          }}
+        >
           <div className="text-[15px] sm:text-base font-extrabold text-[#007782] tabular-nums leading-tight tracking-tight">
             {formatPrice(product.price)}
           </div>
@@ -261,7 +282,7 @@ export default memo(function ProductCard({
             <span className="text-[#a0b1b8]">{sizePart}</span>
           </p>
         </Link>
-        {sellerName ? (
+        {!compact && sellerName ? (
           <Link
             href={`/profile/${product.user_id}`}
             onClick={(e) => e.stopPropagation()}
@@ -289,7 +310,12 @@ export default memo(function ProductCard({
             ) : null}
           </Link>
         ) : null}
-        {districtLabel ? (
+        {compact && categoryShort ? (
+          <p className="text-[10px] uppercase tracking-wide text-[#83979f] truncate leading-none">
+            {categoryShort}
+          </p>
+        ) : null}
+        {!compact && districtLabel ? (
           <p className="flex items-center gap-0.5 text-[10px] font-medium text-[#007782] truncate leading-none">
             <MapPin size={10} className="shrink-0" aria-hidden />
             {districtLabel}

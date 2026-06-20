@@ -13,8 +13,8 @@ type Props = {
   selectedCategory: string;
   onCategoryChange: (id: string) => void;
   className?: string;
-  /** pill = chip gombok; text = lapozható szöveg tab sor (mobil feed) */
   variant?: 'pill' | 'text';
+  categoryCounts?: Record<string, number>;
 };
 
 const CATEGORY_I18N: Record<string, string> = {
@@ -49,11 +49,13 @@ function CategoryTab({
   label,
   isText,
   onSelect,
+  count,
 }: {
   active: boolean;
   label: string;
   isText: boolean;
   onSelect: () => void;
+  count?: number;
 }) {
   const pointerRef = useRef<{ x: number; y: number; moved: boolean } | null>(null);
 
@@ -115,6 +117,11 @@ function CategoryTab({
       )}
     >
       {label}
+      {typeof count === 'number' && count > 0 ? (
+        <span className={cn('ml-1 tabular-nums', isText ? 'text-[10px] opacity-70' : 'text-[10px]')}>
+          {count}
+        </span>
+      ) : null}
     </div>
   );
 }
@@ -125,6 +132,7 @@ export default function CategoryQuickChips({
   onCategoryChange,
   className,
   variant = 'pill',
+  categoryCounts,
 }: Props) {
   const { t } = useTranslation();
   const isText = variant === 'text';
@@ -154,6 +162,7 @@ export default function CategoryQuickChips({
         label={label}
         isText={isText}
         onSelect={() => selectCategory(cat.id)}
+        count={cat.id === 'all' ? undefined : categoryCounts?.[cat.id]}
       />
     );
   });

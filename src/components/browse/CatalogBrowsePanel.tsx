@@ -21,6 +21,7 @@ import type { SavedSearch } from '@/lib/savedSearches';
 import { supabase } from '@/lib/supabase';
 import { DEFAULT_FEED_PREFS, loadUserPreferences } from '@/lib/userPreferences';
 import { rankFeedProducts } from '@/lib/feedRanking';
+import { dedupeProductsById } from '@/lib/dedupeProducts';
 import { useImmersiveBrowse } from '@/context/ImmersiveBrowseContext';
 import { listSavedSearchesLocal, loadSavedSearchesMerged } from '@/lib/savedSearches';
 import { scanSavedSearchNewMatches } from '@/lib/savedSearchMatcher';
@@ -38,6 +39,7 @@ import { departmentLabel } from '@/lib/categoryDisplay';
 import { ROBEO_BP_MODE } from '@/lib/features';
 import { FEED_VIEWPORT_PRIORITY_COUNT } from '@/lib/imagePresets';
 import { getDistrictLabel } from '@/lib/budapestDistricts';
+import { useCatalogFilterCounts } from '@/hooks/useCatalogFilterCounts';
 
 function sortLabelKey(id: string) {
   if (id === 'price_asc') return 'browse.sort.priceAsc';
@@ -166,17 +168,19 @@ function CatalogBrowsePanelInner({
     const saved = listSavedSearchesLocal();
     if (saved.length === 0) return;
     scanSavedSearchNewMatches(saved, products);
-    if (isSearch) {
+    if (!isSearch) return;
+    const timer = window.setTimeout(() => {
       void loadSavedSearchesMerged(supabase).then((merged) => {
         void runSavedSearchAlertScan(supabase, user.id, merged, products);
       });
-    }
+    }, 1800);
+    return () => window.clearTimeout(timer);
   }, [isSearch, products, filterKey, user]);
 
   const catalogProducts = useMemo(() => {
-    const base = filterProductsWithValidImages(products);
-    if (isFeed && user) return rankFeedProducts(base, feedPrefs);
-    return base;
+    const base = dedupeProductsById(filterProductsWithValidImages(products));
+    const ranked = isFeed && user ? rankFeedProducts(base, feedPrefs) : base;
+    return dedupeProductsById(ranked);
   }, [products, isFeed, user, feedPrefs]);
 
   const handleCategoryChange = useCallback(
@@ -300,6 +304,12 @@ function CatalogBrowsePanelInner({
   const hasActiveFilters =
     activeFilterCount > 0 || searchQuery.trim().length > 0 || selectedSort !== 'newest';
 
+  const categoryIds = useMemo(
+    () => categories.map((c) => c.id).filter((id) => id !== 'all'),
+    [categories],
+  );
+  const filterCounts = useCatalogFilterCounts(catalogFilters, categoryIds, [], []);
+
   const applySavedSearch = (saved: SavedSearch['filters']) => {
     setSearchQuery(saved.search || '');
     setSelectedListingType(saved.listingType || 'all');
@@ -370,23 +380,14 @@ function CatalogBrowsePanelInner({
         onClearDistrict={() => removeFilter('budapest_district')}
         cardImagePreset={isFeed ? 'homepageFeed' : 'feedCard'}
         priorityCount={isFeed ? FEED_VIEWPORT_PRIORITY_COUNT : 4}
+        hasMore={hasMore}
+        loadingMore={loadingMore}
+        onLoadMore={loadMore}
+        searchQuery={searchQuery}
+        selectedCategory={selectedCategory}
+        selectedBrand={selectedBrand}
+        onApplySearch={setSearchQuery}
       />
-      {!loading && catalogProducts.length > 0 && hasMore ? (
-        <div className="mt-6 flex justify-center pb-4 md:pb-8">
-          <button
-            type="button"
-            onClick={() => void loadMore()}
-            disabled={loadingMore}
-            className="min-h-11 rounded-xl border border-[#2a3941] bg-[#121b20] px-6 py-2.5 text-sm font-semibold text-[#d7e2e7] shadow-sm transition hover:bg-[#182329] disabled:opacity-60"
-          >
-            {loadingMore
-              ? t('landing.catalog.loadingMore')
-              : selectedListingType === 'service'
-                ? t('browse.pagination.loadMoreServices')
-                : t('landing.catalog.loadMore')}
-          </button>
-        </div>
-      ) : null}
     </>
   );
 
@@ -436,6 +437,7 @@ function CatalogBrowsePanelInner({
               categories={categories}
               selectedCategory={selectedCategory}
               onCategoryChange={handleCategoryChange}
+              categoryCounts={filterCounts.categories}
               className="mb-1 lg:hidden"
             />
             {showPersonalization && user ? (
@@ -481,6 +483,7 @@ function CatalogBrowsePanelInner({
                 categories={categories}
                 selectedCategory={selectedCategory}
                 onCategoryChange={handleCategoryChange}
+                categoryCounts={filterCounts.categories}
               />
             </div>
           </div>
@@ -509,6 +512,7 @@ function CatalogBrowsePanelInner({
             selectedCategory={selectedCategory}
             onCategoryChange={handleCategoryChange}
             className="mb-0 lg:hidden"
+            categoryCounts={filterCounts.categories}
           >
             <SavedSearchesStrip
               filters={catalogFilters}
@@ -588,6 +592,7 @@ function CatalogBrowsePanelInner({
                 categories={categories}
                 selectedCategory={selectedCategory}
                 onCategoryChange={setSelectedCategory}
+                categoryCounts={filterCounts.categories}
               />
               <SavedSearchesStrip
                 filters={catalogFilters}

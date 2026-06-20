@@ -20,6 +20,11 @@ const STORAGE_KEY = 'robeo_saved_searches_v1';
 const DELETED_FILTERS_KEY = 'robeo_saved_searches_deleted_filters_v1';
 const METADATA_KEY = 'robeo_saved_searches';
 const MAX_SAVED = 12;
+const PERSIST_DEBOUNCE_MS = 4000;
+
+let persistTimer: ReturnType<typeof setTimeout> | null = null;
+let persistPending: SavedSearch[] | null = null;
+let persistSupabase: SupabaseClient | null = null;
 
 function filterKey(filters: SavedSearch['filters']): string {
   return JSON.stringify(filters);
@@ -107,15 +112,35 @@ export async function persistSavedSearchesToUser(
   supabase: SupabaseClient,
   items: SavedSearch[],
 ): Promise<void> {
+  persistSupabase = supabase;
+  persistPending = items.slice(0, MAX_SAVED);
+  if (persistTimer) return;
+  persistTimer = setTimeout(() => {
+    persistTimer = null;
+    void flushPersistSavedSearches();
+  }, PERSIST_DEBOUNCE_MS);
+}
+
+async function flushPersistSavedSearches(): Promise<void> {
+  const supabase = persistSupabase;
+  const items = persistPending;
+  persistPending = null;
+  if (!supabase || !items) return;
+
   const {
     data: { user },
   } = await supabase.auth.getUser();
   if (!user) return;
+
   const { error } = await supabase.auth.updateUser({
-    data: { [METADATA_KEY]: items.slice(0, MAX_SAVED) },
+    data: { [METADATA_KEY]: items },
   });
   if (error) {
     console.warn('[savedSearches] remote persist failed:', error.message);
+  }
+
+  if (persistPending && persistSupabase) {
+    void flushPersistSavedSearches();
   }
 }
 
@@ -126,7 +151,9 @@ export async function loadSavedSearchesMerged(
   const remote = await fetchSavedSearchesFromUser(supabase);
   const merged = mergeLists(local, remote);
   writeLocal(merged);
-  if (remote.length > 0 || local.length > 0) {
+  const remoteKey = JSON.stringify(remote.map((r) => r.filters));
+  const mergedKey = JSON.stringify(merged.map((r) => r.filters));
+  if (remoteKey !== mergedKey) {
     const {
       data: { user },
     } = await supabase.auth.getUser();

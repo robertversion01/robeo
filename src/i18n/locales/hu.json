@@ -46,7 +46,11 @@
       "placeholder": "Mit keresel?",
       "noResults": "Nincs találat.",
       "seeAll": "Összes találat: „{{query}}”",
-      "scrollToCatalog": "Keresés a kínálatban"
+      "scrollToCatalog": "Keresés a kínálatban",
+      "visualSearch": "Keresés képből",
+      "visualOffline": "Indítsd el az Ollamát (localhost:11434) és töltsd le a llava modellt.",
+      "visualFailed": "Képes keresés sikertelen.",
+      "visualDone": "Keresés: „{{query}}”"
     },
     "categories": {
       "label": "Kategóriák",
@@ -249,7 +253,9 @@
       "exploreFresh": "Friss hirdetések",
       "openWatchlist": "Kedvencek és figyelések",
       "tryBroader": "Tágabb keresés",
-      "openMessages": "Üzenetek megnyitása"
+      "openMessages": "Üzenetek megnyitása",
+      "rescueTitle": "Ezek is hasonlóak lehetnek",
+      "rescueHint": "Próbáld lazább szűréssel vagy más kulcsszóval."
     },
     "pagination": {
       "loadMore": "Több termék betöltése",
@@ -388,6 +394,24 @@
       "error": "Nem sikerült menteni.",
       "digestHint": "Napi összefoglaló e-mailhez:",
       "digestLink": "Beállítások"
+    },
+    "priceAnchor": {
+      "verdict_good": "Jó ár a piacon",
+      "verdict_fair": "Átlagos ár a hasonlóknál",
+      "verdict_high": "Magasabb a hasonló hirdetéseknél",
+      "range": "Hasonló hirdetések: {{low}}–{{high}} (medián {{median}}, {{count}} db)"
+    }
+  },
+  "seller": {
+    "dashboard": {
+      "newMessages": "Új üzenetek",
+      "newMessagesHint": "Válaszolj gyorsan — növeli a bizalmat.",
+      "allCaughtUp": "Minden üzenet olvasva.",
+      "newOrders": "Folyamatban lévő rendelések",
+      "newOrdersHint": "Ellenőrizd a státuszt és a szállítást.",
+      "noPendingOrders": "Nincs függőben lévő rendelés.",
+      "listings": "Aktív hirdetések",
+      "listingsHint": "{{favorites}} kedvenc a listáidon."
     }
   },
   "closet": {

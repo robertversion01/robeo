@@ -46,7 +46,11 @@
       "placeholder": "What are you looking for?",
       "noResults": "No results.",
       "seeAll": "See all results for “{{query}}”",
-      "scrollToCatalog": "Search catalog"
+      "scrollToCatalog": "Search catalog",
+      "visualSearch": "Search by photo",
+      "visualOffline": "Start Ollama (localhost:11434) and pull the llava model.",
+      "visualFailed": "Visual search failed.",
+      "visualDone": "Searching: “{{query}}”"
     },
     "categories": {
       "label": "Categories",
@@ -249,7 +253,9 @@
       "exploreFresh": "Fresh listings",
       "openWatchlist": "Favorites and watches",
       "tryBroader": "Try broader search",
-      "openMessages": "Open messages"
+      "openMessages": "Open messages",
+      "rescueTitle": "You might also like these",
+      "rescueHint": "Try a broader search or relax your filters."
     },
     "pagination": {
       "loadMore": "Load more products",
@@ -388,6 +394,24 @@
       "error": "Could not save.",
       "digestHint": "For daily email digest:",
       "digestLink": "Settings"
+    },
+    "priceAnchor": {
+      "verdict_good": "Good price for the market",
+      "verdict_fair": "Average compared to similar listings",
+      "verdict_high": "Higher than similar listings",
+      "range": "Similar listings: {{low}}–{{high}} (median {{median}}, {{count}} items)"
+    }
+  },
+  "seller": {
+    "dashboard": {
+      "newMessages": "New messages",
+      "newMessagesHint": "Reply quickly — it builds trust.",
+      "allCaughtUp": "All messages read.",
+      "newOrders": "Orders in progress",
+      "newOrdersHint": "Check status and shipping.",
+      "noPendingOrders": "No pending orders.",
+      "listings": "Active listings",
+      "listingsHint": "{{favorites}} favorites on your listings."
     }
   },
   "closet": {

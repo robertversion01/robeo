@@ -33,6 +33,8 @@ import { MAIN_TOP_PADDING, MOBILE_PRODUCT_STICKY_CTA_PAD } from '@/lib/layoutTok
 import { formatConditionLabel } from '@/lib/conditionI18n';
 import { getDistrictLabel } from '@/lib/budapestDistricts';
 import { categoryDisplayLabel } from '@/lib/categoryDisplay';
+import ProductPriceAnchor from '@/components/product/ProductPriceAnchor';
+import { productViewTransitionName, shouldUseProductViewTransition } from '@/lib/productViewTransition';
 
 const OfferModal = dynamic(() => import('@/components/product/OfferModal'), { ssr: false });
 const BundleOfferModal = dynamic(() => import('@/components/product/BundleOfferModal'), { ssr: false });
@@ -350,6 +352,11 @@ export default function ProductPage({ params }: { params: Promise<{ id: string }
               {/* Main Image */}
               <div
                 className="relative aspect-[4/5] md:aspect-square md:rounded-xl md:overflow-hidden bg-[#0f1a1d]/10 mb-2 border border-[#2a3941] select-none [touch-callout:none]"
+                style={
+                  product && shouldUseProductViewTransition()
+                    ? ({ viewTransitionName: productViewTransitionName(product.id) } as React.CSSProperties)
+                    : undefined
+                }
                 onContextMenu={pdpGalleryGestures.onContextMenu}
               >
                 <div
@@ -469,12 +476,23 @@ export default function ProductPage({ params }: { params: Promise<{ id: string }
                 </div>
               ) : null}
               
-              <div className="flex flex-wrap items-center gap-2 mb-3">
+              <div className="flex flex-wrap items-center gap-2 mb-2">
                 <div className="text-[#007782] font-bold text-2xl">
                   {product.price.toLocaleString()} Ft
                 </div>
                 <PriceHistoryBadge productId={product.id} currentPrice={product.price} />
               </div>
+
+              <ProductPriceAnchor
+                category={product.category}
+                brand={product.brand}
+                condition={product.condition}
+                price={product.price}
+                listingType={product.category?.startsWith('svc') ? 'service' : 'product'}
+                className="mb-3"
+              />
+
+              <SellerTrustPanel sellerId={product.user_id} className="mb-3" />
 
               {isPurchasable && viewerId !== product.user_id ? (
                 <ProductAlertsBar product={product} className="mb-3" />
@@ -568,7 +586,6 @@ export default function ProductPage({ params }: { params: Promise<{ id: string }
                     </div>
                   </Link>
                 </div>
-                <SellerTrustPanel sellerId={product.user_id} className="mb-2" />
                 <TrustSafetyBlock variant="full" className="mt-2" />
                 <Link
                   href={categoryBrowseHref}

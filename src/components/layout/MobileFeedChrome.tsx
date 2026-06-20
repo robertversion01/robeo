@@ -20,6 +20,7 @@ type Props = {
   sticky?: boolean;
   className?: string;
   children?: React.ReactNode;
+  categoryCounts?: Record<string, number>;
 };
 
 /** Mobil feed fejléc: safe area → kompakt kereső → lapozható kategória sor */
@@ -35,6 +36,7 @@ export default function MobileFeedChrome({
   sticky = true,
   className,
   children,
+  categoryCounts,
 }: Props) {
   return (
     <div
@@ -63,6 +65,7 @@ export default function MobileFeedChrome({
           categories={categories}
           selectedCategory={selectedCategory}
           onCategoryChange={onCategoryChange}
+          categoryCounts={categoryCounts}
         />
       </div>
       {children ? <div className="mt-2 space-y-2">{children}</div> : null}
