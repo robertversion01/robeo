@@ -5,7 +5,7 @@ import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { navigateWithViewTransition } from '@/lib/viewTransitionNavigate';
 import { productViewTransitionName, shouldUseProductViewTransition } from '@/lib/productViewTransition';
-import { Heart, MapPin, BadgeCheck } from 'lucide-react';
+import { Heart, MapPin, BadgeCheck, Star } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 import { cn, formatPrice } from '@/lib/utils';
 import { getDistrictLabel } from '@/lib/budapestDistricts';
@@ -119,11 +119,36 @@ export default memo(function ProductCard({
   const districtLabel = getDistrictLabel(product.budapest_district);
   const sellerName = product.sellerName;
   const sellerInitial = sellerName?.trim()?.charAt(0)?.toUpperCase() || '?';
+  const sellerAvgRating =
+    product.sellerAvgRating != null && product.sellerReviewCount != null && product.sellerReviewCount > 0
+      ? product.sellerAvgRating
+      : null;
+  const sellerReviewCount = product.sellerReviewCount ?? 0;
+
+  /** Max 1 kép-overlay badge: sold/reserved teljes, egyébként featured > age */
+  const statusOverlay = isSold
+    ? ('sold' as const)
+    : isReserved
+      ? ('reserved' as const)
+      : isFeatured
+        ? ('featured' as const)
+        : ageBadge
+          ? ('age' as const)
+          : null;
+
+  const showCompactTrust =
+    compact &&
+    (sellerAvgRating != null || product.sellerVerified);
 
   return (
     <div
-      className="group card-base overflow-hidden rounded-lg sm:rounded-xl relative border-0 sm:border sm:border-[#233138] hover:border-[#38c7d0]/40 hover:shadow-md"
-      style={{ contentVisibility: 'auto', containIntrinsicSize: '420px 560px' }}
+      className={cn(
+        'group relative overflow-hidden',
+        compact
+          ? 'rounded-md bg-transparent'
+          : 'card-base rounded-lg sm:rounded-xl border-0 sm:border sm:border-[#233138] hover:border-[#38c7d0]/40 hover:shadow-md',
+      )}
+      style={{ contentVisibility: 'auto', containIntrinsicSize: compact ? '380px 500px' : '420px 560px' }}
     >
       <div
         data-product-card-gallery
@@ -203,35 +228,26 @@ export default memo(function ProductCard({
             ))}
           </div>
         ) : null}
-        {isSold ? (
+        {statusOverlay === 'sold' ? (
           <div className="pointer-events-none absolute inset-0 flex items-center justify-center bg-black/35">
             <span className="rounded-md bg-black/70 px-2.5 py-1 text-[11px] font-bold uppercase tracking-wide text-white">
               {t('product.sold')}
             </span>
           </div>
-        ) : isReserved ? (
+        ) : statusOverlay === 'reserved' ? (
           <div className="pointer-events-none absolute inset-0 flex items-center justify-center bg-black/25">
             <span className="rounded-md bg-amber-600/90 px-2.5 py-1 text-[11px] font-bold uppercase tracking-wide text-white">
               {t('product.reserved')}
             </span>
           </div>
-        ) : ageBadge ? (
+        ) : statusOverlay === 'age' ? (
           <span className="pointer-events-none absolute top-1 left-1 rounded-md bg-black/65 px-1.5 py-0.5 text-[9px] font-bold uppercase tracking-wide text-white">
             {ageBadge === 'just_now' ? t('product.badgeJustNow') : t('product.badgeNew')}
           </span>
-        ) : null}
-        {isFeatured ? (
-          <Badge variant="featured" className="pointer-events-none absolute bottom-1 left-1 text-[9px] px-1 py-0.5">
+        ) : statusOverlay === 'featured' ? (
+          <Badge variant="featured" className="pointer-events-none absolute top-1 left-1 text-[9px] px-1 py-0.5">
             {t('product.featured')}
           </Badge>
-        ) : null}
-        {compact && product.sellerVerified && !isFeatured ? (
-          <span
-            className="pointer-events-none absolute bottom-1 left-1 flex h-5 w-5 items-center justify-center rounded-full bg-black/55"
-            aria-label={t('sellerTrust.verified')}
-          >
-            <BadgeCheck size={12} className="text-[#38c7d0]" />
-          </span>
         ) : null}
       </div>
 
@@ -245,8 +261,16 @@ export default memo(function ProductCard({
           onToggleFavorite();
         }}
         className={cn(
-          'absolute top-0.5 right-0.5 z-50 flex items-center gap-0.5 rounded-full bg-[#10181c] hover:bg-[#162228] active:scale-90 shadow-sm border border-[#2a3941]/80',
-          favoriteCount > 0 ? 'h-7 min-w-[1.75rem] px-1.5' : 'h-7 w-7 justify-center',
+          'absolute z-50 flex items-center gap-0.5 rounded-full active:scale-90',
+          compact
+            ? cn(
+                'top-1 right-1 bg-black/45 hover:bg-black/55 border-0',
+                favoriteCount > 0 ? 'h-7 min-w-[1.75rem] px-1.5' : 'h-7 w-7 justify-center',
+              )
+            : cn(
+                'top-0.5 right-0.5 bg-[#10181c] hover:bg-[#162228] shadow-sm border border-[#2a3941]/80',
+                favoriteCount > 0 ? 'h-7 min-w-[1.75rem] px-1.5' : 'h-7 w-7 justify-center',
+              ),
         )}
         aria-label={
           favoriteCount > 0
@@ -271,7 +295,12 @@ export default memo(function ProductCard({
         ) : null}
       </button>
 
-      <div className="px-1.5 pt-1 pb-1.5 sm:px-2 sm:pt-1.5 sm:pb-2 text-left space-y-0.5 sm:space-y-1">
+      <div
+        className={cn(
+          'text-left',
+          compact ? 'px-0.5 pt-1 pb-0.5 space-y-0.5' : 'px-1.5 pt-1 pb-1.5 sm:px-2 sm:pt-1.5 sm:pb-2 space-y-0.5 sm:space-y-1',
+        )}
+      >
         <Link
           href={productHref}
           className="block"
@@ -281,10 +310,10 @@ export default memo(function ProductCard({
             navigateWithViewTransition(router, productHref);
           }}
         >
-          <div className="text-[15px] sm:text-base font-extrabold text-[#007782] tabular-nums leading-tight tracking-tight">
+          <div className="text-[15px] font-extrabold text-[#007782] tabular-nums leading-none tracking-tight">
             {formatPrice(product.price)}
           </div>
-          <p className="text-[11px] sm:text-xs text-[#9db0b8] leading-snug truncate">
+          <p className="text-[11px] text-[#9db0b8] leading-snug truncate mt-0.5">
             <span className="font-medium text-[#e6edf0]">{brandOrName}</span>
             <span className="text-[#5f747c] mx-0.5">·</span>
             <span className="text-[#a0b1b8]">{sizePart}</span>
@@ -318,9 +347,24 @@ export default memo(function ProductCard({
             ) : null}
           </Link>
         ) : null}
-        {compact && categoryShort ? (
-          <p className="text-[10px] uppercase tracking-wide text-[#83979f] truncate leading-none">
-            {categoryShort}
+        {showCompactTrust ? (
+          <p className="flex items-center gap-1 text-[10px] leading-none text-[#9eb0b7] truncate">
+            {sellerAvgRating != null ? (
+              <>
+                <Star size={10} className="shrink-0 fill-amber-400 text-amber-400" aria-hidden />
+                <span className="font-semibold tabular-nums text-[#e6edf0]">
+                  {sellerAvgRating.toFixed(1)}
+                </span>
+                {sellerReviewCount > 0 ? (
+                  <span className="text-[#7a9099]">({sellerReviewCount})</span>
+                ) : null}
+              </>
+            ) : product.sellerVerified ? (
+              <>
+                <BadgeCheck size={11} className="shrink-0 text-[#007782]" aria-hidden />
+                <span>{t('sellerTrust.verified')}</span>
+              </>
+            ) : null}
           </p>
         ) : null}
         {!compact && districtLabel ? (

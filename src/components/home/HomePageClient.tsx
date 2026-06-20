@@ -8,6 +8,7 @@ import CatalogBrowsePanel from '@/components/browse/CatalogBrowsePanel';
 import { DESKTOP_TOP_PADDING } from '@/lib/layoutTokens';
 import { filterProductsWithValidImages } from '@/lib/productImageValidation';
 import CookieConsentBanner from '@/components/legal/CookieConsentBanner';
+import { cn } from '@/lib/utils';
 
 function useIsDesktopLayout() {
   const [desktop, setDesktop] = useState(false);
@@ -67,11 +68,16 @@ function HomePageContent() {
   return (
     <div className="landing-page-root min-h-screen max-w-[100vw] overflow-x-clip bg-[#11171a] text-[#e7edf0]">
       <CookieConsentBanner />
-      <main className={`w-full max-w-[100vw] px-2 pb-0 md:px-6 ${DESKTOP_TOP_PADDING}`}>
-        <div className="mx-auto max-w-7xl">
-          <div className="hidden md:block">
+      <main
+        className={cn(
+          'w-full max-w-[100vw] overflow-x-clip',
+          isDesktopLayout ? `px-2 pb-0 md:px-6 ${DESKTOP_TOP_PADDING}` : 'px-2 pt-2 pb-0',
+        )}
+      >
+        <div className={isDesktopLayout ? 'mx-auto max-w-7xl' : undefined}>
+          {isDesktopLayout ? (
             <VintedHero products={heroProducts} compact />
-          </div>
+          ) : null}
           <CatalogBrowsePanel
             browsePath="/"
             stickyTopClass="top-0"

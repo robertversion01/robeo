@@ -187,8 +187,9 @@ check(
 check(
   '4.1',
   'Trust',
-  'Feed kártyán verified jel (compact)',
-  has('src/components/product/ProductCard.tsx', 'compact && product.sellerVerified'),
+  'Feed kártyán compact trust sor (★ vagy verified)',
+  has('src/components/product/ProductCard.tsx', 'showCompactTrust') &&
+    has('src/components/product/ProductCard.tsx', 'sellerAvgRating'),
 );
 
 check(

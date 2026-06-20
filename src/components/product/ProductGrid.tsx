@@ -18,8 +18,8 @@ import {
   type ImagePresetName,
 } from '@/lib/imagePresets';
 
-const GRID_GAP_PX = 6;
-const ROW_HEIGHT_ESTIMATE = 320;
+const GRID_GAP_PX = 4;
+const ROW_HEIGHT_ESTIMATE = 300;
 const VIRTUAL_OVERSCAN = 3;
 /** Kevesebb sor — egyszerű grid, stabilabb layout shift. */
 const VIRTUAL_MIN_ROWS = 5;
@@ -255,7 +255,7 @@ export default function ProductGrid({
 
   const simpleGrid = (
     <div
-      className="grid grid-cols-2 gap-1.5 sm:grid-cols-3 sm:gap-2 lg:grid-cols-5 xl:grid-cols-6 lg:gap-3"
+      className="grid grid-cols-2 gap-1 sm:grid-cols-3 sm:gap-1.5 lg:grid-cols-5 xl:grid-cols-6 lg:gap-2"
     >
       {products.map((product, index) => (
         <ProductCard
@@ -301,7 +301,7 @@ export default function ProductGrid({
                 }}
               >
                 <div
-                  className="grid grid-cols-2 gap-1.5 sm:grid-cols-3 sm:gap-2 lg:grid-cols-5 xl:grid-cols-6 lg:gap-3"
+                  className="grid grid-cols-2 gap-1 sm:grid-cols-3 sm:gap-1.5 lg:grid-cols-5 xl:grid-cols-6 lg:gap-2"
                   style={{ paddingBottom: virtualRow.index < rowCount - 1 ? GRID_GAP_PX : 0 }}
                 >
                   {rowProducts.map((product, colIndex) => {
