@@ -2,7 +2,7 @@
 
 import { useCallback, useEffect, useId, useLayoutEffect, useMemo, useRef, useState } from 'react';
 import { createPortal } from 'react-dom';
-import { ChevronDown, X } from 'lucide-react';
+import { ChevronDown, SlidersHorizontal, X } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 import {
   VINTED_BRANDS,
@@ -50,6 +50,9 @@ export interface FiltersProps {
   listingType?: 'all' | 'product' | 'service';
   selectedBudapestDistrict?: string;
   onBudapestDistrictChange?: (id: string) => void;
+  /** inline = teljes chip sor; compact = mobil gyors szűrők; sheet = immersive panel */
+  layout?: 'inline' | 'compact' | 'sheet';
+  onOpenAllFilters?: () => void;
 }
 
 function buildCategoryOptions(
@@ -116,6 +119,8 @@ export default function Filters({
   listingType = 'all',
   selectedBudapestDistrict = 'all',
   onBudapestDistrictChange,
+  layout = 'inline',
+  onOpenAllFilters,
 }: FiltersProps) {
   const { t, i18n } = useTranslation();
   const showProductFilters = showProductCatalogFilters(listingType);
@@ -324,12 +329,260 @@ export default function Filters({
       </div>
     ) : null;
 
+  const priceButton = (
+    <div className="relative shrink-0">
+      <button
+        ref={priceBtnRef}
+        type="button"
+        aria-expanded={priceOpen}
+        aria-haspopup="dialog"
+        onPointerDown={(e) => {
+          e.preventDefault();
+          e.stopPropagation();
+          setOpenPanelId((prev) => (prev === PANEL.price ? null : PANEL.price));
+        }}
+        onClick={(e) => e.preventDefault()}
+        className={`inline-flex h-9 items-center gap-1 rounded-full border px-3 text-xs font-medium whitespace-nowrap touch-manipulation ${
+          priceOpen || pricePresetId !== 'all'
+            ? 'border-[#38c7d0] bg-[#17343a] text-[#9be2e8]'
+            : 'border-[#2a3941] bg-[#1a2328] text-[#b2c0c6] hover:border-[#38c7d0]/35 hover:bg-[#1f2a30]'
+        }`}
+      >
+        {priceLabel}
+        <ChevronDown size={14} className={priceOpen ? 'rotate-180' : ''} />
+      </button>
+    </div>
+  );
+
+  const sortSelect = (
+    <label className="shrink-0 flex items-center gap-1.5 text-xs text-[#8fa3ad]">
+      <select
+        value={selectedSort}
+        onChange={(e) => onSortChange(e.target.value)}
+        className="h-9 rounded-full border border-[#2a3941] bg-[#1a2328] px-3 text-xs text-[#e7edf0] focus:outline-none focus:ring-1 focus:ring-[#38c7d0]"
+      >
+        {sortOptions.map((opt) => (
+          <option key={opt.id} value={opt.id}>
+            {opt.label}
+          </option>
+        ))}
+      </select>
+    </label>
+  );
+
+  const allFiltersButton =
+    onOpenAllFilters ? (
+      <button
+        type="button"
+        onClick={onOpenAllFilters}
+        className="inline-flex h-9 shrink-0 items-center gap-1.5 rounded-full border border-[#2a3941] bg-[#1a2328] px-3 text-xs font-semibold text-[#e7edf0] hover:border-[#38c7d0]/35 touch-manipulation"
+      >
+        <SlidersHorizontal size={14} className="text-[#007782]" />
+        {t('browse.filters.allFilters')}
+      </button>
+    ) : null;
+
+  const chipRowClass =
+    layout === 'sheet'
+      ? 'flex flex-wrap items-center gap-2'
+      : 'flex items-center gap-2 overflow-x-auto overflow-y-visible no-scrollbar pb-1 -mx-0.5 px-0.5';
+
+  const renderCategoryChips = () => (
+    <>
+      <FilterChipDropdown
+        panelId={PANEL.category}
+        openPanelId={openPanelId}
+        onOpenPanelChange={setOpenPanelId}
+        label={t('browse.filters.category')}
+        options={categoryOptions}
+        value={selectedCategory}
+        onChange={onCategoryChange}
+      />
+      {selectedCategory !== 'all' ? (
+        <FilterChipDropdown
+          panelId={PANEL.subcategory}
+          openPanelId={openPanelId}
+          onOpenPanelChange={setOpenPanelId}
+          label={t('browse.filters.subcategory')}
+          options={subcategoryOptions}
+          value={selectedSubcategory}
+          onChange={onSubcategoryChange}
+        />
+      ) : null}
+    </>
+  );
+
+  const renderProductChips = () =>
+    showProductFilters ? (
+      <>
+        <FilterChipDropdown
+          panelId={PANEL.brand}
+          openPanelId={openPanelId}
+          onOpenPanelChange={setOpenPanelId}
+          label={t('browse.filters.brand')}
+          options={brandOptions}
+          value={selectedBrand}
+          onChange={onBrandChange}
+        />
+        <FilterChipDropdown
+          panelId={PANEL.size}
+          openPanelId={openPanelId}
+          onOpenPanelChange={setOpenPanelId}
+          label={t('browse.filters.size')}
+          options={sizeOptions}
+          value={selectedSize}
+          onChange={onSizeChange}
+        />
+        <FilterChipDropdown
+          panelId={PANEL.condition}
+          openPanelId={openPanelId}
+          onOpenPanelChange={setOpenPanelId}
+          label={t('browse.filters.condition')}
+          options={conditionOptions}
+          value={selectedCondition}
+          onChange={onConditionChange}
+        />
+        <FilterChipDropdown
+          panelId={PANEL.color}
+          openPanelId={openPanelId}
+          onOpenPanelChange={setOpenPanelId}
+          label={t('browse.filters.color')}
+          options={colorOptions}
+          value={selectedColor}
+          onChange={onColorChange}
+        />
+      </>
+    ) : null;
+
+  if (layout === 'compact') {
+    return (
+      <div className="space-y-2 pb-2">
+        {!showProductFilters ? (
+          <p className="px-1 text-[11px] text-[#8fa3ad]">{t('browse.filters.contextService')}</p>
+        ) : null}
+        <div className={chipRowClass}>
+          {priceButton}
+          {showProductFilters ? (
+            <FilterChipDropdown
+              panelId={PANEL.condition}
+              openPanelId={openPanelId}
+              onOpenPanelChange={setOpenPanelId}
+              label={t('browse.filters.condition')}
+              options={conditionOptions}
+              value={selectedCondition}
+              onChange={onConditionChange}
+              active={selectedCondition !== 'all'}
+            />
+          ) : null}
+          {showProductFilters ? (
+            <FilterChipDropdown
+              panelId={PANEL.size}
+              openPanelId={openPanelId}
+              onOpenPanelChange={setOpenPanelId}
+              label={t('browse.filters.size')}
+              options={sizeOptions}
+              value={selectedSize}
+              onChange={onSizeChange}
+              active={selectedSize !== 'all'}
+            />
+          ) : null}
+          {sortSelect}
+          {allFiltersButton}
+        </div>
+        {pricePanel ? createPortal(pricePanel, document.body) : null}
+      </div>
+    );
+  }
+
+  if (layout === 'sheet') {
+    return (
+      <div className="space-y-4 pb-2">
+        {!showProductFilters ? (
+          <p className="text-[11px] text-[#8fa3ad]">{t('browse.filters.contextService')}</p>
+        ) : null}
+        <section>
+          <h3 className="mb-2 text-xs font-bold uppercase tracking-wide text-[#8fa3ad]">
+            {t('browse.immersive.sectionCategory')}
+          </h3>
+          <div className={chipRowClass}>{renderCategoryChips()}</div>
+        </section>
+        <section>
+          <h3 className="mb-2 text-xs font-bold uppercase tracking-wide text-[#8fa3ad]">
+            {t('browse.immersive.sectionPrice')}
+          </h3>
+          <div className={chipRowClass}>{priceButton}</div>
+        </section>
+        {showProductFilters ? (
+          <section>
+            <h3 className="mb-2 text-xs font-bold uppercase tracking-wide text-[#8fa3ad]">
+              {t('browse.immersive.sectionDetails')}
+            </h3>
+            <div className={chipRowClass}>
+              <FilterChipDropdown
+                panelId={PANEL.size}
+                openPanelId={openPanelId}
+                onOpenPanelChange={setOpenPanelId}
+                label={t('browse.filters.size')}
+                options={sizeOptions}
+                value={selectedSize}
+                onChange={onSizeChange}
+              />
+              <FilterChipDropdown
+                panelId={PANEL.condition}
+                openPanelId={openPanelId}
+                onOpenPanelChange={setOpenPanelId}
+                label={t('browse.filters.condition')}
+                options={conditionOptions}
+                value={selectedCondition}
+                onChange={onConditionChange}
+              />
+              <FilterChipDropdown
+                panelId={PANEL.color}
+                openPanelId={openPanelId}
+                onOpenPanelChange={setOpenPanelId}
+                label={t('browse.filters.color')}
+                options={colorOptions}
+                value={selectedColor}
+                onChange={onColorChange}
+              />
+            </div>
+          </section>
+        ) : null}
+        {showProductFilters ? (
+          <section>
+            <h3 className="mb-2 text-xs font-bold uppercase tracking-wide text-[#8fa3ad]">
+              {t('browse.immersive.sectionBrand')}
+            </h3>
+            <div className={chipRowClass}>
+              <FilterChipDropdown
+                panelId={PANEL.brand}
+                openPanelId={openPanelId}
+                onOpenPanelChange={setOpenPanelId}
+                label={t('browse.filters.brand')}
+                options={brandOptions}
+                value={selectedBrand}
+                onChange={onBrandChange}
+              />
+            </div>
+          </section>
+        ) : null}
+        <section>
+          <h3 className="mb-2 text-xs font-bold uppercase tracking-wide text-[#8fa3ad]">
+            {t('browse.immersive.sectionSort')}
+          </h3>
+          <div className={chipRowClass}>{sortSelect}</div>
+        </section>
+        {pricePanel ? createPortal(pricePanel, document.body) : null}
+      </div>
+    );
+  }
+
   return (
     <div className="space-y-2 pb-2">
       {!showProductFilters ? (
         <p className="px-1 text-[11px] text-[#8fa3ad]">{t('browse.filters.contextService')}</p>
       ) : null}
-      <div className="flex items-center gap-2 overflow-x-auto overflow-y-visible no-scrollbar pb-1 -mx-0.5 px-0.5">
+      <div className={chipRowClass}>
         {ROBEO_BP_MODE && onBudapestDistrictChange ? (
           <FilterChipDropdown
             panelId={PANEL.district}
@@ -342,108 +595,10 @@ export default function Filters({
             active={selectedBudapestDistrict !== 'all'}
           />
         ) : null}
-        <FilterChipDropdown
-          panelId={PANEL.category}
-          openPanelId={openPanelId}
-          onOpenPanelChange={setOpenPanelId}
-          label={t('browse.filters.category')}
-          options={categoryOptions}
-          value={selectedCategory}
-          onChange={onCategoryChange}
-        />
-        {selectedCategory !== 'all' ? (
-          <FilterChipDropdown
-            panelId={PANEL.subcategory}
-            openPanelId={openPanelId}
-            onOpenPanelChange={setOpenPanelId}
-            label={t('browse.filters.subcategory')}
-            options={subcategoryOptions}
-            value={selectedSubcategory}
-            onChange={onSubcategoryChange}
-          />
-        ) : null}
-        {showProductFilters ? (
-        <FilterChipDropdown
-          panelId={PANEL.brand}
-          openPanelId={openPanelId}
-          onOpenPanelChange={setOpenPanelId}
-          label={t('browse.filters.brand')}
-          options={brandOptions}
-          value={selectedBrand}
-          onChange={onBrandChange}
-        />
-        ) : null}
-        {showProductFilters ? (
-        <FilterChipDropdown
-          panelId={PANEL.size}
-          openPanelId={openPanelId}
-          onOpenPanelChange={setOpenPanelId}
-          label={t('browse.filters.size')}
-          options={sizeOptions}
-          value={selectedSize}
-          onChange={onSizeChange}
-        />
-        ) : null}
-        {showProductFilters ? (
-        <FilterChipDropdown
-          panelId={PANEL.condition}
-          openPanelId={openPanelId}
-          onOpenPanelChange={setOpenPanelId}
-          label={t('browse.filters.condition')}
-          options={conditionOptions}
-          value={selectedCondition}
-          onChange={onConditionChange}
-        />
-        ) : null}
-        {showProductFilters ? (
-        <FilterChipDropdown
-          panelId={PANEL.color}
-          openPanelId={openPanelId}
-          onOpenPanelChange={setOpenPanelId}
-          label={t('browse.filters.color')}
-          options={colorOptions}
-          value={selectedColor}
-          onChange={onColorChange}
-        />
-        ) : null}
-
-        <div className="relative shrink-0">
-          <button
-            ref={priceBtnRef}
-            type="button"
-            aria-expanded={priceOpen}
-            aria-haspopup="dialog"
-            onPointerDown={(e) => {
-              e.preventDefault();
-              e.stopPropagation();
-              setOpenPanelId((prev) => (prev === PANEL.price ? null : PANEL.price));
-            }}
-            onClick={(e) => e.preventDefault()}
-            className={`inline-flex h-9 items-center gap-1 rounded-full border px-3 text-xs font-medium whitespace-nowrap touch-manipulation ${
-              priceOpen || pricePresetId !== 'all'
-                ? 'border-[#38c7d0] bg-[#17343a] text-[#9be2e8]'
-                : 'border-[#2a3941] bg-[#1a2328] text-[#b2c0c6] hover:border-[#38c7d0]/35 hover:bg-[#1f2a30]'
-            }`}
-          >
-            {priceLabel}
-            <ChevronDown size={14} className={priceOpen ? 'rotate-180' : ''} />
-          </button>
-        </div>
-
-        <label className="ml-auto shrink-0 flex items-center gap-1.5 text-xs text-[#8fa3ad]">
-          <select
-            value={selectedSort}
-            onChange={(e) => onSortChange(e.target.value)}
-            className="h-9 rounded-full border border-[#2a3941] bg-[#1a2328] px-3 text-xs text-[#e7edf0] focus:outline-none focus:ring-1 focus:ring-[#38c7d0]"
-          >
-            {sortOptions.map((opt) => (
-              <option key={opt.id} value={opt.id}>
-                {opt.label}
-              </option>
-            ))}
-          </select>
-        </label>
-
+        {renderCategoryChips()}
+        {renderProductChips()}
+        {priceButton}
+        <div className="ml-auto shrink-0">{sortSelect}</div>
         {activeFilterCount > 0 && onClearAll ? (
           <button
             type="button"

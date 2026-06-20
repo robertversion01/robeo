@@ -50,7 +50,9 @@
       "visualSearch": "Keresés képből",
       "visualOffline": "Indítsd el az Ollamát (localhost:11434) és töltsd le a llava modellt.",
       "visualFailed": "Képes keresés sikertelen.",
-      "visualDone": "Keresés: „{{query}}”"
+      "visualDone": "Keresés: „{{query}}”",
+      "visualCta": "Keresés képből",
+      "visualCtaHint": "Fotózz vagy válassz képet — hasonló termékeket találunk"
     },
     "categories": {
       "label": "Kategóriák",
@@ -162,7 +164,8 @@
       "max": "Max.",
       "sort": "Rendezés",
       "clear": "Törlés",
-      "clearAll": "Szűrők törlése ({{count}})"
+      "clearAll": "Szűrők törlése ({{count}})",
+      "allFilters": "Összes szűrő"
     },
     "sidebar": {
       "title": "Szűrők",
@@ -305,7 +308,12 @@
       "applyFilters": "Alkalmaz",
       "applyWithCount": "Alkalmaz ({{count}} találat)",
       "counting": "Számolás…",
-      "activeFilters": "{{count}} aktív szűrő"
+      "activeFilters": "{{count}} aktív szűrő",
+      "sectionCategory": "Kategória",
+      "sectionPrice": "Ár",
+      "sectionDetails": "Méret és állapot",
+      "sectionBrand": "Márka és szín",
+      "sectionSort": "Rendezés"
     },
     "feed": {
       "default": "Friss hirdetések a közösségtől — böngéssz, szűrj, ments kedvenceket.",

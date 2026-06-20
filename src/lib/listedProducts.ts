@@ -215,7 +215,10 @@ export async function buildListedProductsQuery(
   return query;
 }
 
-export type ProductTypeaheadRow = Pick<Product, 'id' | 'name' | 'category' | 'brand'>;
+export type ProductTypeaheadRow = Pick<
+  Product,
+  'id' | 'name' | 'category' | 'brand' | 'price' | 'image_url' | 'images'
+>;
 
 /** Navbar / browse typeahead — ugyanaz a szűrés, mint a katalógus grid. */
 export async function fetchListedProductTypeahead(
@@ -227,7 +230,7 @@ export async function fetchListedProductTypeahead(
   if (trimmed.length < 2) return [];
 
   const query = await buildListedProductsQuery(supabase, {
-    select: 'id, name, category, brand, status',
+    select: 'id, name, category, brand, price, image_url, images, status',
     search: trimmed,
   });
 
@@ -236,5 +239,13 @@ export async function fetchListedProductTypeahead(
 
   return (data as Array<ProductTypeaheadRow & { status?: string | null }>)
     .filter((row) => isListedProduct(row.status))
-    .map(({ id, name, category, brand }) => ({ id, name, category, brand }));
+    .map(({ id, name, category, brand, price, image_url, images }) => ({
+      id,
+      name,
+      category,
+      brand,
+      price,
+      image_url,
+      images,
+    }));
 }

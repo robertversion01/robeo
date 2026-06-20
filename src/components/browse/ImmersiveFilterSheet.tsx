@@ -182,6 +182,7 @@ export default function ImmersiveFilterSheet({
             activeFilterCount={draftActiveFilterCount}
             onClearAll={clearDraftFilters}
             listingType={draft.listingType ?? 'all'}
+            layout="sheet"
           />
         </div>
         <div className="shrink-0 border-t border-[#2a3941] p-4">

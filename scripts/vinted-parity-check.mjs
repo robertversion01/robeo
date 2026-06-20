@@ -83,10 +83,18 @@ check(
 check(
   '2.1',
   'Keresés',
-  'Kép alapú keresés (kamera ikon + API)',
-  has('src/components/browse/CatalogSearchBar.tsx', 'Camera') &&
-    has('src/components/browse/CatalogSearchBar.tsx', '/api/search/visual') &&
+  'Kép alapú keresés (CTA + API)',
+  existsSync(join(root, 'src/components/browse/VisualSearchCta.tsx')) &&
+    has('src/components/layout/MobileFeedChrome.tsx', 'VisualSearchCta') &&
     existsSync(join(root, 'src/app/api/search/visual/route.ts')),
+);
+
+check(
+  '2.1b',
+  'Keresés',
+  'Visual search hook/util',
+  existsSync(join(root, 'src/hooks/useVisualSearch.ts')) &&
+    existsSync(join(root, 'src/lib/visualSearchClient.ts')),
 );
 
 check(
@@ -95,6 +103,15 @@ check(
   'Typeahead debounce + min 2 char',
   has('src/components/browse/CatalogSearchBar.tsx', 'query.length < 2') &&
     has('src/components/browse/CatalogSearchBar.tsx', '220'),
+);
+
+check(
+  '2.2b',
+  'Keresés',
+  'Typeahead thumbnail + ár',
+  has('src/components/browse/CatalogSearchBar.tsx', 'PresetImage') &&
+    has('src/lib/listedProducts.ts', 'image_url') &&
+    has('src/components/browse/CatalogSearchBar.tsx', 'formatPrice'),
 );
 
 check(
@@ -111,6 +128,15 @@ check(
   'Mobil filterek + ActiveFilterBar',
   has('src/components/browse/CatalogBrowsePanel.tsx', '<Filters') &&
     has('src/components/browse/CatalogBrowsePanel.tsx', 'ActiveFilterBar'),
+);
+
+check(
+  '2.4b',
+  'Keresés',
+  'Filter compact + sheet layout',
+  has('src/components/product/Filters.tsx', "layout?: 'inline' | 'compact' | 'sheet'") &&
+    has('src/components/product/Filters.tsx', 'allFilters') &&
+    has('src/components/browse/ImmersiveFilterSheet.tsx', 'layout="sheet"'),
 );
 
 check(

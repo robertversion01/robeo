@@ -93,7 +93,7 @@ function CatalogBrowsePanelInner({
     topBrands: { name: string; count: number }[];
     topSizes: { name: string; count: number }[];
   } | null>(null);
-  const { catalogChromeHidden } = useImmersiveBrowse();
+  const { catalogChromeHidden, openFilterSheet } = useImmersiveBrowse();
   const { t } = useTranslation();
 
   const chromeCollapse = cn(
@@ -493,7 +493,7 @@ function CatalogBrowsePanelInner({
               onChange={setSelectedListingType}
               className="mb-2"
             />
-            <Filters {...filtersProps} />
+            <Filters {...filtersProps} layout="compact" onOpenAllFilters={openFilterSheet} />
           </div>
           <div className="sticky top-[3.25rem] z-20 -mx-3 mb-3 border-y border-[#27363d] bg-[#111a1e]/95 px-3 py-2 backdrop-blur lg:hidden">
             <ActiveFilterBar {...activeFilterBarProps} />
@@ -526,7 +526,7 @@ function CatalogBrowsePanelInner({
               onChange={setSelectedListingType}
               className="mb-2"
             />
-            <Filters {...filtersProps} />
+            <Filters {...filtersProps} layout="compact" onOpenAllFilters={openFilterSheet} />
           </div>
           <div className="sticky top-[3.25rem] z-20 -mx-3 mb-3 border-y border-[#27363d] bg-[#111a1e]/95 px-3 py-2 backdrop-blur lg:hidden">
             <ActiveFilterBar {...activeFilterBarProps} />

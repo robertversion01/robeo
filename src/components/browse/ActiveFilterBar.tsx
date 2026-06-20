@@ -143,7 +143,7 @@ export default function ActiveFilterBar({
           <span className="sr-only">{t('browse.activeFilters.remove')}</span>
         </button>
       ))}
-      {chips.length > 1 ? (
+      {chips.length >= 1 ? (
         <button
           type="button"
           onClick={onClearAll}

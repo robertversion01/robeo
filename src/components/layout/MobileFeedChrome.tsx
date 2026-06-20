@@ -1,8 +1,11 @@
 'use client';
 
+import { useState } from 'react';
 import CatalogSearchBar from '@/components/browse/CatalogSearchBar';
 import CategoryQuickChips from '@/components/browse/CategoryQuickChips';
+import VisualSearchCta from '@/components/browse/VisualSearchCta';
 import type { CatalogFilterState } from '@/lib/catalogFilters';
+import type { ProductTypeaheadRow } from '@/lib/listedProducts';
 import { cn } from '@/lib/utils';
 import { MOBILE_TAB_PAGE_TOP } from '@/lib/layoutTokens';
 
@@ -23,7 +26,7 @@ type Props = {
   categoryCounts?: Record<string, number>;
 };
 
-/** Mobil feed fejléc: safe area → kompakt kereső → lapozható kategória sor */
+/** Mobil feed fejléc: safe area → kompakt kereső → kép keresés CTA → kategória sor */
 export default function MobileFeedChrome({
   searchQuery,
   onSearchChange,
@@ -38,6 +41,8 @@ export default function MobileFeedChrome({
   children,
   categoryCounts,
 }: Props) {
+  const [injectedResults, setInjectedResults] = useState<ProductTypeaheadRow[] | null>(null);
+
   return (
     <div
       className={cn(
@@ -58,7 +63,15 @@ export default function MobileFeedChrome({
         maxPriceLimit={maxPriceLimit}
         browsePath={browsePath}
         inputId="mobile-feed-search"
+        injectedResults={injectedResults}
+        onInjectedClear={() => setInjectedResults(null)}
       />
+      <div className="mt-2 lg:hidden">
+        <VisualSearchCta
+          onQuery={onSearchChange}
+          onResults={(products) => setInjectedResults(products)}
+        />
+      </div>
       <div className="mt-2">
         <CategoryQuickChips
           variant="text"

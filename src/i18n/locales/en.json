@@ -50,7 +50,9 @@
       "visualSearch": "Search by photo",
       "visualOffline": "Start Ollama (localhost:11434) and pull the llava model.",
       "visualFailed": "Visual search failed.",
-      "visualDone": "Searching: “{{query}}”"
+      "visualDone": "Searching: “{{query}}”",
+      "visualCta": "Search by photo",
+      "visualCtaHint": "Take or pick a photo — we’ll find similar items"
     },
     "categories": {
       "label": "Categories",
@@ -162,7 +164,8 @@
       "max": "Max.",
       "sort": "Sort",
       "clear": "Clear",
-      "clearAll": "Clear filters ({{count}})"
+      "clearAll": "Clear filters ({{count}})",
+      "allFilters": "All filters"
     },
     "sidebar": {
       "title": "Filters",
@@ -305,7 +308,12 @@
       "applyFilters": "Apply",
       "applyWithCount": "Apply ({{count}} results)",
       "counting": "Counting…",
-      "activeFilters": "{{count}} active filters"
+      "activeFilters": "{{count}} active filters",
+      "sectionCategory": "Category",
+      "sectionPrice": "Price",
+      "sectionDetails": "Size & condition",
+      "sectionBrand": "Brand & color",
+      "sectionSort": "Sort"
     },
     "feed": {
       "default": "Fresh listings from the community — browse, filter, save favorites.",
