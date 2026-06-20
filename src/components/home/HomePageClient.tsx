@@ -1,6 +1,6 @@
 'use client';
 
-import { Suspense, useMemo } from 'react';
+import { Suspense, useEffect, useMemo, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useProducts } from '@/hooks/useProducts';
 import VintedHero from '@/components/home/VintedHero';
@@ -9,13 +9,35 @@ import { DESKTOP_TOP_PADDING } from '@/lib/layoutTokens';
 import { filterProductsWithValidImages } from '@/lib/productImageValidation';
 import CookieConsentBanner from '@/components/legal/CookieConsentBanner';
 
+function useIsDesktopLayout() {
+  const [desktop, setDesktop] = useState(false);
+  useEffect(() => {
+    const mq = window.matchMedia('(min-width: 768px)');
+    const sync = () => setDesktop(mq.matches);
+    sync();
+    mq.addEventListener('change', sync);
+    return () => mq.removeEventListener('change', sync);
+  }, []);
+  return desktop;
+}
+
 function HomePageContent() {
   const { t } = useTranslation();
   const { allProducts, user } = useProducts();
   const isGuest = !user;
+  const isDesktopLayout = useIsDesktopLayout();
   const heroProducts = useMemo(
     () => filterProductsWithValidImages(allProducts),
     [allProducts],
+  );
+
+  const guestFeedPanel = (
+    <CatalogBrowsePanel
+      browsePath="/"
+      stickyTopClass="top-0"
+      showPersonalization={false}
+      variant="feed"
+    />
   );
 
   if (isGuest) {
@@ -23,29 +45,20 @@ function HomePageContent() {
       <div className="landing-page-root min-h-screen max-w-[100vw] overflow-x-clip bg-[#11171a] text-[#e7edf0]">
         <CookieConsentBanner />
         <main className="w-full max-w-[100vw] overflow-x-clip">
-          {/* Mobil: search-first — kereső + feed a hero előtt */}
-          <div className="px-2 pt-2 md:hidden">
-            <CatalogBrowsePanel
-              browsePath="/"
-              stickyTopClass="top-0"
-              showPersonalization={false}
-              variant="feed"
-            />
-          </div>
-          <div className="hidden md:block">
-            <VintedHero products={heroProducts} fullScreen />
-            <div className="landing-catalog mx-auto max-w-7xl px-3 pt-4 pb-6 md:px-6 md:pt-4 md:pb-8">
-              <h2 className="mb-3 text-base font-semibold text-[#e7edf0] md:text-lg">
-                {t('landing.catalog.title')}
-              </h2>
-              <CatalogBrowsePanel
-                browsePath="/"
-                stickyTopClass="top-0"
-                showPersonalization={false}
-                variant="feed"
-              />
-            </div>
-          </div>
+          {isDesktopLayout ? (
+            <>
+              <VintedHero products={heroProducts} fullScreen />
+              <div className="landing-catalog mx-auto max-w-7xl px-3 pt-4 pb-6 md:px-6 md:pt-4 md:pb-8">
+                <h2 className="mb-3 text-base font-semibold text-[#e7edf0] md:text-lg">
+                  {t('landing.catalog.title')}
+                </h2>
+                {guestFeedPanel}
+              </div>
+            </>
+          ) : (
+            /* Mobil: search-first — egyetlen feed mount (nincs dupla ProductGrid key) */
+            <div className="px-2 pt-2">{guestFeedPanel}</div>
+          )}
         </main>
       </div>
     );

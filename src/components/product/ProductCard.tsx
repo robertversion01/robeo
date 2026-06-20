@@ -225,6 +225,14 @@ export default memo(function ProductCard({
             {t('product.featured')}
           </Badge>
         ) : null}
+        {compact && product.sellerVerified && !isFeatured ? (
+          <span
+            className="pointer-events-none absolute bottom-1 left-1 flex h-5 w-5 items-center justify-center rounded-full bg-black/55"
+            aria-label={t('sellerTrust.verified')}
+          >
+            <BadgeCheck size={12} className="text-[#38c7d0]" />
+          </span>
+        ) : null}
       </div>
 
       <button

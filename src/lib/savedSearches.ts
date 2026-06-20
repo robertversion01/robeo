@@ -136,7 +136,12 @@ async function flushPersistSavedSearches(): Promise<void> {
     data: { [METADATA_KEY]: items },
   });
   if (error) {
+    const rateLimited = /rate limit/i.test(error.message);
     console.warn('[savedSearches] remote persist failed:', error.message);
+    if (rateLimited) {
+      persistPending = null;
+      return;
+    }
   }
 
   if (persistPending && persistSupabase) {
@@ -158,7 +163,7 @@ export async function loadSavedSearchesMerged(
       data: { user },
     } = await supabase.auth.getUser();
     if (user) {
-      await persistSavedSearchesToUser(supabase, merged);
+      persistSavedSearchesToUser(supabase, merged);
     }
   }
   return merged;

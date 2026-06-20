@@ -17,6 +17,7 @@
     "db:check-patches": "node scripts/check-supabase-patches.mjs",
     "audit:images": "node scripts/audit-image-presets.mjs",
     "smoke:routes": "node scripts/smoke-routes.mjs",
+    "parity:check": "node scripts/vinted-parity-check.mjs",
     "grant-admin": "node scripts/grant-admin-role.mjs",
     "test:wallet-release": "node scripts/run-wallet-release-e2e.mjs",
     "test:notifications": "node scripts/run-e2e-notification-pipeline.mjs",
