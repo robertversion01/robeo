@@ -7,6 +7,7 @@ import PresetImage from '@/components/product/PresetImage';
 import { useSnapCarousel } from '@/hooks/useSnapCarousel';
 import { usePinchZoom } from '@/hooks/usePinchZoom';
 import { useBodyScrollLock } from '@/hooks/useBodyScrollLock';
+import { GALLERY_VIEWER_CAROUSEL_CLASS } from '@/lib/galleryGestureConfig';
 import { IMAGE_VIEWPORT_PRELOAD_RADIUS } from '@/lib/imagePresets';
 import { cn } from '@/lib/utils';
 
@@ -90,7 +91,7 @@ export default function ProductImageViewer({
         ref={carouselRef}
         onScroll={handleScroll}
         className={cn(
-          'relative min-h-0 w-full flex-1 snap-x snap-mandatory overflow-x-auto overscroll-x-none no-scrollbar',
+          GALLERY_VIEWER_CAROUSEL_CLASS,
           isZoomed ? 'overflow-hidden touch-none' : 'touch-pan-x [touch-action:pan-x]',
         )}
         style={{ WebkitOverflowScrolling: 'touch' }}

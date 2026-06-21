@@ -1,14 +1,16 @@
 'use client';
 
 import { useCallback, useEffect, useRef, useState } from 'react';
+import { GALLERY_GESTURE } from '@/lib/galleryGestureConfig';
 
-const SCROLL_SETTLE_MS = 32;
-/** Szigorúbb commit — véletlen fling ne lapozzon. */
-const SWIPE_COMMIT_RATIO = 0.28;
-const SWIPE_COMMIT_MIN_PX = 52;
-const AXIS_DECIDE_PX = 14;
-const HORIZONTAL_DOMINANCE = 1.35;
-const HORIZONTAL_LOCK_PX = 32;
+const {
+  scrollSettleMs: SCROLL_SETTLE_MS,
+  swipeCommitRatio: SWIPE_COMMIT_RATIO,
+  swipeCommitMinPx: SWIPE_COMMIT_MIN_PX,
+  axisDecidePx: AXIS_DECIDE_PX,
+  horizontalDominance: HORIZONTAL_DOMINANCE,
+  horizontalLockPx: HORIZONTAL_LOCK_PX,
+} = GALLERY_GESTURE;
 
 type Options = {
   initialIndex?: number;

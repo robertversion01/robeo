@@ -63,7 +63,11 @@ export default function ZeroResultsRescue({
       <p className="mt-1 text-xs text-[#8fa3ad]">{t('browse.empty.rescueHint')}</p>
 
       {suggestions.length > 0 ? (
-        <div className="mt-2 flex flex-wrap gap-1.5">
+        <div className="mt-2">
+          <p className="mb-1.5 text-[10px] font-semibold uppercase tracking-wide text-[#8fa3ad]">
+            {t('browse.empty.rescueTryLabel')}
+          </p>
+          <div className="flex flex-wrap gap-1.5">
           {suggestions.map((term) => (
             <button
               key={term}
@@ -83,10 +87,14 @@ export default function ZeroResultsRescue({
               {t('browse.empty.clearFilters')}
             </button>
           ) : null}
+          </div>
         </div>
       ) : null}
 
-      <div className="mt-3 flex gap-2 overflow-x-auto no-scrollbar pb-1">
+      <p className="mt-3 mb-1.5 text-[10px] font-semibold uppercase tracking-wide text-[#8fa3ad]">
+        {t('browse.empty.rescueRailLabel')}
+      </p>
+      <div className="flex gap-2 overflow-x-auto no-scrollbar pb-1">
         {items.map((p) => {
           const img = normalizePrimaryProductImageUrl(p);
           return (

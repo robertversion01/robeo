@@ -35,6 +35,8 @@ import { getDistrictLabel } from '@/lib/budapestDistricts';
 import { categoryDisplayLabel } from '@/lib/categoryDisplay';
 import ProductPriceAnchor from '@/components/product/ProductPriceAnchor';
 import { productViewTransitionName, shouldUseProductViewTransition } from '@/lib/productViewTransition';
+import { GALLERY_CAROUSEL_CLASS, GALLERY_SURFACE_CLASS } from '@/lib/galleryGestureConfig';
+import { cn } from '@/lib/utils';
 
 const OfferModal = dynamic(() => import('@/components/product/OfferModal'), { ssr: false });
 const BundleOfferModal = dynamic(() => import('@/components/product/BundleOfferModal'), { ssr: false });
@@ -351,7 +353,10 @@ export default function ProductPage({ params }: { params: Promise<{ id: string }
             <div>
               {/* Main Image */}
               <div
-                className="relative aspect-[4/5] md:aspect-square md:rounded-xl md:overflow-hidden bg-[#0f1a1d]/10 mb-2 border border-[#2a3941] select-none [touch-callout:none]"
+                className={cn(
+                  GALLERY_SURFACE_CLASS,
+                  'relative aspect-[4/5] md:aspect-square md:rounded-xl md:overflow-hidden bg-[#0f1a1d]/10 mb-2 border border-[#2a3941] select-none',
+                )}
                 style={
                   product && shouldUseProductViewTransition()
                     ? ({ viewTransitionName: productViewTransitionName(product.id) } as React.CSSProperties)
@@ -365,7 +370,7 @@ export default function ProductPage({ params }: { params: Promise<{ id: string }
                   onTouchStart={pdpGalleryGestures.onTouchStart}
                   onTouchMove={pdpGalleryGestures.onTouchMove}
                   onTouchEnd={pdpGalleryGestures.onTouchEnd}
-                  className="relative z-[1] flex h-full w-full snap-x snap-mandatory overflow-x-auto overscroll-x-contain touch-pan-x no-scrollbar"
+                  className={cn(GALLERY_CAROUSEL_CLASS, 'relative z-[1] overflow-x-auto overscroll-x-contain')}
                   style={{ WebkitOverflowScrolling: 'touch' }}
                 >
                   {productImages.map((imgUrl, idx) => {
@@ -373,7 +378,7 @@ export default function ProductPage({ params }: { params: Promise<{ id: string }
                     const distance = Math.abs(idx - safeSelectedIndex);
                     const inBand = distance <= IMAGE_VIEWPORT_PRELOAD_RADIUS;
                     return (
-                    <div key={imgUrl} className="relative h-full min-w-full shrink-0 snap-center snap-always">
+                    <div key={imgUrl} className="relative h-full min-w-full shrink-0 snap-center snap-always snap-stop-always">
                       {inBand ? (
                         <PresetImage
                           url={imgUrl}
@@ -492,7 +497,7 @@ export default function ProductPage({ params }: { params: Promise<{ id: string }
                 className="mb-3"
               />
 
-              <SellerTrustPanel sellerId={product.user_id} className="mb-3" />
+              <SellerTrustPanel sellerId={product.user_id} variant="compact" className="mb-3" />
 
               {isPurchasable && viewerId !== product.user_id ? (
                 <ProductAlertsBar product={product} className="mb-3" />

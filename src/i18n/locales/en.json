@@ -257,8 +257,10 @@
       "openWatchlist": "Favorites and watches",
       "tryBroader": "Try broader search",
       "openMessages": "Open messages",
-      "rescueTitle": "You might also like these",
-      "rescueHint": "Try a broader search or relax your filters."
+      "rescueTitle": "No exact match — try these instead",
+      "rescueHint": "Loosen filters, try a shorter keyword, or clear filters to browse more.",
+      "rescueTryLabel": "Try searching",
+      "rescueRailLabel": "Similar listings"
     },
     "pagination": {
       "loadMore": "Load more products",

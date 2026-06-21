@@ -33,6 +33,7 @@ const productCard = read('src/components/product/ProductCard.tsx');
 const productGrid = read('src/components/product/ProductGrid.tsx');
 const snapCarousel = read('src/hooks/useSnapCarousel.ts');
 const gestures = read('src/hooks/useImageGalleryGestures.ts');
+const gestureConfig = read('src/lib/galleryGestureConfig.ts');
 const viewer = read('src/components/product/ProductImageViewer.tsx');
 const viewerCtx = read('src/context/FeedImageViewerContext.tsx');
 const pdp = read('src/app/products/[id]/page.tsx');
@@ -73,6 +74,15 @@ const checks = [
   {
     name: 'Carousel 1 gesztus = max ±1 slide',
     ok: snapCarousel.includes('anchorIndex + 1') && snapCarousel.includes('onTouchEnd'),
+  },
+  {
+    name: 'Közös galleryGestureConfig (feed + PDP + viewer)',
+    ok:
+      snapCarousel.includes('galleryGestureConfig') &&
+      gestures.includes('galleryGestureConfig') &&
+      productCard.includes('galleryGestureConfig') &&
+      pdp.includes('galleryGestureConfig') &&
+      viewer.includes('galleryGestureConfig'),
   },
   {
     name: 'Feed kártya viewport preload band',

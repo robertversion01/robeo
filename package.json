@@ -16,6 +16,7 @@
     "db:ensure-schema": "node scripts/ensure-marketplace-schema.mjs",
     "db:check-patches": "node scripts/check-supabase-patches.mjs",
     "audit:images": "node scripts/audit-image-presets.mjs",
+    "gesture:check": "node scripts/gesture-regression-check.mjs",
     "smoke:routes": "node scripts/smoke-routes.mjs",
     "parity:check": "node scripts/vinted-parity-check.mjs",
     "grant-admin": "node scripts/grant-admin-role.mjs",

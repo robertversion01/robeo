@@ -20,6 +20,7 @@ import type { ImagePresetName } from '@/lib/imagePresets';
 import { feedPresetImageClass, IMAGE_VIEWPORT_PRELOAD_RADIUS, imageFromPreset } from '@/lib/imagePresets';
 import { preloadImageUrl } from '@/lib/preloadImage';
 import Badge from '@/components/ui/Badge';
+import { GALLERY_CAROUSEL_CLASS, GALLERY_SURFACE_CLASS } from '@/lib/galleryGestureConfig';
 import type { ProductWithSeller } from '@/lib/sellerCardEnrichment';
 
 interface ProductCardProps {
@@ -152,7 +153,7 @@ export default memo(function ProductCard({
     >
       <div
         data-product-card-gallery
-        className="product-gallery-surface relative aspect-[4/5] overflow-hidden bg-[#121a1e] select-none"
+        className={cn(GALLERY_SURFACE_CLASS, 'relative aspect-[4/5] overflow-hidden bg-[#121a1e] select-none')}
         style={
           shouldUseProductViewTransition()
             ? ({ viewTransitionName: heroTransitionName } as CSSProperties)
@@ -177,7 +178,7 @@ export default memo(function ProductCard({
           onTouchEnd={gestures.onTouchEnd}
           onClick={gestures.onClick}
           className={cn(
-            'product-card-carousel flex h-full w-full snap-x snap-mandatory overscroll-x-contain no-scrollbar',
+            GALLERY_CAROUSEL_CLASS,
             images.length > 1 ? 'overflow-x-auto' : 'overflow-hidden',
           )}
           style={{ WebkitOverflowScrolling: 'touch' }}

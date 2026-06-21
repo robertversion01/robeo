@@ -119,7 +119,9 @@ check(
   'Keresés',
   'Zero-results rescue',
   has('src/components/product/ProductGrid.tsx', 'ZeroResultsRescue') &&
-    existsSync(join(root, 'src/components/browse/ZeroResultsRescue.tsx')),
+    existsSync(join(root, 'src/components/browse/ZeroResultsRescue.tsx')) &&
+    has('src/components/browse/ZeroResultsRescue.tsx', 'rescueTryLabel') &&
+    has('src/components/browse/ZeroResultsRescue.tsx', 'rescueRailLabel'),
 );
 
 check(
@@ -159,7 +161,8 @@ check(
   '3.2',
   'Kép',
   'Long-press → viewer (~450ms)',
-  has('src/hooks/useImageGalleryGestures.ts', 'LONG_PRESS_MS = 450') &&
+  has('src/lib/galleryGestureConfig.ts', 'longPressMs: 450') &&
+    has('src/hooks/useImageGalleryGestures.ts', 'galleryGestureConfig') &&
     has('src/context/FeedImageViewerContext.tsx', 'ProductImageViewer'),
 );
 
@@ -167,7 +170,7 @@ check(
   '3.3',
   'Kép',
   'Viewer horizontál swipe',
-  has('src/components/product/ProductImageViewer.tsx', 'snap-x snap-mandatory'),
+  has('src/components/product/ProductImageViewer.tsx', 'GALLERY_VIEWER_CAROUSEL_CLASS'),
 );
 
 check(
@@ -175,7 +178,17 @@ check(
   'Kép',
   '1 gesztus = max 1 kép',
   has('src/hooks/useSnapCarousel.ts', 'clampToGestureWindow') &&
-    has('src/hooks/useSnapCarousel.ts', 'SWIPE_COMMIT_MIN_PX = 52'),
+    has('src/lib/galleryGestureConfig.ts', 'swipeCommitMinPx: 52'),
+);
+
+check(
+  '3.4b',
+  'Kép',
+  'Shared galleryGestureConfig (feed/PDP/viewer)',
+  has('src/lib/galleryGestureConfig.ts', 'GALLERY_GESTURE') &&
+    has('src/hooks/useSnapCarousel.ts', 'galleryGestureConfig') &&
+    has('src/components/product/ProductCard.tsx', 'GALLERY_CAROUSEL_CLASS') &&
+    has('src/app/products/[id]/page.tsx', 'GALLERY_SURFACE_CLASS'),
 );
 
 check(
@@ -206,7 +219,7 @@ check(
   'Kép',
   'PDP galéria carousel',
   has('src/app/products/[id]/page.tsx', 'useImageGalleryGestures') &&
-    has('src/app/products/[id]/page.tsx', 'snap-x snap-mandatory'),
+    has('src/app/products/[id]/page.tsx', 'GALLERY_CAROUSEL_CLASS'),
 );
 
 // ── 4) Trust ──
@@ -224,6 +237,14 @@ check(
   'PDP SellerTrustPanel above fold',
   has('src/app/products/[id]/page.tsx', 'SellerTrustPanel') &&
     has('src/app/products/[id]/page.tsx', 'ProductPriceAnchor'),
+);
+
+check(
+  '4.2b',
+  'Trust',
+  'PDP compact trust strip + skeleton',
+  has('src/app/products/[id]/page.tsx', 'variant="compact"') &&
+    has('src/components/profile/SellerTrustPanel.tsx', 'TrustSkeleton'),
 );
 
 check(

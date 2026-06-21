@@ -1,11 +1,16 @@
 'use client';
 
 import { useCallback, useRef } from 'react';
+import { GALLERY_GESTURE } from '@/lib/galleryGestureConfig';
 
-const LONG_PRESS_MS = 450;
-const LONG_PRESS_JITTER_PX = 12;
-const HORIZONTAL_DOMINANCE = 1.35;
-const CAROUSEL_CANCEL_DX = 32;
+const {
+  longPressMs: LONG_PRESS_MS,
+  longPressJitterPx: LONG_PRESS_JITTER_PX,
+  horizontalDominance: HORIZONTAL_DOMINANCE,
+  carouselCancelDx: CAROUSEL_CANCEL_DX,
+  preloadViewerMs: PRELOAD_VIEWER_MS,
+  longPressVibrateMs: LONG_PRESS_VIBRATE_MS,
+} = GALLERY_GESTURE;
 
 type Options = {
   onTap: () => void;
@@ -13,8 +18,6 @@ type Options = {
   onPreloadViewer?: () => void;
   enabled?: boolean;
 };
-
-const PRELOAD_VIEWER_MS = 180;
 
 /**
  * Tap → navigáció; long-press → fullscreen viewer.
@@ -70,7 +73,7 @@ export function useImageGalleryGestures({
         g.longPressFired = true;
         g.suppressTap = true;
         if (typeof navigator !== 'undefined' && navigator.vibrate) {
-          navigator.vibrate(12);
+          navigator.vibrate(LONG_PRESS_VIBRATE_MS);
         }
         onOpenViewer();
       }, LONG_PRESS_MS);

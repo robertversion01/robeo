@@ -257,8 +257,10 @@
       "openWatchlist": "Kedvencek és figyelések",
       "tryBroader": "Tágabb keresés",
       "openMessages": "Üzenetek megnyitása",
-      "rescueTitle": "Ezek is hasonlóak lehetnek",
-      "rescueHint": "Próbáld lazább szűréssel vagy más kulcsszóval."
+      "rescueTitle": "Nincs pontos találat — ezek hasonlóak",
+      "rescueHint": "Próbáld lazább szűréssel, rövidebb kulcsszóval, vagy töröld a szűrőket.",
+      "rescueTryLabel": "Próbáld így",
+      "rescueRailLabel": "Hasonló hirdetések"
     },
     "pagination": {
       "loadMore": "Több termék betöltése",
