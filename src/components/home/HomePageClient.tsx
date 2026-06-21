@@ -49,8 +49,8 @@ function HomePageContent() {
           {isDesktopLayout ? (
             <>
               <VintedHero products={heroProducts} fullScreen />
-              <div className="landing-catalog mx-auto max-w-7xl px-3 pt-4 pb-6 md:px-6 md:pt-4 md:pb-8">
-                <h2 className="mb-3 text-base font-semibold text-[#e7edf0] md:text-lg">
+              <div className="landing-catalog mx-auto max-w-7xl px-2 pt-3 pb-5 md:px-4 md:pt-3 md:pb-6">
+                <h2 className="mb-2 text-sm font-semibold text-[#e7edf0] md:text-base">
                   {t('landing.catalog.title')}
                 </h2>
                 {guestFeedPanel}
@@ -58,7 +58,7 @@ function HomePageContent() {
             </>
           ) : (
             /* Mobil: search-first — egyetlen feed mount (nincs dupla ProductGrid key) */
-            <div className="px-2 pt-2">{guestFeedPanel}</div>
+            <div className="px-1 pt-1">{guestFeedPanel}</div>
           )}
         </main>
       </div>
@@ -71,7 +71,7 @@ function HomePageContent() {
       <main
         className={cn(
           'w-full max-w-[100vw] overflow-x-clip',
-          isDesktopLayout ? `px-2 pb-0 md:px-6 ${DESKTOP_TOP_PADDING}` : 'px-2 pt-2 pb-0',
+          isDesktopLayout ? `px-2 pb-0 md:px-4 ${DESKTOP_TOP_PADDING}` : 'px-1 pt-1 pb-0',
         )}
       >
         <div className={isDesktopLayout ? 'mx-auto max-w-7xl' : undefined}>

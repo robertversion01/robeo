@@ -83,7 +83,7 @@ console.log(`
 ── Telefon QA checklist (Chrome → Device toolbar, touch) ──
 
   1. Feed kártya carousel
-     - Gyors horizontál flick → pontosan ±1 kép (commit ≥ ${values.swipeCommitMinPx}px vagy ${values.swipeCommitRatio * 100}% szélesség)
+     - Gyors horizontál flick → pontosan ±1 kép (commit ≥ ${values.swipeCommitMinPx}px vagy ${Math.round(values.swipeCommitRatio * 100)}% szélesség)
      - Függőleges scroll → feed görget, carousel nem ragad
 
   2. Long-press (~${values.longPressMs}ms)

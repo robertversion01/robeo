@@ -61,7 +61,24 @@ check(
   'Home',
   'Feed kártya compact ritmus',
   has('src/components/product/ProductGrid.tsx', 'compact') &&
-    has('src/components/product/ProductGrid.tsx', 'grid-cols-2'),
+    has('src/components/product/ProductGrid.tsx', 'grid-cols-2') &&
+    has('src/components/product/ProductGrid.tsx', 'gap-0.5'),
+);
+
+check(
+  '1.4b',
+  'Home',
+  'Lapos feed kártya (nincs border/shadow compact)',
+  has('src/components/product/ProductCard.tsx', 'product-feed-card') &&
+    has('src/app/globals.css', 'product-feed-card') &&
+    has('src/components/product/ProductGridSkeleton.tsx', 'gap-0.5'),
+);
+
+check(
+  '1.4c',
+  'Home',
+  'Compact feed: nincs kategória sor',
+  has('src/components/product/ProductCard.tsx', '!compact && categoryShort'),
 );
 
 check(

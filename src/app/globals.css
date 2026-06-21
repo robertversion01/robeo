@@ -590,6 +590,15 @@ select option {
   touch-action: none;
 }
 
+/* Feed kártya — lapos, Vinted-szerű ritmus */
+.product-feed-card .product-gallery-surface {
+  border-radius: 2px;
+}
+
+.product-feed-card .product-gallery-surface img {
+  border-radius: 2px;
+}
+
 .product-gallery-surface img,
 .product-gallery-overlay img {
   -webkit-user-drag: none;

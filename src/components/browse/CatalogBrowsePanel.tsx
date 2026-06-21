@@ -341,7 +341,7 @@ function CatalogBrowsePanelInner({
   const resultsLine = (
     <p
       className={cn(
-        'mb-2 text-sm tabular-nums text-[#9aadb5]',
+        'mb-1 text-sm tabular-nums text-[#9aadb5]',
         isFeed && 'hidden md:block',
       )}
     >
@@ -438,7 +438,7 @@ function CatalogBrowsePanelInner({
               selectedCategory={selectedCategory}
               onCategoryChange={handleCategoryChange}
               categoryCounts={filterCounts.categories}
-              className="mb-1 lg:hidden"
+              className="mb-0.5 lg:hidden"
             />
             {showPersonalization && user ? (
               <div className="mb-3 hidden md:block">
@@ -495,7 +495,7 @@ function CatalogBrowsePanelInner({
             />
             <Filters {...filtersProps} layout="compact" onOpenAllFilters={openFilterSheet} />
           </div>
-          <div className="sticky top-[3.25rem] z-20 -mx-3 mb-3 border-y border-[#27363d] bg-[#111a1e]/95 px-3 py-2 backdrop-blur lg:hidden">
+          <div className="sticky top-[3.25rem] z-20 -mx-1 mb-2 border-b border-[#27363d]/60 bg-[#11171a]/90 px-1 py-1.5 backdrop-blur lg:hidden">
             <ActiveFilterBar {...activeFilterBarProps} />
           </div>
           {productGridBlock}
@@ -528,7 +528,7 @@ function CatalogBrowsePanelInner({
             />
             <Filters {...filtersProps} layout="compact" onOpenAllFilters={openFilterSheet} />
           </div>
-          <div className="sticky top-[3.25rem] z-20 -mx-3 mb-3 border-y border-[#27363d] bg-[#111a1e]/95 px-3 py-2 backdrop-blur lg:hidden">
+          <div className="sticky top-[3.25rem] z-20 -mx-1 mb-2 border-b border-[#27363d]/60 bg-[#11171a]/90 px-1 py-1.5 backdrop-blur lg:hidden">
             <ActiveFilterBar {...activeFilterBarProps} />
           </div>
           {user && showPersonalization ? <FollowedSellersStrip className="mb-3 lg:hidden" /> : null}

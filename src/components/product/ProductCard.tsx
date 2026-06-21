@@ -146,14 +146,18 @@ export default memo(function ProductCard({
       className={cn(
         'group relative overflow-hidden',
         compact
-          ? 'rounded-md bg-transparent'
+          ? 'product-feed-card rounded-none bg-transparent'
           : 'card-base rounded-lg sm:rounded-xl border-0 sm:border sm:border-[#233138] hover:border-[#38c7d0]/40 hover:shadow-md',
       )}
-      style={{ contentVisibility: 'auto', containIntrinsicSize: compact ? '380px 500px' : '420px 560px' }}
+      style={{ contentVisibility: 'auto', containIntrinsicSize: compact ? '280px 380px' : '420px 560px' }}
     >
       <div
         data-product-card-gallery
-        className={cn(GALLERY_SURFACE_CLASS, 'relative aspect-[4/5] overflow-hidden bg-[#121a1e] select-none')}
+        className={cn(
+          GALLERY_SURFACE_CLASS,
+          'relative aspect-[4/5] overflow-hidden select-none',
+          compact ? 'bg-[#11171a]' : 'bg-[#121a1e]',
+        )}
         style={
           shouldUseProductViewTransition()
             ? ({ viewTransitionName: heroTransitionName } as CSSProperties)
@@ -187,7 +191,7 @@ export default memo(function ProductCard({
             const distance = Math.abs(idx - activeIndex);
             const inBand = distance <= IMAGE_VIEWPORT_PRELOAD_RADIUS;
             return (
-              <div key={`${product.id}-slide-${idx}`} className="relative h-full min-w-full shrink-0 snap-center snap-always snap-stop-always bg-[#121a1e]">
+              <div key={`${product.id}-slide-${idx}`} className={cn('relative h-full min-w-full shrink-0 snap-center snap-always snap-stop-always', compact ? 'bg-[#11171a]' : 'bg-[#121a1e]')}>
                 {inBand ? (
                   <div className="absolute inset-0">
                     <PresetImage
@@ -217,12 +221,18 @@ export default memo(function ProductCard({
         </div>
 
         {images.length > 1 ? (
-          <div className="pointer-events-none absolute bottom-1 right-1 flex gap-0.5">
+          <div
+            className={cn(
+              'pointer-events-none absolute flex gap-px',
+              compact ? 'bottom-0.5 right-0.5' : 'bottom-1 right-1 gap-0.5',
+            )}
+          >
             {images.slice(0, 5).map((_, idx) => (
               <span
                 key={idx}
                 className={cn(
-                  'h-1 w-1 rounded-full',
+                  'rounded-full',
+                  compact ? 'h-0.5 w-0.5' : 'h-1 w-1',
                   idx === activeIndex ? 'bg-[#e7edf0]' : 'bg-[#e7edf0]/50',
                 )}
               />
@@ -230,25 +240,31 @@ export default memo(function ProductCard({
           </div>
         ) : null}
         {statusOverlay === 'sold' ? (
-          <div className="pointer-events-none absolute inset-0 flex items-center justify-center bg-black/35">
-            <span className="rounded-md bg-black/70 px-2.5 py-1 text-[11px] font-bold uppercase tracking-wide text-white">
+          <div className="pointer-events-none absolute inset-0 flex items-center justify-center bg-black/25">
+            <span className="rounded-sm bg-black/60 px-2 py-0.5 text-[10px] font-bold uppercase tracking-wide text-white">
               {t('product.sold')}
             </span>
           </div>
         ) : statusOverlay === 'reserved' ? (
-          <div className="pointer-events-none absolute inset-0 flex items-center justify-center bg-black/25">
-            <span className="rounded-md bg-amber-600/90 px-2.5 py-1 text-[11px] font-bold uppercase tracking-wide text-white">
+          <div className="pointer-events-none absolute inset-0 flex items-center justify-center bg-black/20">
+            <span className="rounded-sm bg-amber-600/85 px-2 py-0.5 text-[10px] font-bold uppercase tracking-wide text-white">
               {t('product.reserved')}
             </span>
           </div>
         ) : statusOverlay === 'age' ? (
-          <span className="pointer-events-none absolute top-1 left-1 rounded-md bg-black/65 px-1.5 py-0.5 text-[9px] font-bold uppercase tracking-wide text-white">
+          <span className="pointer-events-none absolute top-0.5 left-0.5 rounded-sm bg-black/50 px-1 py-px text-[9px] font-semibold uppercase tracking-wide text-white">
             {ageBadge === 'just_now' ? t('product.badgeJustNow') : t('product.badgeNew')}
           </span>
         ) : statusOverlay === 'featured' ? (
-          <Badge variant="featured" className="pointer-events-none absolute top-1 left-1 text-[9px] px-1 py-0.5">
-            {t('product.featured')}
-          </Badge>
+          compact ? (
+            <span className="pointer-events-none absolute top-0.5 left-0.5 rounded-sm bg-black/55 px-1 py-px text-[9px] font-medium text-white">
+              {t('product.featured')}
+            </span>
+          ) : (
+            <Badge variant="featured" className="pointer-events-none absolute top-1 left-1 text-[9px] px-1 py-0.5">
+              {t('product.featured')}
+            </Badge>
+          )
         ) : null}
       </div>
 
@@ -265,8 +281,8 @@ export default memo(function ProductCard({
           'absolute z-50 flex items-center gap-0.5 rounded-full active:scale-90',
           compact
             ? cn(
-                'top-1 right-1 bg-black/45 hover:bg-black/55 border-0',
-                favoriteCount > 0 ? 'h-7 min-w-[1.75rem] px-1.5' : 'h-7 w-7 justify-center',
+                'top-0.5 right-0.5 bg-black/25 hover:bg-black/35 border-0',
+                favoriteCount > 0 ? 'h-6 min-w-[1.5rem] px-1' : 'h-6 w-6 justify-center',
               )
             : cn(
                 'top-0.5 right-0.5 bg-[#10181c] hover:bg-[#162228] shadow-sm border border-[#2a3941]/80',
@@ -282,7 +298,7 @@ export default memo(function ProductCard({
         }
       >
         <Heart
-          size={14}
+          size={compact ? 12 : 14}
           className={cn(
           'shrink-0 transition-all duration-200',
           heartBump && 'scale-125',
@@ -290,7 +306,7 @@ export default memo(function ProductCard({
         )}
         />
         {favoriteCount > 0 ? (
-          <span className="text-[10px] font-semibold tabular-nums leading-none text-[#b1c0c6]">
+          <span className={cn('font-semibold tabular-nums leading-none text-[#b1c0c6]', compact ? 'text-[9px]' : 'text-[10px]')}>
             {favoriteCount}
           </span>
         ) : null}
@@ -299,7 +315,7 @@ export default memo(function ProductCard({
       <div
         className={cn(
           'text-left',
-          compact ? 'px-0.5 pt-1 pb-0.5 space-y-0.5' : 'px-1.5 pt-1 pb-1.5 sm:px-2 sm:pt-1.5 sm:pb-2 space-y-0.5 sm:space-y-1',
+          compact ? 'px-0 pt-0.5 pb-0 space-y-0' : 'px-1.5 pt-1 pb-1.5 sm:px-2 sm:pt-1.5 sm:pb-2 space-y-0.5 sm:space-y-1',
         )}
       >
         <Link
@@ -311,10 +327,15 @@ export default memo(function ProductCard({
             navigateWithViewTransition(router, productHref);
           }}
         >
-          <div className="text-[15px] font-extrabold text-[#007782] tabular-nums leading-none tracking-tight">
+          <div
+            className={cn(
+              'font-bold text-[#007782] tabular-nums tracking-tight',
+              compact ? 'text-sm leading-tight' : 'text-[15px] font-extrabold leading-none',
+            )}
+          >
             {formatPrice(product.price)}
           </div>
-          <p className="text-[11px] text-[#9db0b8] leading-snug truncate mt-0.5">
+          <p className={cn('text-[#9db0b8] leading-tight truncate', compact ? 'text-[11px] mt-px' : 'text-[11px] leading-snug mt-0.5')}>
             <span className="font-medium text-[#e6edf0]">{brandOrName}</span>
             <span className="text-[#5f747c] mx-0.5">·</span>
             <span className="text-[#a0b1b8]">{sizePart}</span>
@@ -349,20 +370,20 @@ export default memo(function ProductCard({
           </Link>
         ) : null}
         {showCompactTrust ? (
-          <p className="flex items-center gap-1 text-[10px] leading-none text-[#9eb0b7] truncate">
+          <p className="flex items-center gap-0.5 text-[9px] leading-none text-[#83979f] truncate mt-px">
             {sellerAvgRating != null ? (
               <>
-                <Star size={10} className="shrink-0 fill-amber-400 text-amber-400" aria-hidden />
-                <span className="font-semibold tabular-nums text-[#e6edf0]">
+                <Star size={9} className="shrink-0 fill-amber-400 text-amber-400" aria-hidden />
+                <span className="font-semibold tabular-nums text-[#c5d0d5]">
                   {sellerAvgRating.toFixed(1)}
                 </span>
                 {sellerReviewCount > 0 ? (
-                  <span className="text-[#7a9099]">({sellerReviewCount})</span>
+                  <span className="text-[#6d828a]">({sellerReviewCount})</span>
                 ) : null}
               </>
             ) : product.sellerVerified ? (
               <>
-                <BadgeCheck size={11} className="shrink-0 text-[#007782]" aria-hidden />
+                <BadgeCheck size={10} className="shrink-0 text-[#007782]" aria-hidden />
                 <span>{t('sellerTrust.verified')}</span>
               </>
             ) : null}
@@ -373,7 +394,7 @@ export default memo(function ProductCard({
             <MapPin size={10} className="shrink-0" aria-hidden />
             {districtLabel}
           </p>
-        ) : categoryShort ? (
+        ) : !compact && categoryShort ? (
           <p className="text-[10px] uppercase tracking-wide text-[#83979f] truncate leading-none">
             {categoryShort}
           </p>
