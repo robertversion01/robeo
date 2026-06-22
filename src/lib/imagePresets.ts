@@ -26,7 +26,7 @@ export const IMAGE_QUALITY = {
 } as const;
 
 /** Első viewport kártyák (mobil 2×2): eager + fetchpriority high. */
-export const FEED_VIEWPORT_PRIORITY_COUNT = 4;
+export const FEED_VIEWPORT_PRIORITY_COUNT = 6;
 
 /** Kezdeti grid mount — gyors first paint. */
 export const FEED_INITIAL_RENDER_COUNT = 8;
@@ -65,8 +65,8 @@ export const IMAGE_PRESETS = {
     width: 360,
     quality: IMAGE_QUALITY.homepageFeed,
     options: { height: 450, resize: 'contain', format: 'webp' },
-    srcSetWidths: [280, 360, 440],
-    sizes: '(max-width: 640px) 50vw, (max-width: 1024px) 33vw, 20vw',
+    srcSetWidths: [240, 320, 360, 420],
+    sizes: '(max-width: 640px) calc(50vw - 2px), (max-width: 1024px) 33vw, 20vw',
     lazyPolicy: 'lazy',
     fetchPriority: 'low',
   },
@@ -75,8 +75,8 @@ export const IMAGE_PRESETS = {
     width: 280,
     quality: IMAGE_QUALITY.feed,
     options: { height: 350, resize: 'contain', format: 'webp' },
-    srcSetWidths: [220, 280, 340],
-    sizes: '(max-width: 640px) 50vw, (max-width: 1024px) 33vw, 18vw',
+    srcSetWidths: [200, 260, 320, 360],
+    sizes: '(max-width: 640px) calc(50vw - 2px), (max-width: 1024px) 33vw, 18vw',
     lazyPolicy: 'lazy',
     fetchPriority: 'low',
   },

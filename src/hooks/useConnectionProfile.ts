@@ -4,12 +4,17 @@ import { useEffect, useState } from 'react';
 import { getConnectionProfile, type ConnectionProfile } from '@/lib/connectionProfile';
 
 export function useConnectionProfile(): ConnectionProfile {
-  const [profile, setProfile] = useState<ConnectionProfile>('fast');
+  const [profile, setProfile] = useState<ConnectionProfile>(() =>
+    typeof window !== 'undefined' ? getConnectionProfile() : 'fast',
+  );
 
   useEffect(() => {
     setProfile(getConnectionProfile());
     const nav = navigator as Navigator & {
-      connection?: { addEventListener?: (t: string, fn: () => void) => void; removeEventListener?: (t: string, fn: () => void) => void };
+      connection?: {
+        addEventListener?: (t: string, fn: () => void) => void;
+        removeEventListener?: (t: string, fn: () => void) => void;
+      };
     };
     const conn = nav.connection;
     if (!conn?.addEventListener) return;

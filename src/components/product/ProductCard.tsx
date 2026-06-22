@@ -18,7 +18,7 @@ import { useSnapCarousel } from '@/hooks/useSnapCarousel';
 import { useImageGalleryGestures } from '@/hooks/useImageGalleryGestures';
 import type { ImagePresetName } from '@/lib/imagePresets';
 import { feedPresetImageClass, IMAGE_VIEWPORT_PRELOAD_RADIUS, imageFromPreset } from '@/lib/imagePresets';
-import { preloadImageUrl } from '@/lib/preloadImage';
+import { preloadPresetSrc } from '@/lib/preloadImage';
 import Badge from '@/components/ui/Badge';
 import { GALLERY_CAROUSEL_CLASS, GALLERY_SURFACE_CLASS } from '@/lib/galleryGestureConfig';
 import type { ProductWithSeller } from '@/lib/sellerCardEnrichment';
@@ -78,9 +78,25 @@ export default memo(function ProductCard({
   const preloadViewer = useCallback(() => {
     const url = images[activeIndex];
     if (!url) return;
-    const src = imageFromPreset(url, 'pdpViewer', { priority: true }).src;
-    preloadImageUrl(src, 'high');
+    const resolved = imageFromPreset(url, 'pdpViewer', { priority: true });
+    preloadPresetSrc(resolved.src, resolved.srcSet, 'high');
   }, [images, activeIndex]);
+
+  useEffect(() => {
+    if (images.length <= 1) return;
+    for (let offset = -1; offset <= 1; offset += 1) {
+      const idx = activeIndex + offset;
+      if (idx < 0 || idx >= images.length) continue;
+      const resolved = imageFromPreset(images[idx], imagePreset, {
+        priority: priority && idx === 0,
+      });
+      preloadPresetSrc(
+        resolved.src,
+        resolved.srcSet,
+        offset === 0 && priority ? 'high' : 'low',
+      );
+    }
+  }, [activeIndex, images, imagePreset, priority]);
 
   const gestures = useImageGalleryGestures({
     onTap: openProduct,

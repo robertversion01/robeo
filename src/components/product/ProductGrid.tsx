@@ -11,6 +11,7 @@ import EmptyState from '@/components/ui/EmptyState';
 import ListRefreshingBar from '@/components/ui/ListRefreshingBar';
 import { useProductGridColumns } from '@/hooks/useProductGridColumns';
 import { useStableProductToggle } from '@/hooks/useStableProductToggle';
+import { useFeedViewportWarmup } from '@/hooks/useFeedViewportWarmup';
 import ZeroResultsRescue from '@/components/browse/ZeroResultsRescue';import type { Product } from '@/types';
 
 import {
@@ -133,9 +134,18 @@ export default function ProductGrid({
   const virtualRows = useVirtual ? rowVirtualizer.getVirtualItems() : [];
 
   const lcpProducts = useMemo(
-    () => products.slice(0, priorityCount),
-    [products, priorityCount],
+    () => products.slice(0, Math.min(products.length, priorityCount + columnCount)),
+    [products, priorityCount, columnCount],
   );
+
+  useFeedViewportWarmup({
+    products,
+    preset: cardImagePreset,
+    virtualRows,
+    columnCount,
+    priorityCount,
+    enabled: useVirtual,
+  });
 
   useEffect(() => {
     if (!hasMore || loadingMore || !onLoadMore) return;
@@ -276,7 +286,11 @@ export default function ProductGrid({
 
   return (
     <>
-      <FeedLcpPreloader products={lcpProducts} preset={cardImagePreset} count={priorityCount} />
+      <FeedLcpPreloader
+        products={lcpProducts}
+        preset={cardImagePreset}
+        priorityHighCount={priorityCount}
+      />
       <ListRefreshingBar active={refreshing} />
       {!useVirtual ? (
         <div key={transitionKey}>
