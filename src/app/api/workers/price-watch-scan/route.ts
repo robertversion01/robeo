@@ -24,7 +24,7 @@ export async function GET(req: NextRequest) {
 export async function POST(req: NextRequest) {
   const supabase = getSupabaseAdminClient();
   if (!supabase) {
-    return NextResponse.json({ error: 'Admin Supabase unavailable' }, { status: 500 });
+    return NextResponse.json({ error: 'Admin Supabase unavailable' }, { status: 503 });
   }
 
   if (requireCron(req)) {
@@ -76,7 +76,7 @@ export async function POST(req: NextRequest) {
 async function runCronScan() {
   const supabase = getSupabaseAdminClient();
   if (!supabase) {
-    return NextResponse.json({ error: 'Admin Supabase unavailable' }, { status: 500 });
+    return NextResponse.json({ error: 'Admin Supabase unavailable' }, { status: 503 });
   }
 
   try {

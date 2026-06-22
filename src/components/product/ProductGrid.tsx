@@ -10,8 +10,8 @@ import ProductGridSkeleton from './ProductGridSkeleton';
 import EmptyState from '@/components/ui/EmptyState';
 import ListRefreshingBar from '@/components/ui/ListRefreshingBar';
 import { useProductGridColumns } from '@/hooks/useProductGridColumns';
-import ZeroResultsRescue from '@/components/browse/ZeroResultsRescue';
-import type { Product } from '@/types';
+import { useStableProductToggle } from '@/hooks/useStableProductToggle';
+import ZeroResultsRescue from '@/components/browse/ZeroResultsRescue';import type { Product } from '@/types';
 
 import {
   FEED_VIEWPORT_PRIORITY_COUNT,
@@ -73,6 +73,7 @@ export default function ProductGrid({
 }: ProductGridProps) {
   const { t } = useTranslation();
   const columnCount = useProductGridColumns();
+  const getToggleFavorite = useStableProductToggle(onToggleFavorite);
   const gridRef = useRef<HTMLDivElement | null>(null);
   const loadMoreSentinelRef = useRef<HTMLDivElement | null>(null);
   const [scrollMargin, setScrollMargin] = useState(0);
@@ -86,15 +87,20 @@ export default function ProductGrid({
   useLayoutEffect(() => {
     const el = gridRef.current;
     if (!el) return;
+    let raf = 0;
     const update = () => {
-      const rect = el.getBoundingClientRect();
-      setScrollMargin(rect.top + window.scrollY);
+      cancelAnimationFrame(raf);
+      raf = requestAnimationFrame(() => {
+        const rect = el.getBoundingClientRect();
+        setScrollMargin(rect.top + window.scrollY);
+      });
     };
     update();
     const ro = new ResizeObserver(update);
     ro.observe(el);
     window.addEventListener('resize', update, { passive: true });
     return () => {
+      cancelAnimationFrame(raf);
       ro.disconnect();
       window.removeEventListener('resize', update);
     };
@@ -126,13 +132,10 @@ export default function ProductGrid({
 
   const virtualRows = useVirtual ? rowVirtualizer.getVirtualItems() : [];
 
-  const lcpProducts = useMemo(() => {
-    if (products.length === 0) return [];
-    const firstRow = virtualRows[0];
-    if (!firstRow) return products.slice(0, priorityCount);
-    const start = firstRow.index * columnCount;
-    return products.slice(start, start + columnCount * 2);
-  }, [virtualRows, products, columnCount, priorityCount]);
+  const lcpProducts = useMemo(
+    () => products.slice(0, priorityCount),
+    [products, priorityCount],
+  );
 
   useEffect(() => {
     if (!hasMore || loadingMore || !onLoadMore) return;
@@ -262,7 +265,7 @@ export default function ProductGrid({
           key={`${product.id}-${index}`}
           product={product}
           isFavorite={favorites.has(product.id)}
-          onToggleFavorite={() => onToggleFavorite(product.id)}
+          onToggleFavorite={getToggleFavorite(product.id)}
           priority={index < priorityCount}
           imagePreset={cardImagePreset}
           compact
@@ -311,7 +314,7 @@ export default function ProductGrid({
                         key={`${product.id}-${globalIndex}`}
                         product={product}
                         isFavorite={favorites.has(product.id)}
-                        onToggleFavorite={() => onToggleFavorite(product.id)}
+                        onToggleFavorite={getToggleFavorite(product.id)}
                         priority={globalIndex < priorityCount}
                         imagePreset={cardImagePreset}
                         compact

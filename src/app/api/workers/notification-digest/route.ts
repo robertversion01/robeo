@@ -32,7 +32,7 @@ async function runDigest() {
 
   const supabase = getSupabaseAdminClient();
   if (!supabase) {
-    return NextResponse.json({ error: 'Admin Supabase unavailable' }, { status: 500 });
+    return NextResponse.json({ error: 'Admin Supabase unavailable' }, { status: 503 });
   }
 
   let usersProcessed = 0;

@@ -1,6 +1,6 @@
 import type { SupabaseClient } from '@supabase/supabase-js';
 import type { Product } from '@/types';
-import { fetchProfileRow } from '@/lib/supabaseResilience';
+import { fetchProfileRowsBatch } from '@/lib/supabaseResilience';
 import { getSellerDisplayName, type SellerDisplayProfile } from '@/lib/sellerProfile';
 
 export type ProductSellerInfo = {
@@ -9,6 +9,23 @@ export type ProductSellerInfo = {
   sellerVerified: boolean;
   sellerAvgRating: number | null;
   sellerReviewCount: number;
+};
+
+const PROFILE_COLUMN_SETS = [
+  'id, email, name, avatar_url, seller_verified',
+  'id, email, name, full_name, avatar_url, seller_verified',
+  'id, email, name, avatar_url',
+  'id, email, name, full_name, avatar_url',
+  'id, email, name',
+] as const;
+
+type ProfileRow = {
+  id: string;
+  email?: string | null;
+  name?: string | null;
+  full_name?: string | null;
+  avatar_url?: string | null;
+  seller_verified?: boolean | null;
 };
 
 async function fetchSellerRatingBatch(
@@ -48,34 +65,23 @@ export async function enrichProductsWithSellerInfo(
   const sellerIds = [...new Set(products.map((p) => p.user_id).filter(Boolean))];
   if (sellerIds.length === 0) return products;
 
-  const infoMap = new Map<string, ProductSellerInfo>();
-  const ratingMap = await fetchSellerRatingBatch(supabase, sellerIds);
+  const [ratingMap, profileMap] = await Promise.all([
+    fetchSellerRatingBatch(supabase, sellerIds),
+    fetchProfileRowsBatch<ProfileRow>(supabase, sellerIds, [...PROFILE_COLUMN_SETS]),
+  ]);
 
-  await Promise.all(
-    sellerIds.map(async (sellerId) => {
-      const profile = await fetchProfileRow<{
-        email?: string | null;
-        name?: string | null;
-        full_name?: string | null;
-        avatar_url?: string | null;
-        seller_verified?: boolean | null;
-      }>(supabase, sellerId, [
-        'email, name, avatar_url, seller_verified',
-        'email, name, full_name, avatar_url, seller_verified',
-        'email, name, avatar_url',
-        'email, name, full_name, avatar_url',
-        'email, name',
-      ]);
-      const rating = ratingMap.get(sellerId);
-      infoMap.set(sellerId, {
-        sellerName: getSellerDisplayName(profile as SellerDisplayProfile | null),
-        sellerAvatarUrl: profile?.avatar_url?.trim() || null,
-        sellerVerified: Boolean(profile?.seller_verified),
-        sellerAvgRating: rating?.avg ?? null,
-        sellerReviewCount: rating?.count ?? 0,
-      });
-    }),
-  );
+  const infoMap = new Map<string, ProductSellerInfo>();
+  for (const sellerId of sellerIds) {
+    const profile = profileMap.get(sellerId);
+    const rating = ratingMap.get(sellerId);
+    infoMap.set(sellerId, {
+      sellerName: getSellerDisplayName(profile as SellerDisplayProfile | null),
+      sellerAvatarUrl: profile?.avatar_url?.trim() || null,
+      sellerVerified: Boolean(profile?.seller_verified),
+      sellerAvgRating: rating?.avg ?? null,
+      sellerReviewCount: rating?.count ?? 0,
+    });
+  }
 
   return products.map((product) => {
     const info = infoMap.get(product.user_id);

@@ -110,6 +110,36 @@ export async function fetchProfileRow<T extends Record<string, unknown>>(
   return null;
 }
 
+/** Batch profile fetch — egy lekérdezés sellerenként N helyett. */
+export async function fetchProfileRowsBatch<T extends Record<string, unknown> & { id: string }>(
+  supabase: SupabaseClient,
+  userIds: string[],
+  columnSets: string[],
+): Promise<Map<string, T>> {
+  const unique = [...new Set(userIds.filter(Boolean))];
+  if (unique.length === 0) return new Map();
+
+  for (const columns of columnSets) {
+    const { data, error } = await supabase.from('profiles').select(columns).in('id', unique);
+
+    if (!error && data) {
+      const map = new Map<string, T>();
+      for (const row of data as unknown as T[]) {
+        if (row?.id) map.set(String(row.id), row);
+      }
+      return map;
+    }
+    if (error && !isMissingColumnError(error) && !isSupabaseSchemaError(error)) {
+      console.warn('[profiles] batch select failed', columns, error.message);
+      return new Map();
+    }
+    if (error && isSupabaseSchemaError(error) && !isMissingColumnError(error)) {
+      return new Map();
+    }
+  }
+  return new Map();
+}
+
 export async function countUnreadAppNotifications(
   supabase: SupabaseClient,
   userId: string,

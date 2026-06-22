@@ -1,8 +1,13 @@
 import { NextResponse } from 'next/server';
 import type { NextRequest } from 'next/server';
-import { buildFeedEarlyHintLinks, isEarlyHintsEnabled } from '@/lib/feedEarlyHints';
+import {
+  buildFeedEarlyHintLinks,
+  getCachedFeedEarlyHintLinks,
+  isEarlyHintsEnabled,
+} from '@/lib/feedEarlyHints';
 
 const FEED_PATHS = new Set(['/', '/browse']);
+const HINT_WAIT_MS = 250;
 
 export async function middleware(request: NextRequest) {
   const { pathname } = request.nextUrl;
@@ -12,8 +17,20 @@ export async function middleware(request: NextRequest) {
 
   const response = NextResponse.next();
 
+  const cached = getCachedFeedEarlyHintLinks();
+  if (cached.length > 0) {
+    response.headers.set('Link', cached.join(', '));
+    void buildFeedEarlyHintLinks();
+    return response;
+  }
+
   try {
-    const links = await buildFeedEarlyHintLinks();
+    const links = await Promise.race([
+      buildFeedEarlyHintLinks(),
+      new Promise<string[]>((resolve) => {
+        setTimeout(() => resolve([]), HINT_WAIT_MS);
+      }),
+    ]);
     if (links.length > 0) {
       response.headers.set('Link', links.join(', '));
     }

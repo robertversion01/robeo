@@ -36,6 +36,8 @@ export const getSupabaseClient = () => {
   return supabaseInstance;
 };
 
+let adminMissingLogged = false;
+
 export const getSupabaseAdminClient = () => {
   if (typeof window !== 'undefined') {
     console.error('[supabase] getSupabaseAdminClient called on client side!');
@@ -46,13 +48,10 @@ export const getSupabaseAdminClient = () => {
   const serviceRoleKey = process.env.SUPABASE_SERVICE_ROLE_KEY;
 
   if (!supabaseUrl || !serviceRoleKey) {
-    console.error('[supabase] CRITICAL: Missing Supabase Admin credentials', {
-      hasUrl: !!supabaseUrl,
-      hasServiceRole: !!serviceRoleKey,
-      vercelEnv: process.env.VERCEL_ENV ?? null,
-      hint:
-        'Állítsd be a SUPABASE_SERVICE_ROLE_KEY-t és URL-t Vercelen (Production + Preview), majd redeploy.',
-    });
+    if (!adminMissingLogged) {
+      adminMissingLogged = true;
+      console.warn('[supabase] Admin client unavailable (missing SUPABASE_SERVICE_ROLE_KEY). Worker routes will return 503.');
+    }
     return null;
   }
 

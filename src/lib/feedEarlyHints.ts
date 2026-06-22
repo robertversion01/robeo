@@ -4,14 +4,21 @@ import { normalizePrimaryProductImageUrl } from '@/lib/productImageValidation';
 /** Mobilon 2 kép elég — kevesebb edge terhelés, mégis LCP win. */
 const FEED_HINT_COUNT = 2;
 const HINT_CACHE_MS = 60_000;
+const HINT_FETCH_TIMEOUT_MS = 400;
 
 type HintRow = { image_url?: string | null; images?: unknown };
 
 let cachedAt = 0;
 let cachedLinks: string[] = [];
+let refreshInFlight: Promise<string[]> | null = null;
 
 export function isEarlyHintsEnabled(): boolean {
   return process.env.EARLY_HINTS_ENABLED !== 'false';
+}
+
+/** Middleware: azonnali cache — nem blokkol fetchre. */
+export function getCachedFeedEarlyHintLinks(): string[] {
+  return cachedLinks;
 }
 
 function formatLinkHeader(url: string): string {
@@ -37,6 +44,7 @@ async function fetchFeedImageUrls(limit: number): Promise<string[]> {
       Accept: 'application/json',
     },
     next: { revalidate: 60 },
+    signal: AbortSignal.timeout(HINT_FETCH_TIMEOUT_MS),
   });
 
   if (!res.ok) return [];
@@ -63,24 +71,36 @@ export async function buildFeedEarlyHintLinks(): Promise<string[]> {
     return cachedLinks;
   }
 
-  const imageUrls = await fetchFeedImageUrls(FEED_HINT_COUNT);
-  const supabaseOrigin = process.env.NEXT_PUBLIC_SUPABASE_URL?.trim();
+  if (refreshInFlight) {
+    return refreshInFlight;
+  }
 
-  const links: string[] = [];
-  if (supabaseOrigin) {
+  refreshInFlight = (async () => {
     try {
-      const origin = new URL(supabaseOrigin).origin;
-      links.push(`<${origin}>; rel=preconnect; crossorigin`);
-    } catch {
-      /* ignore */
+      const imageUrls = await fetchFeedImageUrls(FEED_HINT_COUNT);
+      const supabaseOrigin = process.env.NEXT_PUBLIC_SUPABASE_URL?.trim();
+
+      const links: string[] = [];
+      if (supabaseOrigin) {
+        try {
+          const origin = new URL(supabaseOrigin).origin;
+          links.push(`<${origin}>; rel=preconnect; crossorigin`);
+        } catch {
+          /* ignore */
+        }
+      }
+
+      for (const url of imageUrls) {
+        links.push(formatLinkHeader(url));
+      }
+
+      cachedLinks = links;
+      cachedAt = Date.now();
+      return links;
+    } finally {
+      refreshInFlight = null;
     }
-  }
+  })();
 
-  for (const url of imageUrls) {
-    links.push(formatLinkHeader(url));
-  }
-
-  cachedLinks = links;
-  cachedAt = now;
-  return links;
+  return refreshInFlight;
 }

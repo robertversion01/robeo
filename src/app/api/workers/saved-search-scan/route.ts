@@ -35,7 +35,7 @@ export async function POST(req: NextRequest) {
 
     const supabase = getSupabaseAdminClient();
     if (!supabase) {
-      return NextResponse.json({ error: 'Admin Supabase unavailable' }, { status: 500 });
+      return NextResponse.json({ error: 'Admin Supabase unavailable' }, { status: 503 });
     }
 
     const cronSecret = process.env.CRON_SECRET;

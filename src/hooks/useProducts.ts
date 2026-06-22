@@ -6,6 +6,7 @@ import {
   useMemo,
   useCallback,
   useRef,
+  startTransition,
   type Dispatch,
   type SetStateAction,
 } from 'react';
@@ -323,20 +324,22 @@ export function useProducts() {
           setTotalCount((prev) => Math.min(prev, from));
         }
 
-        setProducts((prev) => {
-          if (!append) return fetched;
-          const seen = new Set(prev.map((p) => p.id));
-          const merged = [...prev];
-          for (const p of fetched) {
-            if (!seen.has(p.id)) {
-              seen.add(p.id);
-              merged.push(p);
+        startTransition(() => {
+          setProducts((prev) => {
+            if (!append) return fetched;
+            const seen = new Set(prev.map((p) => p.id));
+            const merged = [...prev];
+            for (const p of fetched) {
+              if (!seen.has(p.id)) {
+                seen.add(p.id);
+                merged.push(p);
+              }
             }
-          }
-          if (fetched.length === 0) {
-            return prev;
-          }
-          return merged;
+            if (fetched.length === 0) {
+              return prev;
+            }
+            return merged;
+          });
         });
       } catch (error) {
         console.error('Error fetching products:', formatSupabaseError(error));
@@ -381,7 +384,7 @@ export function useProducts() {
     };
   }, []);
 
-  const scheduleRefresh = useCallback((delayMs: number = 700) => {
+  const scheduleRefresh = useCallback((delayMs: number = 1200) => {
     if (refreshTimerRef.current) {
       clearTimeout(refreshTimerRef.current);
     }
@@ -392,7 +395,7 @@ export function useProducts() {
 
   useEffect(() => {
     const onCatalogRefresh = () => {
-      scheduleRefresh(250);
+      scheduleRefresh(500);
     };
     window.addEventListener(CATALOG_UPDATED_EVENT, onCatalogRefresh);
     return () => window.removeEventListener(CATALOG_UPDATED_EVENT, onCatalogRefresh);

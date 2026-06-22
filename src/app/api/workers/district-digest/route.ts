@@ -26,7 +26,7 @@ export async function POST(req: NextRequest) {
 async function run() {
   const supabase = getSupabaseAdminClient();
   if (!supabase) {
-    return NextResponse.json({ error: 'Admin Supabase unavailable' }, { status: 500 });
+    return NextResponse.json({ error: 'Admin Supabase unavailable' }, { status: 503 });
   }
 
   const result = await runDistrictDigestScan(supabase);

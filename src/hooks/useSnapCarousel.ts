@@ -28,6 +28,15 @@ export function useSnapCarousel(itemCount: number, options: Options = {}) {
   const ref = useRef<HTMLDivElement | null>(null);
   const [activeIndex, setActiveIndex] = useState(initial);
   const settledRef = useRef(initial);
+  const prevInitialRef = useRef(initial);
+  if (initial !== prevInitialRef.current) {
+    prevInitialRef.current = initial;
+    const clamped = Math.max(0, Math.min(Math.max(itemCount - 1, 0), initial));
+    settledRef.current = clamped;
+    if (activeIndex !== clamped) {
+      setActiveIndex(clamped);
+    }
+  }
   const touchAnchorRef = useRef(initial);
   const touchStartXRef = useRef(0);
   const settleTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
@@ -202,11 +211,6 @@ export function useSnapCarousel(itemCount: number, options: Options = {}) {
       if (settleTimerRef.current) clearTimeout(settleTimerRef.current);
     };
   }, []);
-
-  useEffect(() => {
-    settledRef.current = clampIndex(initial);
-    setActiveIndex(clampIndex(initial));
-  }, [initial, clampIndex]);
 
   return {
     ref,
