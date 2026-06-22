@@ -13,6 +13,10 @@ import { colorDbAliases } from '@/lib/vintedCategoryTree';
 /** Supabase OR — csak böngészhető / megvásárolható termékek. */
 export const LISTED_PRODUCT_STATUS_FILTER = 'status.eq.active,status.is.null';
 
+/** Feed katalógus — vékony select (nincs description / defect_images a listában). */
+export const CATALOG_PRODUCT_SELECT =
+  'id,name,price,category,condition,brand,image_url,images,user_id,status,featured_until,size,color,favorite_count,budapest_district,created_at,updated_at';
+
 /** Saját shop — csak még eladható hirdetések (sold külön szekció). */
 export const ACTIVE_LISTING_STATUS_FILTER = LISTED_PRODUCT_STATUS_FILTER;
 

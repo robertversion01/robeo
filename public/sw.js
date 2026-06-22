@@ -17,7 +17,11 @@
 
   function isSupabaseStorage(url) {
     try {
-      return url.hostname.endsWith('.supabase.co') && url.pathname.includes('/storage/v1/object/');
+      return (
+        url.hostname.endsWith('.supabase.co') &&
+        (url.pathname.includes('/storage/v1/object/') ||
+          url.pathname.includes('/storage/v1/render/image/'))
+      );
     } catch {
       return false;
     }

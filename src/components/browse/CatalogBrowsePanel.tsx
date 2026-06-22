@@ -38,6 +38,7 @@ import HomeDistrictPicker from '@/components/browse/HomeDistrictPicker';
 import { departmentLabel } from '@/lib/categoryDisplay';
 import { ROBEO_BP_MODE } from '@/lib/features';
 import { FEED_VIEWPORT_PRIORITY_COUNT } from '@/lib/imagePresets';
+import { isMobileViewport } from '@/lib/mobilePerf';
 import { getDistrictLabel } from '@/lib/budapestDistricts';
 import { useCatalogFilterCounts } from '@/hooks/useCatalogFilterCounts';
 
@@ -179,7 +180,10 @@ function CatalogBrowsePanelInner({
 
   const catalogProducts = useMemo(() => {
     const base = dedupeProductsById(filterProductsWithValidImages(products));
-    const ranked = isFeed && user ? rankFeedProducts(base, feedPrefs) : base;
+    const ranked =
+      isFeed && user && !isMobileViewport()
+        ? rankFeedProducts(base, feedPrefs)
+        : base;
     return dedupeProductsById(ranked);
   }, [products, isFeed, user, feedPrefs]);
 

@@ -3,6 +3,7 @@
 import { useCallback, useEffect, useRef } from 'react';
 import { toast } from 'sonner';
 import { useTranslation } from 'react-i18next';
+import { isMobileViewport, runWhenIdle } from '@/lib/mobilePerf';
 
 const CLIENT_BUILD_ID = process.env.NEXT_PUBLIC_APP_BUILD_ID ?? 'development';
 
@@ -71,7 +72,15 @@ export default function DeployRefreshNotifier() {
   }, [t]);
 
   useEffect(() => {
-    void checkForUpdate();
+    const boot = () => void checkForUpdate();
+    const bootDelay = isMobileViewport() ? 10_000 : 1500;
+    const timer = window.setTimeout(() => {
+      if (isMobileViewport()) {
+        runWhenIdle(boot, 5000);
+      } else {
+        boot();
+      }
+    }, bootDelay);
 
     const onVisible = () => {
       if (document.visibilityState === 'visible') void checkForUpdate();
@@ -80,6 +89,7 @@ export default function DeployRefreshNotifier() {
     const interval = window.setInterval(() => void checkForUpdate(), 60_000);
 
     return () => {
+      window.clearTimeout(timer);
       document.removeEventListener('visibilitychange', onVisible);
       window.clearInterval(interval);
     };

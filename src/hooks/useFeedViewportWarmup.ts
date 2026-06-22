@@ -14,6 +14,8 @@ type Options = {
   columnCount: number;
   priorityCount: number;
   enabled: boolean;
+  /** Extra sorok előmelegítése scroll előtt */
+  lookaheadRows?: number;
 };
 
 /** Látható + következő sor képeinek előmelegítése scroll közben. */
@@ -24,6 +26,7 @@ export function useFeedViewportWarmup({
   columnCount,
   priorityCount,
   enabled,
+  lookaheadRows = 1,
 }: Options) {
   const lastKeyRef = useRef('');
 
@@ -33,7 +36,9 @@ export function useFeedViewportWarmup({
     const rowIndices = virtualRows.map((r) => r.index);
     const maxRow = Math.max(...rowIndices);
     const warmupRows = new Set(rowIndices);
-    warmupRows.add(maxRow + 1);
+    for (let extra = 1; extra <= lookaheadRows; extra += 1) {
+      warmupRows.add(maxRow + extra);
+    }
 
     const productIndices = new Set<number>();
     for (const row of warmupRows) {
@@ -54,5 +59,5 @@ export function useFeedViewportWarmup({
       const priority = idx < priorityCount ? 'high' : 'low';
       preloadPresetSrc(resolved.src, resolved.srcSet, priority);
     }
-  }, [products, preset, virtualRows, columnCount, priorityCount, enabled]);
+  }, [products, preset, virtualRows, columnCount, priorityCount, enabled, lookaheadRows]);
 }

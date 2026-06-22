@@ -1,15 +1,15 @@
 'use client';
 
 import { useEffect, useState } from 'react';
-import { getConnectionProfile, type ConnectionProfile } from '@/lib/connectionProfile';
+import { getImageConnectionProfile, type ConnectionProfile } from '@/lib/connectionProfile';
 
 export function useConnectionProfile(): ConnectionProfile {
   const [profile, setProfile] = useState<ConnectionProfile>(() =>
-    typeof window !== 'undefined' ? getConnectionProfile() : 'fast',
+    typeof window !== 'undefined' ? getImageConnectionProfile() : 'fast',
   );
 
   useEffect(() => {
-    setProfile(getConnectionProfile());
+    setProfile(getImageConnectionProfile());
     const nav = navigator as Navigator & {
       connection?: {
         addEventListener?: (t: string, fn: () => void) => void;
@@ -18,7 +18,7 @@ export function useConnectionProfile(): ConnectionProfile {
     };
     const conn = nav.connection;
     if (!conn?.addEventListener) return;
-    const sync = () => setProfile(getConnectionProfile());
+    const sync = () => setProfile(getImageConnectionProfile());
     conn.addEventListener('change', sync);
     return () => conn.removeEventListener?.('change', sync);
   }, []);

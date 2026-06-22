@@ -8,14 +8,14 @@ import {
   type SupabaseTransformOptions,
 } from '@/lib/imageUtils';
 import {
-  getConnectionProfile,
+  getImageConnectionProfile,
   scaleQualityForConnection,
   scaleWidthForConnection,
   type ConnectionProfile,
 } from '@/lib/connectionProfile';
 
 export const IMAGE_QUALITY = {
-  homepageFeed: 74,
+  homepageFeed: 68,
   feed: 62,
   rail: 48,
   thumb: 46,
@@ -29,7 +29,7 @@ export const IMAGE_QUALITY = {
 export const FEED_VIEWPORT_PRIORITY_COUNT = 6;
 
 /** Kezdeti grid mount — gyors first paint. */
-export const FEED_INITIAL_RENDER_COUNT = 8;
+export const FEED_INITIAL_RENDER_COUNT = 6;
 
 /** Carousel / viewer: ±N slide tölt nagyobb presetből. */
 export const IMAGE_VIEWPORT_PRELOAD_RADIUS = 1;
@@ -62,10 +62,10 @@ export const IMAGE_BYTE_BUDGETS: Record<string, { maxKb: number; note: string }>
 export const IMAGE_PRESETS = {
   /** Főoldal feed — CDN contain 4:5, teljes termék, éles thumbnail */
   homepageFeed: {
-    width: 360,
+    width: 320,
     quality: IMAGE_QUALITY.homepageFeed,
-    options: { height: 450, resize: 'contain', format: 'webp' },
-    srcSetWidths: [240, 320, 360, 420],
+    options: { height: 400, resize: 'contain', format: 'webp' },
+    srcSetWidths: [200, 260, 320, 400],
     sizes: '(max-width: 640px) calc(50vw - 2px), (max-width: 1024px) 33vw, 20vw',
     lazyPolicy: 'lazy',
     fetchPriority: 'low',
@@ -224,7 +224,7 @@ export function imageFromPreset(
   overrides?: { priority?: boolean; lazy?: boolean; connection?: ConnectionProfile },
 ): ResolvedPresetImage {
   const p = IMAGE_PRESETS[preset];
-  const connection = overrides?.connection ?? getConnectionProfile();
+  const connection = overrides?.connection ?? getImageConnectionProfile();
   const width = scaleWidthForConnection(p.width, connection);
   const quality = scaleQualityForConnection(p.quality, connection);
   const webpOpts = withFormat(p.options, 'webp');

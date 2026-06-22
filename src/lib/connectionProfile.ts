@@ -14,6 +14,16 @@ export function getConnectionProfile(): ConnectionProfile {
   return 'fast';
 }
 
+/** Kép presetekhez — mobilon óvatosabb (cellular decode + gyorsabb paint). */
+export function getImageConnectionProfile(): ConnectionProfile {
+  const network = getConnectionProfile();
+  if (typeof window !== 'undefined' && window.matchMedia('(max-width: 767px)').matches) {
+    if (network === 'fast') return 'moderate';
+    if (network === 'moderate') return 'slow';
+  }
+  return network;
+}
+
 export function scaleWidthForConnection(width: number, profile: ConnectionProfile): number {
   if (profile === 'slow') return Math.max(120, Math.round(width * 0.7));
   if (profile === 'moderate') return Math.max(140, Math.round(width * 0.85));

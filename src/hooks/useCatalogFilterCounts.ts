@@ -4,6 +4,7 @@ import { useEffect, useState } from 'react';
 import { supabase } from '@/lib/supabase';
 import type { CatalogFilterState } from '@/lib/catalogFilters';
 import { serializeCatalogFilters } from '@/lib/catalogFilters';
+import { isMobileViewport } from '@/lib/mobilePerf';
 import {
   fetchBrandFilterCounts,
   fetchCategoryFilterCounts,
@@ -51,9 +52,10 @@ export function useCatalogFilterCounts(
       }
     };
 
+    const delay = isMobileViewport() ? 900 : 280;
     const timer = window.setTimeout(() => {
       void load();
-    }, 280);
+    }, delay);
 
     return () => {
       cancelled = true;

@@ -12,6 +12,7 @@ import ListRefreshingBar from '@/components/ui/ListRefreshingBar';
 import { useProductGridColumns } from '@/hooks/useProductGridColumns';
 import { useStableProductToggle } from '@/hooks/useStableProductToggle';
 import { useFeedViewportWarmup } from '@/hooks/useFeedViewportWarmup';
+import { useIsMobileViewport } from '@/lib/mobilePerf';
 import ZeroResultsRescue from '@/components/browse/ZeroResultsRescue';import type { Product } from '@/types';
 
 import {
@@ -22,6 +23,7 @@ import {
 const GRID_GAP_PX = 2;
 const ROW_HEIGHT_ESTIMATE = 272;
 const VIRTUAL_OVERSCAN = 3;
+const VIRTUAL_OVERSCAN_MOBILE = 1;
 /** Kevesebb sor — egyszerű grid, stabilabb layout shift. */
 const VIRTUAL_MIN_ROWS = 5;
 
@@ -74,6 +76,7 @@ export default function ProductGrid({
 }: ProductGridProps) {
   const { t } = useTranslation();
   const columnCount = useProductGridColumns();
+  const isMobile = useIsMobileViewport();
   const getToggleFavorite = useStableProductToggle(onToggleFavorite);
   const gridRef = useRef<HTMLDivElement | null>(null);
   const loadMoreSentinelRef = useRef<HTMLDivElement | null>(null);
@@ -112,7 +115,7 @@ export default function ProductGrid({
   const rowVirtualizer = useWindowVirtualizer({
     count: useVirtual ? rowCount : 0,
     estimateSize: () => ROW_HEIGHT_ESTIMATE,
-    overscan: VIRTUAL_OVERSCAN,
+    overscan: isMobile ? VIRTUAL_OVERSCAN_MOBILE : VIRTUAL_OVERSCAN,
     scrollMargin,
     gap: GRID_GAP_PX,
     measureElement:
@@ -145,6 +148,7 @@ export default function ProductGrid({
     columnCount,
     priorityCount,
     enabled: useVirtual,
+    lookaheadRows: isMobile ? 2 : 1,
   });
 
   useEffect(() => {

@@ -9,10 +9,10 @@ import { notifyPriceDropsIfEnabled } from '@/lib/priceWatchNotify';
 import { recordPriceSnapshot } from '@/lib/priceHistory';
 import type { Product } from '@/types';
 
+import { isMobileViewport } from '@/lib/mobilePerf';
+
 const SAVED_SEARCH_INTERVAL_MS = 12 * 60 * 1000;
 const PRICE_WATCH_INTERVAL_MS = 8 * 60 * 1000;
-/** Első scan késleltetése — ne versenyezzen a feed LCP-vel. */
-const INITIAL_SCAN_DELAY_MS = 8_000;
 
 type Options = {
   products?: Product[];
@@ -72,12 +72,13 @@ export function useMarketplaceBackgroundWorkers({ products = [], enabled = true 
       }
     };
 
+    const initialDelay = isMobileViewport() ? 15_000 : 8_000;
     const initialTimer = window.setTimeout(() => {
       if (!cancelled) {
         void runSavedSearch();
         void runPriceWatch();
       }
-    }, INITIAL_SCAN_DELAY_MS);
+    }, initialDelay);
 
     const t1 = window.setInterval(runSavedSearch, SAVED_SEARCH_INTERVAL_MS);
     const t2 = window.setInterval(runPriceWatch, PRICE_WATCH_INTERVAL_MS);

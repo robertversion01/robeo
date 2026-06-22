@@ -33,14 +33,23 @@ import { fetchAllVacationSellerIds } from '@/lib/vacationMode';
 import {
   applyListedProductFilter,
   applyCatalogFiltersToProductQuery,
+  CATALOG_PRODUCT_SELECT,
   formatSupabaseError,
   isListedProduct,
   isSupabaseRangeError,
   LISTED_PRODUCT_STATUS_FILTER,
 } from '@/lib/listedProducts';
+import { isMobileViewport, runWhenIdle } from '@/lib/mobilePerf';
 
 /** Szerver-oldali lapozás — Supabase range chunk méret. */
 export const CATALOG_PAGE_SIZE = 48;
+/** Mobil első lap — gyorsabb paint, kevesebb JSON/decode. */
+export const CATALOG_PAGE_SIZE_MOBILE = 24;
+
+function catalogPageSize(): number {
+  if (typeof window !== 'undefined' && window.innerWidth < 768) return CATALOG_PAGE_SIZE_MOBILE;
+  return CATALOG_PAGE_SIZE;
+}
 
 function mergeEnrichedProducts(
   base: Product[],
@@ -233,10 +242,11 @@ export function useProducts() {
 
       try {
         const sortConfig = SORT_OPTIONS.find((s) => s.id === catalogFilters.sort) ?? SORT_OPTIONS[0];
-        const from = pageIndex * CATALOG_PAGE_SIZE;
-        const to = from + CATALOG_PAGE_SIZE - 1;
+        const pageSize = catalogPageSize();
+        const from = pageIndex * pageSize;
+        const to = from + pageSize - 1;
 
-        let query = supabase.from('products').select('*', { count: 'exact' });
+        let query = supabase.from('products').select(CATALOG_PRODUCT_SELECT, { count: 'exact' });
         query = applyListedProductFilter(query);
 
         const supportCache = serverFilterSupportRef.current;
@@ -308,39 +318,52 @@ export function useProducts() {
           }
         }
 
-        const [favoriteEnriched, sellerEnriched] = await Promise.all([
-          enrichProductsWithFavoriteCounts(supabase, fetched),
-          enrichProductsWithSellerInfo(supabase, fetched),
-        ]);
-        fetched = mergeEnrichedProducts(fetched, favoriteEnriched, sellerEnriched);
+        const favoriteEnriched = await enrichProductsWithFavoriteCounts(supabase, fetched);
 
-        if (generation !== fetchGenRef.current) return;
+        const applyProductsUpdate = (merged: Product[]) => {
+          if (generation !== fetchGenRef.current) return;
 
-        const serverTotal = count ?? fetched.length;
-        setTotalCount(serverTotal);
-        setPage(pageIndex);
+          const serverTotal = count ?? merged.length;
+          setTotalCount(serverTotal);
+          setPage(pageIndex);
 
-        if (append && fetched.length === 0) {
-          setTotalCount((prev) => Math.min(prev, from));
-        }
+          if (append && merged.length === 0) {
+            setTotalCount((prev) => Math.min(prev, from));
+          }
 
-        startTransition(() => {
-          setProducts((prev) => {
-            if (!append) return fetched;
-            const seen = new Set(prev.map((p) => p.id));
-            const merged = [...prev];
-            for (const p of fetched) {
-              if (!seen.has(p.id)) {
-                seen.add(p.id);
-                merged.push(p);
+          startTransition(() => {
+            setProducts((prev) => {
+              if (!append) return merged;
+              const seen = new Set(prev.map((p) => p.id));
+              const next = [...prev];
+              for (const p of merged) {
+                if (!seen.has(p.id)) {
+                  seen.add(p.id);
+                  next.push(p);
+                }
               }
-            }
-            if (fetched.length === 0) {
-              return prev;
-            }
-            return merged;
+              if (merged.length === 0) {
+                return prev;
+              }
+              return next;
+            });
           });
-        });
+        };
+
+        applyProductsUpdate(mergeEnrichedProducts(fetched, favoriteEnriched, fetched));
+
+        const enrichSeller = async () => {
+          const sellerEnriched = await enrichProductsWithSellerInfo(supabase, fetched);
+          if (generation !== fetchGenRef.current) return;
+          applyProductsUpdate(mergeEnrichedProducts(fetched, favoriteEnriched, sellerEnriched));
+        };
+
+        if (isMobileViewport()) {
+          runWhenIdle(() => void enrichSeller(), 1800);
+        } else {
+          await enrichSeller();
+        }
+        return;
       } catch (error) {
         console.error('Error fetching products:', formatSupabaseError(error));
         if (generation === fetchGenRef.current && !append) {

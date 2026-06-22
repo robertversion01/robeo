@@ -3,6 +3,7 @@
 import { useEffect } from 'react';
 import { supabase } from '@/lib/supabase';
 import { pingProfileActivity } from '@/lib/profileActivity';
+import { isMobileViewport, runWhenIdle } from '@/lib/mobilePerf';
 
 /** Bejelentkezett user utolsó aktivitásának frissítése (throttled). */
 export default function ProfileActivityHeartbeat() {
@@ -17,7 +18,20 @@ export default function ProfileActivityHeartbeat() {
       await pingProfileActivity(supabase, user.id);
     };
 
-    void run();
+    const start = () => {
+      if (cancelled) return;
+      void run();
+    };
+
+    const bootDelay = isMobileViewport() ? 12_000 : 0;
+    const bootTimer = window.setTimeout(() => {
+      if (isMobileViewport()) {
+        runWhenIdle(start, 4000);
+      } else {
+        start();
+      }
+    }, bootDelay);
+
     const onVisible = () => {
       if (document.visibilityState === 'visible') void run();
     };
@@ -26,6 +40,7 @@ export default function ProfileActivityHeartbeat() {
 
     return () => {
       cancelled = true;
+      window.clearTimeout(bootTimer);
       document.removeEventListener('visibilitychange', onVisible);
       window.clearInterval(interval);
     };
